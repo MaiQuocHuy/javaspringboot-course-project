@@ -1,0 +1,518 @@
+# Database Schema for KTC Learning Platform
+
+## Core Tables
+
+### User Management
+
+```sql
+-- Users table
+CREATE TABLE users (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL COMMENT 'Hashed password using bcrypt',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_email (email),
+    INDEX idx_active (is_active)
+);
+
+-- User roles table
+CREATE TABLE user_roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    role ENUM('STUDENT', 'INSTRUCTOR', 'ADMIN') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user_role (user_id, role),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Refresh tokens for JWT authentication
+CREATE TABLE refresh_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    token VARCHAR(512) UNIQUE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    is_revoked BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_token (token),
+    INDEX idx_expires (expires_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+### Course Management
+
+```sql
+-- Categories table
+CREATE TABLE categories (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Courses table
+CREATE TABLE courses (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    instructor_id VARCHAR(36),
+    price DECIMAL(10,2) DEFAULT 0.00,
+    is_published BOOLEAN DEFAULT FALSE,
+    is_approved BOOLEAN DEFAULT FALSE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    thumbnail_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_instructor (instructor_id),
+    INDEX idx_title (title),
+    INDEX idx_published (is_published),
+    INDEX idx_approved (is_approved),
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Course categories junction table
+CREATE TABLE course_categories (
+    course_id VARCHAR(36) NOT NULL,
+    category_id VARCHAR(36) NOT NULL,
+    PRIMARY KEY (course_id, category_id),
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+);
+```
+
+### Course Content
+
+```sql
+-- Sections table
+CREATE TABLE sections (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    course_id VARCHAR(36) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    order_index INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_course (course_id),
+    UNIQUE KEY unique_section_order (course_id, order_index),
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+
+-- Lessons table
+CREATE TABLE lessons (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    section_id VARCHAR(36) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    type ENUM('VIDEO', 'QUIZ', 'PDF', 'TEXT') DEFAULT 'VIDEO',
+    content_id VARCHAR(36),
+    order_index INT DEFAULT 0,
+    duration INT COMMENT 'Duration in seconds for video lessons',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_section (section_id),
+    UNIQUE KEY unique_lesson_order (section_id, order_index),
+    FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE CASCADE
+);
+
+-- Video content table
+CREATE TABLE video_content (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    url TEXT NOT NULL COMMENT 'Video file URL or streaming link',
+    duration INT COMMENT 'Duration in seconds',
+    uploaded_by VARCHAR(36) NOT NULL,
+    file_size BIGINT COMMENT 'File size in bytes',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+### Enrollment and Progress
+
+```sql
+-- Enrollments table
+CREATE TABLE enrollments (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    course_id VARCHAR(36) NOT NULL,
+    enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completion_status ENUM('IN_PROGRESS', 'COMPLETED') DEFAULT 'IN_PROGRESS',
+    progress_percentage DECIMAL(5,2) DEFAULT 0.00,
+    last_accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_enrollment (user_id, course_id),
+    INDEX idx_user (user_id),
+    INDEX idx_course (course_id),
+    INDEX idx_status (completion_status),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+
+-- Lesson completions table
+CREATE TABLE lesson_completions (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    lesson_id VARCHAR(36) NOT NULL,
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    time_spent INT COMMENT 'Time spent in seconds',
+    UNIQUE KEY unique_completion (user_id, lesson_id),
+    INDEX idx_user (user_id),
+    INDEX idx_lesson (lesson_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
+);
+```
+
+### Reviews and Ratings
+
+```sql
+-- Reviews table
+CREATE TABLE reviews (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    course_id VARCHAR(36) NOT NULL,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT,
+    reviewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_review (user_id, course_id),
+    INDEX idx_course (course_id),
+    INDEX idx_rating (rating),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+```
+
+### Payment System
+
+```sql
+-- Payments table
+CREATE TABLE payments (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    course_id VARCHAR(36) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    status ENUM('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED') DEFAULT 'PENDING',
+    payment_method VARCHAR(50),
+    transaction_id VARCHAR(255) UNIQUE,
+    paid_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user (user_id),
+    INDEX idx_course (course_id),
+    INDEX idx_status (status),
+    INDEX idx_transaction (transaction_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+
+-- Refunds table
+CREATE TABLE refunds (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    payment_id VARCHAR(36) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    status ENUM('PENDING', 'COMPLETED', 'FAILED') DEFAULT 'PENDING',
+    reason TEXT,
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP NULL,
+    UNIQUE KEY unique_refund (payment_id),
+    INDEX idx_status (status),
+    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
+);
+
+-- Instructor earnings table
+CREATE TABLE instructor_earnings (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    instructor_id VARCHAR(36) NOT NULL,
+    payment_id VARCHAR(36) NOT NULL,
+    course_id VARCHAR(36) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL COMMENT 'Instructor share after platform cut',
+    status ENUM('PENDING', 'AVAILABLE', 'PAID') DEFAULT 'PENDING',
+    available_at TIMESTAMP NULL,
+    paid_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_instructor (instructor_id),
+    UNIQUE KEY unique_earning (payment_id),
+    INDEX idx_status (status),
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+```
+
+### Instructor Management
+
+```sql
+-- Instructor applications table
+CREATE TABLE instructor_applications (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    reviewed_by VARCHAR(36),
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+    documents JSON COMMENT 'Array of document URLs or details',
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP NULL,
+    rejection_reason TEXT,
+    UNIQUE KEY unique_application (user_id),
+    INDEX idx_status (status),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
+);
+```
+
+### Quiz System
+
+```sql
+-- Quiz questions table
+CREATE TABLE quiz_questions (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    lesson_id VARCHAR(36) NOT NULL,
+    question_text TEXT NOT NULL,
+    options JSON NOT NULL COMMENT 'Array of options: ["A", "B", "C", "D"]',
+    correct_answer VARCHAR(255) NOT NULL COMMENT 'Correct option key/value',
+    explanation TEXT COMMENT 'Optional explanation for the answer',
+    points INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_lesson (lesson_id),
+    FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
+);
+
+-- Quiz results table
+CREATE TABLE quiz_results (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    lesson_id VARCHAR(36) NOT NULL,
+    score DECIMAL(5,2) COMMENT 'Percentage score',
+    answers JSON COMMENT 'User answers: {"question_id_1": "B", "question_id_2": "D"}',
+    time_taken INT COMMENT 'Time taken in seconds',
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_result (user_id, lesson_id),
+    INDEX idx_user (user_id),
+    INDEX idx_lesson (lesson_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
+);
+```
+
+## API Development Guidelines
+
+### Database Conventions
+
+1. **Primary Keys**: Use UUID for most tables, auto-increment for junction tables
+2. **Timestamps**: Always include `created_at` and `updated_at` for audit trails
+3. **Foreign Keys**: Use CASCADE for dependent data, SET NULL for optional references
+4. **Indexes**: Create indexes on frequently queried columns and foreign keys
+5. **Constraints**: Use CHECK constraints for data validation (e.g., rating 1-5)
+
+### API Response Patterns
+
+```typescript
+// Success Response
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  timestamp: string;
+}
+
+// Error Response
+interface ApiError {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+  timestamp: string;
+}
+
+// Pagination Response
+interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+```
+
+### Role-Based API Endpoints Structure
+
+#### Authentication & User Management
+
+```typescript
+// Authentication
+POST / api / auth / register;
+POST / api / auth / login;
+POST / api / auth / refresh;
+POST / api / auth / logout;
+POST / api / auth / forgot - password;
+POST / api / auth / reset - password;
+
+// User Profile (All roles)
+GET / api / users / profile;
+PUT / api / users / profile;
+PUT / api / users / change - password;
+```
+
+#### Student Role APIs
+
+```typescript
+// Course Browsing & Enrollment
+GET /api/courses/public                    // Browse published courses
+GET /api/courses/:id                       // View course details
+GET /api/courses/:id/curriculum            // View course curriculum
+POST /api/courses/:id/enroll               // Enroll in course
+GET /api/courses/enrolled                  // View enrolled courses
+GET /api/courses/:id/progress              // View course progress
+
+// Learning & Progress
+GET /api/courses/:courseId/sections        // View course sections
+GET /api/sections/:sectionId/lessons       // View section lessons
+GET /api/lessons/:id                       // View lesson content
+POST /api/lessons/:id/complete             // Mark lesson as complete
+GET /api/lessons/:id/quiz                  // Get quiz questions
+POST /api/lessons/:id/quiz/submit          // Submit quiz answers
+GET /api/lessons/:id/quiz/result           // Get quiz result
+
+// Reviews & Ratings
+POST /api/courses/:id/review               // Submit course review
+GET /api/courses/:id/reviews               // View course reviews
+PUT /api/reviews/:id                       // Update review
+DELETE /api/reviews/:id                    // Delete review
+
+// Payments
+POST /api/payments                         // Create payment
+GET /api/payments                          // View payment history
+GET /api/payments/:id                      // View payment details
+POST /api/payments/:id/refund              // Request refund
+```
+
+#### Instructor Role APIs
+
+```typescript
+// Course Management
+GET /api/instructor/courses                // View own courses
+POST /api/instructor/courses               // Create new course
+GET /api/instructor/courses/:id            // View own course details
+PUT /api/instructor/courses/:id            // Update course
+DELETE /api/instructor/courses/:id         // Delete course
+POST /api/instructor/courses/:id/publish   // Publish course
+POST /api/instructor/courses/:id/unpublish // Unpublish course
+
+// Section Management
+GET /api/instructor/courses/:courseId/sections     // View course sections
+POST /api/instructor/courses/:courseId/sections    // Create new section
+GET /api/instructor/sections/:id                   // View section details
+PUT /api/instructor/sections/:id                   // Update section
+DELETE /api/instructor/sections/:id                // Delete section
+PUT /api/instructor/sections/:id/reorder           // Reorder sections
+
+// Lesson Management
+GET /api/instructor/sections/:sectionId/lessons    // View section lessons
+POST /api/instructor/sections/:sectionId/lessons   // Create new lesson
+GET /api/instructor/lessons/:id                    // View lesson details
+PUT /api/instructor/lessons/:id                    // Update lesson
+DELETE /api/instructor/lessons/:id                 // Delete lesson
+PUT /api/instructor/lessons/:id/reorder            // Reorder lessons
+
+// Quiz Management
+POST /api/instructor/lessons/:lessonId/quiz        // Create quiz for lesson
+GET /api/instructor/lessons/:lessonId/quiz         // View quiz questions
+PUT /api/instructor/quiz/:id                       // Update quiz question
+DELETE /api/instructor/quiz/:id                    // Delete quiz question
+
+// Content Management
+POST /api/instructor/upload/video                  // Upload video content
+POST /api/instructor/upload/document               // Upload document
+DELETE /api/instructor/content/:id                 // Delete content
+
+// Analytics & Insights
+GET /api/instructor/analytics/courses              // Course analytics
+GET /api/instructor/analytics/earnings             // Earnings overview
+GET /api/instructor/analytics/enrollments          // Enrollment stats
+GET /api/instructor/analytics/student-progress     // Student progress
+```
+
+#### Admin Role APIs
+
+```typescript
+// User Management
+GET /api/admin/users                           // View all users
+GET /api/admin/users/:id                       // View user details
+PUT /api/admin/users/:id                       // Update user
+DELETE /api/admin/users/:id                    // Delete user
+PUT /api/admin/users/:id/roles                 // Update user roles
+POST /api/admin/users/:id/ban                  // Ban user
+POST /api/admin/users/:id/unban                // Unban user
+
+// Course Approval & Management
+GET /api/admin/courses/pending                 // View pending courses
+GET /api/admin/courses                         // View all courses
+GET /api/admin/courses/:id                     // View course details
+POST /api/admin/courses/:id/approve            // Approve course
+POST /api/admin/courses/:id/reject             // Reject course
+PUT /api/admin/courses/:id                     // Update course
+DELETE /api/admin/courses/:id                  // Delete course
+GET /api/admin/courses/:id/reviews             // View course reviews
+
+// Instructor Management
+GET /api/admin/instructors/applications        // View instructor applications
+GET /api/admin/instructors/applications/:id    // View application details
+POST /api/admin/instructors/applications/:id/approve  // Approve instructor
+POST /api/admin/instructors/applications/:id/reject   // Reject instructor
+GET /api/admin/instructors                     // View all instructors
+PUT /api/admin/instructors/:id/status          // Update instructor status
+
+// Revenue & Financial Management
+GET /api/admin/revenue/overview                // Revenue overview
+GET /api/admin/revenue/courses                 // Course-wise revenue
+GET /api/admin/revenue/instructors             // Instructor earnings
+GET /api/admin/revenue/payments                // Payment history
+GET /api/admin/revenue/refunds                 // Refund requests
+POST /api/admin/revenue/refunds/:id/process    // Process refund
+GET /api/admin/revenue/analytics               // Financial analytics
+
+// Platform Management
+GET /api/admin/categories                      // View all categories
+POST /api/admin/categories                     // Create category
+PUT /api/admin/categories/:id                  // Update category
+DELETE /api/admin/categories/:id               // Delete category
+
+// System Analytics
+GET /api/admin/analytics/overview              // Platform overview
+GET /api/admin/analytics/users                 // User analytics
+GET /api/admin/analytics/courses               // Course analytics
+GET /api/admin/analytics/enrollments           // Enrollment analytics
+GET /api/admin/analytics/revenue               // Revenue analytics
+```
+
+#### Common APIs (All Roles)
+
+```typescript
+// Categories
+GET /api/categories                            // View all categories
+GET /api/categories/:id                        // View category details
+
+// Search
+GET /api/search/courses                        // Search courses
+GET /api/search/instructors                    // Search instructors
+
+// Notifications
+GET /api/notifications                         // View notifications
+PUT /api/notifications/:id/read                // Mark as read
+DELETE /api/notifications/:id                  // Delete notification
+```
+
+### Security Considerations
+
+1. **Authentication**: JWT tokens with refresh token rotation
+2. **Authorization**: Role-based access control (RBAC)
+3. **Input Validation**: Validate all inputs using Joi or similar
+4. **SQL Injection**: Use parameterized queries
+5. **Rate Limiting**: Implement rate limiting for API endpoints
+6. **CORS**: Configure CORS properly for frontend integration

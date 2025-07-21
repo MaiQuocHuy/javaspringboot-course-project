@@ -1,0 +1,427 @@
+# KTC Learning Platform API Development Tasklist
+
+## Java Spring Boot Implementation
+
+### Phase 1: Project Setup & Foundation (Week 1)
+
+#### 1.1 Project Initialization
+
+- [ ] Create Spring Boot project with Maven/Gradle
+- [ ] Configure application.properties/application.yml
+- [ ] Set up database connection (MySQL/PostgreSQL)
+- [ ] Configure JPA/Hibernate settings
+- [ ] Set up logging configuration
+- [ ] Create project structure (packages: controller, service, repository, model, config, util, exception)
+
+#### 1.2 Dependencies Setup
+
+- [ ] Add Spring Boot Starter Web
+- [ ] Add Spring Boot Starter Data JPA
+- [ ] Add Spring Boot Starter Security
+- [ ] Add Spring Boot Starter Validation
+- [ ] Add JWT dependencies (jjwt)
+- [ ] Add MySQL/PostgreSQL connector
+- [ ] Add Swagger/OpenAPI for documentation
+- [ ] Add MapStruct for DTO mapping
+- [ ] Add Lombok for boilerplate reduction
+
+#### 1.3 Database Setup
+
+- [ ] Create database migration scripts (Flyway/Liquibase)
+- [ ] Implement database schema from database-schema.mdc
+- [ ] Set up database indexes and constraints
+- [ ] Create database seeding scripts for testing
+- [ ] Configure database connection pooling
+
+### Phase 2: Core Models & Entities (Week 1-2)
+
+#### 2.1 User Management Entities
+
+- [ ] Create User entity
+- [ ] Create UserRole entity
+- [ ] Create RefreshToken entity
+- [ ] Implement JPA annotations and relationships
+- [ ] Add validation annotations (@NotNull, @Email, etc.)
+- [ ] Create enums for roles and statuses
+
+#### 2.2 Course Management Entities
+
+- [ ] Create Course entity
+- [ ] Create Category entity
+- [ ] Create CourseCategory entity (junction table)
+- [ ] Create Section entity
+- [ ] Create Lesson entity
+- [ ] Create VideoContent entity
+- [ ] Implement relationships and constraints
+
+#### 2.3 Learning & Progress Entities
+
+- [ ] Create Enrollment entity
+- [ ] Create LessonCompletion entity
+- [ ] Create Review entity
+- [ ] Implement progress tracking logic
+
+#### 2.4 Payment & Financial Entities
+
+- [ ] Create Payment entity
+- [ ] Create Refund entity
+- [ ] Create InstructorEarning entity
+- [ ] Create InstructorApplication entity
+
+#### 2.5 Quiz System Entities
+
+- [ ] Create QuizQuestion entity
+- [ ] Create QuizResult entity
+- [ ] Implement JSON field handling for options and answers
+
+### Phase 3: Repository Layer (Week 2)
+
+#### 3.1 User Repositories
+
+- [ ] Create UserRepository
+- [ ] Create UserRoleRepository
+- [ ] Create RefreshTokenRepository
+- [ ] Add custom query methods
+- [ ] Implement pagination support
+
+#### 3.2 Course Repositories
+
+- [ ] Create CourseRepository
+- [ ] Create CategoryRepository
+- [ ] Create SectionRepository
+- [ ] Create LessonRepository
+- [ ] Add search and filter methods
+
+#### 3.3 Learning Repositories
+
+- [ ] Create EnrollmentRepository
+- [ ] Create LessonCompletionRepository
+- [ ] Create ReviewRepository
+
+#### 3.4 Payment Repositories
+
+- [ ] Create PaymentRepository
+- [ ] Create RefundRepository
+- [ ] Create InstructorEarningRepository
+- [ ] Create InstructorApplicationRepository
+
+#### 3.5 Quiz Repositories
+
+- [ ] Create QuizQuestionRepository
+- [ ] Create QuizResultRepository
+
+### Phase 4: DTOs & Mappers (Week 2-3)
+
+#### 4.1 Request/Response DTOs
+
+- [ ] Create UserDTOs (CreateUserRequest, UpdateUserRequest, UserResponse)
+- [ ] Create CourseDTOs (CreateCourseRequest, UpdateCourseRequest, CourseResponse)
+- [ ] Create SectionDTOs (CreateSectionRequest, UpdateSectionRequest, SectionResponse)
+- [ ] Create LessonDTOs (CreateLessonRequest, UpdateLessonRequest, LessonResponse)
+- [ ] Create EnrollmentDTOs
+- [ ] Create PaymentDTOs
+- [ ] Create ReviewDTOs
+- [ ] Create QuizDTOs
+
+#### 4.2 MapStruct Configuration
+
+- [ ] Create mapper interfaces
+- [ ] Configure entity to DTO mappings
+- [ ] Handle complex mappings (JSON fields, relationships)
+- [ ] Add custom mapping methods
+
+### Phase 5: Security & Authentication (Week 3)
+
+#### 5.1 JWT Implementation
+
+- [ ] Create JwtTokenProvider
+- [ ] Implement token generation and validation
+- [ ] Create JwtAuthenticationFilter
+- [ ] Configure token refresh mechanism
+- [ ] Implement token blacklisting
+
+#### 5.2 Spring Security Configuration
+
+- [ ] Configure SecurityConfig
+- [ ] Implement UserDetailsService
+- [ ] Create custom authentication provider
+- [ ] Configure CORS settings
+- [ ] Set up role-based access control (RBAC)
+
+#### 5.3 Password Security
+
+- [ ] Implement BCrypt password encoder
+- [ ] Create password validation rules
+- [ ] Add password change functionality
+- [ ] Implement password reset flow
+
+### Phase 6: Service Layer (Week 3-4)
+
+#### 6.1 User Services
+
+- [ ] Create UserService
+- [ ] Implement user registration
+- [ ] Implement user authentication
+- [ ] Add user profile management
+- [ ] Implement role management
+
+#### 6.2 Course Services
+
+- [ ] Create CourseService
+- [ ] Implement course CRUD operations
+- [ ] Add course approval workflow
+- [ ] Implement course search and filtering
+- [ ] Add course enrollment logic
+
+#### 6.3 Section & Lesson Services
+
+- [ ] Create SectionService
+- [ ] Create LessonService
+- [ ] Implement ordering and reordering
+- [ ] Add content management
+- [ ] Implement progress tracking
+
+#### 6.4 Payment Services
+
+- [ ] Create PaymentService
+- [ ] Create RefundService
+- [ ] Create InstructorEarningService
+- [ ] Implement payment processing
+- [ ] Add revenue calculation logic
+
+#### 6.5 Quiz Services
+
+- [ ] Create QuizService
+- [ ] Implement quiz creation and management
+- [ ] Add quiz scoring logic
+- [ ] Implement result tracking
+
+### Phase 7: Controller Layer (Week 4-5)
+
+#### 7.1 Authentication Controllers
+
+- [ ] Create AuthController
+- [ ] Implement login/logout endpoints
+- [ ] Add registration endpoint
+- [ ] Implement password reset
+- [ ] Add token refresh endpoint
+
+#### 7.2 Student Controllers
+
+- [ ] Create StudentCourseController
+- [ ] Create StudentLessonController
+- [ ] Create StudentPaymentController
+- [ ] Create StudentReviewController
+- [ ] Implement student-specific endpoints
+
+#### 7.3 Instructor Controllers
+
+- [ ] Create InstructorCourseController
+- [ ] Create InstructorSectionController
+- [ ] Create InstructorLessonController
+- [ ] Create InstructorAnalyticsController
+- [ ] Implement instructor-specific endpoints
+
+#### 7.4 Admin Controllers
+
+- [ ] Create AdminUserController
+- [ ] Create AdminCourseController
+- [ ] Create AdminInstructorController
+- [ ] Create AdminRevenueController
+- [ ] Create AdminAnalyticsController
+- [ ] Implement admin-specific endpoints
+
+#### 7.5 Common Controllers
+
+- [ ] Create CategoryController
+- [ ] Create SearchController
+- [ ] Create NotificationController
+
+### Phase 8: Exception Handling & Validation (Week 5)
+
+#### 8.1 Global Exception Handling
+
+- [ ] Create GlobalExceptionHandler
+- [ ] Implement custom exceptions
+- [ ] Add proper error responses
+- [ ] Configure logging for errors
+
+#### 8.2 Input Validation
+
+- [ ] Add validation annotations to DTOs
+- [ ] Create custom validators
+- [ ] Implement business rule validation
+- [ ] Add validation error handling
+
+### Phase 9: File Upload & Content Management (Week 5-6)
+
+#### 9.1 File Upload Service
+
+- [ ] Create FileUploadService
+- [ ] Implement video upload
+- [ ] Add document upload
+- [ ] Configure file storage (local/cloud)
+- [ ] Add file validation and security
+
+#### 9.2 Content Management
+
+- [ ] Create ContentService
+- [ ] Implement content organization
+- [ ] Add content access control
+- [ ] Implement content streaming
+
+### Phase 10: Analytics & Reporting (Week 6)
+
+#### 10.1 Analytics Services
+
+- [ ] Create AnalyticsService
+- [ ] Implement course analytics
+- [ ] Add user analytics
+- [ ] Create revenue analytics
+- [ ] Implement enrollment analytics
+
+#### 10.2 Reporting
+
+- [ ] Create ReportService
+- [ ] Implement data aggregation
+- [ ] Add export functionality
+- [ ] Create dashboard data endpoints
+
+### Phase 11: Testing (Week 6-7)
+
+#### 11.1 Unit Testing
+
+- [ ] Write unit tests for services
+- [ ] Test repository methods
+- [ ] Test utility classes
+- [ ] Add test coverage reporting
+
+#### 11.2 Integration Testing
+
+- [ ] Test API endpoints
+- [ ] Test database operations
+- [ ] Test authentication flow
+- [ ] Test payment processing
+
+#### 11.3 Performance Testing
+
+- [ ] Load testing for critical endpoints
+- [ ] Database performance testing
+- [ ] Memory usage optimization
+- [ ] Response time optimization
+
+### Phase 12: Documentation & Deployment (Week 7)
+
+#### 12.1 API Documentation
+
+- [ ] Configure Swagger/OpenAPI
+- [ ] Add comprehensive API documentation
+- [ ] Create API usage examples
+- [ ] Document error codes and responses
+
+#### 12.2 Deployment Preparation
+
+- [ ] Create Docker configuration
+- [ ] Set up environment configurations
+- [ ] Configure production database
+- [ ] Set up monitoring and logging
+- [ ] Create deployment scripts
+
+### Phase 13: Security Hardening (Week 7-8)
+
+#### 13.1 Security Measures
+
+- [ ] Implement rate limiting
+- [ ] Add input sanitization
+- [ ] Configure HTTPS
+- [ ] Add security headers
+- [ ] Implement audit logging
+
+#### 13.2 Data Protection
+
+- [ ] Implement data encryption
+- [ ] Add GDPR compliance
+- [ ] Create data retention policies
+- [ ] Implement backup strategies
+
+### Phase 14: Performance Optimization (Week 8)
+
+#### 14.1 Caching
+
+- [ ] Implement Redis caching
+- [ ] Add query result caching
+- [ ] Cache frequently accessed data
+- [ ] Implement cache invalidation
+
+#### 14.2 Database Optimization
+
+- [ ] Optimize database queries
+- [ ] Add database indexes
+- [ ] Implement connection pooling
+- [ ] Add query performance monitoring
+
+### Phase 15: Final Testing & Launch (Week 8)
+
+#### 15.1 End-to-End Testing
+
+- [ ] Complete system testing
+- [ ] User acceptance testing
+- [ ] Security penetration testing
+- [ ] Performance stress testing
+
+#### 15.2 Production Deployment
+
+- [ ] Deploy to staging environment
+- [ ] Final testing in staging
+- [ ] Deploy to production
+- [ ] Monitor system health
+- [ ] Create backup and recovery procedures
+
+## Priority Order for Development
+
+### High Priority (Must Have)
+
+1. User authentication and authorization
+2. Basic CRUD operations for courses, sections, lessons
+3. Student enrollment and progress tracking
+4. Payment processing
+5. Basic admin functionality
+
+### Medium Priority (Should Have)
+
+1. Advanced search and filtering
+2. Quiz system
+3. Analytics and reporting
+4. File upload and content management
+5. Advanced admin features
+
+### Low Priority (Nice to Have)
+
+1. Advanced analytics
+2. Performance optimizations
+3. Advanced security features
+4. Mobile API optimizations
+
+## Technology Stack
+
+- **Framework**: Spring Boot 3.x
+- **Database**: MySQL 8.0 / PostgreSQL 14+
+- **ORM**: Spring Data JPA / Hibernate
+- **Security**: Spring Security + JWT
+- **Documentation**: Swagger/OpenAPI 3
+- **Testing**: JUnit 5 + Mockito
+- **Build Tool**: Maven / Gradle
+- **Containerization**: Docker
+- **Caching**: Redis (optional)
+- **File Storage**: Local filesystem / AWS S3
+
+## Estimated Timeline: 8 weeks
+
+- **Development**: 6 weeks
+- [ ] Testing: 1 week
+- [ ] Deployment & Optimization: 1 week
+      description:
+      globs:
+      alwaysApply: false
+
+---
