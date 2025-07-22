@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.dto.LoginUserDto;
 import project.ktc.springboot_app.auth.dto.RegisterUserDto;
+import project.ktc.springboot_app.auth.dto.UserResponseDto;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.entity.RefreshToken;
 import project.ktc.springboot_app.entity.UserRole;
@@ -40,7 +41,6 @@ public class AuthServiceImp implements AuthService {
     @Override
     @Transactional
     public void registerUser(RegisterUserDto registerUserDto) {
-        log.debug("Starting registration process for: {}", registerUserDto != null ? registerUserDto.getEmail() : "null");
 
         if (registerUserDto == null) {
             throw new IllegalArgumentException("Registration data cannot be null");
@@ -55,41 +55,37 @@ public class AuthServiceImp implements AuthService {
             throw new IllegalArgumentException("Name cannot be null or empty");
         }
 
-        log.debug("Checking if email already exists: {}", registerUserDto.getEmail());
         if (userRepository.findByEmail(registerUserDto.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
 
-        log.debug("Creating user with email: {}", registerUserDto.getEmail());
         // Create user with empty roles list
         User user = User.builder()
                 .name(registerUserDto.getName())
                 .email(registerUserDto.getEmail())
                 .password(passwordEncoder.encode(registerUserDto.getPassword()))
-                .roles(new ArrayList<>())  // Explicitly initialize the roles list
+                .roles(new ArrayList<>()) // Explicitly initialize the roles list
                 .build();
 
-        log.debug("Creating role for user");
+        String selectedRole = registerUserDto.getRole().name(); // -> "STUDENT" or "INSTRUCTOR"
+
         // Create role and set the relationship properly
         UserRole role = UserRole.builder()
-                .user(user)  // Set the user reference
-                .role("STUDENT")
+                .user(user) // Set the user reference
+                .role(selectedRole)
                 .build();
-        
-        log.debug("Adding role to user's roles list");
+
         // Add the role to the user's roles list (bidirectional relationship)
         user.getRoles().add(role);
 
-        log.debug("Saving user with role using cascade");
-        // Save user with cascade - this should save both user and role in one transaction
+        // Save user with cascade - this should save both user and role in one
+        // transaction
         User savedUser = userRepository.save(user);
-        
-        log.debug("Registration completed successfully for: {} with ID: {}", registerUserDto.getEmail(), savedUser.getId());
     }
 
     @Override
     @Transactional
-    public Map<String, String> loginUser(LoginUserDto dto) {
+    public Map<String, Object> loginUser(LoginUserDto dto) {
         if (dto == null) {
             throw new IllegalArgumentException("Login data cannot be null");
         }
@@ -120,6 +116,10 @@ public class AuthServiceImp implements AuthService {
                 .build();
         refreshTokenRepository.save(refreshToken);
 
-        return Map.of("accessToken", accessToken, "refreshToken", refreshTokenStr);
+        UserResponseDto userResponseDto = new UserResponseDto(user);
+        return Map.of(
+                "accessToken", accessToken,
+                "refreshToken", refreshTokenStr,
+                "user", userResponseDto);
     }
 }

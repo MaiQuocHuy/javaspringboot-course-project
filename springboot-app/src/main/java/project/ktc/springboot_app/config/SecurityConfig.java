@@ -12,40 +12,43 @@ import project.ktc.springboot_app.security.JwtAuthenticationFilter;
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final AuthenticationProvider authenticationProvider;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final AuthenticationProvider authenticationProvider;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-            AuthenticationProvider authenticationProvider) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.authenticationProvider = authenticationProvider;
-    }
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/api/users/**",
-                                "/api-docs/**",
-                                "/swagger-ui.html",
-                                "/swagger-ui/**",
-                                "/swagger-resources/**",
-                                "/webjars/**",
-                                "/error",
-                                "/v3/api-docs/**")
-                        .permitAll()
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                        AuthenticationProvider authenticationProvider) {
+                this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+                this.authenticationProvider = authenticationProvider;
+        }
 
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/instructor/**").hasAnyAuthority("INSTRUCTOR")
-                        .requestMatchers("/api/student/**").hasAnyAuthority("STUDENT")
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                return http
+                                .csrf(csrf -> csrf.disable())
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/api/auth/**",
+                                                                "/api/users/**",
+                                                                "/api/upload/**", // Upload endpoints are now public
+                                                                "/api-docs/**",
+                                                                "/swagger-ui.html",
+                                                                "/swagger-ui/**",
+                                                                "/swagger-resources/**",
+                                                                "/webjars/**",
+                                                                "/error",
+                                                                "/v3/api-docs/**")
+                                                .permitAll()
 
-                        .anyRequest().authenticated())
-                .sessionManagement(sess ->
-                sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
-    }
+                                                .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                                                .requestMatchers("/api/instructor/**").hasAnyAuthority("INSTRUCTOR")
+                                                .requestMatchers("/api/student/**").hasAnyAuthority("STUDENT")
+                                                .requestMatchers("/api/upload/**")
+                                                .hasAnyAuthority("STUDENT", "INSTRUCTOR", "ADMIN") // Secured
+
+                                                .anyRequest().authenticated())
+                                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authenticationProvider(authenticationProvider)
+                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                                .build();
+        }
 }

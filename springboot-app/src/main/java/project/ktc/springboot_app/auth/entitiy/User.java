@@ -47,7 +47,7 @@ public class User extends BaseEntity implements UserDetails {
     @Builder.Default
     private Boolean isActive = true;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<UserRole> roles = new ArrayList<>();
 
@@ -81,9 +81,18 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getRole()))
-                .collect(Collectors.toList());
+        try {
+            if (roles != null && !roles.isEmpty()) {
+                return roles.stream()
+                        .map(role -> new SimpleGrantedAuthority(role.getRole()))
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            // Log the exception if needed
+            System.err.println("Error loading user authorities: " + e.getMessage());
+        }
+        // Return empty list if roles cannot be loaded
+        return new ArrayList<>();
     }
 
     @Override

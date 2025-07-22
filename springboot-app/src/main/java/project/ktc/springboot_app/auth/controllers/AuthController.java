@@ -4,22 +4,25 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import project.ktc.springboot_app.auth.dto.LoginUserDto;
 import project.ktc.springboot_app.auth.dto.RegisterUserDto;
 import project.ktc.springboot_app.auth.services.AuthServiceImp;
+import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication API", description = "Endpoints for user registration and login")
+@Validated
 public class AuthController {
 
     private final AuthServiceImp authService;
@@ -34,13 +37,10 @@ public class AuthController {
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input or email already exists")
     })
-    public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterUserDto dto) {
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> register(
+            @Valid @RequestBody RegisterUserDto dto) {
         authService.registerUser(dto);
-        Map<String, Object> response = new java.util.HashMap<>();
-        response.put("statusCode", 201);
-        response.put("message", "User registered successfully");
-        response.put("data", null);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ApiResponseUtil.created("User registered successfully");
     }
 
     @PostMapping("/login")
@@ -49,8 +49,9 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Login successful"),
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginUserDto dto) {
-        Map<String, String> tokens = authService.loginUser(dto);
-        return ResponseEntity.ok(Map.of("statusCode", 200, "message", "Login successful", "data", tokens));
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, Object>>> login(
+            @Valid @RequestBody LoginUserDto dto) {
+        Map<String, Object> tokens = authService.loginUser(dto);
+        return ApiResponseUtil.success(tokens, "Login successful");
     }
 }
