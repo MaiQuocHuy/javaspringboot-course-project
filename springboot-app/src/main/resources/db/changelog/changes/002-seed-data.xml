@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for USER table -->
+    <changeSet id="19" author="ktc">
+        <insert tableName="USER">
+            <column name="id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="name" value="Alice Nguyen"/>
+            <column name="email" value="alice@example.com"/>
+            <column name="password" value="hashedpassword1"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="USER">
+            <column name="id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="name" value="Bob Tran"/>
+            <column name="email" value="bob@example.com"/>
+            <column name="password" value="hashedpassword2"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for USER_ROLE table -->
+    <changeSet id="20" author="ktc">
+        <insert tableName="USER_ROLE">
+            <column name="id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="user_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="role" value="ADMIN"/>
+        </insert>
+        <insert tableName="USER_ROLE">
+            <column name="id" value="44444444-4444-4444-4444-444444444444"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="role" value="STUDENT"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for CATEGORY table -->
+    <changeSet id="21" author="ktc">
+        <insert tableName="CATEGORY">
+            <column name="id" value="55555555-5555-5555-5555-555555555555"/>
+            <column name="name" value="Programming"/>
+        </insert>
+        <insert tableName="CATEGORY">
+            <column name="id" value="66666666-6666-6666-6666-666666666666"/>
+            <column name="name" value="Design"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for COURSE table -->
+    <changeSet id="22" author="ktc">
+        <insert tableName="COURSE">
+            <column name="id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="title" value="Java Basics"/>
+            <column name="description" value="Learn Java from scratch."/>
+            <column name="instructor_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="price" valueNumeric="99.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="is_deleted" valueBoolean="false"/>
+        </insert>
+        <insert tableName="COURSE">
+            <column name="id" value="88888888-8888-8888-8888-888888888888"/>
+            <column name="title" value="UI/UX Design"/>
+            <column name="description" value="Introduction to UI/UX."/>
+            <column name="instructor_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="price" valueNumeric="49.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="is_deleted" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for COURSE_CATEGORY table -->
+    <changeSet id="23" author="ktc">
+        <insert tableName="COURSE_CATEGORY">
+            <column name="course_id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="category_id" value="55555555-5555-5555-5555-555555555555"/>
+        </insert>
+        <insert tableName="COURSE_CATEGORY">
+            <column name="course_id" value="88888888-8888-8888-8888-888888888888"/>
+            <column name="category_id" value="66666666-6666-6666-6666-666666666666"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for SECTION table -->
+    <changeSet id="24" author="ktc">
+        <insert tableName="SECTION">
+            <column name="id" value="99999999-9999-9999-9999-999999999999"/>
+            <column name="course_id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="title" value="Introduction"/>
+            <column name="order_index" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for VIDEO_CONTENT table -->
+    <changeSet id="25" author="ktc">
+        <insert tableName="VIDEO_CONTENT">
+            <column name="id" value="aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaaa"/>
+            <column name="url" value="https://example.com/java-intro.mp4"/>
+            <column name="duration" valueNumeric="600"/>
+            <column name="uploaded_by" value="11111111-1111-1111-1111-111111111111"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for LESSON table -->
+    <changeSet id="26" author="ktc">
+        <insert tableName="LESSON">
+            <column name="id" value="bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbbb"/>
+            <column name="section_id" value="99999999-9999-9999-9999-999999999999"/>
+            <column name="title" value="Java Overview"/>
+            <column name="type" value="VIDEO"/>
+            <column name="content_id" value="aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaaa"/>
+            <column name="order_index" valueNumeric="0"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for ENROLLMENT table -->
+    <changeSet id="27" author="ktc">
+        <insert tableName="ENROLLMENT">
+            <column name="id" value="ccccccc3-cccc-cccc-cccc-cccccccccccc"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for LESSON_COMPLETION table -->
+    <changeSet id="28" author="ktc">
+        <insert tableName="LESSON_COMPLETION">
+            <column name="id" value="ddddddd4-dddd-dddd-dddd-dddddddddddd"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="lesson_id" value="bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbbb"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for REVIEW table -->
+    <changeSet id="29" author="ktc">
+        <insert tableName="REVIEW">
+            <column name="id" value="eeeeeee5-eeee-eeee-eeee-eeeeeeeeeeee"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="rating" valueNumeric="5"/>
+            <column name="review_text" value="Great course!"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for PAYMENT table -->
+    <changeSet id="30" author="ktc">
+        <insert tableName="PAYMENT">
+            <column name="id" value="fffffff6-ffff-ffff-ffff-ffffffffffff"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="amount" valueNumeric="99.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="VISA"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for REFUND table -->
+    <changeSet id="31" author="ktc">
+        <insert tableName="REFUND">
+            <column name="id" value="11111111-aaaa-bbbb-cccc-222222222222"/>
+            <column name="payment_id" value="fffffff6-ffff-ffff-ffff-ffffffffffff"/>
+            <column name="amount" valueNumeric="99.99"/>
+            <column name="status" value="COMPLETED"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for INSTRUCTOR_EARNING table -->
+    <changeSet id="32" author="ktc">
+        <insert tableName="INSTRUCTOR_EARNING">
+            <column name="id" value="22222222-bbbb-cccc-dddd-333333333333"/>
+            <column name="instructor_id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="payment_id" value="fffffff6-ffff-ffff-ffff-ffffffffffff"/>
+            <column name="course_id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="amount" valueNumeric="99.99"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for INSTRUCTOR_APPLICATION table -->
+    <changeSet id="33" author="ktc">
+        <insert tableName="INSTRUCTOR_APPLICATION">
+            <column name="id" value="33333333-cccc-dddd-eeee-444444444444"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="status" value="PENDING"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for QUIZ_QUESTION table -->
+    <changeSet id="34" author="ktc">
+        <insert tableName="QUIZ_QUESTION">
+            <column name="id" value="44444444-dddd-eeee-ffff-555555555555"/>
+            <column name="lesson_id" value="bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbbb"/>
+            <column name="question_text" value="What is Java?"/>
+            <column name="options" value="[&quot;A programming language&quot;,&quot;A drink&quot;,&quot;A city&quot;,&quot;A car&quot;]"/>
+            <column name="correct_answer" value="A programming language"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed data for QUIZ_RESULT table -->
+    <changeSet id="35" author="ktc">
+        <insert tableName="QUIZ_RESULT">
+            <column name="id" value="55555555-eeee-ffff-aaaa-666666666666"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="lesson_id" value="bbbbbbb2-bbbb-bbbb-bbbb-bbbbbbbbbbbb"/>
+            <column name="score" valueNumeric="100.00"/>
+            <column name="answers" value="{&quot;1&quot;:&quot;A programming language&quot;}"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

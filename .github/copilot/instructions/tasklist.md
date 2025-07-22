@@ -1,0 +1,760 @@
+# KTC Learning Platform - Backend Task List
+
+This document breaks down the development tasks for each API endpoint in the backend system.
+
+---
+
+## Standard API Response Format
+
+All API responses will follow a standardized format for consistency and ease of use on the frontend.
+
+### Standard Success Response
+
+For single resource or simple message responses.
+
+```json
+{
+  "statusCode": 200,
+  "message": "string",
+  "data": {}
+}
+```
+
+- `statusCode`: The HTTP status code.
+- `message`: A descriptive message about the result.
+- `data`: The payload of the response. Can be an object or a simple message object like `{"status": "success"}`.
+
+### Standard Paginated Response
+
+For lists of resources that support pagination.
+
+```json
+{
+  "statusCode": 200,
+  "message": "string",
+  "data": {
+    "content": [],
+    "page": 0,
+    "size": 10,
+    "totalPages": 1,
+    "totalElements": 1
+  }
+}
+```
+
+- `data.content`: An array of the resource objects.
+- `data.page`: The current page number.
+- `data.size`: The number of items per page.
+- `data.totalPages`: The total number of pages.
+- `data.totalElements`: The total number of items across all pages.
+
+### Standard Error Response
+
+```json
+{
+  "statusCode": 400,
+  "message": "Error message describing the issue.",
+  "error": "Bad Request"
+}
+```
+
+---
+
+## 1. Authentication & User Management
+
+### 1.1. `POST /api/auth/register`
+
+- **Description:** Registers a new user.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/auth/register`
+  - **Body (`RegisterUserDto`):**
+    ```json
+    {
+      "name": "string",
+      "email": "string",
+      "password": "string"
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "User registered successfully",
+      "data": null
+    }
+    ```
+- **Controller:** Create `AuthController` with a `register` endpoint.
+- **Service:** Implement `AuthService` with a `register` method.
+- Hash the user's password using BCrypt.
+- Create a new `USER` entity and save it to the database.
+- Assign the default `STUDENT` role in the `USER_ROLE` table.
+- **Security:** Publicly accessible endpoint.
+- **Testing:** Write unit tests for the registration service and integration tests for the endpoint.
+
+### 1.2. `POST /api/auth/login`
+
+- **Description:** Authenticates a user and returns JWT tokens.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/auth/login`
+  - **Body (`LoginUserDto`):**
+    ```json
+    {
+      "email": "string",
+      "password": "string"
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Login successful",
+      "data": {
+        "accessToken": "string",
+        "refreshToken": "string"
+      }
+    }
+    ```
+- **Controller:** Add a `login` endpoint to `AuthController`.
+- **Service:** Implement `login` method in `AuthService`.
+- Validate user credentials.
+- Generate a JWT `accessToken` and `refreshToken`.
+- **Security:** Publicly accessible. Use Spring Security for authentication logic.
+- **Testing:** Test valid and invalid login attempts.
+
+### 1.3. `POST /api/auth/refresh`
+
+- **Description:** Refreshes an expired access token using a refresh token.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/auth/refresh`
+  - **Body:**
+    ```json
+    {
+      "refreshToken": "string"
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Token refreshed successfully",
+      "data": {
+        "accessToken": "string"
+      }
+    }
+    ```
+- **Controller:** Add a `refresh` endpoint to `AuthController`.
+- **Service:** Implement `refresh` method in `AuthService`.
+- Validate the `refreshToken`.
+- Issue a new `accessToken`.
+- **Security:** Requires a valid `refreshToken`.
+- **Testing:** Test token refresh success and failure scenarios.
+
+### 1.4. `GET /api/users/profile`
+
+- **Description:** Retrieves the profile of the currently authenticated user.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/users/profile`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Profile retrieved successfully",
+      "data": {
+        "id": "string",
+        "name": "string",
+        "email": "string",
+        "roles": ["STUDENT"]
+      }
+    }
+    ```
+- **Controller:** Create `UserController` with a `getProfile` endpoint.
+- **Service:** Implement `getProfile` in `UserService` to retrieve the current user's data from the security context.
+- **Security:** Protected endpoint, accessible by any authenticated user.
+- **Testing:** Test that the correct user profile is returned.
+
+### 1.5. `PUT /api/users/profile`
+
+- **Description:** Updates the profile of the currently authenticated user.
+- **Request:**
+  - **Method:** `PUT`
+  - **Path:** `/api/users/profile`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`UpdateUserDto`):**
+    ```json
+    {
+      "name": "string"
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Profile updated successfully",
+      "data": {
+        "id": "string",
+        "name": "string",
+        "email": "string"
+      }
+    }
+    ```
+- **Controller:** Add an `updateProfile` endpoint to `UserController`.
+- **Service:** Implement `updateProfile` in `UserService`.
+- **Security:** Protected endpoint, accessible by any authenticated user.
+- **Testing:** Test profile updates with valid and invalid data.
+
+### 1.6. `POST /api/auth/forgot-password`
+
+- **Description:** Initiates the password reset process for a user.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/auth/forgot-password`
+  - **Body:**
+    ```json
+    {
+      "email": "string"
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Password reset link has been sent to your email.",
+      "data": null
+    }
+    ```
+- **Controller:** Add a `forgotPassword` endpoint to `AuthController`.
+- **Service:** Implement `forgotPassword` in `AuthService`.
+  - Generate a secure, time-limited password reset token.
+  - Store the token associated with the user.
+  - Send an email to the user with the reset link.
+- **Security:** Publicly accessible.
+- **Testing:** Test with existing and non-existing email addresses.
+
+### 1.7. `POST /api/auth/reset-password`
+
+- **Description:** Resets a user's password using a valid token.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/auth/reset-password`
+  - **Body:**
+    ```json
+    {
+      "token": "string",
+      "newPassword": "string"
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Password has been reset successfully.",
+      "data": null
+    }
+    ```
+- **Controller:** Add a `resetPassword` endpoint to `AuthController`.
+- **Service:** Implement `resetPassword` in `AuthService`.
+  - Validate the reset token.
+  - Hash the new password and update the user's record.
+  - Invalidate the reset token.
+- **Security:** Publicly accessible.
+- **Testing:** Test with valid, invalid, and expired tokens.
+
+### 1.8. Social Login Integration (OAuth 2.0)
+
+- **Description:** Configure social login providers like Google and GitHub.
+- **Task:**
+  - Add Spring Security OAuth2 Client dependency.
+  - Configure `application.properties` or `application.yml` with client IDs and secrets for each provider.
+  - Create a custom `OAuth2UserService` to handle user creation or linking upon successful social login.
+  - Implement a success handler (`AuthenticationSuccessHandler`) to issue application-specific JWTs after a successful OAuth2 login.
+- **Security:** Involves redirect flows to external providers.
+- **Testing:** Test the full login flow for each configured social provider.
+
+### 1.9. Brute-Force Protection
+
+- **Description:** Implement a mechanism to prevent login brute-force attacks.
+- **Task:**
+  - Choose a caching mechanism (e.g., Caffeine for in-memory, Redis for distributed).
+  - Create a service (`LoginAttemptService`) to track failed login attempts per IP or username.
+  - Implement an `AuthenticationFailureHandler` in Spring Security.
+  - On login failure, record the attempt in the service.
+  - Before processing a login, check if the user/IP is currently blocked.
+- **Security:** Core security enhancement.
+- **Testing:** Write tests to ensure users are locked out after exceeding the attempt limit and that the lock expires correctly.
+
+---
+
+## 2. Course & Content (Public)
+
+### 2.1. `GET /api/courses`
+
+- **Description:** Retrieves a paginated list of all published courses.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/courses`
+  - **Query Params:** `page` (number, optional), `size` (number, optional), `categoryId` (string, optional)
+- **Response:**
+  - **Success (200 OK):** (Standard Paginated Response)
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Courses retrieved successfully",
+      "data": {
+        "content": [
+          {
+            "id": "string",
+            "title": "string",
+            "price": 0,
+            "instructorName": "string"
+          }
+        ],
+        "page": 0,
+        "size": 10,
+        "totalPages": 1,
+        "totalElements": 1
+      }
+    }
+    ```
+- **Controller:** Create `CourseController` with a `findAllPublic` endpoint.
+- **Service:** Implement `findAllPublic` in `CourseService` to fetch all published, non-deleted courses.
+- **Repository:** Create a custom query in `CourseRepository`.
+- **Security:** Publicly accessible.
+- **Testing:** Test pagination and filtering.
+
+### 2.2. `GET /api/courses/:id`
+
+- **Description:** Retrieves the details of a single published course.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/courses/:id`
+  - **Path Params:** `id` (string)
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course details retrieved successfully",
+      "data": {
+        "id": "string",
+        "title": "string",
+        "description": "string",
+        "price": 0,
+        "instructor": { "id": "string", "name": "string" },
+        "sections": [
+          {
+            "id": "string",
+            "title": "string",
+            "lessons": [{ "id": "string", "title": "string", "type": "VIDEO" }]
+          }
+        ]
+      }
+    }
+    ```
+- **Controller:** Add a `findOnePublic` endpoint to `CourseController`.
+- **Service:** Implement `findOnePublic` to fetch a single published course by its ID.
+- **Security:** Publicly accessible.
+- **Testing:** Test for existing and non-existing courses.
+
+### 2.3. `GET /api/categories`
+
+- **Description:** Retrieves a list of all course categories.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/categories`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Categories retrieved successfully",
+      "data": [
+        {
+          "id": "string",
+          "name": "string"
+        }
+      ]
+    }
+    ```
+- **Controller:** Create `CategoryController` with a `findAll` endpoint.
+- **Service:** Implement `findAll` in `CategoryService`.
+- **Security:** Publicly accessible.
+- **Testing:** Test that all categories are returned.
+
+---
+
+## 3. Student Role
+
+### 3.1. `POST /api/courses/:id/enroll`
+
+- **Description:** Enrolls the current user in a course.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/courses/:id/enroll`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Successfully enrolled in the course",
+      "data": null
+    }
+    ```
+- **Controller:** Create `EnrollmentController` with an `enroll` endpoint.
+- **Service:** Implement `enroll` in `EnrollmentService`.
+- Check if the user is already enrolled.
+- Handle payment logic (integration with `PaymentService`).
+- Create an `ENROLLMENT` record.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test enrollment in free and paid courses.
+
+### 3.2. `GET /api/enrollments/my-courses`
+
+- **Description:** Retrieves all courses the current user is enrolled in.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/enrollments/my-courses`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Enrolled courses retrieved successfully",
+      "data": [
+        {
+          "courseId": "string",
+          "title": "string",
+          "completionStatus": "IN_PROGRESS"
+        }
+      ]
+    }
+    ```
+- **Controller:** Add a `getMyCourses` endpoint to `EnrollmentController`.
+- **Service:** Implement `getMyCourses` to fetch all courses the current user is enrolled in.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test for a user with and without enrollments.
+
+### 3.3. `POST /api/lessons/:id/complete`
+
+- **Description:** Marks a lesson as completed for the current user.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/lessons/:id/complete`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Lesson marked as complete",
+      "data": null
+    }
+    ```
+- **Controller:** Create `LessonCompletionController` with a `completeLesson` endpoint.
+- **Service:** Implement `completeLesson` in `LessonCompletionService`.
+- Verify that the user is enrolled in the course.
+- Create a `LESSON_COMPLETION` record.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test marking a lesson as complete.
+
+### 3.4. `POST /api/courses/:id/reviews`
+
+- **Description:** Submits a review for a course.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/courses/:id/reviews`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`CreateReviewDto`):**
+    ```json
+    {
+      "rating": 5,
+      "review_text": "string"
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Review submitted successfully",
+      "data": {
+        "id": "string",
+        "rating": 5,
+        "review_text": "string"
+      }
+    }
+    ```
+- **Controller:** Create `ReviewController` with a `createReview` endpoint.
+- **Service:** Implement `createReview` in `ReviewService`.
+- Verify the user is enrolled and has not already reviewed the course.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test creating and failing to create a review.
+
+---
+
+## 4. Instructor Role
+
+### 4.1. `POST /api/instructor/courses`
+
+- **Description:** Creates a new course.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/instructor/courses`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`CreateCourseDto`):**
+    ```json
+    {
+      "title": "string",
+      "description": "string",
+      "price": 0,
+      "categoryId": "string"
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Course created successfully",
+      "data": {
+        "id": "string",
+        "title": "string"
+      }
+    }
+    ```
+- **Controller:** Create `InstructorCourseController` with a `createCourse` endpoint.
+- **Service:** Implement `createCourse` in `CourseService`, associating the course with the current instructor.
+- **Security:** Requires `INSTRUCTOR` role.
+- **Testing:** Test course creation.
+
+### 4.2. `PUT /api/instructor/courses/:id`
+
+- **Description:** Updates a course owned by the instructor.
+- **Request:**
+  - **Method:** `PUT`
+  - **Path:** `/api/instructor/courses/:id`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`UpdateCourseDto`):**
+    ```json
+    {
+      "title": "string",
+      "description": "string",
+      "price": 0
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course updated successfully",
+      "data": {
+        "id": "string",
+        "title": "string"
+      }
+    }
+    ```
+- **Controller:** Add an `updateCourse` endpoint.
+- **Service:** Implement `updateCourse`, ensuring the instructor owns the course.
+- **Security:** Requires `INSTRUCTOR` role.
+- **Testing:** Test successful and unauthorized updates.
+
+### 4.3. `POST /api/instructor/courses/:courseId/sections`
+
+- **Description:** Creates a new section in a course.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/instructor/courses/:courseId/sections`
+  - **Path Params:** `courseId` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`CreateSectionDto`):**
+    ```json
+    {
+      "title": "string"
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Section created successfully",
+      "data": {
+        "id": "string",
+        "title": "string"
+      }
+    }
+    ```
+- **Controller:** Create `InstructorSectionController` with a `createSection` endpoint.
+- **Service:** Implement `createSection` in `SectionService`.
+- **Security:** Requires `INSTRUCTOR` role and course ownership.
+- **Testing:** Test section creation.
+
+### 4.4. `POST /api/instructor/sections/:sectionId/lessons`
+
+- **Description:** Creates a new lesson in a section.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/instructor/sections/:sectionId/lessons`
+  - **Path Params:** `sectionId` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`CreateLessonDto`):**
+    ```json
+    {
+      "title": "string",
+      "type": "VIDEO",
+      "contentId": "string"
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Lesson created successfully",
+      "data": {
+        "id": "string",
+        "title": "string"
+      }
+    }
+    ```
+- **Controller:** Create `InstructorLessonController` with a `createLesson` endpoint.
+- **Service:** Implement `createLesson` in `LessonService`.
+- **Security:** Requires `INSTRUCTOR` role and section ownership.
+- **Testing:** Test lesson creation.
+
+---
+
+## 5. Admin Role
+
+### 5.1. `GET /api/admin/users`
+
+- **Description:** Retrieves a paginated list of all users.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/admin/users`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):** (Standard Paginated Response)
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Users retrieved successfully",
+      "data": {
+        "content": [],
+        "page": 0,
+        "size": 10,
+        "totalPages": 1,
+        "totalElements": 1
+      }
+    }
+    ```
+- **Controller:** Create `AdminUserController` with a `findAllUsers` endpoint.
+- **Service:** Implement `findAllUsers` in `UserService`.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Test user listing with pagination.
+
+### 5.2. `GET /api/admin/courses/pending`
+
+- **Description:** Retrieves all courses pending approval.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/admin/courses/pending`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Pending courses retrieved successfully",
+      "data": []
+    }
+    ```
+- **Controller:** Create `AdminCourseController` with a `findPendingCourses` endpoint.
+- **Service:** Implement `findPendingCourses` to fetch courses where `is_approved` is false.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Test retrieval of pending courses.
+
+### 5.3. `POST /api/admin/courses/:id/approve`
+
+- **Description:** Approves a pending course.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/admin/courses/:id/approve`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course approved successfully",
+      "data": null
+    }
+    ```
+- **Controller:** Add an `approveCourse` endpoint.
+- **Service:** Implement `approveCourse` to set `is_approved` to true.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Test course approval.
+
+### 5.4. `GET /api/admin/instructors/applications`
+
+- **Description:** Retrieves all instructor applications.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/admin/instructors/applications`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Instructor applications retrieved successfully",
+      "data": []
+    }
+    ```
+- **Controller:** Create `AdminInstructorApplicationController` with a `findAllApplications` endpoint.
+- **Service:** Implement `findAllApplications` in `InstructorApplicationService`.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Test retrieval of applications.
+
+### 5.5. `POST /api/admin/instructors/applications/:id/approve`
+
+- **Description:** Approves an instructor application.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/admin/instructors/applications/:id/approve`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Instructor application approved",
+      "data": null
+    }
+    ```
+- **Controller:** Add an `approveApplication` endpoint.
+- **Service:** Implement `approveApplication`.
+- Update the application status to `APPROVED`.
+- Assign the `INSTRUCTOR` role to the user in the `USER_ROLE` table.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Test the full application approval flow.
