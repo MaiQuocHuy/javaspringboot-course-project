@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.dto;
+package project.ktc.springboot_app.auth.dto;
 
 import lombok.Data;
 

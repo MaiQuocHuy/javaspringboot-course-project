@@ -3,6 +3,8 @@ package project.ktc.springboot_app.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import project.ktc.springboot_app.auth.entitiy.User;
+
 import java.time.LocalDateTime;
 
 @Entity

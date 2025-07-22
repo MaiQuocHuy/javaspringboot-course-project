@@ -1,19 +1,17 @@
-package project.ktc.springboot_app.service;
+package project.ktc.springboot_app.auth.services;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
-import project.ktc.springboot_app.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import project.ktc.springboot_app.auth.repositories.UserRepository;
 
 @Service
+@RequiredArgsConstructor
 public class CustomUserDetailService implements UserDetailsService {
     private final UserRepository userRepository;
-
-    public CustomUserDetailService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

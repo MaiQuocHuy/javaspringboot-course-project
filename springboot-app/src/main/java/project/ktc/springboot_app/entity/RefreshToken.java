@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import project.ktc.springboot_app.auth.entitiy.User;
 
 import java.time.LocalDateTime;
 

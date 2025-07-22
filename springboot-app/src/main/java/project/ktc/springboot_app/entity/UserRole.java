@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import project.ktc.springboot_app.auth.entitiy.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
