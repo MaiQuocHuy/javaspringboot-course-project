@@ -8,7 +8,16 @@
       "mainClass": "project.ktc.springboot_app.SpringbootAppApplication",
       "projectName": "springboot-app",
       "args": "",
-      "envFile": "${workspaceFolder}/.env"
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "DB_URL": "jdbc:mysql://localhost:3306/ktc_learning",
+        "DB_USERNAME": "root",
+        "DB_PASSWORD": "123456789",
+        "PORT": "8080",
+        "JWT_SECRET": "123456789",
+        "JWT_EXPIRATION": "3600000", // 1 hour
+        "REFRESH_EXPIRATION_DAYS": "1209600000" // 30 days
+      }
     }
   ]
 }
