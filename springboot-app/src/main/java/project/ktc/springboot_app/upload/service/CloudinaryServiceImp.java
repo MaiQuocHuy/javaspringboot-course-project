@@ -9,9 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.exception.ImageUploadException;
 import project.ktc.springboot_app.upload.exception.InvalidImageFormatException;
+import project.ktc.springboot_app.upload.interfaces.CloudinaryService;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,16 +21,9 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CloudinaryServiceImp {
+public class CloudinaryServiceImp implements CloudinaryService {
 
     private final Cloudinary cloudinary;
-
-    // Allowed image formats
-    private static final List<String> ALLOWED_FORMATS = List.of(
-            "image/jpeg", "image/jpg", "image/png", "image/gif", "image/bmp", "image/webp");
-
-    // Maximum file size (10MB)
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
     /**
      * Upload image file to Cloudinary
@@ -40,11 +33,9 @@ public class CloudinaryServiceImp {
      * @throws ImageUploadException        if upload fails
      * @throws InvalidImageFormatException if file format is not supported
      */
+    @Override
     public ImageUploadResponseDto uploadImage(MultipartFile file) {
         log.info("Starting image upload for file: {}", file.getOriginalFilename());
-
-        // Validate file
-        validateFile(file);
 
         try {
             // Generate unique public ID
@@ -85,6 +76,7 @@ public class CloudinaryServiceImp {
      * @param publicId The public ID of the image to delete
      * @return true if deletion was successful
      */
+
     public boolean deleteImage(String publicId) {
         log.info("Deleting image with public ID: {}", publicId);
 
@@ -110,30 +102,7 @@ public class CloudinaryServiceImp {
 
     /**
      * Validate uploaded file
-     */
-    private void validateFile(MultipartFile file) {
-        // Check if file is empty
-        if (file.isEmpty()) {
-            throw new InvalidImageFormatException("File is empty");
-        }
-
-        // Check file size
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new InvalidImageFormatException(
-                    String.format("File size exceeds maximum allowed size of %d MB", MAX_FILE_SIZE / (1024 * 1024)));
-        }
-
-        // Check content type
-        String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_FORMATS.contains(contentType.toLowerCase())) {
-            throw new InvalidImageFormatException(
-                    "Invalid file format. Allowed formats: " + String.join(", ", ALLOWED_FORMATS));
-        }
-
-        log.debug("File validation passed for: {} ({})", file.getOriginalFilename(), contentType);
-    }
-
-    /**
+     * /**
      * Generate unique public ID for the uploaded file
      */
     private String generatePublicId(String originalFilename) {

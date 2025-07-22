@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.auth.repositories;
+package project.ktc.springboot_app.user.repositories;
 
 import java.util.Optional;
 
