@@ -6,7 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import project.ktc.springboot_app.auth.repositories.UserRepository;
+import project.ktc.springboot_app.user.repositories.UserRepository;
 
 @Service
 @RequiredArgsConstructor

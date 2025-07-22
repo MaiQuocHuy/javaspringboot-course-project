@@ -8,5 +8,6 @@ import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 
 public interface CloudinaryService {
     ImageUploadResponseDto uploadImage(MultipartFile file) throws IOException;
-    
-} 
+
+    boolean deleteImage(String publicId) throws IOException;
+}

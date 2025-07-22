@@ -28,20 +28,24 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(
                                                                 "/api/auth/**",
-                                                                "/api/users/**",
-                                                                "/api/upload/**", // Upload endpoints are now public
                                                                 "/api-docs/**",
                                                                 "/swagger-ui.html",
                                                                 "/swagger-ui/**",
+                                                                "/swagger-ui/index.html",
                                                                 "/swagger-resources/**",
                                                                 "/webjars/**",
-                                                                "/error",
-                                                                "/v3/api-docs/**")
+                                                                "/v3/api-docs/**",
+                                                                "/v3/api-docs.yaml",
+                                                                "/swagger-config/**",
+                                                                "/error")
                                                 .permitAll()
 
                                                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                                                 .requestMatchers("/api/instructor/**").hasAnyAuthority("INSTRUCTOR")
                                                 .requestMatchers("/api/student/**").hasAnyAuthority("STUDENT")
+                                                .requestMatchers("/api/users/profile").authenticated() // Profile
+                                                                                                       // requires
+                                                                                                       // authentication
                                                 .requestMatchers("/api/upload/**")
                                                 .hasAnyAuthority("STUDENT", "INSTRUCTOR", "ADMIN") // Secured
 
