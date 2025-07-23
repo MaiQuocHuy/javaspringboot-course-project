@@ -254,7 +254,7 @@ For lists of resources that support pagination.
   - **Body:**
     ```json
     {
-      "token": "string",
+      "oldPassword": "string",
       "newPassword": "string"
     }
     ```
@@ -298,6 +298,21 @@ For lists of resources that support pagination.
 - **Security:** Core security enhancement.
 - **Testing:** Write tests to ensure users are locked out after exceeding the attempt limit and that the lock expires correctly.
 
+### 1.10. Manage Users
+
+- **Description:** Admin functionality to manage users.
+- **Endpoints:**
+  - `GET /api/admin/users` - List all users.
+  - `GET /api/admin/users/{id}` - Get user details by ID.
+  - `PUT /api/admin/users/{id}/role` - Update user roles.
+  - `PUT /api/admin/users/{id}/status` - Update user status (ACTIVE, INACTIVE).
+- **Task:**
+  - Create an `UserController` with endpoints to list, update, and delete users.
+  - Implement methods in `UserService` for admin operations.
+  - Use role-based access control to restrict these endpoints to users with the `ADMIN` role.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Write tests for user management operations, ensuring only admins can access them.
+
 ---
 
 ## 2. Course & Content (Public)
@@ -308,9 +323,11 @@ For lists of resources that support pagination.
 - **Request:**
   - **Method:** `GET`
   - **Path:** `/api/courses`
-  - **Query Params:** `page` (number, optional), `size` (number, optional), `categoryId` (string, optional)
+  - **Query Params:** `page` (number, optional), `size` (number, optional), `categoryId` (string, optional), `search` (string, optional), price range filters (optional), level , `sort` (string, optional)
 - **Response:**
+
   - **Success (200 OK):** (Standard Paginated Response)
+
     ```json
     {
       "statusCode": 200,
@@ -318,19 +335,30 @@ For lists of resources that support pagination.
       "data": {
         "content": [
           {
-            "id": "string",
-            "title": "string",
-            "price": 0,
-            "instructorName": "string"
+            "id": "course-id",
+            "title": "Mastering Java Spring Boot",
+            "price": 29.99,
+            "level": "INTERMEDIATE",
+            "thumbnailUrl": "https://res.cloudinary.com/.../java-spring.jpg",
+            "category": {
+              "id": "category-id",
+              "name": "Programming"
+            },
+            "instructor": {
+              "id": "instructor-id",
+              "name": "John Doe",
+              "avatar": "https://res.cloudinary.com/.../avatar.jpg"
+            }
           }
         ],
         "page": 0,
         "size": 10,
-        "totalPages": 1,
-        "totalElements": 1
+        "totalPages": 5,
+        "totalElements": 42
       }
     }
     ```
+
 - **Controller:** Create `CourseController` with a `findAllPublic` endpoint.
 - **Service:** Implement `findAllPublic` in `CourseService` to fetch all published, non-deleted courses.
 - **Repository:** Create a custom query in `CourseRepository`.
@@ -345,27 +373,50 @@ For lists of resources that support pagination.
   - **Path:** `/api/courses/:id`
   - **Path Params:** `id` (string)
 - **Response:**
-  - **Success (200 OK):**
+
+
     ```json
     {
       "statusCode": 200,
       "message": "Course details retrieved successfully",
       "data": {
-        "id": "string",
-        "title": "string",
-        "description": "string",
-        "price": 0,
-        "instructor": { "id": "string", "name": "string" },
+        "id": "course-id",
+        "slug": "mastering-java-spring-boot",
+        "title": "Mastering Java Spring Boot",
+        "description": "Learn how to build robust applications with Java Spring Boot.",
+        "price": 29.99,
+        "level": "INTERMEDIATE",
+        "thumbnailUrl": "https://res.cloudinary.com/.../course-thumbnail.jpg",
+        "lessonCount": 12,
+        "sampleVideoUrl": "https://res.cloudinary.com/.../sample.mp4", // optional
+        "isEnrolled": false, // true if authenticated and enrolled
+        "instructor": {
+          "id": "instructor-id",
+          "name": "John Doe"
+        },
         "sections": [
           {
-            "id": "string",
-            "title": "string",
-            "lessons": [{ "id": "string", "title": "string", "type": "VIDEO" }]
+            "id": "section-id",
+            "title": "Introduction to Spring Boot",
+            "lessons": [
+              {
+                "id": "lesson-id-1",
+                "title": "Getting Started with Spring Boot",
+                "type": "VIDEO"
+              },
+              {
+                "id": "lesson-id-2",
+                "title": "Spring Boot Configuration",
+                "type": "VIDEO"
+              }
+            ]
           }
         ]
       }
     }
+
     ```
+
 - **Controller:** Add a `findOnePublic` endpoint to `CourseController`.
 - **Service:** Implement `findOnePublic` to fetch a single published course by its ID.
 - **Security:** Publicly accessible.

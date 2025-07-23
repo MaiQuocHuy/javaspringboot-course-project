@@ -2,7 +2,10 @@ package project.ktc.springboot_app.auth.services;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,7 @@ import project.ktc.springboot_app.entity.UserRole;
 import project.ktc.springboot_app.refresh_token.repositories.RefreshTokenRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.JwtTokenProvider;
+import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 
@@ -26,6 +30,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import project.ktc.springboot_app.auth.interfaces.AuthService;
 
@@ -116,38 +121,50 @@ public class AuthServiceImp implements AuthService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
 
-            User user = userRepository.findByEmail(dto.getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            String accessToken = jwtTokenProvider.generateAccessToken(user);
+            Optional<User> user = userRepository.findByEmail(dto.getEmail());
+            if (user.isEmpty()) {
+                return ApiResponseUtil.unauthorized("Invalid email or password");
+            }
+            log.info("User found: {}", user.get().getEmail());
+            User foundUser = user.get();
+            if (!foundUser.getIsActive()) {
+                return ApiResponseUtil.unauthorized("User account is inactive");
+            }
+            String accessToken = jwtTokenProvider.generateAccessToken(foundUser);
 
             // Generate and save refresh token
             String refreshTokenStr = UUID.randomUUID().toString();
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_MONTH, 30);
             RefreshToken refreshToken = RefreshToken.builder()
-                    .user(user)
+                    .user(foundUser)
                     .token(refreshTokenStr)
                     .expiresAt(LocalDateTime.ofInstant(cal.getTime().toInstant(), ZoneId.systemDefault()))
                     .createdAt(LocalDateTime.now())
                     .build();
             refreshTokenRepository.save(refreshToken);
 
-            UserResponseDto userResponseDto = new UserResponseDto(user);
+            UserResponseDto userResponseDto = new UserResponseDto(foundUser);
             Map<String, Object> loginResponse = Map.of(
                     "accessToken", accessToken,
                     "refreshToken", refreshTokenStr,
                     "user", userResponseDto);
 
-            log.info("User logged in successfully: {}", user.getEmail());
+            log.info("User logged in successfully: {}", foundUser.getEmail());
             return ApiResponseUtil.success(loginResponse, "Login successful");
 
-        } catch (org.springframework.security.core.AuthenticationException e) {
-            log.warn("Authentication failed for email: {}", dto.getEmail());
-            return ApiResponseUtil.unauthorized("Invalid email or password");
+        } catch (DisabledException e) {
+            log.warn("Account is blocked: {}", dto.getEmail());
+            return ApiResponseUtil.unauthorized("Your account has been blocked. Please contact the administrator.");
+        } catch (BadCredentialsException e) {
+            log.warn("Invalid email or password: {}", dto.getEmail());
+            return ApiResponseUtil.unauthorized("Email or password is incorrect.");
+        } catch (AuthenticationException e) {
+            log.warn("Unknown authentication error: {}", dto.getEmail(), e);
+            return ApiResponseUtil.unauthorized("Authentication failed.");
         } catch (Exception e) {
-            log.error("Error during login for email: {}", dto.getEmail(), e);
-            return ApiResponseUtil.internalServerError("Login failed. Please try again later.");
+            log.error("System error occurred while logging in user: {}", dto.getEmail(), e);
+            return ApiResponseUtil.internalServerError("An error occurred. Please try again later.");
         }
     }
 
@@ -189,6 +206,49 @@ public class AuthServiceImp implements AuthService {
         } catch (Exception e) {
             log.error("Error during token refresh: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Token refresh failed. Please login again.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Map<String, String>>> resetPassword(String oldPassword, String newPassword) {
+        // Validation checks
+        if (oldPassword == null || oldPassword.trim().isEmpty()) {
+            return ApiResponseUtil.badRequest("Email cannot be null or empty");
+        }
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            return ApiResponseUtil.badRequest("New password cannot be null or empty");
+        }
+
+        if (newPassword.equals(oldPassword)) {
+            return ApiResponseUtil.badRequest("New password cannot be the same as the old password");
+        }
+
+        try {
+
+            String email = SecurityUtil.getCurrentUserEmail();
+            if (email == null) {
+                return ApiResponseUtil.unauthorized("User is not authenticated");
+            }
+
+            Optional<User> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isEmpty()) {
+                return ApiResponseUtil.notFound("User with this email does not exist");
+            }
+
+            User user = userOpt.get();
+            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+                return ApiResponseUtil.unauthorized("Old password is incorrect");
+            }
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+
+            log.info("Password reset successfully for user: {}", email);
+            return ApiResponseUtil.success(Map.of("message", "Password reset successfully"),
+                    "Password reset successful");
+
+        } catch (Exception e) {
+            log.error("Error during password reset: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Password reset failed. Please try again later.");
         }
     }
 }

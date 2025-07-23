@@ -2,6 +2,8 @@ package project.ktc.springboot_app.user.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,13 +18,20 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.auth.enums.UserRoleEnum;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.entity.UserRole;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.service.FileValidationService;
 import project.ktc.springboot_app.user.dto.UpdateUserDto;
+import project.ktc.springboot_app.user.dto.UpdateUserRoleDto;
+import project.ktc.springboot_app.user.dto.UpdateUserStatusDto;
 import project.ktc.springboot_app.user.interfaces.UserService;
 import project.ktc.springboot_app.user.repositories.UserRepository;
+import project.ktc.springboot_app.user_role.repositories.UserRoleRepository;
+import project.ktc.springboot_app.utils.SecurityUtil;
+import java.util.Optional;
 
+import java.lang.classfile.ClassFile.Option;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +43,8 @@ public class UserServiceImp implements UserService {
     private final UserRepository userRepository;
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
+    private final UserRoleRepository userRoleRepository;
+
     private final ObjectMapper objectMapper;
 
     @Override
@@ -177,29 +188,157 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public ResponseEntity<ApiResponse<UserResponseDto>> updateProfileWithJson(String userJson,
-            MultipartFile thumbnailFile) {
+    public ResponseEntity<ApiResponse<List<UserResponseDto>>> getUsers() {
         try {
-            // Parse JSON string to UpdateUserDto
-            UpdateUserDto userDto;
-            try {
-                userDto = objectMapper.readValue(userJson, UpdateUserDto.class);
-            } catch (Exception e) {
-                log.error("Failed to parse user JSON: {}", e.getMessage(), e);
-                return ApiResponseUtil.badRequest("Invalid JSON format for user data: " + e.getMessage());
+            // Get the current authenticated user from security context
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("No authenticated user found in security context");
+                return ApiResponseUtil.unauthorized("User not authenticated");
             }
 
-            // Validate the parsed DTO
-            if (userDto.getName() == null || userDto.getName().trim().isEmpty()) {
-                return ApiResponseUtil.badRequest("Name cannot be null or empty");
+            // Retrieve all users from the repository
+            List<User> users = userRepository.findAll();
+            users.forEach(user -> log.debug("User ID: {}, Email: {}, Roles: {}", user.getId(), user.getEmail(),
+                    user.getRoles()));
+
+            if (users.isEmpty()) {
+                log.info("No users found in the database");
+                return ApiResponseUtil.notFound("No users found");
             }
 
-            // Call the existing method with the parsed DTO
-            return updateProfile(userDto, thumbnailFile);
+            // remove own id from the list
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            if (currentUserId == null) {
+                log.warn("Current user ID is null, cannot filter out own user");
+                return ApiResponseUtil.internalServerError("Failed to retrieve users. Please try again later.");
+            }
+            users.removeIf(user -> user.getId().equals(currentUserId));
+
+            // Convert users to UserResponseDto
+            List<UserResponseDto> userResponseDtos = users.stream()
+                    .map(UserResponseDto::new)
+                    .collect(Collectors.toList());
+
+            return ApiResponseUtil.success(userResponseDtos, "Users retrieved successfully");
 
         } catch (Exception e) {
-            log.error("Error in updateProfileWithJson: {}", e.getMessage(), e);
-            return ApiResponseUtil.internalServerError("Failed to update profile. Please try again later.");
+            log.error("Error retrieving users: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve users. Please try again later.");
         }
     }
+
+    @Override
+    public ResponseEntity<ApiResponse<UserResponseDto>> getUserById(String id) {
+        try {
+            // Get the current authenticated user from security context
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("No authenticated user found in security context");
+                return ApiResponseUtil.unauthorized("User not authenticated");
+            }
+
+            // Find the user by ID
+            User user = userRepository.findById(id).orElse(null);
+
+            if (user == null) {
+                log.warn("User not found with ID: {}", id);
+                return ApiResponseUtil.notFound("User not found");
+            }
+
+            // Create response DTO
+            UserResponseDto userResponseDto = new UserResponseDto(user);
+
+            log.info("User found with ID: {}", id);
+            return ApiResponseUtil.success(userResponseDto, "User retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving user by ID: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve user. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<UserResponseDto>> updateUserRole(String id, UpdateUserRoleDto role) {
+        try {
+            // Get the current authenticated user from security context
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("No authenticated user found in security context");
+                return ApiResponseUtil.unauthorized("User not authenticated");
+            }
+
+            // Find the user by ID
+            User user = userRepository.findById(id).orElse(null);
+
+            if (user == null) {
+                log.warn("User not found with ID: {}", id);
+                return ApiResponseUtil.notFound("User not found");
+            }
+
+            UserRoleEnum roleEnum;
+            try {
+                roleEnum = UserRoleEnum.valueOf(role.getRole().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ApiResponseUtil.badRequest("Invalid role");
+            }
+
+            Optional<UserRole> existingUserRoleOpt = userRoleRepository.findByUserId(user.getId());
+            if (existingUserRoleOpt.isEmpty()) {
+                return ApiResponseUtil.notFound("User role not found");
+            }
+
+            UserRole existingUserRole = existingUserRoleOpt.get();
+            existingUserRole.setRole(roleEnum.name());
+            userRoleRepository.save(existingUserRole); // Lưu lại
+
+            // Cập nhật response
+            user.setRoles(List.of(existingUserRole)); // để DTO có roles
+            UserResponseDto userResponseDto = new UserResponseDto(user);
+
+            return ApiResponseUtil.success(userResponseDto, "User role updated successfully");
+        } catch (Exception e) {
+            log.error("Error updating user role: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to update user role. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<UserResponseDto>> updateUserStatus(String id, UpdateUserStatusDto status) {
+        try {
+            // Get the current authenticated user from security context
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("No authenticated user found in security context");
+                return ApiResponseUtil.unauthorized("User not authenticated");
+            }
+
+            // Find the user by ID
+            User user = userRepository.findById(id).orElse(null);
+
+            if (user == null) {
+                log.warn("User not found with ID: {}", id);
+                return ApiResponseUtil.notFound("User not found");
+            }
+
+            // Update user status
+            user.setIsActive(status.getStatus().toLowerCase().equals("active"));
+            User updatedUser = userRepository.save(user);
+
+            // Create response DTO
+            UserResponseDto userResponseDto = new UserResponseDto(updatedUser);
+
+            log.info("User status updated successfully for ID: {}", id);
+            return ApiResponseUtil.success(userResponseDto, "User status updated successfully");
+
+        } catch (Exception e) {
+            log.error("Error updating user status: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to update user status. Please try again later.");
+        }
+    }
+
 }
