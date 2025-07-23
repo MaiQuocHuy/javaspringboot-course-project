@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Add thumbnail and bio columns to USER table -->
+    <changeSet id="004-1" author="ktc">
+        <addColumn tableName="USER">
+            <column name="thumbnail_url" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="thumbnail_id" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="bio" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- Add index for thumbnail_id for better query performance -->
+    <changeSet id="004-2" author="ktc">
+        <createIndex tableName="USER" indexName="idx_user_thumbnail_id">
+            <column name="thumbnail_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -10,4 +10,6 @@
     <include file="db/changelog/changes/001-init-tables.xml"/>
     <include file="db/changelog/changes/002-seed-data.xml"/>
     <include file="db/changelog/changes/003-add-missing-timestamps.xml"/>
+    <include file="db/changelog/changes/004-add-user-thumbnail-bio.xml"/>
+    <include file="db/changelog/changes/005-add-instructor-user.xml"/>
 </databaseChangeLog>

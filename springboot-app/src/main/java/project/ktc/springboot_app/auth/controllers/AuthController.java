@@ -46,7 +46,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Login a user", description = "Authenticates user and returns JWT access and refresh tokens")
+    @Operation(summary = "Login a user", description = "Authenticates user and returns JWT access and refresh tokens. "
+            +
+            "Test accounts: Admin (alice@example.com/alice123), " +
+            "Student (bob@example.com/bob123), " +
+            "Instructor (charlie@example.com/charlie123)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login successful"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
