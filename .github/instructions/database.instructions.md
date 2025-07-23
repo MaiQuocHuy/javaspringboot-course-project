@@ -1,7 +1,7 @@
 ---
-applyTo: '**'
---- 
--- User Management
+applyTo: "**"
+---
+
 -- Users table
 CREATE TABLE `USER` (
 `id` varchar(36) PRIMARY KEY,
@@ -9,6 +9,9 @@ CREATE TABLE `USER` (
 `email` varchar(255) UNIQUE NOT NULL,
 `password` varchar(255) NOT NULL COMMENT 'Hashed password',
 `is_active` boolean DEFAULT true,
+`thumbnail_url` varchar(255) DEFAULT NULL COMMENT 'URL to user profile picture',
+`thumbnail_id` varchar(255) DEFAULT NULL COMMENT 'ID of the thumbnail image',
+`bio` text DEFAULT NULL COMMENT 'Short biography or description',
 `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

@@ -47,6 +47,18 @@ public class User extends BaseEntity implements UserDetails {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "thumbnail_url")
+    @Builder.Default
+    private String thumbnailUrl = "";
+
+    @Column(name = "thumbnail_id")
+    @Builder.Default
+    private String thumbnailId = "";
+
+    @Column(name = "bio")
+    @Builder.Default
+    private String bio = "";
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<UserRole> roles = new ArrayList<>();

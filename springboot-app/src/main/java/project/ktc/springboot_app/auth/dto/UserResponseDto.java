@@ -22,11 +22,16 @@ public class UserResponseDto {
     private String email;
     private String name;
     private List<UserRoleEnum> roles; // optional: chỉ hiển thị khi cần
+    private String thumbnailUrl; // URL to user profile picture
+    private String thumbnailId; // ID of the thumbnail image
+    private String bio; // Short biography or description
 
     public UserResponseDto(User user) {
         this.id = user.getId();
         this.email = user.getEmail();
         this.name = user.getName();
+        this.thumbnailUrl = user.getThumbnailUrl();
+        this.thumbnailId = user.getThumbnailId();
+        this.bio = user.getBio();
     }
-
 }
