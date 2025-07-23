@@ -115,7 +115,23 @@
         	<artifactId>cloudinary-http45</artifactId>
         	<version>1.39.0</version>
     	</dependency>
-	
+
+		<!-- DevTool -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Dotenv -->
+		<dependency>
+			<groupId>io.github.cdimascio</groupId>
+			<artifactId>dotenv-java</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+
+			
 	</dependencies>
 
 	<build>

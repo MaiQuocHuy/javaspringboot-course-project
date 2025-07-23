@@ -294,7 +294,22 @@ For lists of resources that support pagination.
 - **Security:** Core security enhancement.
 - **Testing:** Write tests to ensure users are locked out after exceeding the attempt limit and that the lock expires correctly.
 
----
+### 1.10. Manage Users
+
+- **Description:** Admin functionality to manage users.
+- **Endpoints:**
+  - `GET /api/admin/users` - List all users.
+  - `GET /api/admin/users/{id}` - Get user details by ID.
+  - `PUT /api/admin/users/{id}` - Update user details.
+  - `DELETE /api/admin/users/{id}` - Delete a user.
+  - `PUT /api/admin/users/{id}/role` - Update user roles.
+  - `PUT /api/admin/users/{id}/status` - Update user status (ACTIVE, INACTIVE).
+- **Task:**
+  - Create an `UserController` with endpoints to list, update, and delete users.
+  - Implement methods in `UserService` for admin operations.
+  - Use role-based access control to restrict these endpoints to users with the `ADMIN` role.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Write tests for user management operations, ensuring only admins can access them.
 
 ## 2. Course & Content (Public)
 

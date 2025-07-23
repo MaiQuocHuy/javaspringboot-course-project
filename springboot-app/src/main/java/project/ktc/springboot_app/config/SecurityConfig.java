@@ -37,15 +37,20 @@ public class SecurityConfig {
                                                                 "/v3/api-docs/**",
                                                                 "/v3/api-docs.yaml",
                                                                 "/swagger-config/**",
+                                                                "/api/courses/**",
                                                                 "/error")
                                                 .permitAll()
-
+                                                // Admin
                                                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+
+                                                // Instructor
                                                 .requestMatchers("/api/instructor/**").hasAnyAuthority("INSTRUCTOR")
+
+                                                // Student
                                                 .requestMatchers("/api/student/**").hasAnyAuthority("STUDENT")
                                                 .requestMatchers("/api/users/profile").authenticated() // Profile
-                                                                                                       // requires
-                                                                                                       // authentication
+
+                                                // authentication
                                                 .requestMatchers("/api/upload/**")
                                                 .hasAnyAuthority("STUDENT", "INSTRUCTOR", "ADMIN") // Secured
 

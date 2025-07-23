@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Add thumbnail columns to COURSE table -->
+    <changeSet id="006-1" author="ktc">
+        <!-- <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="COURSE" columnName="thumbnail_url"/>
+            </not>
+        </preConditions> -->
+        <addColumn tableName="COURSE">
+            <column name="thumbnail_url" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="thumbnail_id" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="level" type="ENUM('BEGINNER', 'INTERMEDIATE', 'ADVANCED')" defaultValue="BEGINNER">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- Add index for thumbnail_id in COURSE for better query performance -->
+    <changeSet id="006-2" author="ktc">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="COURSE" indexName="idx_course_thumbnail_id"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="COURSE" indexName="idx_course_thumbnail_id">
+            <column name="thumbnail_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
