@@ -1,6 +1,5 @@
 package project.ktc.springboot_app.course.controllers;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,11 +16,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.course.dto.CourseDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
 import project.ktc.springboot_app.course.services.CourseServiceImp;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
@@ -83,6 +84,27 @@ public class CourseController {
                 project.ktc.springboot_app.common.dto.ApiResponse.<PaginatedResponse<CoursePublicResponseDto>>builder()
                         .statusCode(200)
                         .message("Courses retrieved successfully")
+                        .data(result)
+                        .timestamp(java.time.ZonedDateTime.now())
+                        .build());
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get course details by ID", description = "Retrieves detailed information about a single published course including ratings, sections, and lessons")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Course details retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Course not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>> findOnePublic(
+            @Parameter(description = "Course ID") @PathVariable String id) {
+
+        CourseDetailResponseDto result = courseService.findOnePublic(id);
+
+        return ResponseEntity.ok(
+                project.ktc.springboot_app.common.dto.ApiResponse.<CourseDetailResponseDto>builder()
+                        .statusCode(200)
+                        .message("Course details retrieved successfully")
                         .data(result)
                         .timestamp(java.time.ZonedDateTime.now())
                         .build());

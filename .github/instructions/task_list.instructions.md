@@ -374,48 +374,45 @@ For lists of resources that support pagination.
   - **Path Params:** `id` (string)
 - **Response:**
 
-
-    ```json
-    {
-      "statusCode": 200,
-      "message": "Course details retrieved successfully",
-      "data": {
-        "id": "course-id",
-        "slug": "mastering-java-spring-boot",
-        "title": "Mastering Java Spring Boot",
-        "description": "Learn how to build robust applications with Java Spring Boot.",
-        "price": 29.99,
-        "level": "INTERMEDIATE",
-        "thumbnailUrl": "https://res.cloudinary.com/.../course-thumbnail.jpg",
-        "lessonCount": 12,
-        "sampleVideoUrl": "https://res.cloudinary.com/.../sample.mp4", // optional
-        "isEnrolled": false, // true if authenticated and enrolled
-        "instructor": {
-          "id": "instructor-id",
-          "name": "John Doe"
-        },
-        "sections": [
-          {
-            "id": "section-id",
-            "title": "Introduction to Spring Boot",
-            "lessons": [
-              {
-                "id": "lesson-id-1",
-                "title": "Getting Started with Spring Boot",
-                "type": "VIDEO"
-              },
-              {
-                "id": "lesson-id-2",
-                "title": "Spring Boot Configuration",
-                "type": "VIDEO"
-              }
-            ]
-          }
-        ]
-      }
+  ```json
+  {
+    "statusCode": 200,
+    "message": "Course details retrieved successfully",
+    "data": {
+      "id": "course-id",
+      "slug": "mastering-java-spring-boot",
+      "title": "Mastering Java Spring Boot",
+      "description": "Learn how to build robust applications with Java Spring Boot.",
+      "price": 29.99,
+      "level": "INTERMEDIATE",
+      "thumbnailUrl": "https://res.cloudinary.com/.../course-thumbnail.jpg",
+      "lessonCount": 12,
+      "sampleVideoUrl": "https://res.cloudinary.com/.../sample.mp4",
+      "rating": {
+        "average": 4.6,
+        "totalReviews": 128
+      },
+      "isEnrolled": false,
+      "instructor": {
+        "id": "instructor-id",
+        "name": "John Doe"
+      },
+      "sections": [
+        {
+          "id": "section-id",
+          "title": "Introduction to Spring Boot",
+          "lessons": [
+            {
+              "id": "lesson-id-1",
+              "title": "Getting Started with Spring Boot",
+              "type": "VIDEO"
+            }
+          ]
+        }
+      ]
     }
-
-    ```
+  }
+  ```
 
 - **Controller:** Add a `findOnePublic` endpoint to `CourseController`.
 - **Service:** Implement `findOnePublic` to fetch a single published course by its ID.
