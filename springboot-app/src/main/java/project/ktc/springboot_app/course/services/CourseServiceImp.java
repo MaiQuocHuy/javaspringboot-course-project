@@ -76,9 +76,19 @@ public class CourseServiceImp {
     public CourseDetailResponseDto findOnePublic(String courseId) {
         log.info("Finding course details for course ID: {}", courseId);
 
-        // Find the course with all related data
+        // Step 1: Find the course with instructor only (avoid multiple bags)
         Course course = courseRepository.findPublishedCourseByIdWithDetails(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with ID: " + courseId));
+
+        // Step 2: Fetch categories separately to avoid MultipleBagFetchException
+        Optional<Course> courseWithCategories = courseRepository.findCourseWithCategories(courseId);
+        if (courseWithCategories.isPresent()) {
+            course.setCategories(courseWithCategories.get().getCategories());
+        }
+
+        // Step 3: Fetch sections with lessons separately
+        List<Section> sectionsWithLessons = courseRepository.findSectionsWithLessonsByCourseId(courseId);
+        course.setSections(sectionsWithLessons);
 
         // Get rating information
         CourseDetailResponseDto.RatingSummary ratingSummary = getRatingSummary(courseId);

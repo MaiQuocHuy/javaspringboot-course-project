@@ -10,8 +10,10 @@ import org.springframework.stereotype.Repository;
 
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
+import project.ktc.springboot_app.entity.Section;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -39,11 +41,19 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
 
     @Query("SELECT c FROM Course c " +
             "LEFT JOIN FETCH c.instructor i " +
-            "LEFT JOIN FETCH c.categories cat " +
-            "LEFT JOIN FETCH c.sections s " +
-            "LEFT JOIN FETCH s.lessons l " +
             "WHERE c.id = :courseId AND c.isPublished = true AND c.isDeleted = false")
     Optional<Course> findPublishedCourseByIdWithDetails(@Param("courseId") String courseId);
+
+    @Query("SELECT c FROM Course c " +
+            "LEFT JOIN FETCH c.categories cat " +
+            "WHERE c.id = :courseId")
+    Optional<Course> findCourseWithCategories(@Param("courseId") String courseId);
+
+    @Query("SELECT s FROM Section s " +
+            "LEFT JOIN FETCH s.lessons l " +
+            "WHERE s.course.id = :courseId " +
+            "ORDER BY s.orderIndex ASC, l.orderIndex ASC")
+    List<Section> findSectionsWithLessonsByCourseId(@Param("courseId") String courseId);
 
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.course.id = :courseId")
     Optional<Double> findAverageRatingByCourseId(@Param("courseId") String courseId);
