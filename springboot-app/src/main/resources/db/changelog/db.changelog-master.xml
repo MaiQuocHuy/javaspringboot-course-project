@@ -12,4 +12,6 @@
     <include file="db/changelog/changes/003-add-missing-timestamps.xml"/>
     <include file="db/changelog/changes/004-add-user-thumbnail-bio.xml"/>
     <include file="db/changelog/changes/005-add-instructor-user.xml"/>
+    <include file="db/changelog/changes/006-add-thumbnail.xml"/>
+    <include file="db/changelog/changes/007-enhanced-seed-data.xml"/>
 </databaseChangeLog>

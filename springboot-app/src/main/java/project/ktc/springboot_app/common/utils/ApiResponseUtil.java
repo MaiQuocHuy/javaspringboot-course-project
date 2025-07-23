@@ -1,8 +1,11 @@
 package project.ktc.springboot_app.common.utils;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
 
 /**
  * Utility class for creating consistent API responses
@@ -29,6 +32,24 @@ public class ApiResponseUtil {
     public static <T> ResponseEntity<ApiResponse<T>> created(T data, String message) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.created(data, message));
+    }
+
+    /**
+     * Create a created response paginate with data
+     */
+    public static <T> ResponseEntity<PaginatedResponse<T>> success(T data) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(PaginatedResponse.<T>builder()
+                        .content(List.of(data))
+                        .page(PaginatedResponse.PageInfo.builder()
+                                .number(0)
+                                .size(1)
+                                .totalPages(1)
+                                .totalElements(1)
+                                .first(true)
+                                .last(true)
+                                .build())
+                        .build());
     }
 
     /**

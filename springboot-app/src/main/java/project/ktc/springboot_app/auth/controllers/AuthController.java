@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import project.ktc.springboot_app.auth.dto.LoginUserDto;
 import project.ktc.springboot_app.auth.dto.RefreshTokenDto;
 import project.ktc.springboot_app.auth.dto.RegisterUserDto;
+import project.ktc.springboot_app.auth.dto.ResetPasswordDto;
 import project.ktc.springboot_app.auth.services.AuthServiceImp;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 
@@ -78,6 +79,19 @@ public class AuthController {
         }
 
         return authService.refreshAccessToken(refreshToken);
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset password", description = "Resets the user's password using the provided token and new password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired token"),
+            @ApiResponse(responseCode = "500", description = "Password reset failed due to server error")
+    })
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, String>>> resetPassword(
+            @Valid @RequestBody ResetPasswordDto dto) {
+        return authService.resetPassword(dto.getOldPassword(), dto.getNewPassword());
     }
 
 }

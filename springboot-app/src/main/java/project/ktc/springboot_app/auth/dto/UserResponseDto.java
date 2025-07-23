@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.auth.enums.UserRoleEnum;
+import project.ktc.springboot_app.entity.UserRole;
 
 @Getter
 @Setter
@@ -25,6 +26,7 @@ public class UserResponseDto {
     private String thumbnailUrl; // URL to user profile picture
     private String thumbnailId; // ID of the thumbnail image
     private String bio; // Short biography or description
+    private Boolean isActive; // Indicates if the user is active
 
     public UserResponseDto(User user) {
         this.id = user.getId();
@@ -33,5 +35,10 @@ public class UserResponseDto {
         this.thumbnailUrl = user.getThumbnailUrl();
         this.thumbnailId = user.getThumbnailId();
         this.bio = user.getBio();
+        this.isActive = user.getIsActive();
+        this.roles = user.getRoles().stream()
+                .map(UserRole::getRole) // Lấy String
+                .map(UserRoleEnum::valueOf) // Convert String -> Enum
+                .collect(Collectors.toList());
     }
 }

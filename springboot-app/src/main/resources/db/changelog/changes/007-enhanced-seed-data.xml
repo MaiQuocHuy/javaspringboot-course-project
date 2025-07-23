@@ -1,0 +1,684 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Add more categories -->
+    <changeSet id="007-1" author="ktc">
+        <insert tableName="CATEGORY">
+            <column name="id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="name" value="Mobile Development"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="CATEGORY">
+            <column name="id" value="44444444-4444-4444-4444-444444444444"/>
+            <column name="name" value="Data Science"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="CATEGORY">
+            <column name="id" value="55555555-5555-5555-5555-555555555555"/>
+            <column name="name" value="DevOps"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="CATEGORY">
+            <column name="id" value="66666666-6666-6666-6666-666666666666"/>
+            <column name="name" value="Machine Learning"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="CATEGORY">
+            <column name="id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="name" value="Cybersecurity"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add additional courses with thumbnails -->
+    <changeSet id="007-2" author="ktc">
+        <insert tableName="COURSE">
+            <column name="id" value="course-003"/>
+            <column name="title" value="React Native Mobile Development"/>
+            <column name="description" value="Build mobile apps using React Native framework"/>
+            <column name="instructor_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="price" value="149.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/123427411/original/cd9110ba6dae0648610262ea97c242cc97a1eb72/java-web-development-in-spring-framework.png"/>
+            <column name="thumbnail_id" value="thumb_003"/>
+            <column name="level" value="INTERMEDIATE"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="COURSE">
+            <column name="id" value="course-004"/>
+            <column name="title" value="Python Data Science Fundamentals"/>
+            <column name="description" value="Learn data science with Python, Pandas, and NumPy"/>
+            <column name="instructor_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="price" value="199.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/123427411/original/cd9110ba6dae0648610262ea97c242cc97a1eb72/java-web-development-in-spring-framework.png"/>
+            <column name="thumbnail_id" value="thumb_004"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="COURSE">
+            <column name="id" value="course-005"/>
+            <column name="title" value="Docker and Kubernetes Mastery"/>
+            <column name="description" value="Master containerization and orchestration with Docker and Kubernetes"/>
+            <column name="instructor_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="price" value="249.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/123427411/original/cd9110ba6dae0648610262ea97c242cc97a1eb72/java-web-development-in-spring-framework.png"/>
+            <column name="thumbnail_id" value="thumb_005"/>
+            <column name="level" value="ADVANCED"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="COURSE">
+            <column name="id" value="course-006"/>
+            <column name="title" value="Machine Learning with TensorFlow"/>
+            <column name="description" value="Build and deploy machine learning models using TensorFlow"/>
+            <column name="instructor_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="price" value="299.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="false"/>
+            <column name="thumbnail_url" value="https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/123427411/original/cd9110ba6dae0648610262ea97c242cc97a1eb72/java-web-development-in-spring-framework.png"/>
+            <column name="thumbnail_id" value="thumb_006"/>
+            <column name="level" value="ADVANCED"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="COURSE">
+            <column name="id" value="course-007"/>
+            <column name="title" value="Ethical Hacking and Penetration Testing"/>
+            <column name="description" value="Learn cybersecurity through ethical hacking techniques"/>
+            <column name="instructor_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="price" value="179.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/123427411/original/cd9110ba6dae0648610262ea97c242cc97a1eb72/java-web-development-in-spring-framework.png"/>
+            <column name="thumbnail_id" value="thumb_007"/>
+            <column name="level" value="INTERMEDIATE"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add course-category relationships -->
+    <changeSet id="007-3" author="ktc">
+        <insert tableName="COURSE_CATEGORY">
+            <column name="course_id" value="course-003"/>
+            <column name="category_id" value="33333333-3333-3333-3333-333333333333"/>
+        </insert>
+        <insert tableName="COURSE_CATEGORY">
+            <column name="course_id" value="course-004"/>
+            <column name="category_id" value="44444444-4444-4444-4444-444444444444"/>
+        </insert>
+        <insert tableName="COURSE_CATEGORY">
+            <column name="course_id" value="course-005"/>
+            <column name="category_id" value="55555555-5555-5555-5555-555555555555"/>
+        </insert>
+        <insert tableName="COURSE_CATEGORY">
+            <column name="course_id" value="course-006"/>
+            <column name="category_id" value="66666666-6666-6666-6666-666666666666"/>
+        </insert>
+        <insert tableName="COURSE_CATEGORY">
+            <column name="course_id" value="course-007"/>
+            <column name="category_id" value="77777777-7777-7777-7777-777777777777"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add video content for courses -->
+    <changeSet id="007-4" author="ktc">
+        <insert tableName="VIDEO_CONTENT">
+            <column name="id" value="video-003"/>
+            <column name="url" value="https://res.cloudinary.com/dgtp8moy8/video/upload/v1750931509/course-videos/2025-06-26%2016-51-20-1750931507396.mkv"/>
+            <column name="duration" value="1800"/>
+            <column name="uploaded_by" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="VIDEO_CONTENT">
+            <column name="id" value="video-004"/>
+            <column name="url" value="https://res.cloudinary.com/dgtp8moy8/video/upload/v1750931509/course-videos/2025-06-26%2016-51-20-1750931507396.mkv"/>
+            <column name="duration" value="2100"/>
+            <column name="uploaded_by" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="VIDEO_CONTENT">
+            <column name="id" value="video-005"/>
+            <column name="url" value="https://res.cloudinary.com/dgtp8moy8/video/upload/v1750931509/course-videos/2025-06-26%2016-51-20-1750931507396.mkv"/>
+            <column name="duration" value="2400"/>
+            <column name="uploaded_by" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="VIDEO_CONTENT">
+            <column name="id" value="video-006"/>
+            <column name="url" value="https://res.cloudinary.com/dgtp8moy8/video/upload/v1750931509/course-videos/2025-06-26%2016-51-20-1750931507396.mkv"/>
+            <column name="duration" value="2700"/>
+            <column name="uploaded_by" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="VIDEO_CONTENT">
+            <column name="id" value="video-007"/>
+            <column name="url" value="https://res.cloudinary.com/dgtp8moy8/video/upload/v1750931509/course-videos/2025-06-26%2016-51-20-1750931507396.mkv"/>
+            <column name="duration" value="1950"/>
+            <column name="uploaded_by" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add sections for new courses -->
+    <changeSet id="007-5" author="ktc">
+        <insert tableName="SECTION">
+            <column name="id" value="section-003"/>
+            <column name="course_id" value="course-003"/>
+            <column name="title" value="React Native Basics"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="SECTION">
+            <column name="id" value="section-004"/>
+            <column name="course_id" value="course-004"/>
+            <column name="title" value="Python Data Analysis"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="SECTION">
+            <column name="id" value="section-005"/>
+            <column name="course_id" value="course-005"/>
+            <column name="title" value="Docker Fundamentals"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="SECTION">
+            <column name="id" value="section-006"/>
+            <column name="course_id" value="course-006"/>
+            <column name="title" value="TensorFlow Basics"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="SECTION">
+            <column name="id" value="section-007"/>
+            <column name="course_id" value="course-007"/>
+            <column name="title" value="Penetration Testing Tools"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add lessons for new sections -->
+    <changeSet id="007-6" author="ktc">
+        <insert tableName="LESSON">
+            <column name="id" value="lesson-003"/>
+            <column name="section_id" value="section-003"/>
+            <column name="title" value="Setting up React Native Environment"/>
+            <column name="type" value="VIDEO"/>
+            <column name="content_id" value="video-003"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="LESSON">
+            <column name="id" value="lesson-004"/>
+            <column name="section_id" value="section-004"/>
+            <column name="title" value="Introduction to Pandas"/>
+            <column name="type" value="VIDEO"/>
+            <column name="content_id" value="video-004"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="LESSON">
+            <column name="id" value="lesson-005"/>
+            <column name="section_id" value="section-005"/>
+            <column name="title" value="Docker Containers and Images"/>
+            <column name="type" value="VIDEO"/>
+            <column name="content_id" value="video-005"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="LESSON">
+            <column name="id" value="lesson-006"/>
+            <column name="section_id" value="section-006"/>
+            <column name="title" value="Neural Networks with TensorFlow"/>
+            <column name="type" value="VIDEO"/>
+            <column name="content_id" value="video-006"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="LESSON">
+            <column name="id" value="lesson-007"/>
+            <column name="section_id" value="section-007"/>
+            <column name="title" value="Network Scanning Techniques"/>
+            <column name="type" value="VIDEO"/>
+            <column name="content_id" value="video-007"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add enrollments for students -->
+    <changeSet id="007-7" author="ktc">
+        <insert tableName="ENROLLMENT">
+            <column name="id" value="enrollment-003"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-003"/>
+            <column name="enrolled_at" valueComputed="NOW()"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+        </insert>
+        <insert tableName="ENROLLMENT">
+            <column name="id" value="enrollment-004"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-004"/>
+            <column name="enrolled_at" valueComputed="NOW()"/>
+            <column name="completion_status" value="COMPLETED"/>
+        </insert>
+        <insert tableName="ENROLLMENT">
+            <column name="id" value="enrollment-005"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-005"/>
+            <column name="enrolled_at" valueComputed="NOW()"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+        </insert>
+        <insert tableName="ENROLLMENT">
+            <column name="id" value="enrollment-006"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-007"/>
+            <column name="enrolled_at" valueComputed="NOW()"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add lesson completions -->
+    <changeSet id="007-8" author="ktc">
+        <insert tableName="LESSON_COMPLETION">
+            <column name="id" value="completion-003"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="lesson_id" value="lesson-004"/>
+            <column name="completed_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="LESSON_COMPLETION">
+            <column name="id" value="completion-004"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="lesson_id" value="lesson-003"/>
+            <column name="completed_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add course reviews -->
+    <changeSet id="007-9" author="ktc">
+        <insert tableName="REVIEW">
+            <column name="id" value="review-003"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-003"/>
+            <column name="rating" value="4"/>
+            <column name="review_text" value="Great course for mobile development!"/>
+            <column name="reviewed_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="REVIEW">
+            <column name="id" value="review-004"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-004"/>
+            <column name="rating" value="5"/>
+            <column name="review_text" value="Excellent introduction to data science!"/>
+            <column name="reviewed_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="REVIEW">
+            <column name="id" value="review-005"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-007"/>
+            <column name="rating" value="4"/>
+            <column name="review_text" value="Good practical approach to cybersecurity"/>
+            <column name="reviewed_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add payments -->
+    <changeSet id="007-10" author="ktc">
+        <insert tableName="PAYMENT">
+            <column name="id" value="payment-003"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-003"/>
+            <column name="amount" value="149.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="CREDIT_CARD"/>
+            <column name="paid_at" valueComputed="NOW()"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="PAYMENT">
+            <column name="id" value="payment-004"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-004"/>
+            <column name="amount" value="199.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="PAYPAL"/>
+            <column name="paid_at" valueComputed="NOW()"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="PAYMENT">
+            <column name="id" value="payment-005"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-005"/>
+            <column name="amount" value="249.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="CREDIT_CARD"/>
+            <column name="paid_at" valueComputed="NOW()"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="PAYMENT">
+            <column name="id" value="payment-006"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="course_id" value="course-007"/>
+            <column name="amount" value="179.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="STRIPE"/>
+            <column name="paid_at" valueComputed="NOW()"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add instructor earnings -->
+    <changeSet id="007-11" author="ktc">
+        <insert tableName="INSTRUCTOR_EARNING">
+            <column name="id" value="earning-003"/>
+            <column name="instructor_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="payment_id" value="payment-003"/>
+            <column name="course_id" value="course-003"/>
+            <column name="amount" value="119.99"/>
+            <column name="status" value="AVAILABLE"/>
+            <column name="available_at" valueComputed="NOW()"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="INSTRUCTOR_EARNING">
+            <column name="id" value="earning-004"/>
+            <column name="instructor_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="payment_id" value="payment-004"/>
+            <column name="course_id" value="course-004"/>
+            <column name="amount" value="159.99"/>
+            <column name="status" value="PAID"/>
+            <column name="available_at" valueComputed="NOW()"/>
+            <column name="paid_at" valueComputed="NOW()"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="INSTRUCTOR_EARNING">
+            <column name="id" value="earning-005"/>
+            <column name="instructor_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="payment_id" value="payment-005"/>
+            <column name="course_id" value="course-005"/>
+            <column name="amount" value="199.99"/>
+            <column name="status" value="AVAILABLE"/>
+            <column name="available_at" valueComputed="NOW()"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="INSTRUCTOR_EARNING">
+            <column name="id" value="earning-006"/>
+            <column name="instructor_id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="payment_id" value="payment-006"/>
+            <column name="course_id" value="course-007"/>
+            <column name="amount" value="143.99"/>
+            <column name="status" value="PENDING"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add quiz questions -->
+    <changeSet id="007-12" author="ktc">
+        <insert tableName="QUIZ_QUESTION">
+            <column name="id" value="question-003"/>
+            <column name="lesson_id" value="lesson-003"/>
+            <column name="question_text" value="What is React Native?"/>
+            <column name="options" value='["A mobile framework", "A web framework", "A database", "An IDE"]'/>
+            <column name="correct_answer" value="A mobile framework"/>
+            <column name="explanation" value="React Native is a framework for building mobile applications"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="QUIZ_QUESTION">
+            <column name="id" value="question-004"/>
+            <column name="lesson_id" value="lesson-004"/>
+            <column name="question_text" value="What is Pandas used for?"/>
+            <column name="options" value='["Data analysis", "Web development", "Game development", "Mobile apps"]'/>
+            <column name="correct_answer" value="Data analysis"/>
+            <column name="explanation" value="Pandas is a library for data analysis and manipulation"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="QUIZ_QUESTION">
+            <column name="id" value="question-005"/>
+            <column name="lesson_id" value="lesson-005"/>
+            <column name="question_text" value="What is Docker?"/>
+            <column name="options" value='["Containerization platform", "Operating system", "Programming language", "Text editor"]'/>
+            <column name="correct_answer" value="Containerization platform"/>
+            <column name="explanation" value="Docker is a platform for containerizing applications"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="QUIZ_QUESTION">
+            <column name="id" value="question-006"/>
+            <column name="lesson_id" value="lesson-006"/>
+            <column name="question_text" value="What is TensorFlow?"/>
+            <column name="options" value='["Machine learning library", "Database", "Web server", "Code editor"]'/>
+            <column name="correct_answer" value="Machine learning library"/>
+            <column name="explanation" value="TensorFlow is an open-source machine learning library"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="QUIZ_QUESTION">
+            <column name="id" value="question-007"/>
+            <column name="lesson_id" value="lesson-007"/>
+            <column name="question_text" value="What is penetration testing?"/>
+            <column name="options" value='["Security testing", "Performance testing", "Unit testing", "Integration testing"]'/>
+            <column name="correct_answer" value="Security testing"/>
+            <column name="explanation" value="Penetration testing is a method of evaluating security"/>
+            <column name="created_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add quiz results -->
+    <changeSet id="007-13" author="ktc">
+        <insert tableName="QUIZ_RESULT">
+            <column name="id" value="result-003"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="lesson_id" value="lesson-003"/>
+            <column name="score" value="85.0"/>
+            <column name="answers" value='{"question-003": "A mobile framework"}'/>
+            <column name="completed_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="QUIZ_RESULT">
+            <column name="id" value="result-004"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="lesson_id" value="lesson-004"/>
+            <column name="score" value="95.0"/>
+            <column name="answers" value='{"question-004": "Data analysis"}'/>
+            <column name="completed_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="QUIZ_RESULT">
+            <column name="id" value="result-005"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="lesson_id" value="lesson-007"/>
+            <column name="score" value="80.0"/>
+            <column name="answers" value='{"question-007": "Security testing"}'/>
+            <column name="completed_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add instructor applications with documents -->
+    <changeSet id="007-14" author="ktc">
+        <insert tableName="INSTRUCTOR_APPLICATION">
+            <column name="id" value="app-001"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="reviewed_by" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="status" value="APPROVED"/>
+            <column name="documents" value='[
+                {
+                    "type": "CV",
+                    "name": "Senior Java Developer CV",
+                    "url": "https://res.cloudinary.com/demo/raw/upload/v1/documents/java-developer-cv.pdf"
+                },
+                {
+                    "type": "Certificate",
+                    "name": "Oracle Java Certification",
+                    "url": "https://drive.google.com/file/d/1abc123def456/view?usp=sharing"
+                },
+                {
+                    "type": "Portfolio",
+                    "name": "Spring Boot Projects Portfolio",
+                    "url": "https://github.com/instructor1/spring-portfolio"
+                }
+            ]'/>
+            <column name="submitted_at" valueComputed="NOW() - INTERVAL 30 DAY"/>
+            <column name="reviewed_at" valueComputed="NOW() - INTERVAL 20 DAY"/>
+        </insert>
+        <insert tableName="INSTRUCTOR_APPLICATION">
+            <column name="id" value="app-002"/>
+            <column name="user_id" value="44444444-4444-4444-4444-444444444444"/>
+            <column name="reviewed_by" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="status" value="APPROVED"/>
+            <column name="documents" value='[
+                {
+                    "type": "CV",
+                    "name": "Data Science Instructor CV",
+                    "url": "https://res.cloudinary.com/demo/raw/upload/v1/documents/data-science-cv.pdf"
+                },
+                {
+                    "type": "Certificate",
+                    "name": "Machine Learning Specialization",
+                    "url": "https://www.coursera.org/account/accomplishments/specialization/ABC123"
+                },
+                {
+                    "type": "Certificate",
+                    "name": "Teaching Excellence Certificate",
+                    "url": "https://drive.google.com/file/d/1xyz789ghi012/view?usp=sharing"
+                },
+                {
+                    "type": "Portfolio",
+                    "name": "Data Science Projects",
+                    "url": "https://github.com/instructor2/data-science-portfolio"
+                }
+            ]'/>
+            <column name="submitted_at" valueComputed="NOW() - INTERVAL 25 DAY"/>
+            <column name="reviewed_at" valueComputed="NOW() - INTERVAL 15 DAY"/>
+        </insert>
+        <insert tableName="INSTRUCTOR_APPLICATION">
+            <column name="id" value="app-003"/>
+            <column name="user_id" value="55555555-5555-5555-5555-555555555555"/>
+            <column name="reviewed_by" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="status" value="APPROVED"/>
+            <column name="documents" value='[
+                {
+                    "type": "CV",
+                    "name": "DevOps Engineer CV",
+                    "url": "https://res.cloudinary.com/demo/raw/upload/v1/documents/devops-engineer-cv.pdf"
+                },
+                {
+                    "type": "Certificate",
+                    "name": "AWS Solutions Architect",
+                    "url": "https://www.credly.com/badges/devops-aws-cert-123"
+                },
+                {
+                    "type": "Other",
+                    "name": "DevOps Workshop Presentation",
+                    "url": "https://www.slideshare.net/instructor3/devops-best-practices"
+                }
+            ]'/>
+            <column name="submitted_at" valueComputed="NOW() - INTERVAL 20 DAY"/>
+            <column name="reviewed_at" valueComputed="NOW() - INTERVAL 10 DAY"/>
+        </insert>
+        <insert tableName="INSTRUCTOR_APPLICATION">
+            <column name="id" value="app-004"/>
+            <column name="user_id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="status" value="PENDING"/>
+            <column name="documents" value='[
+                {
+                    "type": "CV",
+                    "name": "Cybersecurity Expert CV",
+                    "url": "https://res.cloudinary.com/demo/raw/upload/v1/documents/cybersecurity-expert-cv.pdf"
+                },
+                {
+                    "type": "Certificate",
+                    "name": "CISSP Certification",
+                    "url": "https://www.isc2.org/Certifications/CISSP/cert-123456"
+                },
+                {
+                    "type": "Certificate",
+                    "name": "Ethical Hacking Certificate",
+                    "url": "https://drive.google.com/file/d/1security789hack/view?usp=sharing"
+                },
+                {
+                    "type": "Portfolio",
+                    "name": "Security Research Papers",
+                    "url": "https://github.com/instructor4/security-research"
+                }
+            ]'/>
+            <column name="submitted_at" valueComputed="NOW() - INTERVAL 5 DAY"/>
+        </insert>
+        <insert tableName="INSTRUCTOR_APPLICATION">
+            <column name="id" value="app-005"/>
+            <column name="user_id" value="88888888-8888-8888-8888-888888888888"/>
+            <column name="reviewed_by" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="status" value="REJECTED"/>
+            <column name="documents" value='[
+                {
+                    "type": "CV",
+                    "name": "Junior Developer CV",
+                    "url": "https://res.cloudinary.com/demo/raw/upload/v1/documents/junior-dev-cv.pdf"
+                },
+                {
+                    "type": "Other",
+                    "name": "Personal Project",
+                    "url": "https://github.com/instructor5/simple-project"
+                }
+            ]'/>
+            <column name="submitted_at" valueComputed="NOW() - INTERVAL 15 DAY"/>
+            <column name="reviewed_at" valueComputed="NOW() - INTERVAL 8 DAY"/>
+            <column name="rejection_reason" value="Insufficient teaching experience and qualifications for instructor role"/>
+        </insert>
+    </changeSet>
+
+    <!-- Add INSTRUCTOR role for approved applications -->
+    <changeSet id="007-15" author="ktc">
+        <insert tableName="USER_ROLE">
+            <column name="id" value="bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"/>
+            <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="role" value="INSTRUCTOR"/>
+        </insert>
+        <insert tableName="USER_ROLE">
+            <column name="id" value="cccccccc-cccc-cccc-cccc-cccccccccccc"/>
+            <column name="user_id" value="44444444-4444-4444-4444-444444444444"/>
+            <column name="role" value="INSTRUCTOR"/>
+        </insert>
+        <insert tableName="USER_ROLE">
+            <column name="id" value="dddddddd-dddd-dddd-dddd-dddddddddddd"/>
+            <column name="user_id" value="55555555-5555-5555-5555-555555555555"/>
+            <column name="role" value="INSTRUCTOR"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

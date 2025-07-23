@@ -1,9 +1,17 @@
-package project.ktc.springboot_app.entity;
+package project.ktc.springboot_app.course.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.course.enums.CourseLevel;
+import project.ktc.springboot_app.entity.BaseEntity;
+import project.ktc.springboot_app.entity.Category;
+import project.ktc.springboot_app.entity.Enrollment;
+import project.ktc.springboot_app.entity.InstructorEarning;
+import project.ktc.springboot_app.entity.Payment;
+import project.ktc.springboot_app.entity.Review;
+import project.ktc.springboot_app.entity.Section;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,6 +42,16 @@ public class Course extends BaseEntity {
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
+
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
+
+    @Column(name = "thumbnail_id")
+    private String thumbnailId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "level")
+    private CourseLevel level;
 
     @ManyToMany
     @JoinTable(
