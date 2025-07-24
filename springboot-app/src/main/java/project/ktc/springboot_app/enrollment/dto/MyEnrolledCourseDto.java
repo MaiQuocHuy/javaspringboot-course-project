@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.course.dto;
+package project.ktc.springboot_app.enrollment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,25 +12,16 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CoursePublicResponseDto {
-    private String id;
+public class MyEnrolledCourseDto {
+    private String courseId;
     private String title;
-    private String description;
-    private BigDecimal price;
-    private CourseLevel level;
     private String thumbnailUrl;
-    private Long enrollCount;
-    private CategorySummary category;
+    private String slug;
+    private CourseLevel level;
+    private BigDecimal price;
+    private Double progress;
+    private String completionStatus;
     private InstructorSummary instructor;
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class CategorySummary {
-        private String id;
-        private String name;
-    }
 
     @Data
     @Builder

@@ -22,6 +22,7 @@ public class CourseDetailResponseDto {
     private CourseLevel level;
     private String thumbnailUrl;
     private Integer lessonCount;
+    private Integer enrollCount;
     private String sampleVideoUrl;
     private RatingSummary rating;
     private Boolean isEnrolled;

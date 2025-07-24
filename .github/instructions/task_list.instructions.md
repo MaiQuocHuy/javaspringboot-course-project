@@ -426,19 +426,24 @@ For lists of resources that support pagination.
   - **Method:** `GET`
   - **Path:** `/api/categories`
 - **Response:**
+
   - **Success (200 OK):**
+
     ```json
     {
       "statusCode": 200,
       "message": "Categories retrieved successfully",
       "data": [
         {
-          "id": "string",
-          "name": "string"
+          "id": "cat-001",
+          "name": "Development",
+          "slug": "development",
+          "courseCount": 42
         }
       ]
     }
     ```
+
 - **Controller:** Create `CategoryController` with a `findAll` endpoint.
 - **Service:** Implement `findAll` in `CategoryService`.
 - **Security:** Publicly accessible.
@@ -452,26 +457,46 @@ For lists of resources that support pagination.
 
 - **Description:** Enrolls the current user in a course.
 - **Request:**
+
   - **Method:** `POST`
   - **Path:** `/api/courses/:id/enroll`
   - **Path Params:** `id` (string)
   - **Headers:** `Authorization: Bearer <accessToken>`
+
 - **Response:**
+
   - **Success (201 Created):**
     ```json
     {
       "statusCode": 201,
       "message": "Successfully enrolled in the course",
-      "data": null
+      "data": {
+        "courseId": "course-001",
+        "title": "Spring Boot Masterclass",
+        "enrollmentDate": "2025-07-23T22:00:00Z"
+      }
     }
     ```
+
 - **Controller:** Create `EnrollmentController` with an `enroll` endpoint.
-- **Service:** Implement `enroll` in `EnrollmentService`.
-- Check if the user is already enrolled.
-- Handle payment logic (integration with `PaymentService`).
-- Create an `ENROLLMENT` record.
+- **Service:** Implement `enroll(courseId, user)` in `EnrollmentService`.
+
+- **Logic:**
+
+  - Validate that the course exists, is published, and is not deleted.
+  - Check if the user is already enrolled (return 409 Conflict if so).
+  - If the course is paid:
+    - Integrate with `PaymentService` to charge the user.
+    - Ensure the actual paid amount is **≥ course price** before proceeding.
+  - Create an `ENROLLMENT` record and return the enrollment data.
+
 - **Security:** Requires `STUDENT` role.
-- **Testing:** Test enrollment in free and paid courses.
+
+- **Testing:**
+  - Test enrollment in:
+    - Paid course (valid payment).
+    - Already enrolled case.
+    - Invalid course ID.
 
 ### 3.2. `GET /api/enrollments/my-courses`
 
@@ -481,20 +506,37 @@ For lists of resources that support pagination.
   - **Path:** `/api/enrollments/my-courses`
   - **Headers:** `Authorization: Bearer <accessToken>`
 - **Response:**
+
   - **Success (200 OK):**
-    ```json
-    {
-      "statusCode": 200,
-      "message": "Enrolled courses retrieved successfully",
-      "data": [
+
+  ```json
+  {
+    "statusCode": 200,
+    "message": "Enrolled courses retrieved successfully",
+    "data": {
+      "content": [
         {
-          "courseId": "string",
-          "title": "string",
-          "completionStatus": "IN_PROGRESS"
+          "courseId": "course-001",
+          "title": "Spring Boot Masterclass",
+          "thumbnailUrl": "https://cdn.example.com/courses/springboot.jpg",
+          "slug": "spring-boot-masterclass",
+          "level": "INTERMEDIATE",
+          "progress": 0.75,
+          "completionStatus": "IN_PROGRESS",
+          "instructor": {
+            "id": "instructor-id",
+            "name": "John Doe"
+          }
         }
-      ]
+      ],
+      "page": 0,
+      "size": 10,
+      "totalPages": 5,
+      "totalElements": 42
     }
-    ```
+  }
+  ```
+
 - **Controller:** Add a `getMyCourses` endpoint to `EnrollmentController`.
 - **Service:** Implement `getMyCourses` to fetch all courses the current user is enrolled in.
 - **Security:** Requires `STUDENT` role.
