@@ -2,27 +2,36 @@ package project.ktc.springboot_app.course.services;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import com.cloudinary.Api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.category.entity.Category;
+import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
+import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
 import project.ktc.springboot_app.course.dto.CourseDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
+import project.ktc.springboot_app.course.interfaces.CourseService;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.entity.Lesson;
 import project.ktc.springboot_app.entity.Section;
 import project.ktc.springboot_app.entity.VideoContent;
+import project.ktc.springboot_app.utils.StringUtil;
 import project.ktc.springboot_app.video.repository.VideoContentRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +41,12 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class CourseServiceImp {
+public class CourseServiceImp implements CourseService {
     private final CourseRepository courseRepository;
     private final VideoContentRepository videoContentRepository;
 
-    public PaginatedResponse<CoursePublicResponseDto> findAllPublic(
+    @Override
+    public ResponseEntity<ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(
             String search,
             String categoryId,
             BigDecimal minPrice,
@@ -77,22 +87,25 @@ public class CourseServiceImp {
                 .map(course -> mapToCoursePublicResponse(course, enrollmentCounts.getOrDefault(course.getId(), 0L)))
                 .collect(Collectors.toList());
 
-        PaginatedResponse.PageInfo pageInfo = PaginatedResponse.PageInfo.builder()
-                .number(coursePage.getNumber())
-                .size(coursePage.getSize())
-                .totalPages(coursePage.getTotalPages())
-                .totalElements(coursePage.getTotalElements())
-                .first(coursePage.isFirst())
-                .last(coursePage.isLast())
+        // Create paginated response
+        PaginatedResponse<CoursePublicResponseDto> paginatedResponse = PaginatedResponse
+                .<CoursePublicResponseDto>builder()
+                .content(courseResponses)
+                .page(PaginatedResponse.PageInfo.builder()
+                        .number(coursePage.getNumber())
+                        .size(coursePage.getSize())
+                        .totalPages(coursePage.getTotalPages())
+                        .totalElements(coursePage.getTotalElements())
+                        .first(coursePage.isFirst())
+                        .last(coursePage.isLast())
+                        .build())
                 .build();
 
-        return PaginatedResponse.<CoursePublicResponseDto>builder()
-                .content(courseResponses)
-                .page(pageInfo)
-                .build();
+        return ApiResponseUtil.success(paginatedResponse, "Public courses retrieved successfully");
     }
 
-    public CourseDetailResponseDto findOnePublic(String courseId) {
+    @Override
+    public ResponseEntity<ApiResponse<CourseDetailResponseDto>> findOnePublic(String courseId) {
         log.info("Finding course details for course ID: {}", courseId);
 
         // Step 1: Find the course with instructor only (avoid multiple bags)
@@ -124,10 +137,14 @@ public class CourseServiceImp {
         String sampleVideoUrl = getSampleVideoUrl(course);
 
         // Generate slug from title
-        String slug = generateSlug(course.getTitle());
+        String slug = StringUtil.generateSlug(course.getTitle());
 
-        return mapToCourseDetailResponse(course, ratingSummary, lessonCount.intValue(),
-                isEnrolled, sampleVideoUrl, slug, enrollMentCount.intValue());
+        // Map to DTO
+        CourseDetailResponseDto responseDto = mapToCourseDetailResponse(
+                course, ratingSummary, lessonCount.intValue(), isEnrolled, sampleVideoUrl, slug,
+                enrollMentCount.intValue());
+
+        return ApiResponseUtil.success(responseDto, "Course details retrieved successfully");
     }
 
     private CourseDetailResponseDto.RatingSummary getRatingSummary(String courseId) {
@@ -175,16 +192,6 @@ public class CourseServiceImp {
             }
         }
         return null;
-    }
-
-    private String generateSlug(String title) {
-        if (title == null)
-            return "";
-        return title.toLowerCase()
-                .replaceAll("[^a-z0-9\\s-]", "")
-                .replaceAll("\\s+", "-")
-                .replaceAll("-+", "-")
-                .replaceAll("^-|-$", "");
     }
 
     private CourseDetailResponseDto mapToCourseDetailResponse(Course course,

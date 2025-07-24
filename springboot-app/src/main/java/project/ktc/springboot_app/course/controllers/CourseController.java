@@ -77,17 +77,11 @@ public class CourseController {
                 Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
 
                 // Call service method to get filtered courses
-                PaginatedResponse<CoursePublicResponseDto> result = courseService.findAllPublic(
-                                search, categoryId, minPrice, maxPrice, level, pageable);
+                ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> result = courseService
+                                .findAllPublic(
+                                                search, categoryId, minPrice, maxPrice, level, pageable);
 
-                return ResponseEntity.ok(
-                                project.ktc.springboot_app.common.dto.ApiResponse
-                                                .<PaginatedResponse<CoursePublicResponseDto>>builder()
-                                                .statusCode(200)
-                                                .message("Courses retrieved successfully")
-                                                .data(result)
-                                                .timestamp(java.time.ZonedDateTime.now())
-                                                .build());
+                return result;
         }
 
         @GetMapping("/{id}")
@@ -100,14 +94,9 @@ public class CourseController {
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>> findOnePublic(
                         @Parameter(description = "Course ID") @PathVariable String id) {
 
-                CourseDetailResponseDto result = courseService.findOnePublic(id);
+                ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>> result = courseService
+                                .findOnePublic(id);
 
-                return ResponseEntity.ok(
-                                project.ktc.springboot_app.common.dto.ApiResponse.<CourseDetailResponseDto>builder()
-                                                .statusCode(200)
-                                                .message("Course details retrieved successfully")
-                                                .data(result)
-                                                .timestamp(java.time.ZonedDateTime.now())
-                                                .build());
+                return result;
         }
 }
