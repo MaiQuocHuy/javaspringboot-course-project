@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.category.entity.Category;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
 import project.ktc.springboot_app.course.dto.CourseDetailResponseDto;
@@ -16,14 +17,15 @@ import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
-import project.ktc.springboot_app.entity.Category;
 import project.ktc.springboot_app.entity.Lesson;
 import project.ktc.springboot_app.entity.Section;
 import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.video.repository.VideoContentRepository;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -54,8 +56,25 @@ public class CourseServiceImp {
         Page<Course> coursePage = courseRepository.findPublishedCoursesWithFilters(
                 search, categoryId, minPrice, maxPrice, level, pageable);
 
+        // Get enrollment counts for all courses in this page
+        List<String> courseIds = coursePage.getContent().stream()
+                .map(Course::getId)
+                .collect(Collectors.toList());
+
+        final Map<String, Long> enrollmentCounts;
+        if (!courseIds.isEmpty()) {
+            List<Object[]> enrollmentData = courseRepository.findEnrollmentCountsByCourseIds(courseIds);
+            enrollmentCounts = enrollmentData.stream()
+                    .collect(Collectors.toMap(
+                            data -> (String) data[0], // courseId
+                            data -> (Long) data[1] // enrollmentCount
+                    ));
+        } else {
+            enrollmentCounts = new HashMap<>();
+        }
+
         List<CoursePublicResponseDto> courseResponses = coursePage.getContent().stream()
-                .map(this::mapToCoursePublicResponse)
+                .map(course -> mapToCoursePublicResponse(course, enrollmentCounts.getOrDefault(course.getId(), 0L)))
                 .collect(Collectors.toList());
 
         PaginatedResponse.PageInfo pageInfo = PaginatedResponse.PageInfo.builder()
@@ -96,6 +115,8 @@ public class CourseServiceImp {
         // Get lesson count
         Long lessonCount = courseRepository.countLessonsByCourseId(courseId);
 
+        Long enrollMentCount = courseRepository.countUserEnrolledInCourse(courseId);
+
         // Check if current user is enrolled
         Boolean isEnrolled = getCurrentUserEnrollmentStatus(courseId);
 
@@ -106,7 +127,7 @@ public class CourseServiceImp {
         String slug = generateSlug(course.getTitle());
 
         return mapToCourseDetailResponse(course, ratingSummary, lessonCount.intValue(),
-                isEnrolled, sampleVideoUrl, slug);
+                isEnrolled, sampleVideoUrl, slug, enrollMentCount.intValue());
     }
 
     private CourseDetailResponseDto.RatingSummary getRatingSummary(String courseId) {
@@ -171,7 +192,8 @@ public class CourseServiceImp {
             Integer lessonCount,
             Boolean isEnrolled,
             String sampleVideoUrl,
-            String slug) {
+            String slug,
+            Integer enrollCount) {
 
         // Map instructor
         CourseDetailResponseDto.InstructorSummary instructorSummary = null;
@@ -202,6 +224,7 @@ public class CourseServiceImp {
                 .level(course.getLevel())
                 .thumbnailUrl(course.getThumbnailUrl())
                 .lessonCount(lessonCount)
+                .enrollCount(enrollCount)
                 .sampleVideoUrl(sampleVideoUrl)
                 .rating(ratingSummary)
                 .isEnrolled(isEnrolled)
@@ -232,7 +255,7 @@ public class CourseServiceImp {
                 .build();
     }
 
-    private CoursePublicResponseDto mapToCoursePublicResponse(Course course) {
+    private CoursePublicResponseDto mapToCoursePublicResponse(Course course, Long enrollCount) {
         // Get primary category (first one if multiple)
         CoursePublicResponseDto.CategorySummary categorySum = null;
         if (course.getCategories() != null && !course.getCategories().isEmpty()) {
@@ -260,6 +283,7 @@ public class CourseServiceImp {
                 .price(course.getPrice())
                 .level(course.getLevel())
                 .thumbnailUrl(course.getThumbnailUrl())
+                .enrollCount(enrollCount)
                 .category(categorySum)
                 .instructor(instructorSum)
                 .build();

@@ -43,8 +43,6 @@ public class UserServiceImp implements UserService {
     private final FileValidationService fileValidationService;
     private final UserRoleRepository userRoleRepository;
 
-    private final ObjectMapper objectMapper;
-
     @Override
     public ResponseEntity<ApiResponse<UserResponseDto>> getProfile() {
         try {
