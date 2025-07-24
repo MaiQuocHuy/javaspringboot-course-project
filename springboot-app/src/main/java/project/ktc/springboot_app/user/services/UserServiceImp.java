@@ -275,24 +275,35 @@ public class UserServiceImp implements UserService {
                 return ApiResponseUtil.notFound("User not found");
             }
 
+            // Validate the new role
             UserRoleEnum roleEnum;
             try {
                 roleEnum = UserRoleEnum.valueOf(role.getRole().toUpperCase());
             } catch (IllegalArgumentException e) {
-                return ApiResponseUtil.badRequest("Invalid role");
+                log.warn("Invalid role provided: {}", role.getRole());
+                return ApiResponseUtil.badRequest("Invalid role. Valid roles are: STUDENT, INSTRUCTOR, ADMIN");
             }
 
+            // Find existing user role to update (not insert new)
             Optional<UserRole> existingUserRoleOpt = userRoleRepository.findByUserId(user.getId());
             if (existingUserRoleOpt.isEmpty()) {
+                log.warn("User role not found for user ID: {}", user.getId());
                 return ApiResponseUtil.notFound("User role not found");
             }
 
+            // Update the existing role (not creating new one)
             UserRole existingUserRole = existingUserRoleOpt.get();
+            String oldRole = existingUserRole.getRole();
             existingUserRole.setRole(roleEnum.name());
-            userRoleRepository.save(existingUserRole); // Lưu lại
 
-            // Cập nhật response
-            user.setRoles(List.of(existingUserRole)); // để DTO có roles
+            // Save the updated role
+            UserRole updatedUserRole = userRoleRepository.save(existingUserRole);
+
+            log.info("User role updated successfully from {} to {} for user ID: {}",
+                    oldRole, roleEnum.name(), user.getId());
+
+            // Prepare response with updated role
+            user.setRoles(List.of(updatedUserRole));
             UserResponseDto userResponseDto = new UserResponseDto(user);
 
             return ApiResponseUtil.success(userResponseDto, "User role updated successfully");

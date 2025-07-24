@@ -606,20 +606,25 @@ For lists of resources that support pagination.
 
 ### 4.1. `POST /api/instructor/courses`
 
-- **Description:** Creates a new course.
+- **Description:** Creates a new course, including a thumbnail image upload.
 - **Request:**
+
   - **Method:** `POST`
   - **Path:** `/api/instructor/courses`
-  - **Headers:** `Authorization: Bearer <accessToken>`
-  - **Body (`CreateCourseDto`):**
-    ```json
-    {
-      "title": "string",
-      "description": "string",
-      "price": 0,
-      "categoryId": "string"
-    }
+  - **Headers:** `Authorization: Bearer <accessToken>` `Content-Type: multipart/form-data`
+  - **Body (multipart/form-data):**
+    ``
+    "title": "string",
+    "description": "string",
+    "price": 0,
+    "categoryId": "string",
+    "categoryId": "string",
+    "thumbnail": "file"
+
     ```
+
+    ```
+
 - **Response:**
   - **Success (201 Created):**
     ```json
@@ -628,7 +633,20 @@ For lists of resources that support pagination.
       "message": "Course created successfully",
       "data": {
         "id": "string",
-        "title": "string"
+        "title": "string",
+        "description": "string",
+        "price": 0,
+        "categories": [
+          {
+            "id": "string",
+            "name": "string"
+          },
+          {
+            "id": "string",
+            "name": "string"
+          }
+        ],
+        "thumbnailUrl": "file"
       }
     }
     ```
@@ -669,6 +687,59 @@ For lists of resources that support pagination.
 - **Service:** Implement `updateCourse`, ensuring the instructor owns the course.
 - **Security:** Requires `INSTRUCTOR` role.
 - **Testing:** Test successful and unauthorized updates.
+
+### 4.6. `GET /api/instructor/courses`
+
+- **Description:** Retrieves all courses created by the instructor.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/courses`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+
+  - **Success (200 OK):**
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Instructor courses retrieved successfully",
+      "data": {
+        "content": [
+          {
+            "id": "course-id-001",
+            "title": "Mastering Spring Boot",
+            "price": 49.99,
+            "level": "INTERMEDIATE",
+            "thumbnailUrl": "https://res.cloudinary.com/.../spring-boot.jpg",
+            "category": {
+              "id": "cat-001",
+              "name": "Programming"
+            },
+            "status": "PUBLISHED",
+            "isApproved": true,
+            "createdAt": "2025-06-01T08:00:00Z",
+            "updatedAt": "2025-07-22T10:30:00Z",
+            "lastContentUpdate": "2025-07-20T09:15:00Z",
+            "totalStudents": 120,
+            "averageRating": 4.5,
+            "revenue": 5998.8,
+            "canEdit": false,
+            "canUnpublish": true,
+            "canDelete": false
+          }
+        ],
+        "page": 0,
+        "size": 10,
+        "totalPages": 1,
+        "totalElements": 1
+      }
+    }
+    ```
+
+- **Controller:** Add a `getCourses` endpoint.
+- **Service:** Implement `getCourses`, ensuring only the instructor's courses are retrieved.
+- **Security:** Requires `INSTRUCTOR` role.
+- **Testing:** Test retrieval of instructor's courses.
 
 ### 4.3. `POST /api/instructor/courses/:courseId/sections`
 

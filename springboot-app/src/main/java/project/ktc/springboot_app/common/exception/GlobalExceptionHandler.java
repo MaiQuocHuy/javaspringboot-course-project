@@ -314,6 +314,41 @@ public class GlobalExceptionHandler {
         }
 
         /**
+         * Handle review exceptions
+         */
+        @ExceptionHandler(project.ktc.springboot_app.common.exception.ReviewAlreadyExistsException.class)
+        public ResponseEntity<ApiErrorResponse> handleReviewAlreadyExists(
+                        project.ktc.springboot_app.common.exception.ReviewAlreadyExistsException ex,
+                        HttpServletRequest request) {
+
+                log.error("Review already exists error: {}", ex.getMessage());
+
+                ApiErrorResponse errorResponse = ApiErrorResponse.of(
+                                HttpStatus.CONFLICT.value(),
+                                "Conflict",
+                                ex.getMessage(),
+                                request.getRequestURI());
+
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        }
+
+        @ExceptionHandler(project.ktc.springboot_app.common.exception.UserNotEnrolledException.class)
+        public ResponseEntity<ApiErrorResponse> handleUserNotEnrolled(
+                        project.ktc.springboot_app.common.exception.UserNotEnrolledException ex,
+                        HttpServletRequest request) {
+
+                log.error("User not enrolled error: {}", ex.getMessage());
+
+                ApiErrorResponse errorResponse = ApiErrorResponse.of(
+                                HttpStatus.FORBIDDEN.value(),
+                                "Forbidden",
+                                ex.getMessage(),
+                                request.getRequestURI());
+
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        }
+
+        /**
          * Handle all other exceptions
          */
         @ExceptionHandler(Exception.class)
