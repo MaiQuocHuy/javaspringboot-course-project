@@ -38,6 +38,7 @@ public class SecurityConfig {
                                                                 "/v3/api-docs.yaml",
                                                                 "/swagger-config/**",
                                                                 "/api/courses/**",
+                                                                "/api/categories/**",
                                                                 "/error")
                                                 .permitAll()
                                                 // Admin
@@ -47,7 +48,9 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/instructor/**").hasAnyAuthority("INSTRUCTOR")
 
                                                 // Student
-                                                .requestMatchers("/api/student/**").hasAnyAuthority("STUDENT")
+                                                .requestMatchers("/api/student/**", "/api/enrollments/**")
+                                                .hasAnyAuthority("STUDENT")
+
                                                 .requestMatchers("/api/users/profile").authenticated() // Profile
 
                                                 // authentication

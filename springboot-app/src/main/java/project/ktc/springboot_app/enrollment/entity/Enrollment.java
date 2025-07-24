@@ -1,15 +1,17 @@
-package project.ktc.springboot_app.entity;
+package project.ktc.springboot_app.enrollment.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;
+import project.ktc.springboot_app.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ENROLLMENT", uniqueConstraints = @UniqueConstraint(name = "unique_enrollment", columnNames = {"user_id", "course_id"}))
+@Table(name = "ENROLLMENT", uniqueConstraints = @UniqueConstraint(name = "unique_enrollment", columnNames = { "user_id",
+        "course_id" }))
 @Getter
 @Setter
 public class Enrollment extends BaseEntity {
@@ -26,4 +28,11 @@ public class Enrollment extends BaseEntity {
 
     @Column(name = "completion_status")
     private String completionStatus = "IN_PROGRESS";
-} 
+
+    @PrePersist
+    protected void onCreate() {
+        if (enrolledAt == null) {
+            enrolledAt = LocalDateTime.now();
+        }
+    }
+}
