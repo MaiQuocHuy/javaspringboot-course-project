@@ -3,7 +3,6 @@ package project.ktc.springboot_app.user.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,7 +30,6 @@ import project.ktc.springboot_app.user_role.repositories.UserRoleRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import java.util.Optional;
 
-import java.lang.classfile.ClassFile.Option;
 import java.util.List;
 import java.util.stream.Collectors;
 

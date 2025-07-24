@@ -12,16 +12,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
 import project.ktc.springboot_app.auth.dto.UserResponseDto;
 import project.ktc.springboot_app.user.dto.UpdateUserDto;
 import project.ktc.springboot_app.user.services.UserServiceImp;
-
-import java.util.Arrays;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
