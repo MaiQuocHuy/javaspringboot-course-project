@@ -1,0 +1,198 @@
+package project.ktc.springboot_app.review.services;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.common.exception.CreateReviewDto;
+import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.course.entity.Course;
+import project.ktc.springboot_app.course.repositories.CourseRepository;
+import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
+import project.ktc.springboot_app.review.dto.ReviewResponseDto;
+import project.ktc.springboot_app.review.entity.Review;
+import project.ktc.springboot_app.review.interfaces.ReviewService;
+import project.ktc.springboot_app.review.repositories.ReviewRepository;
+import project.ktc.springboot_app.user.repositories.UserRepository;
+import project.ktc.springboot_app.utils.SecurityUtil;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+@Transactional
+public class ReviewServiceImp implements ReviewService {
+
+    private final ReviewRepository reviewRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
+
+    @Override
+    public ResponseEntity<ApiResponse<ReviewResponseDto>> createReview(String courseId, CreateReviewDto reviewDto) {
+        log.info("Creating review for course {} by user", courseId);
+
+        // Get current authenticated user
+        String currentUserId = SecurityUtil.getCurrentUserId();
+
+        // 1. Validate course exists
+        Optional<Course> courseOpt = courseRepository.findById(courseId);
+        if (courseOpt.isEmpty()) {
+            return ApiResponseUtil.notFound("Course not found");
+        }
+        Course course = courseOpt.get();
+
+        // 2. Validate user exists
+        Optional<User> userOpt = userRepository.findById(currentUserId);
+        if (userOpt.isEmpty()) {
+            return ApiResponseUtil.notFound("User not found");
+        }
+        User user = userOpt.get();
+
+        // 3. Check if user is enrolled in the course
+        boolean isEnrolled = enrollmentRepository.existsByUserIdAndCourseId(currentUserId, courseId);
+        if (!isEnrolled) {
+            return ApiResponseUtil.forbidden("You must be enrolled in this course to submit a review");
+        }
+
+        // 4. Check if user has already reviewed this course
+        boolean hasReviewed = reviewRepository.existsByUserIdAndCourseId(currentUserId, courseId);
+        if (hasReviewed) {
+            return ApiResponseUtil.conflict("You have already reviewed this course");
+        }
+
+        // 5. Create and save the review
+        Review review = new Review();
+        review.setUser(user);
+        review.setCourse(course);
+        review.setRating(reviewDto.getRating());
+        review.setReviewText(reviewDto.getReview_text());
+        review.setReviewedAt(LocalDateTime.now());
+        review.setUpdatedAt(LocalDateTime.now());
+
+        Review savedReview = reviewRepository.save(review);
+        log.info("Successfully created review {} for course {} by user {}", savedReview.getId(), courseId,
+                currentUserId);
+
+        // 6. Convert to DTO and return
+        ReviewResponseDto responseDto = mapToResponseDto(savedReview);
+        return ApiResponseUtil.created(responseDto, "Review submitted successfully");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<ApiResponse<PaginatedResponse<ReviewResponseDto>>> getCourseReviews(String courseId,
+            Pageable pageable) {
+        log.info("Fetching reviews for course {} with pagination: {}", courseId, pageable);
+
+        // Validate course exists
+        if (!courseRepository.existsById(courseId)) {
+            return ApiResponseUtil.notFound("Course not found");
+        }
+
+        // Fetch reviews with pagination
+        Page<Review> reviewsPage = reviewRepository.findByCourseIdWithUser(courseId, pageable);
+
+        // Convert to DTOs
+        List<ReviewResponseDto> reviewDtos = reviewsPage.getContent().stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+
+        // Create paginated response
+        PaginatedResponse<ReviewResponseDto> paginatedResponse = PaginatedResponse.<ReviewResponseDto>builder()
+                .content(reviewDtos)
+                .page(PaginatedResponse.PageInfo.builder()
+                        .number(reviewsPage.getNumber())
+                        .size(reviewsPage.getSize())
+                        .totalElements(reviewsPage.getTotalElements())
+                        .totalPages(reviewsPage.getTotalPages())
+                        .first(reviewsPage.isFirst())
+                        .last(reviewsPage.isLast())
+                        .build())
+                .build();
+
+        return ApiResponseUtil.success(paginatedResponse, "Course reviews retrieved successfully");
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<ReviewResponseDto>> updateReview(String reviewId, CreateReviewDto reviewDto) {
+        log.info("Updating review {} by user", reviewId);
+
+        String currentUserId = SecurityUtil.getCurrentUserId();
+
+        // Find the review
+        Optional<Review> reviewOpt = reviewRepository.findById(reviewId);
+        if (reviewOpt.isEmpty()) {
+            return ApiResponseUtil.notFound("Review not found");
+        }
+
+        Review review = reviewOpt.get();
+
+        // Check if current user owns this review
+        if (!review.getUser().getId().equals(currentUserId)) {
+            return ApiResponseUtil.forbidden("You can only update your own reviews");
+        }
+
+        // Update the review
+        review.setRating(reviewDto.getRating());
+        review.setReviewText(reviewDto.getReview_text());
+        review.setUpdatedAt(LocalDateTime.now());
+
+        Review updatedReview = reviewRepository.save(review);
+        log.info("Successfully updated review {} by user {}", reviewId, currentUserId);
+
+        ReviewResponseDto responseDto = mapToResponseDto(updatedReview);
+        return ApiResponseUtil.success(responseDto, "Review updated successfully");
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Void>> deleteReview(String reviewId) {
+        log.info("Deleting review {} by user", reviewId);
+
+        String currentUserId = SecurityUtil.getCurrentUserId();
+
+        // Find the review
+        Optional<Review> reviewOpt = reviewRepository.findById(reviewId);
+        if (reviewOpt.isEmpty()) {
+            return ApiResponseUtil.notFound("Review not found");
+        }
+
+        Review review = reviewOpt.get();
+
+        // Check if current user owns this review
+        if (!review.getUser().getId().equals(currentUserId)) {
+            return ApiResponseUtil.forbidden("You can only delete your own reviews");
+        }
+
+        // Delete the review
+        reviewRepository.delete(review);
+        log.info("Successfully deleted review {} by user {}", reviewId, currentUserId);
+
+        return ApiResponseUtil.success(null, "Review deleted successfully");
+    }
+
+    private ReviewResponseDto mapToResponseDto(Review review) {
+        return ReviewResponseDto.builder()
+                .id(review.getId())
+                .rating(review.getRating())
+                .review_text(review.getReviewText())
+                .reviewedAt(review.getReviewedAt())
+                .user(ReviewResponseDto.UserSummary.builder()
+                        .id(review.getUser().getId())
+                        .name(review.getUser().getName())
+                        .avatar(review.getUser().getThumbnailUrl())
+                        .build())
+                .build();
+    }
+}

@@ -663,7 +663,7 @@
     </changeSet>
 
     <!-- Add INSTRUCTOR role for approved applications -->
-    <changeSet id="007-15" author="ktc">
+    <!-- <changeSet id="007-15" author="ktc">
         <insert tableName="USER_ROLE">
             <column name="id" value="bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"/>
             <column name="user_id" value="22222222-2222-2222-2222-222222222222"/>
@@ -679,6 +679,6 @@
             <column name="user_id" value="55555555-5555-5555-5555-555555555555"/>
             <column name="role" value="INSTRUCTOR"/>
         </insert>
-    </changeSet>
+    </changeSet> -->
 
 </databaseChangeLog>

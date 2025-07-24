@@ -13,9 +13,9 @@ import project.ktc.springboot_app.entity.InstructorApplication;
 import project.ktc.springboot_app.entity.InstructorEarning;
 import project.ktc.springboot_app.entity.Payment;
 import project.ktc.springboot_app.entity.RefreshToken;
-import project.ktc.springboot_app.entity.Review;
 import project.ktc.springboot_app.entity.UserRole;
 import project.ktc.springboot_app.entity.VideoContent;
+import project.ktc.springboot_app.review.entity.Review;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -13,11 +13,12 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.entity.Section;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CourseRepository extends JpaRepository<Course, String>, JpaSpecificationExecutor<Course> {
+public interface CourseRepository extends JpaRepository<Course, String> {
 
         @Query("SELECT c FROM Course c " +
                         "LEFT JOIN FETCH c.instructor i " +
@@ -76,4 +77,5 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "WHERE c.id IN :courseIds " +
                         "GROUP BY c.id")
         List<Object[]> findEnrollmentCountsByCourseIds(@Param("courseIds") List<String> courseIds);
+
 }
