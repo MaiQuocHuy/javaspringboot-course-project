@@ -23,6 +23,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
 import project.ktc.springboot_app.course.dto.CreateCourseDto;
+import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto.CategoryInfo;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
 import project.ktc.springboot_app.course.entity.Course;
@@ -113,7 +114,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
         // Determine permissions
         boolean canEdit = !course.getIsApproved();
         boolean canDelete = !course.getIsApproved() && enrollmentCount == 0;
-        boolean canPublish = course.getIsApproved() && !course.getIsPublished();
+        boolean canPublish = !course.getIsPublished();
         boolean canUnpublish = course.getIsApproved() && course.getIsPublished();
 
         return CourseDashboardResponseDto.builder()
@@ -245,6 +246,201 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
         } catch (Exception e) {
             log.error("Error creating course: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to create course. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<CourseResponseDto>> updateCourse(
+            String courseId,
+            UpdateCourseDto updateCourseDto,
+            MultipartFile thumbnailFile,
+            String instructorId) {
+        try {
+            log.info("Updating course {} for instructor: {}", courseId, instructorId);
+
+            // Find the course and validate ownership
+            Course existingCourse = courseRepository.findById(courseId).orElse(null);
+            if (existingCourse == null) {
+                log.warn("Course not found with ID: {}", courseId);
+                return ApiResponseUtil.notFound("Course not found");
+            }
+
+            // Validate instructor ownership
+            if (!existingCourse.getInstructor().getId().equals(instructorId)) {
+                log.warn("Instructor {} attempted to update course {} owned by {}",
+                        instructorId, courseId, existingCourse.getInstructor().getId());
+                return ApiResponseUtil.forbidden("You can only update your own courses");
+            }
+
+            // Check permissions based on course approval status and enrollments
+            Long enrollmentCount = instructorCourseRepository.countEnrollmentsByCourseId(courseId);
+
+            // Determine permissions
+            boolean canEdit = !existingCourse.getIsApproved();
+
+            if (!canEdit) {
+                log.warn("Course {} cannot be edited - already approved", courseId);
+                return ApiResponseUtil.forbidden("Cannot edit approved courses");
+            }
+
+            // Validate instructor exists
+            User instructor = userRepository.findById(instructorId).orElse(null);
+            if (instructor == null) {
+                log.warn("Instructor not found with ID: {}", instructorId);
+                return ApiResponseUtil.notFound("Instructor not found");
+            }
+
+            // Update course fields if provided
+            if (updateCourseDto.getTitle() != null && !updateCourseDto.getTitle().trim().isEmpty()) {
+                existingCourse.setTitle(updateCourseDto.getTitle().trim());
+            }
+
+            if (updateCourseDto.getDescription() != null && !updateCourseDto.getDescription().trim().isEmpty()) {
+                existingCourse.setDescription(updateCourseDto.getDescription().trim());
+            }
+
+            if (updateCourseDto.getPrice() != null) {
+                existingCourse.setPrice(updateCourseDto.getPrice());
+            }
+
+            if (updateCourseDto.getLevel() != null) {
+                existingCourse.setLevel(updateCourseDto.getLevel());
+            }
+
+            // Update categories if provided
+            if (updateCourseDto.getCategoryIds() != null && !updateCourseDto.getCategoryIds().isEmpty()) {
+                List<Category> categories = new ArrayList<>();
+                for (String categoryId : updateCourseDto.getCategoryIds()) {
+                    Category category = categoryRepository.findById(categoryId).orElse(null);
+                    if (category == null) {
+                        log.warn("Category not found with ID: {}", categoryId);
+                        return ApiResponseUtil.notFound("Category not found: " + categoryId);
+                    }
+                    categories.add(category);
+                }
+                existingCourse.setCategories(categories);
+            }
+
+            // Handle thumbnail upload if provided
+            if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+                try {
+                    // Validate the uploaded file
+                    fileValidationService.validateImageFile(thumbnailFile);
+
+                    // Delete old image if it exists
+                    if (existingCourse.getThumbnailId() != null && !existingCourse.getThumbnailId().isEmpty()) {
+                        boolean deleted = cloudinaryService.deleteImage(existingCourse.getThumbnailId());
+                        log.info("Old thumbnail deletion result for course {}: {}", courseId, deleted);
+                    }
+
+                    // Upload new image to Cloudinary
+                    ImageUploadResponseDto uploadResult = cloudinaryService.uploadImage(thumbnailFile);
+
+                    // Update course thumbnail information
+                    existingCourse.setThumbnailUrl(uploadResult.getUrl());
+                    existingCourse.setThumbnailId(uploadResult.getPublicId());
+
+                    log.info("New thumbnail uploaded for course {}: {}", courseId, uploadResult.getPublicId());
+
+                } catch (Exception e) {
+                    log.error("Error uploading thumbnail for course: {}", e.getMessage(), e);
+                    return ApiResponseUtil.badRequest("Failed to upload thumbnail: " + e.getMessage());
+                }
+            }
+
+            // Save the updated course
+            Course updatedCourse = courseRepository.save(existingCourse);
+            log.info("Course updated successfully with ID: {}", updatedCourse.getId());
+
+            // Create response DTO
+            CourseResponseDto responseDto = CourseResponseDto.builder()
+                    .id(updatedCourse.getId())
+                    .title(updatedCourse.getTitle())
+                    .description(updatedCourse.getDescription())
+                    .price(updatedCourse.getPrice())
+                    .level(updatedCourse.getLevel())
+                    .thumbnailUrl(updatedCourse.getThumbnailUrl())
+                    .thumbnailId(updatedCourse.getThumbnailId())
+                    .isPublished(updatedCourse.getIsPublished())
+                    .isApproved(updatedCourse.getIsApproved())
+                    .instructor(CourseResponseDto.InstructorInfo.builder()
+                            .id(instructor.getId())
+                            .name(instructor.getName())
+                            .email(instructor.getEmail())
+                            .build())
+                    .categories(updatedCourse.getCategories().stream()
+                            .map(category -> CourseResponseDto.CategoryInfo.builder()
+                                    .id(category.getId())
+                                    .name(category.getName())
+                                    .build())
+                            .collect(Collectors.toList()))
+                    .createdAt(updatedCourse.getCreatedAt())
+                    .updatedAt(updatedCourse.getUpdatedAt())
+                    .build();
+
+            return ApiResponseUtil.success(responseDto, "Course updated successfully");
+
+        } catch (Exception e) {
+            log.error("Error updating course: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to update course. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Void>> deleteCourse(String courseId, String instructorId) {
+        try {
+            log.info("Attempting to delete course: {} by instructor: {}", courseId, instructorId);
+
+            // Validate instructor exists
+            User instructor = userRepository.findById(instructorId).orElse(null);
+            if (instructor == null) {
+                log.warn("Instructor not found with ID: {}", instructorId);
+                return ApiResponseUtil.notFound("Instructor not found");
+            }
+
+            // Find the course and verify ownership
+            Course course = courseRepository.findById(courseId).orElse(null);
+            if (course == null) {
+                log.warn("Course not found with ID: {}", courseId);
+                return ApiResponseUtil.notFound("Course not found");
+            }
+
+            // Check ownership
+            if (!course.getInstructor().getId().equals(instructorId)) {
+                log.warn("Instructor {} does not own course {}", instructorId, courseId);
+                return ApiResponseUtil.forbidden("You are not allowed to delete this course");
+            }
+
+            // Check if course is approved
+            if (course.getIsApproved()) {
+                log.warn("Cannot delete approved course: {}", courseId);
+                return ApiResponseUtil.badRequest("Cannot delete a course that is approved");
+            }
+
+            // Check if course has enrolled students
+            Long enrollmentCount = instructorCourseRepository.countEnrollmentsByCourseId(courseId);
+            if (enrollmentCount > 0) {
+                log.warn("Cannot delete course {} with {} enrolled students", courseId, enrollmentCount);
+                return ApiResponseUtil.badRequest("Cannot delete a course that has enrolled students");
+            }
+
+            // Verify deletion permission (same logic as in dashboard)
+            boolean canDelete = !course.getIsApproved() && enrollmentCount == 0;
+            if (!canDelete) {
+                log.warn("Course {} cannot be deleted due to business rules", courseId);
+                return ApiResponseUtil.badRequest("Cannot delete a course that is approved or has enrolled students");
+            }
+
+            // Delete the course (soft delete by setting isDeleted = true)
+            course.setIsDeleted(true);
+            courseRepository.save(course);
+
+            log.info("Course {} deleted successfully by instructor {}", courseId, instructorId);
+            return ApiResponseUtil.success(null, "Course deleted successfully");
+
+        } catch (Exception e) {
+            log.error("Error deleting course: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to delete course. Please try again later.");
         }
     }
 }

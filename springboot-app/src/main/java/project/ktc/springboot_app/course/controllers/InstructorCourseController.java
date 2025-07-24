@@ -11,7 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,7 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,6 +36,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
 import project.ktc.springboot_app.course.dto.CreateCourseDto;
+import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
 import project.ktc.springboot_app.course.enums.CourseInstructorStatus;
 import project.ktc.springboot_app.course.enums.CourseLevel;
@@ -150,6 +155,124 @@ public class InstructorCourseController {
 
                 // Call service to create course
                 return instructorCourseService.createCourse(createCourseDto, thumbnailFile, instructorId);
+        }
+
+        @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        @PreAuthorize("hasAuthority('INSTRUCTOR')")
+        @Operation(summary = "Update an existing course", description = """
+                        Update an existing course with optional thumbnail upload for instructors.
+
+                        **Permission Requirements:**
+                        - Course must not be approved yet (canEdit = !isApproved)
+                        - Only the course owner can update it
+
+                        **Fields:** (All fields are optional)
+                        - `title` (text): Course title (5-100 characters)
+                        - `description` (text): Course description (20-1000 characters)
+                        - `price` (number): Course price (0-9999.99)
+                        - `categoryIds` (array): Category IDs (at least one if provided)
+                        - `level` (text): Course level - BEGINNER, INTERMEDIATE, ADVANCED
+                        - `thumbnail` (file): Course thumbnail image (optional)
+
+                        **Supported Image Formats:** JPEG, PNG, GIF, BMP, WebP
+                        **Max Size:** 10MB
+
+                        **Note:** For categoryIds, send multiple parameters with the same name, e.g., categoryIds=id1&categoryIds=id2
+                        """, security = @SecurityRequirement(name = "bearerAuth"))
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseResponseDto>> updateCourse(
+                        @Parameter(description = "Course ID", required = true) @PathVariable("id") String courseId,
+                        @Parameter(description = "Course title", required = false) @RequestParam(value = "title", required = false) String title,
+                        @Parameter(description = "Course description", required = false) @RequestParam(value = "description", required = false) String description,
+                        @Parameter(description = "Course price", required = false) @RequestParam(value = "price", required = false) String price,
+                        @Parameter(description = "Category IDs (can send multiple)", required = false) @RequestParam(value = "categoryIds", required = false) java.util.List<String> categoryIds,
+                        @Parameter(description = "Course level", required = false, schema = @Schema(implementation = CourseLevel.class)) @RequestParam(value = "level", required = false) String level,
+                        @Parameter(description = "Optional course thumbnail image file", required = false) @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
+
+                log.info("Received request to update course {} with title: {}", courseId, title);
+
+                String instructorId = SecurityUtil.getCurrentUserId();
+
+                // Create DTO from request parameters
+                UpdateCourseDto updateCourseDto = UpdateCourseDto.builder().build();
+
+                try {
+                        if (title != null && !title.trim().isEmpty()) {
+                                updateCourseDto.setTitle(title.trim());
+                        }
+
+                        if (description != null && !description.trim().isEmpty()) {
+                                updateCourseDto.setDescription(description.trim());
+                        }
+
+                        if (price != null && !price.trim().isEmpty()) {
+                                updateCourseDto.setPrice(new java.math.BigDecimal(price));
+                        }
+
+                        if (categoryIds != null && !categoryIds.isEmpty()) {
+                                updateCourseDto.setCategoryIds(categoryIds);
+                        }
+
+                        if (level != null && !level.trim().isEmpty()) {
+                                updateCourseDto.setLevel(CourseLevel.valueOf(level.toUpperCase()));
+                        }
+
+                } catch (NumberFormatException e) {
+                        log.warn("Invalid price format: {}", price);
+                        return ApiResponseUtil.badRequest("Invalid price format");
+                } catch (IllegalArgumentException e) {
+                        log.warn("Invalid input data: {}", e.getMessage());
+                        return ApiResponseUtil.badRequest("Invalid input data: " + e.getMessage());
+                }
+
+                // Validate fields if provided
+                if (title != null && (title.trim().length() < 5 || title.trim().length() > 100)) {
+                        return ApiResponseUtil.badRequest("Title must be between 5 and 100 characters");
+                }
+
+                if (description != null && (description.trim().length() < 20 || description.trim().length() > 1000)) {
+                        return ApiResponseUtil.badRequest("Description must be between 20 and 1000 characters");
+                }
+
+                if (categoryIds != null && categoryIds.isEmpty()) {
+                        return ApiResponseUtil
+                                        .badRequest("At least one category must be selected when updating categories");
+                }
+
+                // Call service to update course
+                return instructorCourseService.updateCourse(courseId, updateCourseDto, thumbnailFile, instructorId);
+        }
+
+        @DeleteMapping("/{id}")
+        @PreAuthorize("hasAuthority('INSTRUCTOR')")
+        @Operation(summary = "Delete a course", description = """
+                        Delete a course created by the instructor.
+
+                        **Permission Requirements:**
+                        - Course must not be approved yet (canDelete = !isApproved && enrollmentCount == 0)
+                        - Course must not have any enrolled students
+                        - Only the course owner can delete it
+
+                        **Business Rules:**
+                        - ✅ Instructor must be the owner of the course
+                        - ❌ Course must not be approved
+                        - ❌ Course must not have any enrolled students
+                        """, security = @SecurityRequirement(name = "bearerAuth"))
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Course deleted successfully"),
+                        @ApiResponse(responseCode = "400", description = "Cannot delete a course that is approved or has enrolled students"),
+                        @ApiResponse(responseCode = "403", description = "You are not allowed to delete this course"),
+                        @ApiResponse(responseCode = "404", description = "Course not found"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> deleteCourse(
+                        @Parameter(description = "Course ID", required = true) @PathVariable("id") String courseId) {
+
+                log.info("Received request to delete course: {}", courseId);
+
+                String instructorId = SecurityUtil.getCurrentUserId();
+
+                // Call service to delete course
+                return instructorCourseService.deleteCourse(courseId, instructorId);
         }
 
         private Pageable createPageable(int page, int size, String sort) {

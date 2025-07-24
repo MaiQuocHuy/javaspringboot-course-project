@@ -9,6 +9,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
 import project.ktc.springboot_app.course.dto.CreateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
+import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 
 public interface InstructorCourseService {
 
@@ -21,6 +22,16 @@ public interface InstructorCourseService {
     ResponseEntity<ApiResponse<CourseResponseDto>> createCourse(
             CreateCourseDto createCourseDto,
             MultipartFile thumbnailFile,
+            String instructorId);
+
+    ResponseEntity<ApiResponse<CourseResponseDto>> updateCourse(
+            String courseId,
+            UpdateCourseDto updateCourseDto,
+            MultipartFile thumbnailFile,
+            String instructorId);
+
+    ResponseEntity<ApiResponse<Void>> deleteCourse(
+            String courseId,
             String instructorId);
 
 }
