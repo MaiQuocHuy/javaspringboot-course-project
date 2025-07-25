@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.upload.exception.InvalidImageFormatException;
+import project.ktc.springboot_app.upload.exception.InvalidVideoFormatException;
 
 import java.util.List;
 
@@ -15,15 +16,29 @@ import java.util.List;
 public class FileValidationService {
 
     // Allowed image MIME types
-    private static final List<String> ALLOWED_MIME_TYPES = List.of(
+    private static final List<String> ALLOWED_IMAGE_MIME_TYPES = List.of(
             "image/jpeg",
             "image/png",
             "image/gif",
             "image/bmp",
             "image/webp");
 
-    // Maximum file size (10MB)
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+    // Allowed video MIME types
+    private static final List<String> ALLOWED_VIDEO_MIME_TYPES = List.of(
+            "video/mp4",
+            "video/mpeg",
+            "video/quicktime",
+            "video/x-msvideo", // AVI
+            "video/x-ms-wmv", // WMV
+            "video/webm",
+            "video/x-matroska", // MKV
+            "video/ogg");
+
+    // Maximum file size for images (10MB)
+    private static final long MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+
+    // Maximum file size for videos (100MB)
+    private static final long MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 
     /**
      * Validate uploaded image file
@@ -32,13 +47,30 @@ public class FileValidationService {
      * @throws InvalidImageFormatException if validation fails
      */
     public void validateImageFile(MultipartFile file) {
-        log.debug("Starting validation for file: {}", file.getOriginalFilename());
+        log.debug("Starting validation for image file: {}", file.getOriginalFilename());
 
         validateFileNotEmpty(file);
-        validateFileSize(file);
-        validateMimeType(file);
+        validateImageFileSize(file);
+        validateImageMimeType(file);
 
-        log.debug("File validation passed for: {} ({})",
+        log.debug("Image file validation passed for: {} ({})",
+                file.getOriginalFilename(), file.getContentType());
+    }
+
+    /**
+     * Validate uploaded video file
+     * 
+     * @param file MultipartFile to validate
+     * @throws InvalidVideoFormatException if validation fails
+     */
+    public void validateVideoFile(MultipartFile file) {
+        log.debug("Starting validation for video file: {}", file.getOriginalFilename());
+
+        validateFileNotEmpty(file);
+        validateVideoFileSize(file);
+        validateVideoMimeType(file);
+
+        log.debug("Video file validation passed for: {} ({})",
                 file.getOriginalFilename(), file.getContentType());
     }
 
@@ -52,45 +84,88 @@ public class FileValidationService {
     }
 
     /**
-     * Check if file size is within limits
+     * Check if image file size is within limits
      */
-    private void validateFileSize(MultipartFile file) {
+    private void validateImageFileSize(MultipartFile file) {
         long fileSizeInMB = file.getSize() / (1024 * 1024);
-        if (file.getSize() > MAX_FILE_SIZE) {
+        if (file.getSize() > MAX_IMAGE_SIZE) {
             throw new InvalidImageFormatException(
-                    String.format("File size (%d MB) exceeds maximum allowed size of %d MB",
-                            fileSizeInMB, MAX_FILE_SIZE / (1024 * 1024)));
+                    String.format("Image file size (%d MB) exceeds maximum allowed size of %d MB",
+                            fileSizeInMB, MAX_IMAGE_SIZE / (1024 * 1024)));
         }
     }
 
     /**
-     * Check if MIME type is allowed
+     * Check if video file size is within limits
      */
-    private void validateMimeType(MultipartFile file) {
+    private void validateVideoFileSize(MultipartFile file) {
+        long fileSizeInMB = file.getSize() / (1024 * 1024);
+        if (file.getSize() > MAX_VIDEO_SIZE) {
+            throw new InvalidVideoFormatException(
+                    String.format("Video file size (%d MB) exceeds maximum allowed size of %d MB",
+                            fileSizeInMB, MAX_VIDEO_SIZE / (1024 * 1024)));
+        }
+    }
+
+    /**
+     * Check if image MIME type is allowed
+     */
+    private void validateImageMimeType(MultipartFile file) {
         String contentType = file.getContentType();
 
         if (contentType == null) {
             throw new InvalidImageFormatException("File content type could not be determined");
         }
 
-        if (!ALLOWED_MIME_TYPES.contains(contentType.toLowerCase())) {
+        if (!ALLOWED_IMAGE_MIME_TYPES.contains(contentType.toLowerCase())) {
             throw new InvalidImageFormatException(
-                    String.format("Invalid file format '%s'. Allowed formats: %s",
-                            contentType, String.join(", ", ALLOWED_MIME_TYPES)));
+                    String.format("Invalid image format '%s'. Allowed formats: %s",
+                            contentType, String.join(", ", ALLOWED_IMAGE_MIME_TYPES)));
         }
     }
 
     /**
-     * Get allowed MIME types (for documentation purposes)
+     * Check if video MIME type is allowed
      */
-    public List<String> getAllowedMimeTypes() {
-        return List.copyOf(ALLOWED_MIME_TYPES);
+    private void validateVideoMimeType(MultipartFile file) {
+        String contentType = file.getContentType();
+
+        if (contentType == null) {
+            throw new InvalidVideoFormatException("File content type could not be determined");
+        }
+
+        if (!ALLOWED_VIDEO_MIME_TYPES.contains(contentType.toLowerCase())) {
+            throw new InvalidVideoFormatException(
+                    String.format("Invalid video format '%s'. Allowed formats: %s",
+                            contentType, String.join(", ", ALLOWED_VIDEO_MIME_TYPES)));
+        }
     }
 
     /**
-     * Get maximum file size in MB (for documentation purposes)
+     * Get allowed image MIME types (for documentation purposes)
      */
-    public long getMaxFileSizeMB() {
-        return MAX_FILE_SIZE / (1024 * 1024);
+    public List<String> getAllowedImageMimeTypes() {
+        return List.copyOf(ALLOWED_IMAGE_MIME_TYPES);
+    }
+
+    /**
+     * Get allowed video MIME types (for documentation purposes)
+     */
+    public List<String> getAllowedVideoMimeTypes() {
+        return List.copyOf(ALLOWED_VIDEO_MIME_TYPES);
+    }
+
+    /**
+     * Get maximum image file size in MB (for documentation purposes)
+     */
+    public long getMaxImageFileSizeMB() {
+        return MAX_IMAGE_SIZE / (1024 * 1024);
+    }
+
+    /**
+     * Get maximum video file size in MB (for documentation purposes)
+     */
+    public long getMaxVideoFileSizeMB() {
+        return MAX_VIDEO_SIZE / (1024 * 1024);
     }
 }

@@ -32,7 +32,7 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
-import project.ktc.springboot_app.section.repositories.SectionRepository;
+import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.service.FileValidationService;
@@ -48,7 +48,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final UserRepository userRepository;
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
-    private final SectionRepository sectionRepository;
+    private final InstructorSectionRepository sectionRepository;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> findInstructorCourses(

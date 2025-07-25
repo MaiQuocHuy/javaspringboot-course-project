@@ -201,6 +201,7 @@ CREATE TABLE `INSTRUCTOR_EARNING` (
 `available_at` timestamp NULL,
 `paid_at` timestamp NULL,
 `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 INDEX `idx_instructor` (`instructor_id`),
 UNIQUE KEY `unique_payment` (`payment_id`),
 INDEX `idx_status` (`status`),
