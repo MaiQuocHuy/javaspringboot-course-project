@@ -5,12 +5,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import project.ktc.springboot_app.entity.Lesson;
+import project.ktc.springboot_app.lesson.entity.Lesson;
 
 import java.util.List;
 
 @Repository
-public interface LessonRepository extends JpaRepository<Lesson, String> {
+public interface InstructorLessonRepository extends JpaRepository<Lesson, String> {
 
     @Query("SELECT l FROM Lesson l " +
             "WHERE l.section.id = :sectionId " +

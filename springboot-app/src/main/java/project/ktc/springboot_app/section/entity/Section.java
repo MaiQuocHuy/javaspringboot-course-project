@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.entity.BaseEntity;
-import project.ktc.springboot_app.entity.Lesson;
+import project.ktc.springboot_app.lesson.entity.Lesson;
 
 import java.util.List;
 
