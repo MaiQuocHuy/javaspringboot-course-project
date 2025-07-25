@@ -30,4 +30,4 @@ public class QuizQuestion extends BaseEntity {
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-} 
+}

@@ -10,8 +10,8 @@ import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.entity.BaseEntity;
 import project.ktc.springboot_app.entity.InstructorEarning;
 import project.ktc.springboot_app.entity.Payment;
-import project.ktc.springboot_app.entity.Section;
 import project.ktc.springboot_app.review.entity.Review;
+import project.ktc.springboot_app.section.entity.Section;
 
 import java.math.BigDecimal;
 import java.util.List;

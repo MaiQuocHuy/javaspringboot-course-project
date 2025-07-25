@@ -655,22 +655,29 @@ For lists of resources that support pagination.
 - **Security:** Requires `INSTRUCTOR` role.
 - **Testing:** Test course creation.
 
-### 4.2. `PUT /api/instructor/courses/:id`
+### 4.2. `PATCH /api/instructor/courses/:id`
 
 - **Description:** Updates a course owned by the instructor.
 - **Request:**
-  - **Method:** `PUT`
+
+  - **Method:** `PATCH`
   - **Path:** `/api/instructor/courses/:id`
   - **Path Params:** `id` (string)
   - **Headers:** `Authorization: Bearer <accessToken>`
-  - **Body (`UpdateCourseDto`):**
-    ```json
-    {
-      "title": "string",
-      "description": "string",
-      "price": 0
-    }
+    `Content-Type: multipart/form-data`
+  - **Body (multipart/form-data):**
+    ``
+    "title": "string",
+    "description": "string",
+    "price": 0,
+    "categoryId": "string",
+    "categoryId": "string",
+    "thumbnail": "file"
+
     ```
+
+    ```
+
 - **Response:**
   - **Success (200 OK):**
     ```json
@@ -679,7 +686,21 @@ For lists of resources that support pagination.
       "message": "Course updated successfully",
       "data": {
         "id": "string",
-        "title": "string"
+        "title": "string",
+        "description": "string",
+        "price": 0,
+        "categories": [
+          {
+            "id": "string",
+            "name": "string"
+          },
+          {
+            "id": "string",
+            "name": "string"
+          }
+        ],
+        "thumbnailUrl": "file",
+        "level": "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
       }
     }
     ```
@@ -740,6 +761,173 @@ For lists of resources that support pagination.
 - **Service:** Implement `getCourses`, ensuring only the instructor's courses are retrieved.
 - **Security:** Requires `INSTRUCTOR` role.
 - **Testing:** Test retrieval of instructor's courses.
+
+### 4.7. `DELETE /api/instructor/courses/:id`
+
+- **Description:** Deletes a course owned by the instructor.
+  Only allowed if the course is not approved and has no enrolled students.
+- **Request:**
+  - **Method:** `DELETE`
+  - **Path:** `/api/instructor/courses/:id`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Business Rules**:
+  - Only the instructor who created the course can delete it.
+  - Courses that are approved cannot be deleted.
+  - Courses with enrolled students cannot be deleted.
+- **Response:**
+  - **Success (204 No Content):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course deleted successfully"
+    }
+    ```
+- **Controller:** Add a `deleteCourse` endpoint.
+- **Service:** Implement `deleteCourse`, ensuring the instructor owns the course, verify course ownership, check isApproved, check enrollment count, then delete.
+- **Security:** Requires `INSTRUCTOR` role.
+- **Testing:**
+  - Successful deletion when rules are satisfied
+  - Prevent deletion if course is approved or has students
+  - Unauthorized users can't delete other's courses
+
+### 4.8. `PATCH /api/instructor/courses/:id/status`
+
+- **Description:** Updates the visibility status of a course.
+  Instructors can only PUBLISH a course if it meets all required conditions and can only UNPUBLISH a course that is approved and already published.
+- **Request:**
+  - **Method:** `PATCH`
+  - **Path:** `/api/instructor/courses/:id/status`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body:**
+    ```json
+    {
+      "status": "PUBLISHED" | "UNPUBLISHED"
+    }
+    ```
+  - **Business Rules:**
+    - Only the instructor who owns the course can update its status.
+    - Allowed status values: "PUBLISHED" or "UNPUBLISHED".
+    - Can only PUBLISH if:
+      - Course has complete details: title, description, thumbnail, and at least one section or lesson.
+    - Can only UNPUBLISH if:
+      - Course is approved (isApproved = true) and currently published (isPublished = true).
+    - Not allowed to:
+      - UNPUBLISH a course that has never been published
+      - Re-publish a course that is already published
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course status updated successfully",
+      "data": {
+        "id": "string",
+        "title": "string",
+        "previousStatus": "UNPUBLISHED",
+        "currentStatus": "PUBLISHED"
+      }
+    }
+    ```
+- **Controller:** Add an `updateCourseStatus` endpoint.
+- **Service:** Implement `updateCourseStatus` in `CourseService`.Verify course ownership, Validate the course status change rules, Update isPublished if valid, Return old and new status in the response
+- **Security:** Only users with the INSTRUCTOR role are allowed.Ownership verification is required
+- **Testing:**
+- Success when the course is valid and the instructor owns it
+- Reject if:
+  - Course does not meet the publish conditions
+  - The user is not the course owner
+  - Attempting to unpublish a course that was never published
+- No status change if the same status is sent again
+
+### 4.9. `GET /api/instructor/courses/:id/sections`
+
+- **Description:** Retrieves all sections of a course owned by the instructor.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/courses/:id/sections`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Business Rules:**
+    - Only the instructor who owns the course can view its sections.
+    - If the course doesn't exist or the instructor is not the owner, access should be denied.
+    - If the course exists but has no sections, return an empty array.
+  - **Response:** - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Sections retrieved successfully",
+      "data": [
+        {
+          "id": "section-uuid",
+          "title": "Introduction",
+          "order": 1,
+          "lessonCount": 3,
+          "lessons": [
+            {
+              "id": "lesson-uuid",
+              "title": "Getting Started",
+              "type": "VIDEO",
+              "video": {
+                "id": "video-uuid",
+                "url": "https://res.cloudinary.com/.../video.mp4",
+                "duration": 300
+              }
+            },
+            {
+              "id": "lesson-uuid-2",
+              "title": "Course Overview",
+              "type": "QUIZ",
+              "quiz": {
+                "questions": [
+                  {
+                    "id": "question-id-1",
+                    "questionText": "What is Java?",
+                    "options": [
+                      "A. Language",
+                      "B. Framework",
+                      "C. OS",
+                      "D. Compiler"
+                    ],
+                    "correctAnswer": "A",
+                    "explanation": "Java is a programming language."
+                  },
+                  {
+                    "id": "question-id-2",
+                    "questionText": "What is JVM?",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswer": "C",
+                    "explanation": null
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "section-uuid-2",
+          "title": "Advanced Concepts",
+          "order": 2,
+          "lessonCount": 0,
+          "lessons": []
+        }
+      ]
+    }
+    ```
+- **Controller:** Add a `getSections` endpoint.
+- **Service:**
+
+  - Check course ownership.
+  - Fetch sections with course_id.
+  - For each section, fetch lessons ordered by order.
+  - For each lesson:
+    - If type = "VIDEO", include video info.
+    - If type = "QUIZ", fetch all QUIZ_QUESTION by lesson_id.
+  - Map results to SectionWithLessonsDto.
+
+- **Security:** Requires `INSTRUCTOR` role and course ownership.
+- **Testing:** Test retrieval of course sections.
 
 ### 4.3. `POST /api/instructor/courses/:courseId/sections`
 
