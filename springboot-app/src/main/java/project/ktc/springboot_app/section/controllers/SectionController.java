@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.section.dto.CreateSectionDto;
+import project.ktc.springboot_app.section.dto.ReorderSectionsDto;
 import project.ktc.springboot_app.section.dto.SectionResponseDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 import project.ktc.springboot_app.section.interfaces.SectionService;
@@ -161,5 +163,98 @@ public class SectionController {
 
         // Call service to update section
         return sectionService.updateSection(courseId, sectionId, instructorId, updateSectionDto);
+    }
+
+    @DeleteMapping("/{courseId}/sections/{sectionId}")
+    @PreAuthorize("hasAuthority('INSTRUCTOR')")
+    @Operation(summary = "Delete an existing section", description = """
+            Delete an existing section from a course owned by the instructor.
+            After deletion, the system automatically reorders the remaining sections to maintain continuous order values.
+
+            **Permission Requirements:**
+            - User must have INSTRUCTOR role
+            - User must own the course (course.instructor_id == currentUser.id)
+
+            **Business Rules:**
+            - Only course owner can delete sections
+            - Section must exist and belong to the specified course
+            - Deletion cascades to associated lessons in the section
+            - Remaining sections are automatically reordered to maintain continuous order (0,1,2,3...)
+
+            **Response:**
+            - 204 No Content on successful deletion
+            - Section data is permanently removed from the system
+            - All lessons in the section are also deleted
+
+            **Reordering Logic:**
+            - Sections with order index greater than the deleted section will have their order decreased by 1
+            - This ensures a continuous sequence of order values without gaps
+            """, security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Section deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "You are not allowed to delete sections for this course"),
+            @ApiResponse(responseCode = "404", description = "Course or section not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> deleteSection(
+            @Parameter(description = "Course ID", required = true) @PathVariable("courseId") String courseId,
+            @Parameter(description = "Section ID", required = true) @PathVariable("sectionId") String sectionId) {
+
+        log.info("Received request to delete section {} from course: {}", sectionId, courseId);
+
+        String instructorId = SecurityUtil.getCurrentUserId();
+
+        // Call service to delete section
+        return sectionService.deleteSection(courseId, sectionId, instructorId);
+    }
+
+    @PatchMapping("/{courseId}/sections/reorder")
+    @PreAuthorize("hasAuthority('INSTRUCTOR')")
+    @Operation(summary = "Reorder sections within a course", description = """
+            Reorder all sections within a course owned by the instructor.
+            The client must send a complete, ordered array of section IDs.
+
+            **Permission Requirements:**
+            - User must have INSTRUCTOR role
+            - User must own the course (course.instructor_id == currentUser.id)
+
+            **Request Body:**
+            - sectionOrder: Complete array of section IDs in the desired order
+
+            **Business Rules:**
+            - Only course owner can reorder sections
+            - Array must contain ALL section IDs from the course
+            - Array must not contain duplicate IDs
+            - Array must not contain IDs from other courses
+            - Each section gets an order index equal to its position in the array (0-based)
+
+            **Response:**
+            - 200 OK on successful reordering
+            - All sections are updated with new order indices
+            - Order indices are sequential starting from 0
+
+            **Validation:**
+            - Checks that all current section IDs are included
+            - Checks that no extra or duplicate IDs are present
+            - Verifies all IDs belong to the specified course
+            """, security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sections reordered successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid section order (missing, duplicate, or invalid IDs)"),
+            @ApiResponse(responseCode = "403", description = "You are not allowed to reorder sections for this course"),
+            @ApiResponse(responseCode = "404", description = "Course not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> reorderSections(
+            @Parameter(description = "Course ID", required = true) @PathVariable("courseId") String courseId,
+            @Parameter(description = "Section reorder data containing complete ordered list of section IDs", required = true) @Valid @RequestBody ReorderSectionsDto reorderSectionsDto) {
+
+        log.info("Received request to reorder sections for course: {} with order: {}",
+                courseId, reorderSectionsDto.getSectionOrder());
+
+        String instructorId = SecurityUtil.getCurrentUserId();
+
+        // Call service to reorder sections
+        return sectionService.reorderSections(courseId, instructorId, reorderSectionsDto);
     }
 }

@@ -1,12 +1,17 @@
 package project.ktc.springboot_app.section.services;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,15 +22,16 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
-import project.ktc.springboot_app.entity.Lesson;
 import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.entity.VideoContent;
-import project.ktc.springboot_app.lesson.repositories.LessonRepository;
+import project.ktc.springboot_app.lesson.entity.Lesson;
+import project.ktc.springboot_app.lesson.repositories.InstructorLessonRepository;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 import project.ktc.springboot_app.section.dto.CreateSectionDto;
 import project.ktc.springboot_app.section.dto.LessonDto;
 import project.ktc.springboot_app.section.dto.QuizDto;
 import project.ktc.springboot_app.section.dto.QuizQuestionDto;
+import project.ktc.springboot_app.section.dto.ReorderSectionsDto;
 import project.ktc.springboot_app.section.dto.SectionResponseDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 import project.ktc.springboot_app.section.dto.VideoDto;
@@ -40,7 +46,7 @@ import project.ktc.springboot_app.video.repositories.VideoContentRepository;
 public class SectionServiceImp implements SectionService {
 
     private final SectionRepository sectionRepository;
-    private final LessonRepository lessonRepository;
+    private final InstructorLessonRepository lessonRepository;
     private final QuizQuestionRepository quizQuestionRepository;
     private final VideoContentRepository videoContentRepository;
     private final CourseRepository courseRepository;
@@ -298,6 +304,238 @@ public class SectionServiceImp implements SectionService {
         } catch (Exception e) {
             log.error("Error updating section: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to update section. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Void>> deleteSection(
+            String courseId,
+            String sectionId,
+            String instructorId) {
+
+        log.info("Deleting section {} for courseId: {}, instructorId: {}",
+                sectionId, courseId, instructorId);
+
+        try {
+            // Verify course exists and instructor owns it
+            Course course = courseRepository.findById(courseId).orElse(null);
+            if (course == null) {
+                log.warn("Course not found with ID: {}", courseId);
+                return ApiResponseUtil.notFound("Course not found");
+            }
+
+            // Check ownership
+            if (!course.getInstructor().getId().equals(instructorId)) {
+                log.warn("Instructor {} does not own course {}", instructorId, courseId);
+                return ApiResponseUtil.forbidden("You are not allowed to delete sections for this course");
+            }
+
+            // Find the section and verify it belongs to the course
+            Section section = sectionRepository.findById(sectionId).orElse(null);
+            if (section == null) {
+                log.warn("Section not found with ID: {}", sectionId);
+                return ApiResponseUtil.notFound("Section not found");
+            }
+
+            // Verify section belongs to the course
+            if (!section.getCourse().getId().equals(courseId)) {
+                log.warn("Section {} does not belong to course {}", sectionId, courseId);
+                return ApiResponseUtil.notFound("Section not found in this course");
+            }
+
+            // Get the order index of the section to be deleted for reordering
+            Integer deletedSectionOrder = section.getOrderIndex();
+
+            // Delete the section (this will cascade delete lessons if configured properly)
+            sectionRepository.delete(section);
+            log.info("Section {} deleted successfully", sectionId);
+
+            // Reorder remaining sections to maintain continuous order values
+            reorderSectionsAfterDeletion(courseId, deletedSectionOrder);
+
+            log.info("Section deleted and reordering completed for course {}", courseId);
+            return ApiResponseUtil.noContent("Section deleted successfully");
+
+        } catch (Exception e) {
+            log.error("Error deleting section: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to delete section. Please try again later.");
+        }
+    }
+
+    /**
+     * Reorders sections after deletion to maintain continuous order values.
+     * Sections with order index greater than the deleted section's order
+     * will have their order decreased by 1.
+     */
+    private void reorderSectionsAfterDeletion(String courseId, Integer deletedOrderIndex) {
+        log.info("Reordering sections for course {} after deletion at order {}", courseId, deletedOrderIndex);
+
+        try {
+            // Get all sections with order greater than the deleted section
+            List<Section> sectionsToReorder = sectionRepository.findSectionsByCourseIdAndOrderGreaterThan(
+                    courseId, deletedOrderIndex);
+
+            // Decrease order index by 1 for each section
+            for (Section section : sectionsToReorder) {
+                section.setOrderIndex(section.getOrderIndex() - 1);
+            }
+
+            // Batch save all updated sections
+            if (!sectionsToReorder.isEmpty()) {
+                sectionRepository.saveAll(sectionsToReorder);
+                log.info("Reordered {} sections for course {}", sectionsToReorder.size(), courseId);
+            }
+
+        } catch (Exception e) {
+            log.error("Error reordering sections for course {}: {}", courseId, e.getMessage(), e);
+            throw new RuntimeException("Failed to reorder sections after deletion", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> reorderSections(
+            String courseId,
+            String instructorId,
+            ReorderSectionsDto reorderSectionsDto) {
+
+        log.info("Reordering sections for courseId: {}, instructorId: {}, new order: {}",
+                courseId, instructorId, reorderSectionsDto.getSectionOrder());
+
+        try {
+            // Verify course exists and instructor owns it
+            Course course = courseRepository.findById(courseId).orElse(null);
+            if (course == null) {
+                log.warn("Course not found with ID: {}", courseId);
+                return ApiResponseUtil.notFound("Course not found");
+            }
+
+            // Check ownership
+            if (!course.getInstructor().getId().equals(instructorId)) {
+                log.warn("Instructor {} does not own course {}", instructorId, courseId);
+                return ApiResponseUtil.forbidden("You are not allowed to reorder sections for this course");
+            }
+
+            // Get all current sections for the course
+            List<Section> currentSections = sectionRepository.findSectionsByCourseIdOrderByOrder(courseId);
+
+            // Validate the reorder request
+            String validationError = validateSectionOrder(currentSections, reorderSectionsDto.getSectionOrder());
+            if (validationError != null) {
+                log.warn("Invalid section order for course {}: {}", courseId, validationError);
+                return ApiResponseUtil.badRequest(validationError);
+            }
+
+            // Reorder sections based on the new order
+            reorderSectionsWithNewOrder(currentSections, reorderSectionsDto.getSectionOrder());
+
+            log.info("Sections reordered successfully for course {}", courseId);
+            return ApiResponseUtil.success("Sections reordered successfully");
+
+        } catch (Exception e) {
+            log.error("Error reordering sections: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to reorder sections. Please try again later.");
+        }
+    }
+
+    /**
+     * Validates that the provided section order contains all and only the sections
+     * that belong to the course, with no duplicates.
+     */
+    private String validateSectionOrder(List<Section> currentSections, List<String> newOrder) {
+        if (newOrder == null || newOrder.isEmpty()) {
+            return "Section order cannot be empty";
+        }
+
+        if (currentSections.size() != newOrder.size()) {
+            return String.format("Section order must contain exactly %d sections, but got %d",
+                    currentSections.size(), newOrder.size());
+        }
+
+        // Check for duplicates in the new order
+        Set<String> orderSet = new HashSet<>(newOrder);
+        if (orderSet.size() != newOrder.size()) {
+            return "Section order contains duplicate IDs";
+        }
+
+        // Check that all section IDs in the new order exist and belong to the course
+        Set<String> currentSectionIds = new HashSet<>();
+        for (Section section : currentSections) {
+            currentSectionIds.add(section.getId());
+        }
+
+        for (String sectionId : newOrder) {
+            if (!currentSectionIds.contains(sectionId)) {
+                return String.format("Section ID %s does not exist or does not belong to this course", sectionId);
+            }
+        }
+
+        // Check that all current sections are included in the new order
+        for (String currentId : currentSectionIds) {
+            if (!orderSet.contains(currentId)) {
+                return String.format("Missing section ID %s in the reorder request", currentId);
+            }
+        }
+
+        return null; // No validation errors
+    }
+
+    /**
+     * Updates the order index of sections based on the new order list.
+     * Each section gets an order index equal to its position in the list (0-based).
+     * Uses a two-phase approach with dynamic offset calculation to avoid unique
+     * constraint violations.
+     */
+    @Transactional
+    private void reorderSectionsWithNewOrder(List<Section> sections, List<String> newOrder) {
+        log.info("Updating section order for {} sections", newOrder.size());
+
+        try {
+            // Create a Map for O(1) lookup instead of nested loops
+            Map<String, Section> sectionMap = sections.stream()
+                    .collect(Collectors.toMap(Section::getId, section -> section));
+
+            // Build the ordered list of sections to update
+            List<Section> sectionsToUpdate = newOrder.stream()
+                    .map(sectionMap::get)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            if (sectionsToUpdate.isEmpty()) {
+                log.warn("No valid sections found to reorder");
+                return;
+            }
+
+            // Calculate dynamic offset to avoid conflicts
+            Integer maxCurrentOrder = sections.stream()
+                    .mapToInt(Section::getOrderIndex)
+                    .max()
+                    .orElse(0);
+            int offset = maxCurrentOrder + 1000;
+
+            log.info("Using offset {} to avoid conflicts (max order: {})", offset, maxCurrentOrder);
+
+            // Phase 1: Set temporary offset values to avoid constraint violations
+            for (int i = 0; i < sectionsToUpdate.size(); i++) {
+                sectionsToUpdate.get(i).setOrderIndex(offset + i);
+            }
+
+            sectionRepository.saveAll(sectionsToUpdate);
+            sectionRepository.flush(); // Force immediate database update
+            log.info("Step 1 complete: Set temporary offset order for {} sections", sectionsToUpdate.size());
+
+            // Phase 2: Set final order values (0-based indexing)
+            for (int i = 0; i < sectionsToUpdate.size(); i++) {
+                sectionsToUpdate.get(i).setOrderIndex(i);
+            }
+
+            sectionRepository.saveAll(sectionsToUpdate);
+            sectionRepository.flush(); // Force immediate database update
+            log.info("Step 2 complete: Set final order for {} sections", sectionsToUpdate.size());
+
+        } catch (Exception e) {
+            log.error("Error updating section order: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to update section order", e);
         }
     }
 }
