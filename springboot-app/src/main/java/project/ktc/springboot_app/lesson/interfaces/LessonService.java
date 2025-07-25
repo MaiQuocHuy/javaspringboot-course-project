@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.lesson.dto.CreateLessonDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
+import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
@@ -55,4 +56,14 @@ public interface LessonService {
      * @return ApiResponse with success message
      */
     ResponseEntity<ApiResponse<String>> deleteLesson(String sectionId, String lessonId);
+
+    /**
+     * Reorders lessons within a section owned by the instructor
+     * 
+     * @param sectionId         The ID of the section
+     * @param reorderLessonsDto The lesson reorder data containing lesson IDs in
+     *                          intended order
+     * @return ApiResponse with success message
+     */
+    ResponseEntity<ApiResponse<String>> reorderLessons(String sectionId, ReorderLessonsDto reorderLessonsDto);
 }

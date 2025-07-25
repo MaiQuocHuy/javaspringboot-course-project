@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.Valid;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.lesson.dto.CreateLessonDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
+import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
 import project.ktc.springboot_app.lesson.interfaces.LessonService;
@@ -192,6 +194,44 @@ public class InstructorLessonController {
             @Parameter(description = "Lesson ID to delete", required = true) @PathVariable String lessonId) {
 
         return lessonService.deleteLesson(sectionId, lessonId);
+    }
+
+    /**
+     * Reorder lessons within a section owned by the instructor
+     * Endpoint: PATCH /api/instructor/sections/{sectionId}/lessons/reorder
+     * 
+     * @param sectionId         The ID of the section
+     * @param reorderLessonsDto The lesson reorder data containing lesson IDs in
+     *                          intended order
+     * @return ApiResponse with success message
+     */
+    @PatchMapping("/sections/{sectionId}/lessons/reorder")
+    @Operation(summary = "Reorder lessons within a section", description = """
+            Reorder lessons within a section owned by the instructor.
+
+            **Business Rules:**
+            - Only the instructor who owns the section can reorder lessons
+            - The `lessonOrder` array must include all lesson IDs of the section in their intended order
+            - Any missing or duplicate IDs will result in a 400 Bad Request
+            - Lessons will be reordered to maintain continuous order indices (0-based)
+
+            **Important Notes:**
+            - All existing lesson IDs must be included in the request
+            - The order in the array determines the final lesson sequence
+            - Order indices will be automatically assigned based on array position
+            """)
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lessons reordered successfully", content = @Content(mediaType = "application/json")),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed - invalid lesson order, missing IDs, or duplicate IDs", content = @Content(mediaType = "application/json")),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the section", content = @Content(mediaType = "application/json")),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section not found", content = @Content(mediaType = "application/json")),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson reordering", content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<ApiResponse<String>> reorderLessons(
+            @Parameter(description = "Section ID where the lessons belong", required = true) @PathVariable String sectionId,
+            @Parameter(description = "Request body containing lesson IDs in intended order", required = true) @Valid @RequestBody ReorderLessonsDto reorderLessonsDto) {
+
+        return lessonService.reorderLessons(sectionId, reorderLessonsDto);
     }
 
 }

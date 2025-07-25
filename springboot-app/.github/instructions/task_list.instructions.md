@@ -1322,6 +1322,42 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - Verify video file deletion if lesson type is VIDEO
 - **Error Handling:** If the lesson does not exist, return 404 Not Found.
 
+### 4.17. `PATCH /api/instructor/sections/:sectionId/lessons/reorder`
+- **Description:** Reorders lessons within a section owned by the instructor.
+- **Request:**
+  - **Method:** `PATCH`
+  - **Path:** `/api/instructor/sections/:sectionId/lessons/reorder`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body:**
+    ```json
+    {
+      "lessonOrder": [
+        "lessonId1",
+        "lessonId2",
+        "lessonId3"
+      ]
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Lessons reordered successfully",
+      "data": null
+    }
+    ```
+- **Business Rules:**
+  - Only the instructor who owns the section can reorder lessons.
+  - The `lessonOrder` array must include all lesson IDs of the section in their intended order.
+  - Any missing or duplicate IDs will result in a 400 Bad Request.
+- **Controller:** Create `InstructorLessonController` with a `reorderLessons` endpoint.
+- **Service:** Implement `reorderLessons` in `LessonService`.
+- **Security:** Requires `INSTRUCTOR` role and section ownership.
+- **Testing:** Test lesson reordering with valid and invalid inputs.
+
+
+
 ## 5. Admin Role
 
 ### 5.1. `GET /api/admin/users`

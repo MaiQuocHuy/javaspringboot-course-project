@@ -27,7 +27,7 @@ import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.section.entity.Section;
-import project.ktc.springboot_app.section.repositories.SectionRepository;
+import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.utils.StringUtil;
 import project.ktc.springboot_app.video.repositories.VideoContentRepository;
 
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 public class CourseServiceImp implements CourseService {
     private final CourseRepository courseRepository;
     private final VideoContentRepository videoContentRepository;
-    private final SectionRepository sectionRepository;
+    private final InstructorSectionRepository sectionRepository;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(

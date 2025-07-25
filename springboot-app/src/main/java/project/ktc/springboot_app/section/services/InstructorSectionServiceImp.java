@@ -36,16 +36,16 @@ import project.ktc.springboot_app.section.dto.SectionResponseDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 import project.ktc.springboot_app.section.dto.VideoDto;
 import project.ktc.springboot_app.section.entity.Section;
-import project.ktc.springboot_app.section.interfaces.SectionService;
-import project.ktc.springboot_app.section.repositories.SectionRepository;
+import project.ktc.springboot_app.section.interfaces.InstructorSectionService;
+import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.video.repositories.VideoContentRepository;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SectionServiceImp implements SectionService {
+public class InstructorSectionServiceImp implements InstructorSectionService {
 
-    private final SectionRepository sectionRepository;
+    private final InstructorSectionRepository sectionRepository;
     private final InstructorLessonRepository lessonRepository;
     private final QuizQuestionRepository quizQuestionRepository;
     private final VideoContentRepository videoContentRepository;

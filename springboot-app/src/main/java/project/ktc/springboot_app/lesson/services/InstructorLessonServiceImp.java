@@ -12,6 +12,7 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.lesson.dto.CreateLessonDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
+import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
 import project.ktc.springboot_app.lesson.entity.Lesson;
@@ -25,7 +26,7 @@ import project.ktc.springboot_app.section.dto.QuizQuestionDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 import project.ktc.springboot_app.section.dto.VideoDto;
 import project.ktc.springboot_app.section.entity.Section;
-import project.ktc.springboot_app.section.repositories.SectionRepository;
+import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.upload.dto.VideoUploadResponseDto;
 import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.service.FileValidationService;
@@ -36,8 +37,12 @@ import project.ktc.springboot_app.video.repositories.VideoContentRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -49,7 +54,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class InstructorLessonServiceImp implements LessonService {
 
     private final InstructorLessonRepository lessonRepository;
-    private final SectionRepository sectionRepository;
+    private final InstructorSectionRepository sectionRepository;
     private final VideoContentRepository videoContentRepository;
     private final QuizQuestionRepository quizQuestionRepository;
     private final ObjectMapper objectMapper;
@@ -583,6 +588,151 @@ public class InstructorLessonServiceImp implements LessonService {
             return 0;
         }
         return existingLessons.get(existingLessons.size() - 1).getOrderIndex() + 1;
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<String>> reorderLessons(String sectionId, ReorderLessonsDto reorderLessonsDto) {
+        log.info("Reordering lessons for sectionId: {}, new order: {}",
+                sectionId, reorderLessonsDto.getLessonOrder());
+
+        String currentUserId = SecurityUtil.getCurrentUserId();
+
+        try {
+            // 1. Verify section exists and belongs to instructor
+            Optional<Section> sectionOpt = sectionRepository.findById(sectionId);
+            if (sectionOpt.isEmpty()) {
+                return ApiResponseUtil.notFound("Section not found with id: " + sectionId);
+            }
+
+            Section section = sectionOpt.get();
+
+            // Check if the section belongs to the instructor
+            if (!section.getCourse().getInstructor().getId().equals(currentUserId)) {
+                return ApiResponseUtil.forbidden("You do not have permission to reorder lessons in this section");
+            }
+
+            // 2. Get all current lessons for the section
+            List<Lesson> currentLessons = lessonRepository.findLessonsBySectionIdOrderByOrder(sectionId);
+
+            // 3. Validate the reorder request
+            String validationError = validateLessonOrder(currentLessons, reorderLessonsDto.getLessonOrder());
+            if (validationError != null) {
+                log.warn("Invalid lesson order for section {}: {}", sectionId, validationError);
+                return ApiResponseUtil.badRequest(validationError);
+            }
+
+            // 4. Reorder lessons based on the new order
+            reorderLessonsWithNewOrder(currentLessons, reorderLessonsDto.getLessonOrder());
+
+            log.info("Lessons reordered successfully for section {}", sectionId);
+            return ApiResponseUtil.success(null, "Lessons reordered successfully");
+
+        } catch (Exception e) {
+            log.error("Error reordering lessons for section {}: {}", sectionId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to reorder lessons: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Validates that the provided lesson order contains all and only the lessons
+     * that belong to the section, with no duplicates.
+     */
+    private String validateLessonOrder(List<Lesson> currentLessons, List<String> newOrder) {
+        if (newOrder == null || newOrder.isEmpty()) {
+            return "Lesson order cannot be empty";
+        }
+
+        if (currentLessons.size() != newOrder.size()) {
+            return String.format("Lesson order must contain exactly %d lessons, but got %d",
+                    currentLessons.size(), newOrder.size());
+        }
+
+        // Check for duplicates in the new order
+        Set<String> orderSet = new HashSet<>(newOrder);
+        if (orderSet.size() != newOrder.size()) {
+            return "Lesson order contains duplicate IDs";
+        }
+
+        // Check that all lesson IDs in the new order exist and belong to the section
+        Set<String> currentLessonIds = new HashSet<>();
+        for (Lesson lesson : currentLessons) {
+            currentLessonIds.add(lesson.getId());
+        }
+
+        for (String lessonId : newOrder) {
+            if (!currentLessonIds.contains(lessonId)) {
+                return String.format("Lesson ID %s does not exist or does not belong to this section", lessonId);
+            }
+        }
+
+        // Check that all current lessons are included in the new order
+        for (String currentId : currentLessonIds) {
+            if (!orderSet.contains(currentId)) {
+                return String.format("Missing lesson ID %s in the reorder request", currentId);
+            }
+        }
+
+        return null; // No validation errors
+    }
+
+    /**
+     * Updates the order index of lessons based on the new order list.
+     * Each lesson gets an order index equal to its position in the list (0-based).
+     * Uses a two-phase approach with dynamic offset calculation to avoid unique
+     * constraint violations.
+     */
+    @Transactional
+    private void reorderLessonsWithNewOrder(List<Lesson> lessons, List<String> newOrder) {
+        log.info("Updating lesson order for {} lessons", newOrder.size());
+
+        try {
+            // Create a Map for O(1) lookup instead of nested loops
+            Map<String, Lesson> lessonMap = lessons.stream()
+                    .collect(Collectors.toMap(Lesson::getId, lesson -> lesson));
+
+            // Build the ordered list of lessons to update
+            List<Lesson> lessonsToUpdate = newOrder.stream()
+                    .map(lessonMap::get)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            if (lessonsToUpdate.isEmpty()) {
+                log.warn("No valid lessons found to reorder");
+                return;
+            }
+
+            // Calculate dynamic offset to avoid conflicts
+            Integer maxCurrentOrder = lessons.stream()
+                    .mapToInt(Lesson::getOrderIndex)
+                    .max()
+                    .orElse(0);
+            int offset = maxCurrentOrder + 1000;
+
+            log.info("Using offset {} to avoid conflicts (max order: {})", offset, maxCurrentOrder);
+
+            // Phase 1: Set temporary offset values to avoid constraint violations
+            for (int i = 0; i < lessonsToUpdate.size(); i++) {
+                lessonsToUpdate.get(i).setOrderIndex(offset + i);
+            }
+
+            lessonRepository.saveAll(lessonsToUpdate);
+            lessonRepository.flush(); // Force immediate database update
+            log.info("Step 1 complete: Set temporary offset order for {} lessons", lessonsToUpdate.size());
+
+            // Phase 2: Set final order values (0-based indexing)
+            for (int i = 0; i < lessonsToUpdate.size(); i++) {
+                lessonsToUpdate.get(i).setOrderIndex(i);
+            }
+
+            lessonRepository.saveAll(lessonsToUpdate);
+            lessonRepository.flush(); // Force immediate database update
+            log.info("Step 2 complete: Set final order for {} lessons", lessonsToUpdate.size());
+
+        } catch (Exception e) {
+            log.error("Error updating lesson order: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to update lesson order", e);
+        }
     }
 
 }
