@@ -1,14 +1,18 @@
-package project.ktc.springboot_app.entity;
+package project.ktc.springboot_app.lesson.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import project.ktc.springboot_app.entity.BaseEntity;
+import project.ktc.springboot_app.entity.LessonCompletion;
+import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.section.entity.Section;
 
 import java.util.List;
 
 @Entity
-@Table(name = "LESSON", uniqueConstraints = @UniqueConstraint(name = "unique_lesson_order", columnNames = {"section_id", "order_index"}))
+@Table(name = "LESSON", uniqueConstraints = @UniqueConstraint(name = "unique_lesson_order", columnNames = {
+        "section_id", "order_index" }))
 @Getter
 @Setter
 public class Lesson extends BaseEntity {
@@ -33,4 +37,4 @@ public class Lesson extends BaseEntity {
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizQuestion> quizQuestions;
-} 
+}

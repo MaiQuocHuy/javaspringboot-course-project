@@ -982,6 +982,124 @@ For lists of resources that support pagination.
   - Unauthorized access
   - Not the course owner
 
+### 4.11 `PATCH /api/instructor/courses/:courseId/sections/:sectionId`
+
+- **Description:** Updates an existing section in a course owned by the instructor.
+
+- **Request:**
+
+  - **Method:** `PATCH`
+  - **Path:** `/api/instructor/courses/:courseId/sections/:sectionId`
+  - **Path Params:** `courseId` (string), `sectionId` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`CreateSectionDto`):**
+    ```json
+    {
+      "title": "string (required, min: 3, max: 255)"
+    }
+    ```
+
+- **Response:**
+
+  - **Success (200 OK):**
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Section updated successfully",
+      "data": {
+        "id": "section-uuid",
+        "title": "string",
+        "order_index": 0,
+        "courseId": "course-uuid"
+      }
+    }
+    ```
+
+  - **Error (403 Forbidden):** Not course owner
+  - **Error (404 Not Found):** Course or section doesn't exist
+
+- **Controller:** `InstructorSectionController.updateSection`
+- **Service:** Implement `updateSection` in `SectionService`.
+- **Security:** Requires `INSTRUCTOR` role and course ownership.
+
+- **Testing:**
+  - Valid section update
+  - Missing/invalid title
+  - Unauthorized access
+
+### 4.12 `DELETE /api/instructor/courses/:courseId/sections/:sectionId`
+
+- **Description:**
+  - Deletes a section from a course that is owned by the currently authenticated instructor.
+  - After deletion, the system automatically reorders the remaining sections to maintain continuous order values.
+- **Request:**
+  - **Method:** `DELETE`
+  - **Path:** `/api/instructor/courses/:courseId/sections/:sectionId`
+  - **Path Params:** `courseId` (string), `sectionId` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (204 No Content):**
+    ```json
+    {
+      "statusCode": 204,
+      "message": "Section deleted successfully"
+    }
+    ```
+  - **Error (403 Forbidden):** Not course owner
+  - **Error (404 Not Found):** Course or section doesn't exist
+- **Controller:** `InstructorSectionController.deleteSection`
+- **Service:**
+  - Verify that the course exists and is owned by the current instructor
+  - Verify that the section exists and belongs to the course
+  - Delete the section
+  - Reorder the remaining sections of the course to maintain a valid sequence of order (e.g: 0,1,2,3)
+- **Security:** Requires `INSTRUCTOR` role and course ownership.
+- **Testing:**
+  - Valid section deletion
+  - Unauthorized access
+  - Non-existent course or section
+
+### 4.13. `PATCH /api/instructor/courses/:courseId/sections/reorder`
+
+- **Description:** Reorders sections within a course owned by the instructor.
+- **Request:**
+  - **Method:** `PATCH`
+  - **Path:** `/api/instructor/courses/:courseId/sections/reorder`
+  - **Path Params:** `courseId` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body:**
+    `json(This array must include all section IDs of the course in their intended order.
+Any missing or duplicate IDs will result in a 400 Bad Request.)
+    {
+      "sectionOrder": [
+        "section-uuid-1",
+        "section-uuid-2",
+        "section-uuid-3"
+      ]
+    }
+    `
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Sections reordered successfully",
+      "data": null
+    }
+    ```
+  - **Error (403 Forbidden):** Not course owner
+  - **Error (404 Not Found):** Course doesn't exist
+  - **Error (400 Bad Request):** Invalid section order (missing or duplicate IDs)
+- **Controller:** `InstructorSectionController.reorderSections`, Course exists, Instructor is the course owner, All section IDs belong to the course, No missing or duplicate IDs
+
+- **Service:** Implement `reorderSections` in `SectionService`, reorder eg(0,1,2,3).
+- **Security:** Requires `INSTRUCTOR` role and course ownership.
+- **Testing:**
+  - Valid reordering of sections
+  - Unauthorized access
+  - Non-existent course
+
 ### 4.4. `POST /api/instructor/sections/:sectionId/lessons`
 
 - **Description:** Creates a new lesson in a section.
@@ -1015,7 +1133,110 @@ For lists of resources that support pagination.
 - **Security:** Requires `INSTRUCTOR` role and section ownership.
 - **Testing:** Test lesson creation.
 
----
+### 4.5. `GET /api/instructor/sections/:sectionId/lessons`
+
+- **Description:** Retrieves a section and all of its lessons (including video or quiz details and the instructor's lesson completion status), ensuring ownership and access rights.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/sections/:sectionId/lessons`
+  - **Path Params:** `sectionId` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+
+  - **Success (200 OK):**
+
+  ```json
+  {
+    "statusCode": 200,
+    "message": "Lessons retrieved successfully",
+    "data": {
+      "id": "section-uuid",
+      "title": "Introduction to Spring Boot",
+      "orderIndex": 0,
+      "lessonCount": 2,
+      "lessons": [
+        {
+          "id": "lesson-uuid-1",
+          "title": "Getting Started with Spring Boot",
+          "type": "VIDEO",
+          "video": {
+            "id": "video-uuid-1",
+            "url": "https://res.cloudinary.com/.../video.mp4",
+            "duration": 300
+          },
+          "orderIndex": 0,
+          "isCompleted": true
+        },
+        {
+          "id": "lesson-uuid-2",
+          "title": "Understanding Spring Boot Annotations",
+          "type": "QUIZ",
+          "quiz": {
+            "questions": [
+              {
+                "id": "question-id-1",
+                "questionText": "What is @SpringBootApplication?",
+                "options": ["A", "B", "C", "D"],
+                "correctAnswer": "A",
+                "explanation": null
+              }
+            ]
+          },
+          "orderIndex": 1,
+          "isCompleted": false
+        }
+      ]
+    }
+  }
+  ```
+
+- **Controller:** Create `InstructorLessonController` with a `getLessons` endpoint.
+- **Service:**
+  - Implement `getLessons` in `LessonService`.
+  - Lessons can be of type VIDEO or QUIZ:
+    - If type === "VIDEO" and content_id != null → the video key will be included .
+    - If type === "QUIZ" and content_id == null → the quiz key will be included.
+  - isCompleted is derived from the LESSON_COMPLETION table based on the user_id.
+- **Security:** Requires `INSTRUCTOR` role and section ownership.Requires user to have INSTRUCTOR role. Instructor must be the owner of the section's course.
+
+### 4.14. `POST /api/instructor/sections/:sectionId/lessons`
+
+- **Description:** Creates a new lesson in a section owned by the instructor.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/instructor/sections/:sectionId/lessons`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`CreateLessonDto`):**
+    ```(Multiple Part File)
+    {
+      "title": "string",
+      "type": "VIDEO",
+      "videoFile": "file",
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Lesson created successfully",
+      "data": {
+        "id": "string",
+        "title": "string",
+        "type": "VIDEO",
+        "video": {
+          "id": "video-uuid",
+          "url": "https://res.cloudinary.com/.../video.mp4",
+          "duration": 300
+        },
+        "order_index": 0
+      }
+    }
+    ```
+- **Controller:** Create `InstructorLessonController` with a `createLesson` endpoint.
+- **Service:** Implement `createLesson` in `LessonService`.
+- **Security:** Requires `INSTRUCTOR` role and section ownership.
+- **Testing:** Test lesson creation.
 
 ## 5. Admin Role
 

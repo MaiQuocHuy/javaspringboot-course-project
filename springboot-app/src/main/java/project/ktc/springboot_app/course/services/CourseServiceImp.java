@@ -24,8 +24,8 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.interfaces.CourseService;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
-import project.ktc.springboot_app.entity.Lesson;
 import project.ktc.springboot_app.entity.VideoContent;
+import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.SectionRepository;
 import project.ktc.springboot_app.utils.StringUtil;
@@ -286,7 +286,7 @@ public class CourseServiceImp implements CourseService {
         }
 
         // Average rating
-        Double averageRating = courseRepository.findAverageRatingByCourseId(course.getId()).orElse(0.0);
+        Double  averageRating = courseRepository.findAverageRatingByCourseId(course.getId()).orElse(0.0);
         // Section Count
         Long sectionCount = sectionRepository.countSectionsByCourseId(course.getId());
         return CoursePublicResponseDto.builder()

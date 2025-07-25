@@ -17,6 +17,13 @@ public interface SectionRepository extends JpaRepository<Section, String> {
             "ORDER BY s.orderIndex ASC")
     List<Section> findSectionsByCourseIdOrderByOrder(@Param("courseId") String courseId);
 
+    @Query("SELECT s FROM Section s " +
+            "WHERE s.course.id = :courseId " +
+            "AND s.orderIndex > :orderIndex " +
+            "ORDER BY s.orderIndex ASC")
+    List<Section> findSectionsByCourseIdAndOrderGreaterThan(@Param("courseId") String courseId,
+            @Param("orderIndex") Integer orderIndex);
+
     @Query("SELECT COUNT(s) FROM Section s WHERE s.course.id = :courseId")
     Long countSectionsByCourseId(@Param("courseId") String courseId);
 }

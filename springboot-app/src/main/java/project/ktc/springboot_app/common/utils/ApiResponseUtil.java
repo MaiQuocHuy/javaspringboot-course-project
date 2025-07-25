@@ -114,6 +114,19 @@ public class ApiResponseUtil {
     }
 
     /**
+     * Create a no content response
+     */
+    public static <T> ResponseEntity<ApiResponse<T>> noContent(String message) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .body(ApiResponse.<T>builder()
+                        .statusCode(204)
+                        .message(message)
+                        .data(null)
+                        .timestamp(java.time.ZonedDateTime.now())
+                        .build());
+    }
+
+    /**
      * Create a custom error response
      */
     public static <T> ResponseEntity<ApiResponse<T>> error(HttpStatus status, String message) {
