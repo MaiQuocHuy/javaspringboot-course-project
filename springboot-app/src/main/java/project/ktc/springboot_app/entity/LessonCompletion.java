@@ -9,7 +9,8 @@ import project.ktc.springboot_app.lesson.entity.Lesson;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "LESSON_COMPLETION", uniqueConstraints = @UniqueConstraint(name = "unique_completion", columnNames = {"user_id", "lesson_id"}))
+@Table(name = "LESSON_COMPLETION", uniqueConstraints = @UniqueConstraint(name = "unique_completion", columnNames = {
+        "user_id", "lesson_id" }))
 @Getter
 @Setter
 public class LessonCompletion extends BaseEntity {
@@ -23,4 +24,4 @@ public class LessonCompletion extends BaseEntity {
 
     @Column(name = "completed_at", updatable = false)
     private LocalDateTime completedAt;
-} 
+}

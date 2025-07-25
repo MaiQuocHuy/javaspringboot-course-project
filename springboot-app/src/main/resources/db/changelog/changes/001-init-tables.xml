@@ -228,6 +228,8 @@
                 <constraints nullable="false"/>
             </column>
             <column name="completed_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
         <addUniqueConstraint tableName="LESSON_COMPLETION" columnNames="user_id,lesson_id" constraintName="unique_completion"/>
         <addForeignKeyConstraint baseTableName="LESSON_COMPLETION" baseColumnNames="user_id" referencedTableName="USER" referencedColumnNames="id" onDelete="CASCADE" constraintName="fk_lessoncompletion_user"/>
