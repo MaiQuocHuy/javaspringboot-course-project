@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
-import project.ktc.springboot_app.entity.Section;
+import project.ktc.springboot_app.section.entity.Section;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

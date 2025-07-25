@@ -395,6 +395,7 @@
             </column>
             <column name="explanation" type="TEXT"/>
             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
         <createIndex tableName="QUIZ_QUESTION" indexName="idx_lesson">
             <column name="lesson_id"/>
@@ -417,6 +418,8 @@
             <column name="score" type="DECIMAL(5,2)"/>
             <column name="answers" type="JSON"/>
             <column name="completed_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
         <addUniqueConstraint tableName="QUIZ_RESULT" columnNames="user_id,lesson_id" constraintName="unique_result"/>
         <addForeignKeyConstraint baseTableName="QUIZ_RESULT" baseColumnNames="user_id" referencedTableName="USER" referencedColumnNames="id" onDelete="CASCADE" constraintName="fk_quizresult_user"/>
