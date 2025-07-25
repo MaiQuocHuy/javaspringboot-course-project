@@ -982,6 +982,52 @@ For lists of resources that support pagination.
   - Unauthorized access
   - Not the course owner
 
+### 4.11 `PATCH /api/instructor/courses/:courseId/sections/:sectionId`
+
+- **Description:** Updates an existing section in a course owned by the instructor.
+
+- **Request:**
+
+  - **Method:** `PATCH`
+  - **Path:** `/api/instructor/courses/:courseId/sections/:sectionId`
+  - **Path Params:** `courseId` (string), `sectionId` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`CreateSectionDto`):**
+    ```json
+    {
+      "title": "string (required, min: 3, max: 255)"
+    }
+    ```
+
+- **Response:**
+
+  - **Success (200 OK):**
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Section updated successfully",
+      "data": {
+        "id": "section-uuid",
+        "title": "string",
+        "order_index": 0,
+        "courseId": "course-uuid"
+      }
+    }
+    ```
+
+  - **Error (403 Forbidden):** Not course owner
+  - **Error (404 Not Found):** Course or section doesn't exist
+
+- **Controller:** `InstructorSectionController.updateSection`
+- **Service:** Implement `updateSection` in `SectionService`.
+- **Security:** Requires `INSTRUCTOR` role and course ownership.
+
+- **Testing:**
+  - Valid section update
+  - Missing/invalid title
+  - Unauthorized access
+
 ### 4.4. `POST /api/instructor/sections/:sectionId/lessons`
 
 - **Description:** Creates a new lesson in a section.

@@ -19,4 +19,10 @@ public interface SectionService {
             String courseId,
             String instructorId,
             CreateSectionDto createSectionDto);
+
+    ResponseEntity<ApiResponse<SectionResponseDto>> updateSection(
+            String courseId,
+            String sectionId,
+            String instructorId,
+            CreateSectionDto updateSectionDto);
 }

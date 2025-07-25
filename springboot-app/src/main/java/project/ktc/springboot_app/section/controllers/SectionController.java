@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -115,5 +116,50 @@ public class SectionController {
 
         // Call service to create section
         return sectionService.createSection(courseId, instructorId, createSectionDto);
+    }
+
+    @PatchMapping("/{courseId}/sections/{sectionId}")
+    @PreAuthorize("hasAuthority('INSTRUCTOR')")
+    @Operation(summary = "Update an existing section", description = """
+            Update an existing section in a course owned by the instructor.
+
+            **Permission Requirements:**
+            - User must have INSTRUCTOR role
+            - User must own the course (course.instructor_id == currentUser.id)
+
+            **Request Body:**
+            - title: Updated section title (required, 3-255 characters)
+
+            **Business Rules:**
+            - Only course owner can update sections
+            - Section must exist and belong to the specified course
+            - Section title must be valid (3-255 characters)
+            - Order index remains unchanged during update
+
+            **Response includes:**
+            - Section ID (unchanged)
+            - Updated section title
+            - Order index (unchanged)
+            - Course ID (unchanged)
+            """, security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Section updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "You are not allowed to update sections for this course"),
+            @ApiResponse(responseCode = "404", description = "Course or section not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<SectionResponseDto>> updateSection(
+            @Parameter(description = "Course ID", required = true) @PathVariable("courseId") String courseId,
+            @Parameter(description = "Section ID", required = true) @PathVariable("sectionId") String sectionId,
+            @Parameter(description = "Section update data", required = true) @Valid @RequestBody CreateSectionDto updateSectionDto) {
+
+        log.info("Received request to update section {} in course: {} with title: {}",
+                sectionId, courseId, updateSectionDto.getTitle());
+
+        String instructorId = SecurityUtil.getCurrentUserId();
+
+        // Call service to update section
+        return sectionService.updateSection(courseId, sectionId, instructorId, updateSectionDto);
     }
 }

@@ -240,4 +240,64 @@ public class SectionServiceImp implements SectionService {
         }
         return existingSections.get(existingSections.size() - 1).getOrderIndex() + 1;
     }
+
+    @Override
+    public ResponseEntity<ApiResponse<SectionResponseDto>> updateSection(
+            String courseId,
+            String sectionId,
+            String instructorId,
+            CreateSectionDto updateSectionDto) {
+
+        log.info("Updating section {} for courseId: {}, instructorId: {}, title: {}",
+                sectionId, courseId, instructorId, updateSectionDto.getTitle());
+
+        try {
+            // Verify course exists and instructor owns it
+            Course course = courseRepository.findById(courseId).orElse(null);
+            if (course == null) {
+                log.warn("Course not found with ID: {}", courseId);
+                return ApiResponseUtil.notFound("Course not found");
+            }
+
+            // Check ownership
+            if (!course.getInstructor().getId().equals(instructorId)) {
+                log.warn("Instructor {} does not own course {}", instructorId, courseId);
+                return ApiResponseUtil.forbidden("You are not allowed to update sections for this course");
+            }
+
+            // Find the section and verify it belongs to the course
+            Section section = sectionRepository.findById(sectionId).orElse(null);
+            if (section == null) {
+                log.warn("Section not found with ID: {}", sectionId);
+                return ApiResponseUtil.notFound("Section not found");
+            }
+
+            // Verify section belongs to the course
+            if (!section.getCourse().getId().equals(courseId)) {
+                log.warn("Section {} does not belong to course {}", sectionId, courseId);
+                return ApiResponseUtil.notFound("Section not found in this course");
+            }
+
+            // Update section title
+            section.setTitle(updateSectionDto.getTitle());
+
+            // Save updated section
+            Section updatedSection = sectionRepository.save(section);
+
+            // Convert to response DTO
+            SectionResponseDto responseDto = SectionResponseDto.builder()
+                    .id(updatedSection.getId())
+                    .title(updatedSection.getTitle())
+                    .orderIndex(updatedSection.getOrderIndex())
+                    .courseId(updatedSection.getCourse().getId())
+                    .build();
+
+            log.info("Section updated successfully with ID: {}", updatedSection.getId());
+            return ApiResponseUtil.success(responseDto, "Section updated successfully");
+
+        } catch (Exception e) {
+            log.error("Error updating section: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to update section. Please try again later.");
+        }
+    }
 }
