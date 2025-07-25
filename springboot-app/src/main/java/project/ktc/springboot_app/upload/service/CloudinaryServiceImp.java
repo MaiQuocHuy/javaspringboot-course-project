@@ -7,11 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
+import project.ktc.springboot_app.upload.dto.VideoUploadResponseDto;
 import project.ktc.springboot_app.upload.exception.ImageUploadException;
 import project.ktc.springboot_app.upload.exception.InvalidImageFormatException;
+import project.ktc.springboot_app.upload.exception.VideoUploadException;
 import project.ktc.springboot_app.upload.interfaces.CloudinaryService;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -120,6 +123,71 @@ public class CloudinaryServiceImp implements CloudinaryService {
     }
 
     /**
+     * Upload video file to Cloudinary
+     * 
+     * @param file MultipartFile to upload
+     * @return VideoUploadResponseDto with upload details
+     * @throws VideoUploadException if upload fails
+     */
+    @Override
+    public VideoUploadResponseDto uploadVideo(MultipartFile file) {
+        log.info("Starting video upload for file: {}", file.getOriginalFilename());
+
+        try {
+            // Generate unique public ID for video
+            String publicId = generatePublicId(file.getOriginalFilename());
+
+            // Upload to Cloudinary with video-specific options
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "public_id", publicId,
+                            "folder", "course-videos", // Organize video uploads in separate folder
+                            "resource_type", "video", // Specify that this is a video
+                            "quality", "auto", // Auto quality optimization
+                            "format", "mp4" // Convert to MP4 for compatibility
+                    ));
+
+            log.info("Video upload successful. Public ID: {}, Secure URL: {}",
+                    uploadResult.get("public_id"), uploadResult.get("secure_url"));
+
+            return buildVideoResponseDto(uploadResult, file);
+
+        } catch (IOException e) {
+            log.error("Failed to upload video: {}", file.getOriginalFilename(), e);
+            throw new VideoUploadException("Failed to upload video to cloud storage", e);
+        }
+    }
+
+    /**
+     * Delete video from Cloudinary
+     * 
+     * @param publicId Public ID of the video to delete
+     * @return true if deletion was successful, false otherwise
+     */
+    @Override
+    public boolean deleteVideo(String publicId) {
+        log.info("Attempting to delete video with public ID: {}", publicId);
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader().destroy(publicId,
+                    ObjectUtils.asMap("resource_type", "video"));
+
+            String resultStatus = (String) result.get("result");
+            boolean success = "ok".equals(resultStatus);
+
+            log.info("Video deletion result for {}: {} ({})", publicId, success, resultStatus);
+            return success;
+
+        } catch (IOException e) {
+            log.error("Failed to delete video with public ID: {}", publicId, e);
+            return false;
+        }
+    }
+
+    /**
      * Build response DTO from Cloudinary upload result
      */
     private ImageUploadResponseDto buildResponseDto(Map<String, Object> uploadResult, MultipartFile file) {
@@ -131,6 +199,26 @@ public class CloudinaryServiceImp implements CloudinaryService {
                 .format((String) uploadResult.get("format"))
                 .width((Integer) uploadResult.get("width"))
                 .height((Integer) uploadResult.get("height"))
+                .build();
+    }
+
+    /**
+     * Build video response DTO from Cloudinary upload result
+     */
+    private VideoUploadResponseDto buildVideoResponseDto(Map<String, Object> uploadResult, MultipartFile file) {
+        return VideoUploadResponseDto.builder()
+                .secureUrl((String) uploadResult.get("secure_url"))
+                .publicId((String) uploadResult.get("public_id"))
+                .originalFilename(file.getOriginalFilename())
+                .sizeInBytes(file.getSize())
+                .duration(uploadResult.get("duration") != null
+                        ? Double.parseDouble(uploadResult.get("duration").toString())
+                        : null)
+                .width((Integer) uploadResult.get("width"))
+                .height((Integer) uploadResult.get("height"))
+                .format((String) uploadResult.get("format"))
+                .resourceType((String) uploadResult.get("resource_type"))
+                .uploadedAt(LocalDateTime.now())
                 .build();
     }
 }

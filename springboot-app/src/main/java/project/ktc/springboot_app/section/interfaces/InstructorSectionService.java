@@ -10,7 +10,7 @@ import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 
 import java.util.List;
 
-public interface SectionService {
+public interface InstructorSectionService {
 
     ResponseEntity<ApiResponse<List<SectionWithLessonsDto>>> getCourseSections(
             String courseId,

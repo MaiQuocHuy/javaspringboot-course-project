@@ -27,6 +27,8 @@ import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('STUDENT')")
+
 @Slf4j
 @Tag(name = "Enrollment", description = "Course enrollment management")
 public class EnrollmentController {
@@ -34,7 +36,6 @@ public class EnrollmentController {
     private final EnrollmentServiceImp enrollmentService;
 
     @PostMapping("/api/courses/{id}/enroll")
-    @PreAuthorize("hasAuthority('STUDENT')")
     @Operation(summary = "Enroll in a course", description = "Enrolls the authenticated student into a specified course (free or paid). For paid courses, payment must be completed before enrollment.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Successfully enrolled in the course", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
@@ -49,7 +50,6 @@ public class EnrollmentController {
     }
 
     @GetMapping("/api/enrollments/my-courses")
-    @PreAuthorize("hasAuthority('STUDENT')")
     @Operation(summary = "Get my enrolled courses", description = "Retrieve a paginated list of all courses the currently authenticated student is enrolled in, including course metadata and progress status.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Enrolled courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),

@@ -1207,7 +1207,7 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - **Path:** `/api/instructor/sections/:sectionId/lessons`
   - **Headers:** `Authorization: Bearer <accessToken>`
   - **Body (`CreateLessonDto`):**
-    ```(Multiple Part File)
+    ```(multipart/form-data)
     {
       "title": "string",
       "type": "VIDEO",
@@ -1234,9 +1234,129 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
     }
     ```
 - **Controller:** Create `InstructorLessonController` with a `createLesson` endpoint.
-- **Service:** Implement `createLesson` in `LessonService`.
+- **Service:** Implement `createLesson` in `LessonService`. `order_index`: auto-incremented based on the current number of lessons in the section(0-based). "duration: number (in seconds, rounded to integer)"
 - **Security:** Requires `INSTRUCTOR` role and section ownership.
-- **Testing:** Test lesson creation.
+- **Testing:**
+  - Create video lesson successfully with valid input
+  - Create lesson with missing videoFile (expect 400)
+  - Unauthorized access (expect 401)
+  - Instructor creates lesson in section they do not own (expect 403)
+
+### 4.15. `PATCH /api/instructor/sections/:sectionId/lessons/:lessonId`
+
+- **Description:** Updates an existing lesson (title and video) in a section owned by the instructor.
+  If the lesson is of type VIDEO, only title and videoFile can be updated — the type cannot be changed.
+  If a new videoFile is uploaded, the old video (if any) will be deleted automatically.
+  The uploaded video must be in a valid video format.
+- **Request:**
+  - **Method:** `PATCH`
+  - **Path:** `/api/instructor/sections/:sectionId/lessons/:lessonId`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body (`UpdateLessonDto`):**
+    ```(multipart/form-data)
+    {
+      "title": "string",
+      "type": "VIDEO",
+      "videoFile": "file (optional)"
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Lesson updated successfully",
+      "data": {
+        "id": "string",
+        "title": "string",
+        "type": "VIDEO",
+        "video": {
+          "id": "video-uuid",
+          "url": "https://res.cloudinary.com/.../video.mp4",
+          "duration": 300
+        },
+        "order_index": 0
+      }
+    }
+    ```
+- **Business Rules:**
+  - Only the instructor who owns the section can update the lesson.
+  - The lesson type cannot be changed from VIDEO to QUIZ or vice versa.
+  - If a new videoFile is provided, it must be in a valid video format (e.g., mp4, avi, etc.).
+  - If a new videoFile is uploaded, the old video will be deleted automatically.
+- **Controller:** Create `InstructorLessonController` with an `updateLesson` endpoint.
+- **Service:** Implement `updateLesson` in `LessonService`.
+- **Security:** Requires `INSTRUCTOR` role and section ownership.
+- **Testing:**
+  - Update lesson successfully with valid input
+  - Update lesson with missing videoFile (expect 200, no change to video)
+  - Unauthorized access (expect 401)
+  - Instructor updates lesson in section they do not own (expect 403)
+
+### 4.16. `DELETE /api/instructor/sections/:sectionId/lessons/:lessonId`
+
+- **Description:** Deletes a lesson from a section owned by the instructor.
+  If the lesson is of type VIDEO, the associated video file will also be deleted. also delete video file from cloud storage.
+- **Request:**
+  - **Method:** `DELETE`
+  - **Path:** `/api/instructor/sections/:sectionId/lessons/:lessonId`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Lesson deleted successfully"
+    }
+    ```
+- **Business Rules:**
+  - Only the instructor who owns the section can delete the lesson.
+  - If the lesson is of type VIDEO, the associated video file will also be deleted from cloud storage.
+- **Controller:** Create `InstructorLessonController` with a `deleteLesson` endpoint.
+- **Service:** Implement `deleteLesson` in `LessonService`.
+- **Security:** Requires `INSTRUCTOR` role and section ownership.
+- **Testing:**
+  - Delete lesson successfully
+  - Unauthorized access (expect 401)
+  - Instructor deletes lesson in section they do not own (expect 403)
+  - Verify video file deletion if lesson type is VIDEO
+- **Error Handling:** If the lesson does not exist, return 404 Not Found.
+
+### 4.17. `PATCH /api/instructor/sections/:sectionId/lessons/reorder`
+- **Description:** Reorders lessons within a section owned by the instructor.
+- **Request:**
+  - **Method:** `PATCH`
+  - **Path:** `/api/instructor/sections/:sectionId/lessons/reorder`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body:**
+    ```json
+    {
+      "lessonOrder": [
+        "lessonId1",
+        "lessonId2",
+        "lessonId3"
+      ]
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Lessons reordered successfully",
+      "data": null
+    }
+    ```
+- **Business Rules:**
+  - Only the instructor who owns the section can reorder lessons.
+  - The `lessonOrder` array must include all lesson IDs of the section in their intended order.
+  - Any missing or duplicate IDs will result in a 400 Bad Request.
+- **Controller:** Create `InstructorLessonController` with a `reorderLessons` endpoint.
+- **Service:** Implement `reorderLessons` in `LessonService`.
+- **Security:** Requires `INSTRUCTOR` role and section ownership.
+- **Testing:** Test lesson reordering with valid and invalid inputs.
+
+
 
 ## 5. Admin Role
 

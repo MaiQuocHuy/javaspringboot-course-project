@@ -10,7 +10,7 @@ import project.ktc.springboot_app.section.entity.Section;
 import java.util.List;
 
 @Repository
-public interface SectionRepository extends JpaRepository<Section, String> {
+public interface InstructorSectionRepository extends JpaRepository<Section, String> {
 
     @Query("SELECT s FROM Section s " +
             "WHERE s.course.id = :courseId " +
