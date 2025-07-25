@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,8 +17,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import project.ktc.springboot_app.section.dto.CreateSectionDto;
+import project.ktc.springboot_app.section.dto.SectionResponseDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 import project.ktc.springboot_app.section.interfaces.SectionService;
 import project.ktc.springboot_app.utils.SecurityUtil;
@@ -66,5 +71,49 @@ public class SectionController {
 
         // Call service to get course sections
         return sectionService.getCourseSections(courseId, instructorId);
+    }
+
+    @PostMapping("/{id}/sections")
+    @PreAuthorize("hasAuthority('INSTRUCTOR')")
+    @Operation(summary = "Create a new section", description = """
+            Create a new section in a course owned by the instructor.
+
+            **Permission Requirements:**
+            - User must have INSTRUCTOR role
+            - User must own the course (course.instructor_id == currentUser.id)
+
+            **Request Body:**
+            - title: Section title (required, 3-255 characters)
+
+            **Business Rules:**
+            - Only course owner can create sections
+            - Section title must be unique within the course
+            - New section gets the next order index automatically
+            - Section order starts from 0 for the first section
+
+            **Response includes:**
+            - Section ID (UUID)
+            - Section title
+            - Order index
+            - Course ID
+            """, security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Section created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "You are not allowed to create sections for this course"),
+            @ApiResponse(responseCode = "404", description = "Course not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<SectionResponseDto>> createSection(
+            @Parameter(description = "Course ID", required = true) @PathVariable("id") String courseId,
+            @Parameter(description = "Section creation data", required = true) @Valid @RequestBody CreateSectionDto createSectionDto) {
+
+        log.info("Received request to create section for course: {} with title: {}", courseId,
+                createSectionDto.getTitle());
+
+        String instructorId = SecurityUtil.getCurrentUserId();
+
+        // Call service to create section
+        return sectionService.createSection(courseId, instructorId, createSectionDto);
     }
 }

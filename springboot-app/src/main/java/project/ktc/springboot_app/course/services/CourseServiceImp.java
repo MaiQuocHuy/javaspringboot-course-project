@@ -27,6 +27,7 @@ import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.entity.Lesson;
 import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.section.entity.Section;
+import project.ktc.springboot_app.section.repositories.SectionRepository;
 import project.ktc.springboot_app.utils.StringUtil;
 import project.ktc.springboot_app.video.repositories.VideoContentRepository;
 
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 public class CourseServiceImp implements CourseService {
     private final CourseRepository courseRepository;
     private final VideoContentRepository videoContentRepository;
+    private final SectionRepository sectionRepository;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(
@@ -283,6 +285,10 @@ public class CourseServiceImp implements CourseService {
                     .build();
         }
 
+        // Average rating
+        Double averageRating = courseRepository.findAverageRatingByCourseId(course.getId()).orElse(0.0);
+        // Section Count
+        Long sectionCount = sectionRepository.countSectionsByCourseId(course.getId());
         return CoursePublicResponseDto.builder()
                 .id(course.getId())
                 .title(course.getTitle())
@@ -291,6 +297,8 @@ public class CourseServiceImp implements CourseService {
                 .level(course.getLevel())
                 .thumbnailUrl(course.getThumbnailUrl())
                 .enrollCount(enrollCount)
+                .averageRating(averageRating)
+                .sectionCount(sectionCount)
                 .category(categorySum)
                 .instructor(instructorSum)
                 .build();

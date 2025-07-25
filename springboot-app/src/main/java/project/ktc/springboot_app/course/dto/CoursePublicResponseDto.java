@@ -20,6 +20,8 @@ public class CoursePublicResponseDto {
     private CourseLevel level;
     private String thumbnailUrl;
     private Long enrollCount;
+    private Double averageRating;
+    private Long sectionCount;
     private CategorySummary category;
     private InstructorSummary instructor;
 
