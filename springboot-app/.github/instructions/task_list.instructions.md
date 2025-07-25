@@ -929,13 +929,15 @@ For lists of resources that support pagination.
 - **Security:** Requires `INSTRUCTOR` role and course ownership.
 - **Testing:** Test retrieval of course sections.
 
-### 4.3. `POST /api/instructor/courses/:courseId/sections`
+### 4.10. `POST /api/instructor/courses/:id/sections`
 
-- **Description:** Creates a new section in a course.
+- **Description:** Creates a new section in a course owned by the instructor.
+
 - **Request:**
+
   - **Method:** `POST`
-  - **Path:** `/api/instructor/courses/:courseId/sections`
-  - **Path Params:** `courseId` (string)
+  - **Path:** `/api/instructor/courses/:id/sections`
+  - **Path Params:** `id` (string)
   - **Headers:** `Authorization: Bearer <accessToken>`
   - **Body (`CreateSectionDto`):**
     ```json
@@ -943,22 +945,42 @@ For lists of resources that support pagination.
       "title": "string"
     }
     ```
+
 - **Response:**
+
   - **Success (201 Created):**
+
     ```json
     {
       "statusCode": 201,
       "message": "Section created successfully",
       "data": {
-        "id": "string",
-        "title": "string"
+        "id": "section-uuid",
+        "title": "string",
+        "order_index": 0,
+        "courseId": "course-uuid"
       }
     }
     ```
-- **Controller:** Create `InstructorSectionController` with a `createSection` endpoint.
-- **Service:** Implement `createSection` in `SectionService`.
+
+  - **Error (403 Forbidden):** Not course owner
+  - **Error (404 Not Found):** Course doesn't exist
+
+- **Controller:** `InstructorSectionController.createSection`
+
+- **Service:**
+
+  - Validate course exists and instructor is the owner.
+  - Calculate the next order_index.
+  - Save new section and return DTO.
+
 - **Security:** Requires `INSTRUCTOR` role and course ownership.
-- **Testing:** Test section creation.
+
+- **Testing:**
+  - Valid section creation
+  - Missing/invalid title
+  - Unauthorized access
+  - Not the course owner
 
 ### 4.4. `POST /api/instructor/sections/:sectionId/lessons`
 

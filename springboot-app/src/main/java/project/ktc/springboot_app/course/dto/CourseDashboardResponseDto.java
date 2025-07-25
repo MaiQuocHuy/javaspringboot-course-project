@@ -29,6 +29,7 @@ public class CourseDashboardResponseDto {
     private LocalDateTime lastContentUpdate;
 
     private int totalStudents;
+    private int sectionCount;
     private double averageRating;
     private BigDecimal revenue;
 

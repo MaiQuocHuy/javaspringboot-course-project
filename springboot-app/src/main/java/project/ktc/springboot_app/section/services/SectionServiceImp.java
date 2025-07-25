@@ -2,6 +2,7 @@ package project.ktc.springboot_app.section.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
@@ -21,9 +22,11 @@ import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.lesson.repositories.LessonRepository;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
+import project.ktc.springboot_app.section.dto.CreateSectionDto;
 import project.ktc.springboot_app.section.dto.LessonDto;
 import project.ktc.springboot_app.section.dto.QuizDto;
 import project.ktc.springboot_app.section.dto.QuizQuestionDto;
+import project.ktc.springboot_app.section.dto.SectionResponseDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 import project.ktc.springboot_app.section.dto.VideoDto;
 import project.ktc.springboot_app.section.entity.Section;
@@ -175,5 +178,66 @@ public class SectionServiceImp implements SectionService {
                 .correctAnswer(question.getCorrectAnswer())
                 .explanation(question.getExplanation())
                 .build();
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<SectionResponseDto>> createSection(
+            String courseId,
+            String instructorId,
+            CreateSectionDto createSectionDto) {
+
+        log.info("Creating section for courseId: {}, instructorId: {}, title: {}",
+                courseId, instructorId, createSectionDto.getTitle());
+
+        try {
+            // Verify course exists and instructor owns it
+            Course course = courseRepository.findById(courseId).orElse(null);
+            if (course == null) {
+                log.warn("Course not found with ID: {}", courseId);
+                return ApiResponseUtil.notFound("Course not found");
+            }
+
+            // Check ownership
+            if (!course.getInstructor().getId().equals(instructorId)) {
+                log.warn("Instructor {} does not own course {}", instructorId, courseId);
+                return ApiResponseUtil.forbidden("You are not allowed to create sections for this course");
+            }
+
+            // Calculate the next order index
+            Integer nextOrderIndex = calculateNextOrderIndex(courseId);
+
+            // Create new section
+            Section section = new Section();
+            section.setId(UUID.randomUUID().toString());
+            section.setTitle(createSectionDto.getTitle());
+            section.setCourse(course);
+            section.setOrderIndex(nextOrderIndex);
+
+            // Save section
+            Section savedSection = sectionRepository.save(section);
+
+            // Convert to response DTO
+            SectionResponseDto responseDto = SectionResponseDto.builder()
+                    .id(savedSection.getId())
+                    .title(savedSection.getTitle())
+                    .orderIndex(savedSection.getOrderIndex())
+                    .courseId(savedSection.getCourse().getId())
+                    .build();
+
+            log.info("Section created successfully with ID: {}", savedSection.getId());
+            return ApiResponseUtil.created(responseDto, "Section created successfully");
+
+        } catch (Exception e) {
+            log.error("Error creating section: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to create section. Please try again later.");
+        }
+    }
+
+    private Integer calculateNextOrderIndex(String courseId) {
+        List<Section> existingSections = sectionRepository.findSectionsByCourseIdOrderByOrder(courseId);
+        if (existingSections.isEmpty()) {
+            return 0;
+        }
+        return existingSections.get(existingSections.size() - 1).getOrderIndex() + 1;
     }
 }

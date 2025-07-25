@@ -51,4 +51,6 @@ public interface InstructorCourseRepository extends JpaRepository<Course, String
                         "FROM Section s LEFT JOIN s.lessons l " +
                         "WHERE s.course.id = :courseId")
         Optional<LocalDateTime> getLastContentUpdateByCourseId(@Param("courseId") String courseId);
+
+       
 }

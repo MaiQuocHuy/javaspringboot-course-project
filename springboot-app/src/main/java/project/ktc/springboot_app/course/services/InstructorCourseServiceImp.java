@@ -32,6 +32,7 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
+import project.ktc.springboot_app.section.repositories.SectionRepository;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.service.FileValidationService;
@@ -47,6 +48,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final UserRepository userRepository;
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
+    private final SectionRepository sectionRepository;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> findInstructorCourses(
@@ -89,6 +91,9 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
 
         // Get average rating
         Double averageRating = courseRepository.findAverageRatingByCourseId(course.getId()).orElse(0.0);
+
+        // Get section count
+        Long sectionCount = sectionRepository.countSectionsByCourseId(course.getId());
 
         // Get total revenue
         BigDecimal revenue = instructorCourseRepository.getTotalRevenueByCourseId(course.getId());
@@ -133,6 +138,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 .lastContentUpdate(lastContentUpdate.orElse(course.getUpdatedAt()))
                 .totalStudents(enrollmentCount.intValue())
                 .averageRating(averageRating)
+                .sectionCount(sectionCount.intValue())
                 .revenue(revenue)
                 .canEdit(canEdit)
                 .canUnpublish(canUnpublish)
@@ -273,9 +279,6 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                         instructorId, courseId, existingCourse.getInstructor().getId());
                 return ApiResponseUtil.forbidden("You can only update your own courses");
             }
-
-            // Check permissions based on course approval status and enrollments
-            Long enrollmentCount = instructorCourseRepository.countEnrollmentsByCourseId(courseId);
 
             // Determine permissions
             boolean canEdit = !existingCourse.getIsApproved();
