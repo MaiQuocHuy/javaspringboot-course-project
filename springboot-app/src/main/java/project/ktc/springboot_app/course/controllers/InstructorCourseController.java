@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -38,6 +39,8 @@ import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
 import project.ktc.springboot_app.course.dto.CreateCourseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
+import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
+import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
 import project.ktc.springboot_app.course.enums.CourseInstructorStatus;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
@@ -273,6 +276,45 @@ public class InstructorCourseController {
 
                 // Call service to delete course
                 return instructorCourseService.deleteCourse(courseId, instructorId);
+        }
+
+        @PatchMapping("/{id}/status")
+        @PreAuthorize("hasAuthority('INSTRUCTOR')")
+        @Operation(summary = "Update course status", description = """
+                        Update the visibility status of a course between PUBLISHED and UNPUBLISHED.
+
+                        **Permission Requirements:**
+                        - Only the course owner can update its status
+
+                        **Business Rules for PUBLISH:**
+                        - Course must have complete details: title, description, thumbnail
+                        - Course must have at least one section with lessons
+
+                        **Business Rules for UNPUBLISH:**
+                        - Course must be approved (isApproved = true)
+                        - Course must be currently published (isPublished = true)
+
+                        **Not allowed:**
+                        - UNPUBLISH a course that has never been published
+                        - Re-publish a course that is already published
+                        """, security = @SecurityRequirement(name = "bearerAuth"))
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Course status updated successfully"),
+                        @ApiResponse(responseCode = "400", description = "Course does not meet the requirements for status change"),
+                        @ApiResponse(responseCode = "403", description = "You are not allowed to update this course status"),
+                        @ApiResponse(responseCode = "404", description = "Course not found"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseStatusUpdateResponseDto>> updateCourseStatus(
+                        @Parameter(description = "Course ID", required = true) @PathVariable("id") String courseId,
+                        @Parameter(description = "Status update request", required = true) @RequestBody @jakarta.validation.Valid UpdateCourseStatusDto updateStatusDto) {
+
+                log.info("Received request to update course status: {} to {}", courseId, updateStatusDto.getStatus());
+
+                String instructorId = SecurityUtil.getCurrentUserId();
+
+                // Call service to update course status
+                return instructorCourseService.updateCourseStatus(courseId, updateStatusDto, instructorId);
         }
 
         private Pageable createPageable(int page, int size, String sort) {

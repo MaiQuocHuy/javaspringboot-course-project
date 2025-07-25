@@ -26,6 +26,8 @@ import project.ktc.springboot_app.course.dto.CreateCourseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto.CategoryInfo;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
+import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
+import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
@@ -442,5 +444,139 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             log.error("Error deleting course: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to delete course. Please try again later.");
         }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<CourseStatusUpdateResponseDto>> updateCourseStatus(
+            String courseId,
+            UpdateCourseStatusDto updateStatusDto,
+            String instructorId) {
+
+        log.info("Updating course status for courseId: {}, status: {}, instructorId: {}",
+                courseId, updateStatusDto.getStatus(), instructorId);
+
+        try {
+            // Find the course and verify ownership
+            Course course = courseRepository.findById(courseId).orElse(null);
+            if (course == null) {
+                log.warn("Course not found with ID: {}", courseId);
+                return ApiResponseUtil.notFound("Course not found");
+            }
+
+            // Check ownership
+            if (!course.getInstructor().getId().equals(instructorId)) {
+                log.warn("Instructor {} does not own course {}", instructorId, courseId);
+                return ApiResponseUtil.forbidden("You are not allowed to update this course status");
+            }
+
+            // Get current status
+            String currentStatus = course.getIsPublished() ? "PUBLISHED" : "UNPUBLISHED";
+            String newStatus = updateStatusDto.getStatus();
+
+            // No change check
+            if (currentStatus.equals(newStatus)) {
+                log.info("Course {} status is already {}", courseId, newStatus);
+                return ApiResponseUtil.success(
+                        CourseStatusUpdateResponseDto.builder()
+                                .id(course.getId())
+                                .title(course.getTitle())
+                                .previousStatus(currentStatus)
+                                .currentStatus(newStatus)
+                                .build(),
+                        "Course status is already " + newStatus.toLowerCase());
+            }
+
+            // Business rules validation
+            if ("PUBLISHED".equals(newStatus)) {
+                // Check if course meets publish requirements
+                if (!canPublishCourse(course)) {
+                    return ApiResponseUtil.badRequest(
+                            "Course cannot be published. Please ensure it has complete details: title, description, thumbnail, and at least one section with lessons.");
+                }
+
+                // Update to published
+                course.setIsPublished(true);
+
+            } else if ("UNPUBLISHED".equals(newStatus)) {
+                // Check if course can be unpublished
+                if (!canUnpublishCourse(course)) {
+                    return ApiResponseUtil.badRequest(
+                            "Course cannot be unpublished. Only approved and currently published courses can be unpublished.");
+                }
+
+                // Update to unpublished
+                course.setIsPublished(false);
+            }
+
+            // Save changes
+            courseRepository.save(course);
+
+            // Create response
+            CourseStatusUpdateResponseDto response = CourseStatusUpdateResponseDto.builder()
+                    .id(course.getId())
+                    .title(course.getTitle())
+                    .previousStatus(currentStatus)
+                    .currentStatus(newStatus)
+                    .build();
+
+            log.info("Course {} status updated successfully from {} to {}",
+                    courseId, currentStatus, newStatus);
+
+            return ApiResponseUtil.success(response, "Course status updated successfully");
+
+        } catch (Exception e) {
+            log.error("Error updating course status: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to update course status. Please try again later.");
+        }
+    }
+
+    /**
+     * Check if course can be published
+     * Requirements: title, description, thumbnail, and at least one section with
+     * lessons
+     */
+    private boolean canPublishCourse(Course course) {
+        // Check basic course details
+        if (course.getTitle() == null || course.getTitle().trim().isEmpty()) {
+            log.debug("Course {} cannot be published: missing title", course.getId());
+            return false;
+        }
+
+        if (course.getDescription() == null || course.getDescription().trim().isEmpty()) {
+            log.debug("Course {} cannot be published: missing description", course.getId());
+            return false;
+        }
+
+        if (course.getThumbnailUrl() == null || course.getThumbnailUrl().trim().isEmpty()) {
+            log.debug("Course {} cannot be published: missing thumbnail", course.getId());
+            return false;
+        }
+
+        // Check if course has at least one section with lessons
+        Long lessonCount = courseRepository.countLessonsByCourseId(course.getId());
+        if (lessonCount == 0) {
+            log.debug("Course {} cannot be published: no lessons found", course.getId());
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if course can be unpublished
+     * Requirements: course must be approved and currently published
+     */
+    private boolean canUnpublishCourse(Course course) {
+        if (!course.getIsApproved()) {
+            log.debug("Course {} cannot be unpublished: not approved", course.getId());
+            return false;
+        }
+
+        if (!course.getIsPublished()) {
+            log.debug("Course {} cannot be unpublished: not currently published", course.getId());
+            return false;
+        }
+
+        return true;
     }
 }

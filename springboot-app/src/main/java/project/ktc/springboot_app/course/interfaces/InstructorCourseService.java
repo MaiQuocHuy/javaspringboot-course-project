@@ -10,6 +10,8 @@ import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
 import project.ktc.springboot_app.course.dto.CreateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseDto;
+import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
+import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
 
 public interface InstructorCourseService {
 
@@ -32,6 +34,11 @@ public interface InstructorCourseService {
 
     ResponseEntity<ApiResponse<Void>> deleteCourse(
             String courseId,
+            String instructorId);
+
+    ResponseEntity<ApiResponse<CourseStatusUpdateResponseDto>> updateCourseStatus(
+            String courseId,
+            UpdateCourseStatusDto updateStatusDto,
             String instructorId);
 
 }

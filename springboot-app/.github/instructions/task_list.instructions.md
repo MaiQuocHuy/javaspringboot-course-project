@@ -841,6 +841,94 @@ For lists of resources that support pagination.
   - Attempting to unpublish a course that was never published
 - No status change if the same status is sent again
 
+### 4.9. `GET /api/instructor/courses/:id/sections`
+
+- **Description:** Retrieves all sections of a course owned by the instructor.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/courses/:id/sections`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Business Rules:**
+    - Only the instructor who owns the course can view its sections.
+    - If the course doesn't exist or the instructor is not the owner, access should be denied.
+    - If the course exists but has no sections, return an empty array.
+  - **Response:** - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Sections retrieved successfully",
+      "data": [
+        {
+          "id": "section-uuid",
+          "title": "Introduction",
+          "order": 1,
+          "lessonCount": 3,
+          "lessons": [
+            {
+              "id": "lesson-uuid",
+              "title": "Getting Started",
+              "type": "VIDEO",
+              "video": {
+                "id": "video-uuid",
+                "url": "https://res.cloudinary.com/.../video.mp4",
+                "duration": 300
+              }
+            },
+            {
+              "id": "lesson-uuid-2",
+              "title": "Course Overview",
+              "type": "QUIZ",
+              "quiz": {
+                "questions": [
+                  {
+                    "id": "question-id-1",
+                    "questionText": "What is Java?",
+                    "options": [
+                      "A. Language",
+                      "B. Framework",
+                      "C. OS",
+                      "D. Compiler"
+                    ],
+                    "correctAnswer": "A",
+                    "explanation": "Java is a programming language."
+                  },
+                  {
+                    "id": "question-id-2",
+                    "questionText": "What is JVM?",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswer": "C",
+                    "explanation": null
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "section-uuid-2",
+          "title": "Advanced Concepts",
+          "order": 2,
+          "lessonCount": 0,
+          "lessons": []
+        }
+      ]
+    }
+    ```
+- **Controller:** Add a `getSections` endpoint.
+- **Service:**
+
+  - Check course ownership.
+  - Fetch sections with course_id.
+  - For each section, fetch lessons ordered by order.
+  - For each lesson:
+    - If type = "VIDEO", include video info.
+    - If type = "QUIZ", fetch all QUIZ_QUESTION by lesson_id.
+  - Map results to SectionWithLessonsDto.
+
+- **Security:** Requires `INSTRUCTOR` role and course ownership.
+- **Testing:** Test retrieval of course sections.
+
 ### 4.3. `POST /api/instructor/courses/:courseId/sections`
 
 - **Description:** Creates a new section in a course.

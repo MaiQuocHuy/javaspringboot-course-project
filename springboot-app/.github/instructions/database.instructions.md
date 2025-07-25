@@ -236,6 +236,7 @@ CREATE TABLE `QUIZ_QUESTION` (
 `correct_answer` varchar(255) NOT NULL COMMENT 'Could be the correct option key/value',
 `explanation` text COMMENT 'Optional explanation for the answer',
 `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 INDEX `idx_lesson` (`lesson_id`),
 FOREIGN KEY (`lesson_id`) REFERENCES `LESSON`(`id`) ON DELETE CASCADE
 );
@@ -248,6 +249,8 @@ CREATE TABLE `QUIZ_RESULT` (
 `score` decimal(5,2) COMMENT 'Percentage score',
 `answers` json COMMENT 'User answers: e.g. {"question_id_1": "B", "question_id_2": "D"}',
 `completed_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+``created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 UNIQUE KEY `unique_result` (`user_id`, `lesson_id`),
 FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE,
 FOREIGN KEY (`lesson_id`) REFERENCES `LESSON`(`id`) ON DELETE CASCADE

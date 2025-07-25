@@ -25,10 +25,10 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.interfaces.CourseService;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.entity.Lesson;
-import project.ktc.springboot_app.entity.Section;
 import project.ktc.springboot_app.entity.VideoContent;
+import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.utils.StringUtil;
-import project.ktc.springboot_app.video.repository.VideoContentRepository;
+import project.ktc.springboot_app.video.repositories.VideoContentRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
