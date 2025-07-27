@@ -313,6 +313,48 @@ For lists of resources that support pagination.
 - **Security:** Requires `ADMIN` role.
 - **Testing:** Write tests for user management operations, ensuring only admins can access them.
 
+### 1.11. `POST /api/auth/logout`
+
+- **Description:** Logs out the user by revoking the provided refresh token
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/auth/logout`
+  - **Body:**
+    ```json
+    {
+      "refreshToken": "string"
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Logout successful.",
+      "data": null
+    }
+    ```
+  - **Error (400 Bad Request):**
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Invalid refresh token.",
+      "data": null
+    }
+    ```
+- **Business Logic:**
+  - Refresh Token is Required
+    - The client must provide a valid refreshToken.
+    - If missing or malformed, return 400 Bad Request.
+  - Token Must Exist and Not Be Revoked
+    - The refresh token must exist in the REFRESH_TOKEN table and not have is_revoked = true.
+- **Controller:** Add a `logout` endpoint to `AuthController`.
+- **Service:** Implement `logout` in `AuthService`.
+  - Invalidate the provided refresh token.
+  - Optionally, clear the user's session or token store.
+- **Security:** Requires a valid `refreshToken`.
+- **Testing:** Test logout with valid and invalid tokens, ensuring the token is invalidated.
+
 ---
 
 ## 2. Course & Content (Public)
@@ -599,6 +641,140 @@ For lists of resources that support pagination.
 - Verify the user is enrolled and has not already reviewed the course.
 - **Security:** Requires `STUDENT` role.
 - **Testing:** Test creating and failing to create a review.
+
+### 3.6. `POST /api/instructor-applications/documents/upload`
+
+- **Description:** Uploads required documents (certificate, portfolio, cv, optional other) to apply for the instructor role.
+  Documents are stored on Cloudinary and recorded as a JSON key-value structure.
+- **Request:**
+
+  - **Method:** `POST`
+  - **Path:** `/api/instructor-applications/documents/upload`
+    `Content-Type: multipart/form-data`
+  - **Headers**
+    - `Authorization: Bearer <accessToken>`
+  - **Body (multipart/form-data):**
+
+    ```
+     Field         | Type   | Required | Description                                                    |
+    | ------------- | ------ | -------- | -------------------------------------------------------------- |
+    |`certificate`|`file` | ✅ Yes    | Professional certification file (`pdf`, `docx`, `png`, `jpg`)  |
+    | `portfolio`  |`text`| ✅ Yes    | Link to GitHub, LinkedIn, or demo portfolio                    |
+    |`cv`         |`file` | ✅ Yes    | Resume/CV file (`pdf`, `docx`, `jpg`)                          |
+    | `other`      |`file` | ❌ No | Additional supporting documents (e.g., awards, projects, etc.) |
+    ```
+
+- **Response:**
+
+  - **Success (200 OK):**
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Documents uploaded successfully",
+      "data": {
+        "userId": "c24b3fbd-8123-4567-a12b-9ee1abc12345",
+        "documents": {
+          "certificate": "https://res.cloudinary.com/.../certificate.pdf",
+          "portfolio": "https://github.com/johndoe",
+          "cv": "https://res.cloudinary.com/.../resume.pdf",
+          "other": "https://res.cloudinary.com/.../award.png"
+        }
+      }
+    }
+    ```
+
+- **Business Rules**:
+  - Each user can submit only once, unless their previous application was REJECTED.
+  - If an application is rejected, the user is allowed to resubmit only once, within 3 days from the rejection date.
+  - If the user is rejected twice or the resubmission period expires, further submissions are not allowed.
+  - While the user's application status is PENDING, they are not allowed to purchase courses or perform actions restricted to regular STUDENT roles.
+- **Controller:** Create `InstructorApplicationController` with an `uploadDocument` endpoint.
+- **Service:** Implement `uploadDocument` in `InstructorApplicationService`.
+  - Store the document in Cloudinary or local storage.
+  - Return the URL of the uploaded document.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test document upload with valid and invalid files, ensuring the correct response structure.
+
+### 3.5. `GET /api/student/courses/:id/sections`
+
+- **Description:** Retrieves all sections and lessons of a course for the student.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/student/courses/:id/sections`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Sections retrieved successfully",
+      "data": [
+        {
+          "id": "section-uuid",
+          "title": "Introduction",
+          "order_index": 0,
+          "lessonCount": 3,
+          "lessons": [
+            {
+              "id": "lesson-uuid",
+              "title": "Getting Started",
+              "type": "VIDEO",
+              "video": {
+                "id": "video-uuid",
+                "url": "https://res.cloudinary.com/.../video.mp4",
+                "duration": 300
+              },
+              "isCompleted": false
+            },
+            {
+              "id": "lesson-uuid-2",
+              "title": "Course Overview",
+              "type": "QUIZ",
+              "quiz": {
+                "questions": [
+                  {
+                    "id": "question-id-1",
+                    "questionText": "What is Java?",
+                    "options": [
+                      "A. Language",
+                      "B. Framework",
+                      "C. OS",
+                      "D. Compiler"
+                    ],
+                    "correctAnswer": "A",
+                    "explanation": "Java is a programming language."
+                  },
+                  {
+                    "id": "question-id-2",
+                    "questionText": "What is JVM?",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswer": "C",
+                    "explanation": null
+                  }
+                ]
+              },
+              "isCompleted": false
+            }
+          ]
+        },
+        {
+          "id": "section-uuid-2",
+          "title": "Advanced Concepts",
+          "order_index": 1,
+          "lessonCount": 0,
+          "lessons": []
+        }
+      ]
+    }
+    ```
+- **Controller:** Create `StudentCourseController` with a `getSections` endpoint.
+- **Service:** Implement `getSections` in `StudentCourseService`.
+  - Verify the user is enrolled in the course.
+  - Student must be enrolled in the course.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test retrieval of sections and lessons for enrolled courses.
 
 ---
 
@@ -1323,6 +1499,7 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
 - **Error Handling:** If the lesson does not exist, return 404 Not Found.
 
 ### 4.17. `PATCH /api/instructor/sections/:sectionId/lessons/reorder`
+
 - **Description:** Reorders lessons within a section owned by the instructor.
 - **Request:**
   - **Method:** `PATCH`
@@ -1331,11 +1508,7 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - **Body:**
     ```json
     {
-      "lessonOrder": [
-        "lessonId1",
-        "lessonId2",
-        "lessonId3"
-      ]
+      "lessonOrder": ["lessonId1", "lessonId2", "lessonId3"]
     }
     ```
 - **Response:**
@@ -1356,7 +1529,504 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
 - **Security:** Requires `INSTRUCTOR` role and section ownership.
 - **Testing:** Test lesson reordering with valid and invalid inputs.
 
+### 4.18. `POST /api/instructor/sections/:sectionId/lessons/:lessonId/complete`
 
+- **Description:** Allows an instructor to mark their own lesson as reviewed or completed. This helps instructors track which lessons have been finalized or verified during course creation or update.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/instructor/sections/:sectionId/lessons/:lessonId/complete`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Lesson marked as completed",
+      "data": null
+    }
+    ```
+- **Business Rules:**
+  - Only the instructor who owns the section can mark the lesson as completed.
+    - Only the instructor who owns the section can mark the lesson as completed.
+  - The `lessonId` must belong to the given `sectionId`.
+  - Completion state should be stored in the `lesson_completion` table.
+  - Duplicate marking should be idempotent
+- **Controller:** Create `InstructorLessonController` with a `completeLesson` endpoint.
+- **Service:** Implement `completeLesson` in `LessonService`.
+- **Security:** Requires `INSTRUCTOR` role and section ownership.
+- **Testing:**
+  - Successfully mark lesson as completed.
+  - Try marking a lesson not in the instructor’s section (expect 403).
+  - Unauthorized user (expect 401).
+  - Multiple completions should not duplicate data or throw error.
+
+### 4.19. `GET /api/instructor/earnings`
+
+- **Description:** Retrieves a paginated list of all earnings for the instructor with filtering and sorting options.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/earnings`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Query Params:**
+    - `page` (number, optional, default: 0): Page number for pagination
+    - `size` (number, optional, default: 10): Number of items per page
+    - `status` (string, optional): Filter by earning status (`PENDING`, `AVAILABLE`, `PAID`)
+    - `courseId` (string, optional): Filter by specific course
+    - `sort` (string, optional, default: `createdAt,desc`): Sort criteria
+    - `dateFrom` (string, optional): Filter earnings from date (ISO format)
+    - `dateTo` (string, optional): Filter earnings to date (ISO format)
+- **Response:**
+  - **Success (200 OK):** (Standard Paginated Response)
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Earnings retrieved successfully",
+      "data": {
+        "content": [
+          {
+            "id": "earning-uuid-1",
+            "courseId": "course-uuid-1",
+            "courseTitle": "Advanced Spring Boot",
+            "courseThumbnailUrl": "https://res.cloudinary.com/.../course-thumb.jpg",
+            "paymentId": "payment-uuid-1",
+            "amount": 24.99,
+            "platformCut": 5.0,
+            "instructorShare": 19.99,
+            "status": "PAID",
+            "paidAt": "2025-07-15T14:30:00Z"
+          }
+        ],
+        "page": 0,
+        "size": 10,
+        "totalPages": 3,
+        "totalElements": 28,
+        "summary": {
+          "totalEarnings": 2459.72,
+          "pendingAmount": 199.96,
+          "availableAmount": 859.8,
+          "paidAmount": 1399.96,
+          "totalTransactions": 28
+        }
+      }
+    }
+    ```
+- **Controller:** Create `InstructorEarningController` with a `getEarnings` endpoint.
+- **Service:** Implement `getEarnings` in `InstructorEarningService` to fetch earnings for the current instructor.
+- **Repository:** Create custom queries in `InstructorEarningRepository` for filtering and pagination.
+- **Security:** Requires `INSTRUCTOR` role.
+- **Testing:** Test pagination, filtering by status, course, and date ranges. - Test detailed earning retrieval and ownership validation.
+  - No query params Defaults to page 0, size 10, sorted by createdAt asc
+  - Filter by status=PAID Returns only paid earnings
+  - Filter by courseId Returns only earnings for that course
+  - Filter by date range Returns earnings within the date range
+  - No earnings found Empty content, summary values are zero
+
+### 4.20. `GET /api/instructor/earnings/{id}`
+
+- **Description:** Retrieves detailed information about a specific earning record that belongs to the currently authenticated instructor.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/earnings/{id}`
+  - **Path Params:** `id` (string): Earning record ID
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+
+  - **Success (200 OK):**
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Earning details retrieved successfully",
+      "data": {
+        "id": "earning-uuid-1",
+        "courseId": "course-uuid-1",
+        "courseTitle": "Advanced Spring Boot",
+        "courseDescription": "Learn advanced Spring Boot concepts...",
+        "courseThumbnailUrl": "https://res.cloudinary.com/.../course-thumb.jpg",
+        "paymentId": "payment-uuid-1",
+        "amount": 24.99,
+        "platformCut": 5.0,
+        "platformCutPercentage": 20,
+        "instructorShare": 19.99,
+        "status": "PAID",
+        "paidAt": "2025-07-15T14:30:00Z"
+      }
+    }
+    ```
+
+- **Controller:** Add a `getEarningDetails` endpoint to `InstructorEarningController`.
+- **Service:** Implement `getEarningDetails` in `InstructorEarningService`.
+- **Business Rules**:
+
+  - Only the instructor who owns the earning record can view its details.
+  - If the earning record does not exist or does not belong to the instructor, return a 404 Not Found error.
+  - Include course and payment information, but do not expose student or payment owner data — only amounts.
+  - Ensure that the response includes all relevant details about the earning record, such as course title, description, thumbnail, payment ID, amounts, and status.
+
+- **Security:**:
+  - Requires authentication with the INSTRUCTOR role.
+  - Ownership check is mandatory: instructors can only access their own earnings.
+    - Return:
+      - 403 Forbidden if not the owner.
+      - 404 Not Found if the earning does not exist.
+- **Testing:**
+  - Valid request returns correct data.
+  - Invalid ID returns 404.
+  - Access to other instructors’ records returns 403.
+  - Unauthorized access returns 401.
+
+### 4.21. `GET /api/instructor/earnings/summary`
+
+- **Description:** Retrieves earnings summary statistics for the instructor's dashboard.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/earnings/summary`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Query Params:**
+    - `period` (string, optional): Time period for statistics (`week`, `month`, `quarter`, `year`, `all`)
+    - `courseId` (string, optional): Filter summary by specific course
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Earnings summary retrieved successfully",
+      "data": {
+        "period": "month",
+        "dateRange": {
+          "from": "2025-07-01T00:00:00Z",
+          "to": "2025-07-31T23:59:59Z"
+        },
+        "totalEarnings": 2459.72,
+        "pendingAmount": 199.96,
+        "availableAmount": 859.8,
+        "paidAmount": 1399.96,
+        "totalTransactions": 28,
+        "averageEarningPerSale": 87.85,
+        "topPerformingCourses": [
+          {
+            "courseId": "course-uuid-1",
+            "courseTitle": "Advanced Spring Boot",
+            "totalEarnings": 899.75,
+            "salesCount": 12,
+            "averageRating": 4.8
+          },
+          {
+            "courseId": "course-uuid-2",
+            "courseTitle": "React Fundamentals",
+            "totalEarnings": 759.92,
+            "salesCount": 8,
+            "averageRating": 4.6
+          }
+        ],
+        "monthlyTrend": [
+          {
+            "month": "2025-07",
+            "earnings": 2459.72,
+            "transactions": 28
+          },
+          {
+            "month": "2025-06",
+            "earnings": 1899.45,
+            "transactions": 22
+          }
+        ],
+        "statusBreakdown": {
+          "pending": {
+            "amount": 199.96,
+            "count": 3
+          },
+          "available": {
+            "amount": 859.8,
+            "count": 12
+          },
+          "paid": {
+            "amount": 1399.96,
+            "count": 13
+          }
+        }
+      }
+    }
+    ```
+- **Controller:** Add a `getEarningsSummary` endpoint to `InstructorEarningController`.
+- **Service:** Implement complex aggregation queries in `InstructorEarningService`.
+- **Repository:** Create custom aggregate queries for statistics calculation.
+- **Security:** Requires `INSTRUCTOR` role.
+- **Testing:** Test summary calculations with different time periods and filters.
+
+### 4.22. `GET /api/instructor/earnings/analytics`
+
+- **Description:** Retrieves detailed analytics and charts data for instructor earnings visualization.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/earnings/analytics`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Query Params:**
+    - `period` (string, optional, default: `month`): Time period (`week`, `month`, `quarter`, `year`)
+    - `granularity` (string, optional, default: `daily`): Data granularity (`daily`, `weekly`, `monthly`)
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Earnings analytics retrieved successfully",
+      "data": {
+        "period": "month",
+        "granularity": "daily",
+        "chartsData": {
+          "earningsOverTime": [
+            {
+              "date": "2025-07-01",
+              "earnings": 125.5,
+              "transactions": 3,
+              "newStudents": 3
+            },
+            {
+              "date": "2025-07-02",
+              "earnings": 89.97,
+              "transactions": 2,
+              "newStudents": 2
+            }
+          ],
+          "coursesPerformance": [
+            {
+              "courseId": "course-uuid-1",
+              "courseTitle": "Advanced Spring Boot",
+              "earnings": 899.75,
+              "salesCount": 12,
+              "conversionRate": 15.5,
+              "averageRating": 4.8,
+              "enrollmentTrend": "increasing"
+            }
+          ],
+          "paymentMethods": [
+            {
+              "method": "stripe",
+              "earnings": 1999.89,
+              "percentage": 81.3,
+              "transactionCount": 24
+            },
+            {
+              "method": "paypal",
+              "earnings": 459.83,
+              "percentage": 18.7,
+              "transactionCount": 4
+            }
+          ],
+          "studentGeography": [
+            {
+              "country": "United States",
+              "earnings": 1200.45,
+              "studentCount": 15,
+              "percentage": 48.8
+            },
+            {
+              "country": "United Kingdom",
+              "earnings": 650.3,
+              "studentCount": 8,
+              "percentage": 26.4
+            }
+          ]
+        },
+        "insights": [
+          "Your earnings increased by 23% compared to last month",
+          "Advanced Spring Boot is your top-performing course",
+          "Peak sales occur on weekends"
+        ]
+      }
+    }
+    ```
+- **Controller:** Add a `getEarningsAnalytics` endpoint to `InstructorEarningController`.
+- **Service:** Implement analytics calculations in `InstructorEarningService`.
+- **Repository:** Create complex analytical queries with joins across multiple tables.
+- **Security:** Requires `INSTRUCTOR` role.
+- **Testing:** Test analytics data accuracy and performance with large datasets.
+
+### 4.23. `POST /api/instructor/earnings/withdraw-request`
+
+- **Description:** Creates a withdrawal request for available earnings.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/instructor/earnings/withdraw-request`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body:**
+    ```json
+    {
+      "amount": 500.0,
+      "paymentMethod": "bank_transfer",
+      "bankDetails": {
+        "accountNumber": "1234567890",
+        "routingNumber": "021000021",
+        "accountHolderName": "John Doe",
+        "bankName": "Example Bank"
+      },
+      "notes": "Monthly withdrawal request"
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Withdrawal request submitted successfully",
+      "data": {
+        "id": "withdrawal-uuid-1",
+        "amount": 500.0,
+        "status": "PENDING",
+        "requestedAt": "2025-07-26T10:30:00Z",
+        "estimatedProcessingTime": "3-5 business days",
+        "paymentMethod": "bank_transfer",
+        "trackingNumber": "WD2025072601"
+      }
+    }
+    ```
+- **Business Rules:**
+  - Only `AVAILABLE` earnings can be withdrawn
+  - Minimum withdrawal amount (e.g., $50)
+  - Maximum withdrawal per month (e.g., $10,000)
+  - Instructor must have verified payment details
+- **Controller:** Add a `requestWithdrawal` endpoint to `InstructorEarningController`.
+- **Service:** Implement withdrawal validation and request creation in `InstructorEarningService`.
+- **Security:** Requires `INSTRUCTOR` role and verified account status.
+- **Testing:** Test withdrawal validation rules and request creation.
+
+### 4.24. `GET /api/instructor/earnings/withdrawals`
+
+- **Description:** Retrieves a list of withdrawal requests made by the instructor.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/earnings/withdrawals`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Query Params:**
+    - `page` (number, optional, default: 0): Page number
+    - `size` (number, optional, default: 10): Items per page
+    - `status` (string, optional): Filter by status (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`)
+- **Response:**
+  - **Success (200 OK):** (Standard Paginated Response)
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Withdrawal requests retrieved successfully",
+      "data": {
+        "content": [
+          {
+            "id": "withdrawal-uuid-1",
+            "amount": 500.0,
+            "status": "COMPLETED",
+            "requestedAt": "2025-07-20T10:30:00Z",
+            "processedAt": "2025-07-23T15:45:00Z",
+            "paymentMethod": "bank_transfer",
+            "trackingNumber": "WD2025072001",
+            "processingFee": 2.5,
+            "netAmount": 497.5
+          }
+        ],
+        "page": 0,
+        "size": 10,
+        "totalPages": 2,
+        "totalElements": 15
+      }
+    }
+    ```
+- **Controller:** Add a `getWithdrawals` endpoint to `InstructorEarningController`.
+- **Service:** Implement withdrawal history retrieval in `InstructorEarningService`.
+- **Security:** Requires `INSTRUCTOR` role.
+- **Testing:** Test withdrawal history pagination and filtering.
+
+### 4.25. `GET /api/instructor/earnings/tax-documents`
+
+- **Description:** Generates and retrieves tax documents for instructor earnings (1099 forms, earning statements).
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/earnings/tax-documents`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Query Params:**
+    - `year` (number, required): Tax year (e.g., 2025)
+    - `format` (string, optional, default: `pdf`): Document format (`pdf`, `csv`)
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Tax documents generated successfully",
+      "data": {
+        "year": 2025,
+        "documents": [
+          {
+            "type": "1099-NEC",
+            "description": "Nonemployee Compensation",
+            "url": "https://res.cloudinary.com/.../1099-nec-2025.pdf",
+            "generatedAt": "2025-07-26T10:30:00Z",
+            "validUntil": "2026-01-31T23:59:59Z"
+          },
+          {
+            "type": "earning-summary",
+            "description": "Annual Earnings Summary",
+            "url": "https://res.cloudinary.com/.../earnings-summary-2025.pdf",
+            "generatedAt": "2025-07-26T10:30:00Z",
+            "validUntil": "2026-01-31T23:59:59Z"
+          }
+        ],
+        "summary": {
+          "totalEarnings": 15750.45,
+          "totalWithdrawn": 12000.0,
+          "pendingAmount": 3750.45,
+          "transactionCount": 156,
+          "coursesCount": 8
+        }
+      }
+    }
+    ```
+- **Controller:** Add a `getTaxDocuments` endpoint to `InstructorEarningController`.
+- **Service:** Implement tax document generation in `InstructorEarningService`.
+- **Business Logic:**
+  - Generate PDF documents with official formatting
+  - Include all required tax information
+  - Store generated documents securely
+  - Implement document expiration and regeneration
+- **Security:** Requires `INSTRUCTOR` role and document access validation.
+- **Testing:** Test document generation and security access controls.
+
+### 4.26. `GET /api/instructor/earnings/export`
+
+- **Description:** Exports earnings data in various formats for accounting and reporting purposes.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/earnings/export`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Query Params:**
+    - `format` (string, required): Export format (`csv`, `excel`, `pdf`)
+    - `dateFrom` (string, optional): Start date for export (ISO format)
+    - `dateTo` (string, optional): End date for export (ISO format)
+    - `status` (string, optional): Filter by earning status
+    - `courseId` (string, optional): Filter by specific course
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Earnings data exported successfully",
+      "data": {
+        "exportId": "export-uuid-1",
+        "format": "csv",
+        "filename": "instructor-earnings-2025-07.csv",
+        "downloadUrl": "https://res.cloudinary.com/.../earnings-export.csv",
+        "generatedAt": "2025-07-26T10:30:00Z",
+        "validUntil": "2025-07-29T10:30:00Z",
+        "recordCount": 156,
+        "fileSize": "24.5 KB"
+      }
+    }
+    ```
+- **Controller:** Add an `exportEarnings` endpoint to `InstructorEarningController`.
+- **Service:** Implement data export functionality in `InstructorEarningService`.
+- **Features:**
+  - Support multiple export formats (CSV, Excel, PDF)
+  - Include filtering and date range options
+  - Generate downloadable files with expiration
+  - Include summary statistics in exports
+- **Security:** Requires `INSTRUCTOR` role.
+- **Testing:** Test export functionality with different formats and filters.
 
 ## 5. Admin Role
 

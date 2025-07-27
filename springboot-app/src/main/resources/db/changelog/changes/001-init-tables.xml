@@ -280,6 +280,7 @@
             <column name="payment_method" type="VARCHAR(50)"/>
             <column name="paid_at" type="TIMESTAMP"/>
             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
         <createIndex tableName="PAYMENT" indexName="idx_user">
             <column name="user_id"/>
@@ -340,6 +341,7 @@
             <column name="available_at" type="TIMESTAMP"/>
             <column name="paid_at" type="TIMESTAMP"/>
             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
         <createIndex tableName="INSTRUCTOR_EARNING" indexName="idx_instructor">
             <column name="instructor_id"/>

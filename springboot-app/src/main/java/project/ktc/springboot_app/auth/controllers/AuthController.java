@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import project.ktc.springboot_app.auth.dto.LoginUserDto;
 import project.ktc.springboot_app.auth.dto.RefreshTokenDto;
 import project.ktc.springboot_app.auth.dto.RegisterUserDto;
@@ -25,13 +26,10 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication API", description = "Endpoints for user registration and login")
 @Validated
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthServiceImp authService;
-
-    public AuthController(AuthServiceImp authService) {
-        this.authService = authService;
-    }
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Creates a new user account with STUDENT role")
@@ -92,6 +90,23 @@ public class AuthController {
     public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, String>>> resetPassword(
             @Valid @RequestBody ResetPasswordDto dto) {
         return authService.resetPassword(dto.getOldPassword(), dto.getNewPassword());
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Logout user", description = "Logs out the user by revoking the provided refresh token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logout successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid or missing refresh token"),
+            @ApiResponse(responseCode = "500", description = "Logout failed due to server error")
+    })
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> logout(
+            @Valid @RequestBody RefreshTokenDto refreshTokenRequest) {
+        String refreshToken = refreshTokenRequest.getRefreshToken();
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ApiResponseUtil.badRequest("Refresh token is required");
+        }
+
+        return authService.logout(refreshToken);
     }
 
 }

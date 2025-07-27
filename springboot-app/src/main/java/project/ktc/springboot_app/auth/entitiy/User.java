@@ -7,14 +7,14 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.entity.BaseEntity;
-import project.ktc.springboot_app.entity.InstructorApplication;
-import project.ktc.springboot_app.entity.InstructorEarning;
 import project.ktc.springboot_app.entity.Payment;
 import project.ktc.springboot_app.entity.RefreshToken;
 import project.ktc.springboot_app.entity.UserRole;
 import project.ktc.springboot_app.entity.VideoContent;
+import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
 import project.ktc.springboot_app.review.entity.Review;
 
 import java.util.List;

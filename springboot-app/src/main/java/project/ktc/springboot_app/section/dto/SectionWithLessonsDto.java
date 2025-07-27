@@ -14,7 +14,7 @@ import java.util.List;
 public class SectionWithLessonsDto {
     private String id;
     private String title;
-    private Integer order;
+    private Integer orderIndex;
     private Integer lessonCount;
     private List<LessonDto> lessons;
 }

@@ -3,6 +3,7 @@ package project.ktc.springboot_app.upload.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import project.ktc.springboot_app.upload.exception.InvalidDocumentFormatException;
 import project.ktc.springboot_app.upload.exception.InvalidImageFormatException;
 import project.ktc.springboot_app.upload.exception.InvalidVideoFormatException;
 
@@ -34,11 +35,23 @@ public class FileValidationService {
             "video/x-matroska", // MKV
             "video/ogg");
 
+    // Allowed document MIME types for instructor applications
+    private static final List<String> ALLOWED_DOCUMENT_MIME_TYPES = List.of(
+            "application/pdf", // PDF files
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
+            "application/msword", // DOC
+            "image/jpeg", // JPG/JPEG for scanned documents
+            "image/png" // PNG for scanned documents
+    );
+
     // Maximum file size for images (10MB)
     private static final long MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
     // Maximum file size for videos (100MB)
     private static final long MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+
+    // Maximum file size for documents (15MB)
+    private static final long MAX_DOCUMENT_SIZE = 15 * 1024 * 1024;
 
     /**
      * Validate uploaded image file
@@ -146,6 +159,54 @@ public class FileValidationService {
      */
     public List<String> getAllowedImageMimeTypes() {
         return List.copyOf(ALLOWED_IMAGE_MIME_TYPES);
+    }
+
+    /**
+     * Validate uploaded document file for instructor applications
+     * 
+     * @param file MultipartFile to validate
+     * @throws InvalidDocumentFormatException if validation fails
+     */
+    public void validateDocumentFile(MultipartFile file) {
+        log.debug("Starting validation for document file: {}", file.getOriginalFilename());
+
+        // Check if file is empty
+        if (file.isEmpty()) {
+            throw new InvalidDocumentFormatException("Document file is required and cannot be empty");
+        }
+
+        // Check file size
+        if (file.getSize() > MAX_DOCUMENT_SIZE) {
+            throw new InvalidDocumentFormatException(
+                    String.format("Document file size exceeds maximum allowed size of %d MB. Current size: %.2f MB",
+                            MAX_DOCUMENT_SIZE / (1024 * 1024),
+                            (double) file.getSize() / (1024 * 1024)));
+        }
+
+        // Check MIME type
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_DOCUMENT_MIME_TYPES.contains(contentType.toLowerCase())) {
+            throw new InvalidDocumentFormatException(
+                    String.format("Unsupported document format: %s. Allowed formats: %s",
+                            contentType,
+                            String.join(", ", ALLOWED_DOCUMENT_MIME_TYPES)));
+        }
+
+        log.debug("Document file validation passed for: {}", file.getOriginalFilename());
+    }
+
+    /**
+     * Get allowed document MIME types (for documentation purposes)
+     */
+    public List<String> getAllowedDocumentMimeTypes() {
+        return List.copyOf(ALLOWED_DOCUMENT_MIME_TYPES);
+    }
+
+    /**
+     * Get maximum document file size in MB (for documentation purposes)
+     */
+    public long getMaxDocumentFileSizeMB() {
+        return MAX_DOCUMENT_SIZE / (1024 * 1024);
     }
 
     /**

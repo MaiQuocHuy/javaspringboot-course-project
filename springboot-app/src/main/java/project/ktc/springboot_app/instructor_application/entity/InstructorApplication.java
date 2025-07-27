@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.entity;
+package project.ktc.springboot_app.instructor_application.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -6,14 +6,21 @@ import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "INSTRUCTOR_APPLICATION", uniqueConstraints = @UniqueConstraint(name = "unique_application", columnNames = {"user_id"}), indexes = {
-        @Index(name = "idx_status", columnList = "status")
-})
+@Table(name = "INSTRUCTOR_APPLICATION", uniqueConstraints = @UniqueConstraint(name = "unique_application", columnNames = {
+        "user_id" }), indexes = {
+                @Index(name = "idx_status", columnList = "status")
+        })
 @Getter
 @Setter
-public class InstructorApplication extends BaseEntity {
+public class InstructorApplication {
+
+    @Id
+    @Column(length = 36, updatable = false, nullable = false)
+    private String id = UUID.randomUUID().toString();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -36,4 +43,4 @@ public class InstructorApplication extends BaseEntity {
 
     @Column(name = "rejection_reason", columnDefinition = "text")
     private String rejectionReason;
-} 
+}

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import project.ktc.springboot_app.upload.dto.DocumentUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.VideoUploadResponseDto;
 import project.ktc.springboot_app.upload.exception.ImageUploadException;
@@ -199,6 +200,82 @@ public class CloudinaryServiceImp implements CloudinaryService {
                 .format((String) uploadResult.get("format"))
                 .width((Integer) uploadResult.get("width"))
                 .height((Integer) uploadResult.get("height"))
+                .build();
+    }
+
+    /**
+     * Upload document file to Cloudinary
+     * 
+     * @param file MultipartFile to upload
+     * @return DocumentUploadResponseDto with upload details
+     * @throws IOException if upload fails
+     */
+    @Override
+    public DocumentUploadResponseDto uploadDocument(MultipartFile file) {
+        log.info("Starting document upload for file: {}", file.getOriginalFilename());
+
+        try {
+            // Generate unique public ID for documents
+            String publicId = "instructor-documents/" + generatePublicId(file.getOriginalFilename());
+
+            // Upload to Cloudinary as raw file
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "public_id", publicId,
+                            "resource_type", "raw", // Use raw for documents
+                            "folder", "instructor-documents"));
+
+            log.info("Document upload successful. Public ID: {}, URL: {}",
+                    uploadResult.get("public_id"), uploadResult.get("secure_url"));
+
+            return buildDocumentResponseDto(uploadResult, file);
+
+        } catch (IOException e) {
+            log.error("Failed to upload document: {}", e.getMessage(), e);
+            throw new RuntimeException("Document upload failed: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Delete document from Cloudinary
+     * 
+     * @param publicId Public ID of the document to delete
+     * @return true if deletion was successful, false otherwise
+     */
+    @Override
+    public boolean deleteDocument(String publicId) {
+        log.info("Attempting to delete document with public ID: {}", publicId);
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader().destroy(publicId,
+                    ObjectUtils.asMap("resource_type", "raw"));
+
+            String resultStatus = (String) result.get("result");
+            boolean success = "ok".equals(resultStatus);
+
+            log.info("Document deletion result for {}: {} ({})", publicId, success, resultStatus);
+            return success;
+
+        } catch (Exception e) {
+            log.error("Failed to delete document {}: {}", publicId, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Build document response DTO from Cloudinary upload result
+     */
+    private DocumentUploadResponseDto buildDocumentResponseDto(Map<String, Object> uploadResult, MultipartFile file) {
+        return DocumentUploadResponseDto.builder()
+                .url((String) uploadResult.get("secure_url"))
+                .publicId((String) uploadResult.get("public_id"))
+                .originalFilename(file.getOriginalFilename())
+                .size(file.getSize())
+                .resourceType((String) uploadResult.get("resource_type"))
+                .format((String) uploadResult.get("format"))
                 .build();
     }
 

@@ -20,218 +20,249 @@ import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
 import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
-import project.ktc.springboot_app.lesson.interfaces.LessonService;
+import project.ktc.springboot_app.lesson.services.InstructorLessonServiceImp;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 
 @RestController
-@RequestMapping("/api/instructor")
+@RequestMapping("/api/instructor/sections")
 @PreAuthorize("hasRole('INSTRUCTOR')")
 @RequiredArgsConstructor
 @Tag(name = "Instructor Section Lesson API", description = "Endpoints for managing lessons in sections for instructors")
 public class InstructorLessonController {
 
-    private final LessonService lessonService;
+        private final InstructorLessonServiceImp instructorLessonService;
 
-    /**
-     * Get section with all its lessons for an instructor
-     * Endpoint: GET /api/instructor/sections/{sectionId}/lessons
-     * 
-     * @param sectionId      The ID of the section
-     * @param authentication Current authenticated instructor
-     * @return SectionWithLessonsDto containing section details and lessons
-     */
-    @GetMapping("/sections/{sectionId}/lessons")
-    public ResponseEntity<ApiResponse<SectionWithLessonsDto>> getSectionWithLessons(
-            @PathVariable String sectionId) {
-        return lessonService.getSectionWithLessons(sectionId);
-    }
+        /**
+         * Get section with all its lessons for an instructor
+         * Endpoint: GET /api/instructor/{sectionId}/lessons
+         * 
+         * @param sectionId      The ID of the section
+         * @param authentication Current authenticated instructor
+         * @return SectionWithLessonsDto containing section details and lessons
+         */
+        @GetMapping("/{sectionId}/lessons")
+        public ResponseEntity<ApiResponse<SectionWithLessonsDto>> getSectionWithLessons(
+                        @PathVariable String sectionId) {
+                return instructorLessonService.getSectionWithLessons(sectionId);
+        }
 
-    /**
-     * Create a new lesson in a section owned by the instructor
-     * Endpoint: POST /api/instructor/sections/{sectionId}/lessons
-     * 
-     * @param sectionId The ID of the section
-     * @param title     The lesson title
-     * @param type      The lesson type (VIDEO or QUIZ)
-     * @param videoFile The video file (required for VIDEO type lessons)
-     * @return LessonCreateResponseDto containing the created lesson details
-     */
-    @PostMapping(value = "/sections/{sectionId}/lessons", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Create a new lesson", description = """
-            Create a new lesson in a section owned by the instructor.
+        /**
+         * Create a new lesson in a section owned by the instructor
+         * Endpoint: POST /api/instructor/{sectionId}/lessons
+         * 
+         * @param sectionId The ID of the section
+         * @param title     The lesson title
+         * @param type      The lesson type (VIDEO or QUIZ)
+         * @param videoFile The video file (required for VIDEO type lessons)
+         * @return LessonCreateResponseDto containing the created lesson details
+         */
+        @PostMapping(value = "/{sectionId}/lessons", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        @Operation(summary = "Create a new lesson", description = """
+                        Create a new lesson in a section owned by the instructor.
 
-            **For VIDEO lessons:**
-            - Video file is required
-            - Supported video formats: MP4, MPEG, QuickTime, AVI, WMV, WebM, OGG
-            - Maximum file size: 100MB
-            - Video will be automatically processed and stored in Cloudinary
+                        **For VIDEO lessons:**
+                        - Video file is required
+                        - Supported video formats: MP4, MPEG, QuickTime, AVI, WMV, WebM, OGG
+                        - Maximum file size: 100MB
+                        - Video will be automatically processed and stored in Cloudinary
 
-            **For QUIZ lessons:**
-            - No video file needed
-            - Quiz questions can be added separately after lesson creation
+                        **For QUIZ lessons:**
+                        - No video file needed
+                        - Quiz questions can be added separately after lesson creation
 
-            **Order Index:**
-            - Automatically assigned based on existing lessons in the section (0-based)
-            """)
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Lesson created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CreateLessonResponseDto.class))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed - missing video file for VIDEO lesson, invalid lesson type, or invalid video format", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the section", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section not found", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson creation", content = @Content(mediaType = "application/json"))
-    })
-    public ResponseEntity<ApiResponse<CreateLessonResponseDto>> createLesson(
-            @Parameter(description = "Section ID where the lesson will be created", required = true) @PathVariable String sectionId,
+                        **Order Index:**
+                        - Automatically assigned based on existing lessons in the section (0-based)
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Lesson created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CreateLessonResponseDto.class))),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed - missing video file for VIDEO lesson, invalid lesson type, or invalid video format", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section not found", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson creation", content = @Content(mediaType = "application/json"))
+        })
+        public ResponseEntity<ApiResponse<CreateLessonResponseDto>> createLesson(
+                        @Parameter(description = "Section ID where the lesson will be created", required = true) @PathVariable String sectionId,
 
-            @Parameter(description = "Lesson title", required = true) @RequestParam("title") String title,
+                        @Parameter(description = "Lesson title", required = true) @RequestParam("title") String title,
 
-            @Parameter(description = "Lesson type", required = true, schema = @Schema(allowableValues = { "VIDEO",
-                    "QUIZ" })) @RequestParam("type") String type,
+                        @Parameter(description = "Lesson type", required = true, schema = @Schema(allowableValues = {
+                                        "VIDEO",
+                                        "QUIZ" })) @RequestParam("type") String type,
 
-            @Parameter(description = "Video file for VIDEO lessons (max 100MB)", required = false) @RequestPart(value = "videoFile", required = false) MultipartFile videoFile) {
+                        @Parameter(description = "Video file for VIDEO lessons (max 100MB)", required = false) @RequestPart(value = "videoFile", required = false) MultipartFile videoFile) {
 
-        // Create DTO from request parameters
-        CreateLessonDto createLessonDto = CreateLessonDto.builder()
-                .title(title)
-                .type(type)
-                .build();
+                // Create DTO from request parameters
+                CreateLessonDto createLessonDto = CreateLessonDto.builder()
+                                .title(title)
+                                .type(type)
+                                .build();
 
-        return lessonService.createLesson(sectionId, createLessonDto, videoFile);
-    }
+                return instructorLessonService.createLesson(sectionId, createLessonDto, videoFile);
+        }
 
-    /**
-     * Update an existing lesson in a section owned by the instructor
-     * Endpoint: PATCH /api/instructor/sections/{sectionId}/lessons/{lessonId}
-     * 
-     * @param sectionId The ID of the section
-     * @param lessonId  The ID of the lesson to update
-     * @param title     The updated lesson title
-     * @param type      The lesson type (cannot be changed)
-     * @param videoFile The video file (optional for VIDEO lessons)
-     * @return UpdateLessonResponseDto containing the updated lesson details
-     */
-    @PatchMapping(value = "/sections/{sectionId}/lessons/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Update an existing lesson", description = """
-            Update an existing lesson in a section owned by the instructor.
+        /**
+         * Update an existing lesson in a section owned by the instructor
+         * Endpoint: PATCH /api/instructor/{sectionId}/lessons/{lessonId}
+         * 
+         * @param sectionId The ID of the section
+         * @param lessonId  The ID of the lesson to update
+         * @param title     The updated lesson title
+         * @param type      The lesson type (cannot be changed)
+         * @param videoFile The video file (optional for VIDEO lessons)
+         * @return UpdateLessonResponseDto containing the updated lesson details
+         */
+        @PatchMapping(value = "/{sectionId}/lessons/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        @Operation(summary = "Update an existing lesson", description = """
+                        Update an existing lesson in a section owned by the instructor.
 
-            **Business Rules:**
-            - Only the instructor who owns the section can update the lesson
-            - The lesson type cannot be changed from VIDEO to QUIZ or vice versa
-            - If a new videoFile is provided, it must be in a valid video format
-            - If a new videoFile is uploaded, the old video will be deleted automatically
+                        **Business Rules:**
+                        - Only the instructor who owns the section can update the lesson
+                        - The lesson type cannot be changed from VIDEO to QUIZ or vice versa
+                        - If a new videoFile is provided, it must be in a valid video format
+                        - If a new videoFile is uploaded, the old video will be deleted automatically
 
-            **For VIDEO lessons:**
-            - Video file is optional during update
-            - If provided, supported video formats: MP4, MPEG, QuickTime, AVI, WMV, WebM, OGG
-            - Maximum file size: 100MB
-            - Video will be automatically processed and stored in Cloudinary
-            - Old video will be deleted from Cloudinary if a new one is uploaded
+                        **For VIDEO lessons:**
+                        - Video file is optional during update
+                        - If provided, supported video formats: MP4, MPEG, QuickTime, AVI, WMV, WebM, OGG
+                        - Maximum file size: 100MB
+                        - Video will be automatically processed and stored in Cloudinary
+                        - Old video will be deleted from Cloudinary if a new one is uploaded
 
-            **For QUIZ lessons:**
-            - No video file needed
-            - Quiz questions are managed separately
-            """)
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lesson updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UpdateLessonResponseDto.class))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed - invalid lesson type change, invalid video format, or lesson not in section", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the section", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section or lesson not found", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson update", content = @Content(mediaType = "application/json"))
-    })
-    public ResponseEntity<ApiResponse<UpdateLessonResponseDto>> updateLesson(
-            @Parameter(description = "Section ID where the lesson belongs", required = true) @PathVariable String sectionId,
+                        **For QUIZ lessons:**
+                        - No video file needed
+                        - Quiz questions are managed separately
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lesson updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UpdateLessonResponseDto.class))),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed - invalid lesson type change, invalid video format, or lesson not in section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section or lesson not found", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson update", content = @Content(mediaType = "application/json"))
+        })
+        public ResponseEntity<ApiResponse<UpdateLessonResponseDto>> updateLesson(
+                        @Parameter(description = "Section ID where the lesson belongs", required = true) @PathVariable String sectionId,
 
-            @Parameter(description = "Lesson ID to update", required = true) @PathVariable String lessonId,
+                        @Parameter(description = "Lesson ID to update", required = true) @PathVariable String lessonId,
 
-            @Parameter(description = "Updated lesson title (optional)", required = false) @RequestParam(value = "title", required = false) String title,
+                        @Parameter(description = "Updated lesson title (optional)", required = false) @RequestParam(value = "title", required = false) String title,
 
-            @Parameter(description = "Lesson type (cannot be changed, used for validation only)", required = false, schema = @Schema(allowableValues = {
-                    "VIDEO",
-                    "QUIZ" })) @RequestParam(value = "type", required = false) String type,
+                        @Parameter(description = "Lesson type (cannot be changed, used for validation only)", required = false, schema = @Schema(allowableValues = {
+                                        "VIDEO",
+                                        "QUIZ" })) @RequestParam(value = "type", required = false) String type,
 
-            @Parameter(description = "Video file for VIDEO lessons (optional)", required = false) @RequestPart(value = "videoFile", required = false) MultipartFile videoFile) {
+                        @Parameter(description = "Video file for VIDEO lessons (optional)", required = false) @RequestPart(value = "videoFile", required = false) MultipartFile videoFile) {
 
-        // Create DTO from request parameters
-        UpdateLessonDto updateLessonDto = UpdateLessonDto.builder()
-                .title(title)
-                .type(type)
-                .build();
+                // Create DTO from request parameters
+                UpdateLessonDto updateLessonDto = UpdateLessonDto.builder()
+                                .title(title)
+                                .type(type)
+                                .build();
 
-        return lessonService.updateLesson(sectionId, lessonId, updateLessonDto, videoFile);
-    }
+                return instructorLessonService.updateLesson(sectionId, lessonId, updateLessonDto, videoFile);
+        }
 
-    /**
-     * Delete a lesson from a section owned by the instructor
-     * Endpoint: DELETE /api/instructor/sections/{sectionId}/lessons/{lessonId}
-     * 
-     * @param sectionId The ID of the section
-     * @param lessonId  The ID of the lesson to delete
-     * @return ApiResponse with success message
-     */
-    @DeleteMapping("/sections/{sectionId}/lessons/{lessonId}")
-    @Operation(summary = "Delete a lesson", description = """
-            Delete a lesson from a section owned by the instructor.
+        /**
+         * Delete a lesson from a section owned by the instructor
+         * Endpoint: DELETE /api/instructor/{sectionId}/lessons/{lessonId}
+         * 
+         * @param sectionId The ID of the section
+         * @param lessonId  The ID of the lesson to delete
+         * @return ApiResponse with success message
+         */
+        @DeleteMapping("/{sectionId}/lessons/{lessonId}")
+        @Operation(summary = "Delete a lesson", description = """
+                        Delete a lesson from a section owned by the instructor.
 
-            **Business Rules:**
-            - Only the instructor who owns the section can delete the lesson
-            - If the lesson is of type VIDEO, the associated video file will also be deleted from cloud storage
-            - After deletion, remaining lessons will be automatically reordered to maintain continuous order indices
+                        **Business Rules:**
+                        - Only the instructor who owns the section can delete the lesson
+                        - If the lesson is of type VIDEO, the associated video file will also be deleted from cloud storage
+                        - After deletion, remaining lessons will be automatically reordered to maintain continuous order indices
 
-            **Important Notes:**
-            - This action is irreversible
-            - All associated data (video files, quiz questions, lesson completions) will be permanently deleted
-            - The order of remaining lessons will be automatically adjusted
-            """)
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lesson deleted successfully", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed - lesson not in section", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the section", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section or lesson not found", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson deletion", content = @Content(mediaType = "application/json"))
-    })
-    public ResponseEntity<ApiResponse<String>> deleteLesson(
-            @Parameter(description = "Section ID where the lesson belongs", required = true) @PathVariable String sectionId,
-            @Parameter(description = "Lesson ID to delete", required = true) @PathVariable String lessonId) {
+                        **Important Notes:**
+                        - This action is irreversible
+                        - All associated data (video files, quiz questions, lesson completions) will be permanently deleted
+                        - The order of remaining lessons will be automatically adjusted
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lesson deleted successfully", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed - lesson not in section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section or lesson not found", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson deletion", content = @Content(mediaType = "application/json"))
+        })
+        public ResponseEntity<ApiResponse<String>> deleteLesson(
+                        @Parameter(description = "Section ID where the lesson belongs", required = true) @PathVariable String sectionId,
+                        @Parameter(description = "Lesson ID to delete", required = true) @PathVariable String lessonId) {
 
-        return lessonService.deleteLesson(sectionId, lessonId);
-    }
+                return instructorLessonService.deleteLesson(sectionId, lessonId);
+        }
 
-    /**
-     * Reorder lessons within a section owned by the instructor
-     * Endpoint: PATCH /api/instructor/sections/{sectionId}/lessons/reorder
-     * 
-     * @param sectionId         The ID of the section
-     * @param reorderLessonsDto The lesson reorder data containing lesson IDs in
-     *                          intended order
-     * @return ApiResponse with success message
-     */
-    @PatchMapping("/sections/{sectionId}/lessons/reorder")
-    @Operation(summary = "Reorder lessons within a section", description = """
-            Reorder lessons within a section owned by the instructor.
+        /**
+         * Reorder lessons within a section owned by the instructor
+         * Endpoint: PATCH /api/instructor/{sectionId}/lessons/reorder
+         * 
+         * @param sectionId         The ID of the section
+         * @param reorderLessonsDto The lesson reorder data containing lesson IDs in
+         *                          intended order
+         * @return ApiResponse with success message
+         */
+        @PatchMapping("/{sectionId}/lessons/reorder")
+        @Operation(summary = "Reorder lessons within a section", description = """
+                        Reorder lessons within a section owned by the instructor.
 
-            **Business Rules:**
-            - Only the instructor who owns the section can reorder lessons
-            - The `lessonOrder` array must include all lesson IDs of the section in their intended order
-            - Any missing or duplicate IDs will result in a 400 Bad Request
-            - Lessons will be reordered to maintain continuous order indices (0-based)
+                        **Business Rules:**
+                        - Only the instructor who owns the section can reorder lessons
+                        - The `lessonOrder` array must include all lesson IDs of the section in their intended order
+                        - Any missing or duplicate IDs will result in a 400 Bad Request
+                        - Lessons will be reordered to maintain continuous order indices (0-based)
 
-            **Important Notes:**
-            - All existing lesson IDs must be included in the request
-            - The order in the array determines the final lesson sequence
-            - Order indices will be automatically assigned based on array position
-            """)
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lessons reordered successfully", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed - invalid lesson order, missing IDs, or duplicate IDs", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the section", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section not found", content = @Content(mediaType = "application/json")),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson reordering", content = @Content(mediaType = "application/json"))
-    })
-    public ResponseEntity<ApiResponse<String>> reorderLessons(
-            @Parameter(description = "Section ID where the lessons belong", required = true) @PathVariable String sectionId,
-            @Parameter(description = "Request body containing lesson IDs in intended order", required = true) @Valid @RequestBody ReorderLessonsDto reorderLessonsDto) {
+                        **Important Notes:**
+                        - All existing lesson IDs must be included in the request
+                        - The order in the array determines the final lesson sequence
+                        - Order indices will be automatically assigned based on array position
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lessons reordered successfully", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation failed - invalid lesson order, missing IDs, or duplicate IDs", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section not found", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson reordering", content = @Content(mediaType = "application/json"))
+        })
+        public ResponseEntity<ApiResponse<String>> reorderLessons(
+                        @Parameter(description = "Section ID where the lessons belong", required = true) @PathVariable String sectionId,
+                        @Parameter(description = "Request body containing lesson IDs in intended order", required = true) @Valid @RequestBody ReorderLessonsDto reorderLessonsDto) {
 
-        return lessonService.reorderLessons(sectionId, reorderLessonsDto);
-    }
+                return instructorLessonService.reorderLessons(sectionId, reorderLessonsDto);
+        }
+
+        /**
+         * 
+         * @param sectionId The ID of the section containing the lesson
+         * @param lessonId  The ID of the lesson to mark as completed
+         * @return Response indicating completion status
+         */
+        @PostMapping("/{sectionId}/lessons/{lessonId}/complete")
+        @Operation(summary = "Mark lesson as completed", description = """
+                        Allows instructors to mark a lesson as completed for tracking purposes during course creation or management.
+
+                        **Features:**
+                        - Records lesson completion in instructor's tracking system
+                        - Idempotent operation (safe to call multiple times)
+                        - Verifies instructor ownership of the section
+                        - Validates lesson belongs to specified section
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Lesson completion recorded successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request - lesson does not belong to section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied - instructor does not own this section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section or lesson not found", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson completion", content = @Content(mediaType = "application/json"))
+        })
+        public ResponseEntity<ApiResponse<String>> completeLesson(
+                        @Parameter(description = "Section ID where the lesson belongs", required = true) @PathVariable String sectionId,
+                        @Parameter(description = "Lesson ID to mark as completed", required = true) @PathVariable String lessonId) {
+
+                return instructorLessonService.completeLesson(sectionId, lessonId);
+        }
 
 }

@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import jakarta.validation.constraints.Max;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.course.dto.CourseDetailResponseDto;
@@ -30,14 +31,11 @@ import java.math.BigDecimal;
 @RestController
 @RequestMapping("/api/courses")
 @Tag(name = "Courses API", description = "Endpoints for managing courses")
+@RequiredArgsConstructor
 @Validated
 public class CourseController {
 
         private final CourseServiceImp courseService;
-
-        public CourseController(CourseServiceImp courseService) {
-                this.courseService = courseService;
-        }
 
         @GetMapping
         @Operation(summary = "Get all published courses", description = "Retrieves a paginated list of all published and non-deleted courses with filtering and sorting options")
