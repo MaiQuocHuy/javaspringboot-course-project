@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
+import project.ktc.springboot_app.review.entity.Review;
 import project.ktc.springboot_app.section.entity.Section;
 
 import java.math.BigDecimal;
@@ -101,4 +102,9 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                         @Param("level") CourseLevel level,
                         Pageable pageable);
 
+        @Query("SELECT r FROM Review r " +
+                        "LEFT JOIN FETCH r.user u " +
+                        "WHERE r.course.id = :courseId " +
+                        "ORDER BY r.reviewedAt DESC")
+        List<Review> findReviewsByCourseId(@Param("courseId") String courseId);
 }
