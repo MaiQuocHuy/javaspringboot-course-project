@@ -28,6 +28,7 @@ public class CourseDetailResponseDto {
     private Boolean isEnrolled;
     private InstructorSummary instructor;
     private List<SectionSummary> sections;
+    private List<ReviewSummary> reviews;
 
     @Data
     @Builder
@@ -65,5 +66,18 @@ public class CourseDetailResponseDto {
         private String id;
         private String title;
         private String type;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReviewSummary {
+        private String id;
+        private Integer rating;
+        private String comment;
+        private String userId;
+        private String userName;
+        private java.time.LocalDateTime createdAt;
     }
 }
