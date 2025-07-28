@@ -320,7 +320,7 @@ public class AuthServiceImp implements AuthService {
         } catch (Exception e) {
             log.error("Error during token refresh: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Token refresh failed. Please login again.");
-        }  
+        }
     }
 
     @Override
