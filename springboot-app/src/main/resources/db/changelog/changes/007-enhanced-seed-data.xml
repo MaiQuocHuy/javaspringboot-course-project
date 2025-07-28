@@ -375,6 +375,7 @@
             <column name="payment_method" value="CREDIT_CARD"/>
             <column name="paid_at" valueComputed="NOW()"/>
             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="PAYMENT">
             <column name="id" value="payment-004"/>
@@ -385,6 +386,7 @@
             <column name="payment_method" value="PAYPAL"/>
             <column name="paid_at" valueComputed="NOW()"/>
             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="PAYMENT">
             <column name="id" value="payment-005"/>
@@ -395,6 +397,7 @@
             <column name="payment_method" value="CREDIT_CARD"/>
             <column name="paid_at" valueComputed="NOW()"/>
             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="PAYMENT">
             <column name="id" value="payment-006"/>
@@ -405,6 +408,7 @@
             <column name="payment_method" value="STRIPE"/>
             <column name="paid_at" valueComputed="NOW()"/>
             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
         </insert>
     </changeSet>
 
@@ -416,9 +420,10 @@
             <column name="payment_id" value="payment-003"/>
             <column name="course_id" value="course-003"/>
             <column name="amount" value="119.99"/>
-            <column name="status" value="AVAILABLE"/>
+            <column name="status" value="PAID"/>
             <column name="available_at" valueComputed="NOW()"/>
             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="INSTRUCTOR_EARNING">
             <column name="id" value="earning-004"/>
@@ -430,6 +435,7 @@
             <column name="available_at" valueComputed="NOW()"/>
             <column name="paid_at" valueComputed="NOW()"/>
             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="INSTRUCTOR_EARNING">
             <column name="id" value="earning-005"/>
@@ -437,9 +443,10 @@
             <column name="payment_id" value="payment-005"/>
             <column name="course_id" value="course-005"/>
             <column name="amount" value="199.99"/>
-            <column name="status" value="AVAILABLE"/>
+            <column name="status" value="PAID"/>
             <column name="available_at" valueComputed="NOW()"/>
             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
         </insert>
         <insert tableName="INSTRUCTOR_EARNING">
             <column name="id" value="earning-006"/>
@@ -447,8 +454,9 @@
             <column name="payment_id" value="payment-006"/>
             <column name="course_id" value="course-007"/>
             <column name="amount" value="143.99"/>
-            <column name="status" value="PENDING"/>
+            <column name="status" value="PAID"/>
             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
         </insert>
     </changeSet>
 

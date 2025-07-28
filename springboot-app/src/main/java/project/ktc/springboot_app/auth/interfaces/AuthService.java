@@ -16,4 +16,6 @@ public interface AuthService {
         ResponseEntity<ApiResponse<Map<String, Object>>> refreshAccessToken(String refreshToken);
 
         ResponseEntity<ApiResponse<Map<String, String>>> resetPassword(String email, String newPassword);
+
+        ResponseEntity<ApiResponse<Void>> logout(String refreshToken);
 }

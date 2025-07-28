@@ -251,4 +251,52 @@ public class AuthServiceImp implements AuthService {
             return ApiResponseUtil.internalServerError("Password reset failed. Please try again later.");
         }
     }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> logout(String refreshToken) {
+        log.info("Processing logout request");
+
+        try {
+            // Validate refresh token is provided
+            if (refreshToken == null || refreshToken.trim().isEmpty()) {
+                log.warn("Logout attempt with empty refresh token");
+                return ApiResponseUtil.badRequest("Refresh token is required");
+            }
+
+            // Find the refresh token in database
+            Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByToken(refreshToken.trim());
+
+            if (tokenOpt.isEmpty()) {
+                log.warn("Logout attempt with invalid refresh token: {}", refreshToken);
+                return ApiResponseUtil.badRequest("Invalid refresh token");
+            }
+
+            RefreshToken token = tokenOpt.get();
+
+            // Check if token is already revoked
+            if (Boolean.TRUE.equals(token.getIsRevoked())) {
+                log.warn("Logout attempt with already revoked token: {}", refreshToken);
+                return ApiResponseUtil.badRequest("Invalid refresh token");
+            }
+
+            // Check if token is expired
+            if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+                log.warn("Logout attempt with expired token: {}", refreshToken);
+                return ApiResponseUtil.badRequest("Invalid refresh token");
+            }
+
+            // Revoke the refresh token
+            token.setIsRevoked(true);
+            refreshTokenRepository.save(token);
+
+            log.info("Successfully logged out user with token: {}",
+                    refreshToken.substring(0, Math.min(20, refreshToken.length())) + "...");
+            return ApiResponseUtil.success("Logout successful");
+
+        } catch (Exception e) {
+            log.error("Error during logout: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Logout failed. Please try again later.");
+        }
+    }
 }

@@ -159,6 +159,24 @@ public class GlobalExceptionHandler {
         }
 
         /**
+         * Handle illegal state exceptions
+         */
+        @ExceptionHandler(IllegalStateException.class)
+        public ResponseEntity<ApiErrorResponse> handleIllegalState(
+                        IllegalStateException ex, HttpServletRequest request) {
+
+                log.error("Illegal state: {}", ex.getMessage());
+
+                ApiErrorResponse errorResponse = ApiErrorResponse.of(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Bad Request",
+                                ex.getMessage(),
+                                request.getRequestURI());
+
+                return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        /**
          * Handle method argument type mismatch
          */
         @ExceptionHandler(MethodArgumentTypeMismatchException.class)

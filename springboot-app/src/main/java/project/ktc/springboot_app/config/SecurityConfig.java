@@ -39,6 +39,7 @@ public class SecurityConfig {
                                                                 "/swagger-config/**",
                                                                 "/api/courses/**",
                                                                 "/api/categories/**",
+                                                                "/api/stripe/webhook",
                                                                 "/error")
                                                 .permitAll()
                                                 // Admin
