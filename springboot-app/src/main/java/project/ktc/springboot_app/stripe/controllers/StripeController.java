@@ -3,6 +3,8 @@ package project.ktc.springboot_app.stripe.controllers;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,7 @@ import java.util.Optional;
 @RequestMapping("/api/stripe")
 @Slf4j
 @RequiredArgsConstructor
+@Tag(name = "Stripe API", description = "Endpoints for managing Stripe payments and webhooks")
 public class StripeController {
 
     private final StripeWebhookService stripeWebhookService;

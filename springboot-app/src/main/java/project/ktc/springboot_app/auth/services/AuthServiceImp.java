@@ -9,16 +9,25 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.dto.LoginUserDto;
+import project.ktc.springboot_app.auth.dto.RegisterApplicationDto;
 import project.ktc.springboot_app.auth.dto.RegisterUserDto;
 import project.ktc.springboot_app.auth.dto.UserResponseDto;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.auth.enums.UserRoleEnum;
 import project.ktc.springboot_app.entity.RefreshToken;
 import project.ktc.springboot_app.entity.UserRole;
+import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
+import project.ktc.springboot_app.instructor_application.repositories.InstructorApplicationRepository;
 import project.ktc.springboot_app.refresh_token.repositories.RefreshTokenRepository;
+import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
+import project.ktc.springboot_app.upload.service.FileValidationService;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.JwtTokenProvider;
 import project.ktc.springboot_app.utils.SecurityUtil;
@@ -29,6 +38,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +55,10 @@ public class AuthServiceImp implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final InstructorApplicationRepository instructorApplicationRepository;
+    private final CloudinaryServiceImp cloudinaryService;
+    private final FileValidationService fileValidationService;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -95,6 +109,106 @@ public class AuthServiceImp implements AuthService {
 
             log.info("User registered successfully: {}", savedUser.getEmail());
             return ApiResponseUtil.created("User registered successfully");
+
+        } catch (Exception e) {
+            log.error("Error during user registration: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Registration failed. Please try again later.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> registerApplication(
+            RegisterApplicationDto registerApplicationDto,
+            MultipartFile certificate,
+            MultipartFile cv,
+            MultipartFile other) {
+
+        log.info("Starting registration with application for role: {}", registerApplicationDto.getRole());
+
+        // Validation checks
+        if (registerApplicationDto == null) {
+            return ApiResponseUtil.badRequest("Registration data cannot be null");
+        }
+        if (registerApplicationDto.getEmail() == null || registerApplicationDto.getEmail().trim().isEmpty()) {
+            return ApiResponseUtil.badRequest("Email cannot be null or empty");
+        }
+        if (registerApplicationDto.getPassword() == null || registerApplicationDto.getPassword().trim().isEmpty()) {
+            return ApiResponseUtil.badRequest("Password cannot be null or empty");
+        }
+        if (registerApplicationDto.getName() == null || registerApplicationDto.getName().trim().isEmpty()) {
+            return ApiResponseUtil.badRequest("Name cannot be null or empty");
+        }
+        if (registerApplicationDto.getRole() == null) {
+            return ApiResponseUtil.badRequest("Role cannot be null");
+        }
+
+        // Check if email already exists
+        if (userRepository.findByEmail(registerApplicationDto.getEmail()).isPresent()) {
+            return ApiResponseUtil.conflict("Email already exists");
+        }
+
+        // Validate instructor application requirements
+        if (registerApplicationDto.getRole() == UserRoleEnum.INSTRUCTOR) {
+            // Validate required documents for instructor
+            if (certificate == null || certificate.isEmpty()) {
+                return ApiResponseUtil.badRequest("Certificate file is required for instructor application");
+            }
+            if (cv == null || cv.isEmpty()) {
+                return ApiResponseUtil.badRequest("CV file is required for instructor application");
+            }
+            if (registerApplicationDto.getPortfolio() == null
+                    || registerApplicationDto.getPortfolio().trim().isEmpty()) {
+                return ApiResponseUtil.badRequest("Portfolio URL is required for instructor application");
+            }
+
+            // Validate portfolio URL format
+            try {
+                validatePortfolioUrl(registerApplicationDto.getPortfolio());
+            } catch (Exception e) {
+                return ApiResponseUtil.badRequest(e.getMessage());
+            }
+        }
+
+        try {
+            // Create user with empty roles list
+            User user = User.builder()
+                    .name(registerApplicationDto.getName())
+                    .email(registerApplicationDto.getEmail())
+                    .password(passwordEncoder.encode(registerApplicationDto.getPassword()))
+                    .roles(new ArrayList<>()) // Explicitly initialize the roles list
+                    .build();
+
+            String selectedRole = registerApplicationDto.getRole().name(); // -> "STUDENT" or "INSTRUCTOR"
+
+            // Create role and set the relationship properly
+            UserRole role = UserRole.builder()
+                    .user(user) // Set the user reference
+                    .role(selectedRole)
+                    .build();
+
+            // Add the role to the user's roles list (bidirectional relationship)
+            user.getRoles().add(role);
+
+            // Save user with cascade - this should save both user and role in one
+            // transaction
+            User savedUser = userRepository.save(user);
+
+            // If instructor role, create instructor application
+            if (registerApplicationDto.getRole() == UserRoleEnum.INSTRUCTOR) {
+                try {
+                    createInstructorApplication(savedUser, certificate, cv, other,
+                            registerApplicationDto.getPortfolio());
+                } catch (Exception e) {
+                    log.error("Failed to create instructor application for user: {}, error: {}", savedUser.getId(),
+                            e.getMessage());
+                    // We still consider registration successful even if application fails
+                    // as the user account was created successfully
+                }
+            }
+
+            log.info("User registered successfully with role {}: {}", selectedRole, savedUser.getEmail());
+            return ApiResponseUtil.created("Registration successful");
 
         } catch (Exception e) {
             log.error("Error during user registration: {}", e.getMessage(), e);
@@ -206,7 +320,7 @@ public class AuthServiceImp implements AuthService {
         } catch (Exception e) {
             log.error("Error during token refresh: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Token refresh failed. Please login again.");
-        }
+        }  
     }
 
     @Override
@@ -297,6 +411,104 @@ public class AuthServiceImp implements AuthService {
         } catch (Exception e) {
             log.error("Error during logout: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Logout failed. Please try again later.");
+        }
+    }
+
+    /**
+     * Validate portfolio URL format
+     */
+    private void validatePortfolioUrl(String portfolio) {
+        if (portfolio == null || portfolio.trim().isEmpty()) {
+            throw new IllegalArgumentException("Portfolio URL is required");
+        }
+
+        // Basic URL validation - allows various portfolio platforms
+        String trimmedUrl = portfolio.trim().toLowerCase();
+        if (!trimmedUrl.startsWith("http://") && !trimmedUrl.startsWith("https://") && !trimmedUrl.startsWith("www.")) {
+            throw new IllegalArgumentException(
+                    "Portfolio must be a valid URL starting with http://, https://, or www.");
+        }
+    }
+
+    /**
+     * Create instructor application with uploaded documents
+     */
+    private void createInstructorApplication(User user, MultipartFile certificate, MultipartFile cv,
+            MultipartFile other, String portfolio) {
+        try {
+            log.info("Creating instructor application for user: {}", user.getId());
+
+            // Check if user already has an application (shouldn't happen in normal flow)
+            Optional<InstructorApplication> existingApplication = instructorApplicationRepository
+                    .findByUserId(user.getId());
+            if (existingApplication.isPresent()) {
+                log.warn("User {} already has an instructor application", user.getId());
+                return;
+            }
+
+            // Validate and upload documents
+            Map<String, String> documentUrls = uploadDocumentsToCloudinary(certificate, cv, other);
+
+            // Add portfolio URL to documents
+            documentUrls.put("portfolio", portfolio);
+
+            // Convert documents map to JSON string
+            String documentsJson = objectMapper.writeValueAsString(documentUrls);
+
+            // Create new instructor application
+            InstructorApplication application = new InstructorApplication();
+            application.setUser(user);
+            application.setDocuments(documentsJson);
+            application.setStatus("PENDING");
+            application.setSubmittedAt(LocalDateTime.now());
+
+            instructorApplicationRepository.save(application);
+            log.info("Instructor application created successfully for user: {}", user.getId());
+
+        } catch (Exception e) {
+            log.error("Failed to create instructor application for user: {}, error: {}", user.getId(), e.getMessage(),
+                    e);
+            throw new RuntimeException("Failed to create instructor application", e);
+        }
+    }
+
+    /**
+     * Upload documents to Cloudinary and return URLs
+     */
+    private Map<String, String> uploadDocumentsToCloudinary(
+            MultipartFile certificate, MultipartFile cv, MultipartFile other) {
+
+        Map<String, String> documentUrls = new HashMap<>();
+
+        try {
+            // Upload certificate
+            fileValidationService.validateDocumentFile(certificate);
+            project.ktc.springboot_app.upload.dto.DocumentUploadResponseDto certificateResult = cloudinaryService
+                    .uploadDocument(certificate);
+            documentUrls.put("certificate", certificateResult.getUrl());
+            log.info("Certificate uploaded successfully: {}", certificateResult.getUrl());
+
+            // Upload CV
+            fileValidationService.validateDocumentFile(cv);
+            project.ktc.springboot_app.upload.dto.DocumentUploadResponseDto cvResult = cloudinaryService
+                    .uploadDocument(cv);
+            documentUrls.put("cv", cvResult.getUrl());
+            log.info("CV uploaded successfully: {}", cvResult.getUrl());
+
+            // Upload optional other document
+            if (other != null && !other.isEmpty()) {
+                fileValidationService.validateDocumentFile(other);
+                project.ktc.springboot_app.upload.dto.DocumentUploadResponseDto otherResult = cloudinaryService
+                        .uploadDocument(other);
+                documentUrls.put("other", otherResult.getUrl());
+                log.info("Additional document uploaded successfully: {}", otherResult.getUrl());
+            }
+
+            return documentUrls;
+
+        } catch (Exception e) {
+            log.error("Failed to upload documents to Cloudinary: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to upload documents to cloud storage", e);
         }
     }
 }
