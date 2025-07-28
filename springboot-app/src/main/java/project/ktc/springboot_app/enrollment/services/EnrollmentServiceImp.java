@@ -190,4 +190,52 @@ public class EnrollmentServiceImp implements EnrollmentService {
                             coursePrice, totalPaid));
         }
     }
+
+    @Override
+    public void createEnrollmentFromWebhook(String userId, String courseId, String stripeSessionId) {
+        log.info("Creating enrollment from webhook for user {} in course {} (Stripe session: {})",
+                userId, courseId, stripeSessionId);
+
+        try {
+            // Fetch user and course
+            Optional<User> userOpt = userRepository.findById(userId);
+            Optional<Course> courseOpt = courseRepository.findById(courseId);
+
+            if (userOpt.isEmpty()) {
+                log.error("User not found: {}", userId);
+                throw new RuntimeException("User not found: " + userId);
+            }
+
+            if (courseOpt.isEmpty()) {
+                log.error("Course not found: {}", courseId);
+                throw new RuntimeException("Course not found: " + courseId);
+            }
+
+            User user = userOpt.get();
+            Course course = courseOpt.get();
+
+            // Check if already enrolled
+            if (enrollmentRepository.existsByUserIdAndCourseId(userId, courseId)) {
+                log.warn("User {} is already enrolled in course {}", userId, courseId);
+                return; // Don't create duplicate enrollment
+            }
+
+            // Create enrollment
+            Enrollment enrollment = new Enrollment();
+            enrollment.setId(java.util.UUID.randomUUID().toString());
+            enrollment.setUser(user);
+            enrollment.setCourse(course);
+            enrollment.setEnrolledAt(LocalDateTime.now());
+            enrollment.setCompletionStatus("IN_PROGRESS");
+
+            enrollmentRepository.save(enrollment);
+
+            log.info("Enrollment successfully created for user {} in course {}", userId, courseId);
+
+        } catch (Exception e) {
+            log.error("Error creating enrollment from webhook for user {} and course {}: {}",
+                    userId, courseId, e.getMessage(), e);
+            throw new RuntimeException("Failed to create enrollment from webhook", e);
+        }
+    }
 }

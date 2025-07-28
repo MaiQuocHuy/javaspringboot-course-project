@@ -43,7 +43,7 @@ import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
 import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
 import project.ktc.springboot_app.course.enums.CourseInstructorStatus;
 import project.ktc.springboot_app.course.enums.CourseLevel;
-import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
+import project.ktc.springboot_app.course.services.InstructorCourseServiceImp;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
 @RestController
@@ -54,7 +54,7 @@ import project.ktc.springboot_app.utils.SecurityUtil;
 @Slf4j
 public class InstructorCourseController {
 
-        private final InstructorCourseService instructorCourseService;
+        private final InstructorCourseServiceImp instructorCourseService;
 
         @GetMapping
         @PreAuthorize("hasAuthority('INSTRUCTOR')")

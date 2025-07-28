@@ -696,12 +696,12 @@ For lists of resources that support pagination.
 - **Security:** Requires `STUDENT` role.
 - **Testing:** Test document upload with valid and invalid files, ensuring the correct response structure.
 
-### 3.5. `GET /api/student/courses/:id/sections`
+### 3.5. `GET /api/student/courses/:id`
 
 - **Description:** Retrieves all sections and lessons of a course for the student.
 - **Request:**
   - **Method:** `GET`
-  - **Path:** `/api/student/courses/:id/sections`
+  - **Path:** `/api/student/courses/:id`
   - **Path Params:** `id` (string)
   - **Headers:** `Authorization: Bearer <accessToken>`
 - **Response:**
@@ -2057,32 +2057,84 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
 - **Security:** Requires `ADMIN` role.
 - **Testing:** Test user listing with pagination.
 
-### 5.2. `GET /api/admin/courses/pending`
+### 5.2. `GET /api/admin/courses`
 
-- **Description:** Retrieves all courses pending approval.
+- **Description:** Retrieves a list of courses. Supports filtering by course status, pagination, and sorting
 - **Request:**
   - **Method:** `GET`
-  - **Path:** `/api/admin/courses/pending`
+  - **Path:** `/api/admin/courses`
   - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Query Params:**
+    - `page` (number, optional, default: 0): Page number for pagination
+    - `size` (number, optional, default: 10): Number of items per page
+    - `status` (string, optional): Filter by course status (`PENDING`, `APPROVED`)
+    - `sort` (string, optional, default: `createdAt,asc`): Sort criteria,
+    - `categoryId` (string, optional): Filter by category ID
+    - `search` (string, optional): Search by course title or description, instructor name
+    - `minPrice` (number, optional): Filter by minimum course price
+    - `maxPrice` (number, optional): Filter by maximum course price
+    - `level` (string, optional): Filter by course level (`BEGINNER`, `INTERMEDIATE`, `ADVANCED`)
 - **Response:**
   - **Success (200 OK):**
     ```json
     {
       "statusCode": 200,
-      "message": "Pending courses retrieved successfully",
-      "data": []
+      "message": "Courses retrieved successfully",
+      "data": {
+        "content": [
+          {
+            "id": "course-uuid",
+            "title": "Course Title",
+            "description": "Course Description",
+            "thumbnailUrl": "https://res.cloudinary.com/.../course-thumb.jpg",
+            "instructor": {
+              "id": "instructor-uuid",
+              "name": "Instructor Name",
+              "email": "instructor@example.com",
+              "avatar": "https://res.cloudinary.com/.../instructor-profile.jpg"
+            },
+            "isApproved": true,
+            "isPublished": false,
+            "level": "BEGINNER",
+            "price": 49.99,
+            "enrollmentCount": 100,
+            "averageRating": 4.5,
+            "ratingCount": 25,
+            "sectionCount": 5,
+            "category": {
+              "id": "category-uuid",
+              "name": "Category Name"
+            },
+            "createdAt": "2025-07-01T10:30:00Z",
+            "updatedAt": "2025-07-02T12:00:00Z"
+          }
+        ],
+        "page": {
+          "number": 0,
+          "size": 10,
+          "totalPages": 1,
+          "totalElements": 1,
+          "first": true,
+          "last": true
+        }
+      },
+      "timeStamp": "2025-07-26T10:30:00Z"
     }
     ```
-- **Controller:** Create `AdminCourseController` with a `findPendingCourses` endpoint.
-- **Service:** Implement `findPendingCourses` to fetch courses where `is_approved` is false.
+- **Business Rules:**
+  - Admin can filter courses by status (PENDING, APPROVED).
+  - Pagination and sorting are supported.
+  - Course details include instructor information.
+- **Controller:** Create `AdminCourseController` with a `findCoursesForAdmin ` endpoint.
+- **Service:** Implement `findCoursesForAdmin ` to fetch all courses.
 - **Security:** Requires `ADMIN` role.
-- **Testing:** Test retrieval of pending courses.
+- **Testing:** Test retrieval of all courses.
 
-### 5.3. `POST /api/admin/courses/:id/approve`
+### 5.3. `PATCH /api/admin/courses/:id/approve`
 
 - **Description:** Approves a pending course.
 - **Request:**
-  - **Method:** `POST`
+  - **Method:** `PATCH`
   - **Path:** `/api/admin/courses/:id/approve`
   - **Path Params:** `id` (string)
   - **Headers:** `Authorization: Bearer <accessToken>`
@@ -2092,13 +2144,111 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
     {
       "statusCode": 200,
       "message": "Course approved successfully",
-      "data": null
+      "data": {
+        "id": "course-uuid",
+        "title": "Course Title",
+        "isApproved": true,
+        "approvedAt": "2025-07-26T10:30:00Z"
+      }
     }
     ```
+- **Business Rules:**
+  - Only courses in `PENDING` status can be approved.
+  - Once approved, course status is set to `APPROVED`.
+  - Admin ID and timestamp should be recorded.
 - **Controller:** Add an `approveCourse` endpoint.
 - **Service:** Implement `approveCourse` to set `is_approved` to true.
 - **Security:** Requires `ADMIN` role.
-- **Testing:** Test course approval.
+- **Testing:**
+  - Approve valid PENDING course
+  - Try approving non-existent course
+  - Try approving already approved course
+
+### 5.10. `GET /api/admin/courses/:id`
+
+- **Description:** Retrieves full metadata, sections, and lessons (with content) of a course for admin review.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/admin/courses/:id`
+  - **Path Params:** `id` (string)
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Sections retrieved successfully",
+      "data": [
+        {
+          "id": "section-uuid",
+          "title": "Introduction",
+          "order_index": 0,
+          "lessonCount": 3,
+          "lessons": [
+            {
+              "id": "lesson-uuid",
+              "title": "Getting Started",
+              "type": "VIDEO",
+              "order_index": 0,
+              "video": {
+                "id": "video-uuid",
+                "url": "https://res.cloudinary.com/.../video.mp4",
+                "duration": 300
+              }
+            },
+            {
+              "id": "lesson-uuid-2",
+              "title": "Course Overview",
+              "type": "QUIZ",
+              "order_index": 1,
+              "quiz": {
+                "questions": [
+                  {
+                    "id": "question-id-1",
+                    "questionText": "What is Java?",
+                    "options": [
+                      "A. Language",
+                      "B. Framework",
+                      "C. OS",
+                      "D. Compiler"
+                    ],
+                    "correctAnswer": "A",
+                    "explanation": "Java is a programming language."
+                  },
+                  {
+                    "id": "question-id-2",
+                    "questionText": "What is JVM?",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswer": "C",
+                    "explanation": null
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "section-uuid-2",
+          "title": "Advanced Concepts",
+          "order_index": 1,
+          "lessonCount": 0,
+          "lessons": []
+        }
+      ]
+    }
+    ```
+- **Controller:** Create `AdminCourseController` with a `getSections` endpoint.
+- **Service:** Implement `getSections` in `AdminCourseService`.
+  - Verify the user is an admin.
+  - Validate course exists.
+  - Include course metadata, sections, and lessons.
+- **Security:** Requires `ADMIN` role.
+- **Testing:**:
+  - Course with multiple sections and mixed content.
+  - Course with no lessons.
+  - Course not found (404).
+  - Unauthorized access (401/403).
+- **Error Handling:** If the course does not exist, return 404 Not Found.
 
 ### 5.4. `GET /api/admin/instructors/applications`
 
