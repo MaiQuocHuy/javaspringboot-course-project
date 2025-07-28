@@ -25,12 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.security.exception.ExpiredJwtTokenException;
 import project.ktc.springboot_app.security.exception.InvalidJwtTokenException;
 import project.ktc.springboot_app.security.exception.MalformedJwtTokenException;
-import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
-import lombok.extern.slf4j.Slf4j;
-import project.ktc.springboot_app.security.exception.ExpiredJwtTokenException;
-import project.ktc.springboot_app.security.exception.InvalidJwtTokenException;
-import project.ktc.springboot_app.security.exception.MalformedJwtTokenException;
 
 @Component
 @Slf4j

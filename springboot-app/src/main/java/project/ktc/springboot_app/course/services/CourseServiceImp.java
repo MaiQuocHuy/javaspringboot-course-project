@@ -291,20 +291,6 @@ public class CourseServiceImp implements CourseService {
                     .collect(Collectors.toList());
         }
 
-        // Map Reviews
-        List<CourseDetailResponseDto.ReviewSummary> reviewSummaries = courseRepository
-                .findReviewsByCourseId(course.getId())
-                .stream()
-                .map(review -> CourseDetailResponseDto.ReviewSummary.builder()
-                        .id(review.getId())
-                        .rating(review.getRating())
-                        .comment(review.getReviewText())
-                        .userId(review.getUser().getId())
-                        .userName(review.getUser().getName())
-                        .createdAt(review.getReviewedAt())
-                        .build())
-                .collect(Collectors.toList());
-
         return CourseDetailResponseDto.builder()
                 .id(course.getId())
                 .slug(slug)
@@ -320,7 +306,6 @@ public class CourseServiceImp implements CourseService {
                 .isEnrolled(isEnrolled)
                 .instructor(instructorSummary)
                 .sections(sectionSummaries)
-                .reviews(reviewSummaries)
                 .build();
     }
 
