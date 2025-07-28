@@ -9,10 +9,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.earning.dto.EarningDetailResponseDto;
 import project.ktc.springboot_app.earning.dto.EarningsWithSummaryDto;
-import project.ktc.springboot_app.earning.interfaces.InstructorEarningService;
+import project.ktc.springboot_app.earning.services.InstructorEarningServiceImp;
 
 import java.time.LocalDateTime;
 
@@ -21,9 +23,10 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('INSTRUCTOR')")
+@Tag(name = "Instructor Earnings API", description = "Endpoints for managing instructor earnings")
 public class InstructorEarningController {
 
-    private final InstructorEarningService instructorEarningService;
+    private final InstructorEarningServiceImp instructorEarningService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<EarningsWithSummaryDto>> getEarnings(

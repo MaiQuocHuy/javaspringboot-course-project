@@ -355,6 +355,59 @@ For lists of resources that support pagination.
 - **Security:** Requires a valid `refreshToken`.
 - **Testing:** Test logout with valid and invalid tokens, ensuring the token is invalidated.
 
+### 1.12. `POST /api/auth/register-application`
+
+- **Description:** Registers a new user account. If the role is INSTRUCTOR, an instructor application is also submitted along with the required documents.
+- **Request:**
+
+  - **Method:** `POST`
+  - **Headers:**
+    Content-Type: multipart/form-data
+    \| Field | Type | Required | Description |
+    \|---------------|------------------|----------|-------------|
+    \| `name` | `string` | ✅ | Full name of the user |
+    \| `email` | `string` | ✅ | Valid and unique email |
+    \| `password` | `string` | ✅ | Password (minimum 6 characters) |
+    \| `role` | `string` | ✅ | Role of the user (`STUDENT` or `INSTRUCTOR`) |
+    \| `certificate` | `file` (PDF/DOCX/IMG) | ✅ if role = `INSTRUCTOR` | Professional certification file (max 15MB) |
+    \| `cv` | `file` (PDF/DOCX/IMG) | ✅ if role = `INSTRUCTOR` | Resume/CV (max 15MB) |
+    \| `portfolio` | `string (URL)` | ✅ if role = `INSTRUCTOR` | GitHub/LinkedIn/portfolio URL |
+    \| `other` | `file` (optional)| ❌ | Optional supporting documents (max 15MB) |
+  - **Response:**:
+    - **Success (201 Created) – Role: STUDENT **-
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Registration successful",
+      "data": null
+    }
+    ```
+    - **Success (201 Created) – Role: INSTRUCTOR**:
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Registration successful",
+      "data": null
+    }
+    ```
+  - **Business Rules:**:
+    - If role = INSTRUCTOR:
+      - Instructor application is automatically created along with user registration.
+      - User must provide certificate, cv, and valid portfolio URL.
+      - Only users with no prior submission or rejected (once) within 3 days can apply.
+    - If role = STUDENT:
+      - Instructor application data is ignored.
+    - If invalid data is provided or documents are missing (for INSTRUCTOR), registration will fail.
+  - **Controller:** Add a `registerApplication` endpoint to `AuthController`.
+
+- **Service:** Implement `registerApplication` in `AuthService`.
+  - Validate the role and required fields.
+  - If role = INSTRUCTOR, create an `InstructorApplication` with the provided documents.
+  - Hash the password and save the user.
+  - Assign the appropriate role in the `USER_ROLE` table.
+- **Security:** Publicly accessible endpoint.
+- **Testing:** Write tests for successful and failed registrations, ensuring the correct role and application status.
+
 ---
 
 ## 2. Course & Content (Public)
