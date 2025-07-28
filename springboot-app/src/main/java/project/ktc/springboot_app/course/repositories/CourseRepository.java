@@ -78,4 +78,27 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                         "GROUP BY c.id")
         List<Object[]> findEnrollmentCountsByCourseIds(@Param("courseIds") List<String> courseIds);
 
+        // Admin specific queries
+        @Query("SELECT c FROM Course c " +
+                        "LEFT JOIN FETCH c.instructor i " +
+                        "LEFT JOIN FETCH c.categories cat " +
+                        "WHERE c.isDeleted = false " +
+                        "AND (:isApproved IS NULL OR c.isApproved = :isApproved) " +
+                        "AND (:categoryId IS NULL OR cat.id = :categoryId) " +
+                        "AND (:search IS NULL OR " +
+                        "     LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "     LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "     LOWER(i.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+                        "AND (:minPrice IS NULL OR c.price >= :minPrice) " +
+                        "AND (:maxPrice IS NULL OR c.price <= :maxPrice) " +
+                        "AND (:level IS NULL OR c.level = :level)")
+        Page<Course> findCoursesForAdmin(
+                        @Param("isApproved") Boolean isApproved,
+                        @Param("categoryId") String categoryId,
+                        @Param("search") String search,
+                        @Param("minPrice") BigDecimal minPrice,
+                        @Param("maxPrice") BigDecimal maxPrice,
+                        @Param("level") CourseLevel level,
+                        Pageable pageable);
+
 }

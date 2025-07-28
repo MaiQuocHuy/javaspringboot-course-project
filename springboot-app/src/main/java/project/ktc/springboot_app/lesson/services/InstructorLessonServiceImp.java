@@ -18,6 +18,10 @@ import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.lesson.interfaces.LessonService;
 import project.ktc.springboot_app.lesson.repositories.InstructorLessonRepository;
+import project.ktc.springboot_app.lesson.repositories.LessonCompletionRepository;
+import project.ktc.springboot_app.entity.LessonCompletion;
+import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 import project.ktc.springboot_app.section.dto.LessonDto;
@@ -57,6 +61,8 @@ public class InstructorLessonServiceImp implements LessonService {
     private final InstructorSectionRepository sectionRepository;
     private final VideoContentRepository videoContentRepository;
     private final QuizQuestionRepository quizQuestionRepository;
+    private final LessonCompletionRepository lessonCompletionRepository;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
@@ -83,7 +89,7 @@ public class InstructorLessonServiceImp implements LessonService {
 
         // Convert lessons to DTOs
         List<LessonDto> lessonDtos = lessons.stream()
-                .map(this::convertToLessonDto)
+                .map((lesson) -> convertToLessonDto(lesson, currentUserId))
                 .collect(Collectors.toList());
 
         SectionWithLessonsDto sectionWithLessonsDto = createSectionWithLessonsDto(section, lessonDtos);
@@ -96,18 +102,20 @@ public class InstructorLessonServiceImp implements LessonService {
         return SectionWithLessonsDto.builder()
                 .id(section.getId())
                 .title(section.getTitle())
-                .order(section.getOrderIndex())
+                .orderIndex(section.getOrderIndex())
                 .lessonCount(lessonDtos.size())
                 .lessons(lessonDtos)
                 .build();
     }
 
-    private LessonDto convertToLessonDto(Lesson lesson) {
+    private LessonDto convertToLessonDto(Lesson lesson, String currentUserId) {
+        Boolean isCompleted = lessonCompletionRepository.existsByUserIdAndLessonId(currentUserId, lesson.getId());
         LessonDto.LessonDtoBuilder builder = LessonDto.builder()
                 .id(lesson.getId())
                 .title(lesson.getTitle())
                 .type(lesson.getType())
-                .order(lesson.getOrderIndex());
+                .order(lesson.getOrderIndex())
+                .isCompleted(isCompleted);
 
         // Add type-specific data based on content_id
         if (lesson.getContentId() != null) {
@@ -732,6 +740,69 @@ public class InstructorLessonServiceImp implements LessonService {
         } catch (Exception e) {
             log.error("Error updating lesson order: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to update lesson order", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<String>> completeLesson(String sectionId, String lessonId) {
+        log.info("Instructor completion request for lesson {} in section {}", lessonId, sectionId);
+
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+
+            // Verify section exists and belongs to instructor
+            Optional<Section> sectionOpt = sectionRepository.findById(sectionId);
+            if (sectionOpt.isEmpty()) {
+                return ApiResponseUtil.notFound("Section not found with id: " + sectionId);
+            }
+
+            Section section = sectionOpt.get();
+            if (!section.getCourse().getInstructor().getId().equals(currentUserId)) {
+                return ApiResponseUtil.forbidden("You do not have permission to access this section");
+            }
+
+            // Verify lesson exists and belongs to the section
+            Optional<Lesson> lessonOpt = lessonRepository.findById(lessonId);
+            if (lessonOpt.isEmpty()) {
+                return ApiResponseUtil.notFound("Lesson not found with id: " + lessonId);
+            }
+
+            Lesson lesson = lessonOpt.get();
+            if (!lesson.getSection().getId().equals(sectionId)) {
+                return ApiResponseUtil.badRequest("Lesson does not belong to the specified section");
+            }
+
+            // Check if lesson is already completed by the instructor (idempotent operation)
+            boolean alreadyCompleted = lessonCompletionRepository.existsByUserIdAndLessonId(currentUserId, lessonId);
+            if (alreadyCompleted) {
+                log.info("Lesson {} already completed by instructor {}", lessonId, currentUserId);
+                return ApiResponseUtil.success("Lesson completion already recorded",
+                        "Lesson completion updated successfully");
+            }
+
+            // Get instructor user entity
+            Optional<User> userOpt = userRepository.findById(currentUserId);
+            if (userOpt.isEmpty()) {
+                return ApiResponseUtil.notFound("User not found with id: " + currentUserId);
+            }
+            User instructor = userOpt.get();
+
+            // Create lesson completion record
+            LessonCompletion completion = new LessonCompletion();
+            completion.setUser(instructor);
+            completion.setLesson(lesson);
+            completion.setCompletedAt(LocalDateTime.now());
+
+            lessonCompletionRepository.save(completion);
+            log.info("Successfully recorded lesson completion for instructor {} on lesson {}", currentUserId, lessonId);
+
+            return ApiResponseUtil.success("Lesson completion recorded successfully",
+                    "Lesson completion recorded successfully");
+
+        } catch (Exception e) {
+            log.error("Error completing lesson {} for instructor: {}", lessonId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to record lesson completion: " + e.getMessage());
         }
     }
 

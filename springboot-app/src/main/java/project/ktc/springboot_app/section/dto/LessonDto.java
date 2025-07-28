@@ -16,4 +16,5 @@ public class LessonDto {
     private Integer order;
     private VideoDto video;
     private QuizDto quiz;
+    private Boolean isCompleted;
 }

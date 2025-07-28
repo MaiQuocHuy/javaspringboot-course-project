@@ -1,19 +1,22 @@
-package project.ktc.springboot_app.entity;
+package project.ktc.springboot_app.earning.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;
+import project.ktc.springboot_app.entity.BaseEntity;
+import project.ktc.springboot_app.entity.Payment;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "INSTRUCTOR_EARNING", uniqueConstraints = @UniqueConstraint(name = "unique_payment", columnNames = {"payment_id"}), indexes = {
-        @Index(name = "idx_instructor", columnList = "instructor_id"),
-        @Index(name = "idx_status", columnList = "status")
-})
+@Table(name = "INSTRUCTOR_EARNING", uniqueConstraints = @UniqueConstraint(name = "unique_payment", columnNames = {
+        "payment_id" }), indexes = {
+                @Index(name = "idx_instructor", columnList = "instructor_id"),
+                @Index(name = "idx_status", columnList = "status")
+        })
 @Getter
 @Setter
 public class InstructorEarning extends BaseEntity {
@@ -40,4 +43,4 @@ public class InstructorEarning extends BaseEntity {
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
-} 
+}

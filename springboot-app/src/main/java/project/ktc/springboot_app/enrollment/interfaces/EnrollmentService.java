@@ -10,5 +10,15 @@ import project.ktc.springboot_app.enrollment.dto.MyEnrolledCourseDto;
 
 public interface EnrollmentService {
     ResponseEntity<ApiResponse<EnrollmentResponseDto>> enroll(String courseId);
+
     ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(String status, Pageable pageable);
+
+    /**
+     * Creates enrollment from webhook (bypassing authentication)
+     * 
+     * @param userId          The user ID to enroll
+     * @param courseId        The course ID to enroll in
+     * @param stripeSessionId The Stripe session ID for reference
+     */
+    void createEnrollmentFromWebhook(String userId, String courseId, String stripeSessionId);
 }

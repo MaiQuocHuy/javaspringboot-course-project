@@ -26,6 +26,7 @@ import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.lesson.repositories.InstructorLessonRepository;
+import project.ktc.springboot_app.lesson.repositories.LessonCompletionRepository;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 import project.ktc.springboot_app.section.dto.CreateSectionDto;
 import project.ktc.springboot_app.section.dto.LessonDto;
@@ -38,6 +39,7 @@ import project.ktc.springboot_app.section.dto.VideoDto;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.interfaces.InstructorSectionService;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
+import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.video.repositories.VideoContentRepository;
 
 @Service
@@ -47,6 +49,7 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
 
     private final InstructorSectionRepository sectionRepository;
     private final InstructorLessonRepository lessonRepository;
+    private final LessonCompletionRepository lessonCompletionRepository;
     private final QuizQuestionRepository quizQuestionRepository;
     private final VideoContentRepository videoContentRepository;
     private final CourseRepository courseRepository;
@@ -60,6 +63,7 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
         log.info("Getting course sections for courseId: {}, instructorId: {}", courseId, instructorId);
 
         try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
             // Verify course exists and instructor owns it
             Course course = courseRepository.findById(courseId).orElse(null);
             if (course == null) {
@@ -78,7 +82,7 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
 
             // Convert to DTOs with lessons
             List<SectionWithLessonsDto> sectionDtos = sections.stream()
-                    .map(this::convertToSectionWithLessonsDto)
+                    .map((section) -> convertToSectionWithLessonsDto(section, currentUserId))
                     .collect(Collectors.toList());
 
             log.info("Retrieved {} sections for course {}", sectionDtos.size(), courseId);
@@ -90,30 +94,32 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
         }
     }
 
-    private SectionWithLessonsDto convertToSectionWithLessonsDto(Section section) {
+    private SectionWithLessonsDto convertToSectionWithLessonsDto(Section section, String currentUserId) {
         // Get lessons for this section
         List<Lesson> lessons = lessonRepository.findLessonsBySectionIdOrderByOrder(section.getId());
 
         // Convert lessons to DTOs
         List<LessonDto> lessonDtos = lessons.stream()
-                .map(this::convertToLessonDto)
+                .map((lesson) -> convertToLessonDto(lesson, currentUserId))
                 .collect(Collectors.toList());
 
         return SectionWithLessonsDto.builder()
                 .id(section.getId())
                 .title(section.getTitle())
-                .order(section.getOrderIndex())
+                .orderIndex(section.getOrderIndex())
                 .lessonCount(lessons.size())
                 .lessons(lessonDtos)
                 .build();
     }
 
-    private LessonDto convertToLessonDto(Lesson lesson) {
+    private LessonDto convertToLessonDto(Lesson lesson, String currentUserId) {
+        Boolean isCompleted = lessonCompletionRepository.existsByUserIdAndLessonId(currentUserId, lesson.getId());
         LessonDto.LessonDtoBuilder builder = LessonDto.builder()
                 .id(lesson.getId())
                 .title(lesson.getTitle())
                 .type(lesson.getType())
-                .order(lesson.getOrderIndex());
+                .order(lesson.getOrderIndex())
+                .isCompleted(isCompleted);
 
         // Add type-specific data based on content_id
         if (lesson.getContentId() != null) {
