@@ -17,9 +17,10 @@ public abstract class BaseEntity {
     private String id = UUID.randomUUID().toString();
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(updatable = false, name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-} 
+}

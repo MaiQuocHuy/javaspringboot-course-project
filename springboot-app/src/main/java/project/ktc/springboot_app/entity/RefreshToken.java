@@ -33,13 +33,13 @@ public class RefreshToken {
     @Column(nullable = false, length = 512, unique = true)
     private String token;
 
-    @Column(nullable = false)
+    @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
     @Column(name = "is_revoked")
     @Builder.Default
     private Boolean isRevoked = false;
 
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
-} 
+}
