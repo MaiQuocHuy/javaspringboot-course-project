@@ -1,0 +1,2600 @@
+{
+  "id": "0",
+  "name": "SQL Import (mysql)",
+  "createdAt": "2025-07-28T06:17:25.517Z",
+  "updatedAt": "2025-07-29T01:11:37.431Z",
+  "databaseType": "mysql",
+  "tables": [
+    {
+      "id": "1",
+      "name": "CATEGORY",
+      "schema": "",
+      "order": 3,
+      "fields": [
+        {
+          "id": "2",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "3",
+          "name": "name",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": true,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "4",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "5",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 1263.4360014065496,
+      "y": 765.0673292086615,
+      "color": "#ff9f74",
+      "isView": false,
+      "createdAt": 1753683445516,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "6",
+      "name": "LESSON_COMPLETION",
+      "schema": "",
+      "order": 10,
+      "fields": [
+        {
+          "id": "7",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "8",
+          "name": "user_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "9",
+          "name": "lesson_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "10",
+          "name": "completed_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 1351.8188830096306,
+      "y": 1579.6872392693253,
+      "color": "#b067e9",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "11",
+      "name": "ENROLLMENT",
+      "schema": "",
+      "order": 9,
+      "fields": [
+        {
+          "id": "12",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "13",
+          "name": "user_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "14",
+          "name": "course_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "15",
+          "name": "enrolled_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "16",
+          "name": "completion_status",
+          "type": {
+            "name": "enum",
+            "id": "enum"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 440.2301110158549,
+      "y": 1355.521028019276,
+      "color": "#4dee8a",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "17",
+      "name": "QUIZ_QUESTION",
+      "schema": "",
+      "order": 16,
+      "fields": [
+        {
+          "id": "18",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "19",
+          "name": "lesson_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "20",
+          "name": "question_text",
+          "type": {
+            "name": "text",
+            "id": "text",
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "21",
+          "name": "options",
+          "type": {
+            "name": "json",
+            "id": "json",
+            "usageLevel": 2
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "22",
+          "name": "correct_answer",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "23",
+          "name": "explanation",
+          "type": {
+            "name": "text",
+            "id": "text",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "24",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "25",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 778.9576931499264,
+      "y": 1569.4432356927748,
+      "color": "#b067e9",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "26",
+      "name": "INSTRUCTOR_APPLICATION",
+      "schema": "",
+      "order": 15,
+      "fields": [
+        {
+          "id": "27",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "28",
+          "name": "user_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "29",
+          "name": "reviewed_by",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "30",
+          "name": "status",
+          "type": {
+            "name": "enum",
+            "id": "enum"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "31",
+          "name": "documents",
+          "type": {
+            "name": "json",
+            "id": "json",
+            "usageLevel": 2
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "32",
+          "name": "submitted_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "33",
+          "name": "reviewed_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "34",
+          "name": "rejection_reason",
+          "type": {
+            "name": "text",
+            "id": "text",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 24.56740981799132,
+      "y": 1396.2367149394868,
+      "color": "#ff9f74",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "35",
+      "name": "COURSE",
+      "schema": "",
+      "order": 4,
+      "fields": [
+        {
+          "id": "36",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "37",
+          "name": "title",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "38",
+          "name": "description",
+          "type": {
+            "name": "text",
+            "id": "text",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "39",
+          "name": "instructor_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "40",
+          "name": "price",
+          "type": {
+            "name": "decimal",
+            "id": "decimal",
+            "usageLevel": 2
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "41",
+          "name": "is_published",
+          "type": {
+            "name": "boolean",
+            "id": "boolean",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "42",
+          "name": "is_approved",
+          "type": {
+            "name": "boolean",
+            "id": "boolean",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "43",
+          "name": "thumbnail_url",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "44",
+          "name": "thumbnail_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "45",
+          "name": "level",
+          "type": {
+            "name": "enum",
+            "id": "enum"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "46",
+          "name": "is_deleted",
+          "type": {
+            "name": "boolean",
+            "id": "boolean",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "47",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "48",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 415.43600140654974,
+      "y": 765.0673292086615,
+      "color": "#ff6363",
+      "isView": false,
+      "createdAt": 1753683445516,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "49",
+      "name": "QUIZ_RESULT",
+      "schema": "",
+      "order": 17,
+      "fields": [
+        {
+          "id": "50",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "51",
+          "name": "user_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "52",
+          "name": "lesson_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "53",
+          "name": "score",
+          "type": {
+            "name": "decimal",
+            "id": "decimal",
+            "usageLevel": 2
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "54",
+          "name": "answers",
+          "type": {
+            "name": "json",
+            "id": "json",
+            "usageLevel": 2
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "55",
+          "name": "completed_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "56",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "57",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 1174.2720440650362,
+      "y": 304.53637909351323,
+      "color": "#ff6b8a",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "58",
+      "name": "REVIEW",
+      "schema": "",
+      "order": 11,
+      "fields": [
+        {
+          "id": "59",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "60",
+          "name": "user_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "61",
+          "name": "course_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "62",
+          "name": "rating",
+          "type": {
+            "id": "int",
+            "name": "int"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "63",
+          "name": "review_text",
+          "type": {
+            "name": "text",
+            "id": "text",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "64",
+          "name": "reviewed_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "65",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 99.11586658098611,
+      "y": 945.3138562214609,
+      "color": "#b067e9",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "66",
+      "name": "PAYMENT",
+      "schema": "",
+      "order": 12,
+      "fields": [
+        {
+          "id": "67",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "68",
+          "name": "user_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "69",
+          "name": "course_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "70",
+          "name": "amount",
+          "type": {
+            "name": "decimal",
+            "id": "decimal",
+            "usageLevel": 2
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "71",
+          "name": "status",
+          "type": {
+            "name": "enum",
+            "id": "enum"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "72",
+          "name": "payment_method",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "73",
+          "name": "paid_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "74",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": -683.9598047392847,
+      "y": 466.50665240738306,
+      "color": "#9ef07a",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "75",
+      "name": "VIDEO_CONTENT",
+      "schema": "",
+      "order": 7,
+      "fields": [
+        {
+          "id": "76",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "77",
+          "name": "url",
+          "type": {
+            "name": "text",
+            "id": "text",
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "78",
+          "name": "duration",
+          "type": {
+            "id": "int",
+            "name": "int"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "79",
+          "name": "uploaded_by",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "80",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "81",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 1651.897370926011,
+      "y": 1010.6914535073513,
+      "color": "#ff9f74",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "82",
+      "name": "USER",
+      "schema": "",
+      "order": 0,
+      "fields": [
+        {
+          "id": "83",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "84",
+          "name": "name",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "85",
+          "name": "email",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": true,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "86",
+          "name": "password",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "87",
+          "name": "is_active",
+          "type": {
+            "name": "boolean",
+            "id": "boolean",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "88",
+          "name": "thumbnail_url",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "89",
+          "name": "thumbnail_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "90",
+          "name": "bio",
+          "type": {
+            "name": "text",
+            "id": "text",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "91",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "92",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "93",
+          "name": "role_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "unique": false,
+          "nullable": true,
+          "primaryKey": false,
+          "createdAt": 1753715933057
+        }
+      ],
+      "indexes": [],
+      "x": 118.29720418458572,
+      "y": -248.3622755950253,
+      "color": "#ff6b8a",
+      "isView": false,
+      "createdAt": 1753683445516,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null,
+      "expanded": true
+    },
+    {
+      "id": "94",
+      "name": "SECTION",
+      "schema": "",
+      "order": 6,
+      "fields": [
+        {
+          "id": "95",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "96",
+          "name": "course_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "97",
+          "name": "title",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "98",
+          "name": "order_index",
+          "type": {
+            "id": "int",
+            "name": "int"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "99",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "100",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 796.7956773946528,
+      "y": 1166.9287111972287,
+      "color": "#ff6363",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "101",
+      "name": "LESSON",
+      "schema": "",
+      "order": 8,
+      "fields": [
+        {
+          "id": "102",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "103",
+          "name": "section_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "104",
+          "name": "title",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "105",
+          "name": "type",
+          "type": {
+            "name": "enum",
+            "id": "enum"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "106",
+          "name": "content_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "107",
+          "name": "order_index",
+          "type": {
+            "id": "int",
+            "name": "int"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "108",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "109",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 1231.4482176916897,
+      "y": 1181.132098259945,
+      "color": "#7175fa",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "110",
+      "name": "INSTRUCTOR_EARNING",
+      "schema": "",
+      "order": 14,
+      "fields": [
+        {
+          "id": "111",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "112",
+          "name": "instructor_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "113",
+          "name": "payment_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "114",
+          "name": "course_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "115",
+          "name": "amount",
+          "type": {
+            "name": "decimal",
+            "id": "decimal",
+            "usageLevel": 2
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "116",
+          "name": "status",
+          "type": {
+            "name": "enum",
+            "id": "enum"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "117",
+          "name": "available_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "118",
+          "name": "paid_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "119",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "120",
+          "name": "updated_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": -392.5611259788411,
+      "y": 1186.1531350452399,
+      "color": "#7175fa",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "121",
+      "name": "REFRESH_TOKEN",
+      "schema": "",
+      "order": 2,
+      "fields": [
+        {
+          "id": "122",
+          "name": "id",
+          "type": {
+            "id": "int",
+            "name": "int"
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": true
+        },
+        {
+          "id": "123",
+          "name": "user_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "124",
+          "name": "token",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "512"
+        },
+        {
+          "id": "125",
+          "name": "expires_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "126",
+          "name": "is_revoked",
+          "type": {
+            "name": "boolean",
+            "id": "boolean",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        },
+        {
+          "id": "127",
+          "name": "created_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445516,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 533.6914979204208,
+      "y": 416.2391270928876,
+      "color": "#ff6b8a",
+      "isView": false,
+      "createdAt": 1753683445516,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "128",
+      "name": "USER_ROLE",
+      "schema": "",
+      "order": 1,
+      "fields": [
+        {
+          "id": "129",
+          "name": "id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": true
+        },
+        {
+          "id": "130",
+          "name": "role",
+          "type": {
+            "name": "enum",
+            "id": "enum"
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 641.9478986212082,
+      "y": -433.21345038570587,
+      "color": "#ff6363",
+      "isView": false,
+      "createdAt": 1753683445516,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "131",
+      "name": "COURSE_CATEGORY",
+      "schema": "",
+      "order": 5,
+      "fields": [
+        {
+          "id": "132",
+          "name": "course_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "133",
+          "name": "category_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445516,
+          "increment": false,
+          "characterMaximumLength": "36"
+        }
+      ],
+      "indexes": [
+        {
+          "id": "134",
+          "name": "pk_COURSE_CATEGORY",
+          "fieldIds": [
+            "132",
+            "133"
+          ],
+          "unique": true,
+          "createdAt": 1753683445517
+        }
+      ],
+      "x": 839.4360014065497,
+      "y": 765.0673292086615,
+      "color": "#9ef07a",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    },
+    {
+      "id": "135",
+      "name": "REFUND",
+      "schema": "",
+      "order": 13,
+      "fields": [
+        {
+          "id": "136",
+          "name": "id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": true,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "137",
+          "name": "payment_id",
+          "type": {
+            "name": "varchar",
+            "id": "varchar",
+            "hasCharMaxLength": true,
+            "usageLevel": 1
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false,
+          "characterMaximumLength": "36"
+        },
+        {
+          "id": "138",
+          "name": "amount",
+          "type": {
+            "name": "decimal",
+            "id": "decimal",
+            "usageLevel": 2
+          },
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "139",
+          "name": "status",
+          "type": {
+            "name": "enum",
+            "id": "enum"
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "140",
+          "name": "reason",
+          "type": {
+            "name": "text",
+            "id": "text",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "141",
+          "name": "requested_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "[object Object]",
+          "createdAt": 1753683445517,
+          "increment": false
+        },
+        {
+          "id": "142",
+          "name": "processed_at",
+          "type": {
+            "name": "timestamp",
+            "id": "timestamp",
+            "usageLevel": 1
+          },
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "default": "",
+          "createdAt": 1753683445517,
+          "increment": false
+        }
+      ],
+      "indexes": [],
+      "x": 79.58338658082931,
+      "y": 545.8688040861863,
+      "color": "#c05dcf",
+      "isView": false,
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g",
+      "parentAreaId": null
+    }
+  ],
+  "relationships": [
+    {
+      "id": "143",
+      "name": "COURSE_CATEGORY_category_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "131",
+      "targetTableId": "1",
+      "sourceFieldId": "133",
+      "targetFieldId": "2",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "144",
+      "name": "COURSE_CATEGORY_course_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "131",
+      "targetTableId": "35",
+      "sourceFieldId": "132",
+      "targetFieldId": "36",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "145",
+      "name": "COURSE_instructor_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "35",
+      "targetTableId": "82",
+      "sourceFieldId": "39",
+      "targetFieldId": "83",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "146",
+      "name": "ENROLLMENT_course_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "11",
+      "targetTableId": "35",
+      "sourceFieldId": "14",
+      "targetFieldId": "36",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "147",
+      "name": "ENROLLMENT_user_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "11",
+      "targetTableId": "82",
+      "sourceFieldId": "13",
+      "targetFieldId": "83",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "148",
+      "name": "INSTRUCTOR_APPLICATION_reviewed_by_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "26",
+      "targetTableId": "82",
+      "sourceFieldId": "29",
+      "targetFieldId": "83",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "149",
+      "name": "INSTRUCTOR_APPLICATION_user_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "26",
+      "targetTableId": "82",
+      "sourceFieldId": "28",
+      "targetFieldId": "83",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "150",
+      "name": "INSTRUCTOR_EARNING_course_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "110",
+      "targetTableId": "35",
+      "sourceFieldId": "114",
+      "targetFieldId": "36",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "151",
+      "name": "INSTRUCTOR_EARNING_instructor_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "110",
+      "targetTableId": "82",
+      "sourceFieldId": "112",
+      "targetFieldId": "83",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "152",
+      "name": "INSTRUCTOR_EARNING_payment_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "110",
+      "targetTableId": "66",
+      "sourceFieldId": "113",
+      "targetFieldId": "67",
+      "sourceCardinality": "one",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "153",
+      "name": "LESSON_COMPLETION_lesson_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "6",
+      "targetTableId": "101",
+      "sourceFieldId": "9",
+      "targetFieldId": "102",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "154",
+      "name": "LESSON_COMPLETION_user_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "6",
+      "targetTableId": "82",
+      "sourceFieldId": "8",
+      "targetFieldId": "83",
+      "sourceCardinality": "one",
+      "targetCardinality": "many",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "155",
+      "name": "LESSON_content_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "101",
+      "targetTableId": "75",
+      "sourceFieldId": "106",
+      "targetFieldId": "76",
+      "sourceCardinality": "one",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "156",
+      "name": "LESSON_section_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "101",
+      "targetTableId": "94",
+      "sourceFieldId": "103",
+      "targetFieldId": "95",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "157",
+      "name": "PAYMENT_course_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "66",
+      "targetTableId": "35",
+      "sourceFieldId": "69",
+      "targetFieldId": "36",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "158",
+      "name": "PAYMENT_user_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "66",
+      "targetTableId": "82",
+      "sourceFieldId": "68",
+      "targetFieldId": "83",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "159",
+      "name": "QUIZ_QUESTION_lesson_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "17",
+      "targetTableId": "101",
+      "sourceFieldId": "19",
+      "targetFieldId": "102",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "160",
+      "name": "QUIZ_RESULT_lesson_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "49",
+      "targetTableId": "101",
+      "sourceFieldId": "52",
+      "targetFieldId": "102",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "161",
+      "name": "QUIZ_RESULT_user_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "49",
+      "targetTableId": "82",
+      "sourceFieldId": "51",
+      "targetFieldId": "83",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "162",
+      "name": "REFRESH_TOKEN_user_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "121",
+      "targetTableId": "82",
+      "sourceFieldId": "123",
+      "targetFieldId": "83",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "163",
+      "name": "REFUND_payment_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "135",
+      "targetTableId": "66",
+      "sourceFieldId": "137",
+      "targetFieldId": "67",
+      "sourceCardinality": "one",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "164",
+      "name": "REVIEW_course_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "58",
+      "targetTableId": "35",
+      "sourceFieldId": "61",
+      "targetFieldId": "36",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "165",
+      "name": "REVIEW_user_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "58",
+      "targetTableId": "82",
+      "sourceFieldId": "60",
+      "targetFieldId": "83",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "166",
+      "name": "SECTION_course_id_fkey",
+      "sourceSchema": "",
+      "targetSchema": "",
+      "sourceTableId": "94",
+      "targetTableId": "35",
+      "sourceFieldId": "96",
+      "targetFieldId": "36",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1753683445517,
+      "diagramId": "0qd8xrzq7z3g"
+    },
+    {
+      "id": "167",
+      "name": "USER_ROLE_id_fk",
+      "sourceSchema": "",
+      "sourceTableId": "128",
+      "targetSchema": "",
+      "targetTableId": "82",
+      "sourceFieldId": "129",
+      "targetFieldId": "93",
+      "sourceCardinality": "one",
+      "targetCardinality": "many",
+      "createdAt": 1753716190014,
+      "diagramId": "0qd8xrzq7z3g"
+    }
+  ],
+  "dependencies": [],
+  "areas": [],
+  "customTypes": []
+}
