@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for reviews table -->
+    <changeSet id="113-seed-reviews" author="ktc">
+        <!-- Reviews for Course 001: Complete React Development Course -->
+        <insert tableName="reviews">
+            <column name="id" value="review-001"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-001"/>
+            <column name="rating" value="5"/>
+            <column name="review_text" value="Excellent course! Charlie explains React concepts very clearly and the hands-on examples are really helpful. I'm learning so much about modern web development."/>
+            <column name="reviewed_at" value="2025-01-17 14:30:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" value="review-002"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="course_id" value="course-001"/>
+            <column name="rating" value="4"/>
+            <column name="review_text" value="Great content and well structured. The instructor covers all the important React concepts. Would recommend to anyone starting with React."/>
+            <column name="reviewed_at" value="2025-02-01 16:45:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" value="review-003"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-001"/>
+            <column name="rating" value="5"/>
+            <column name="review_text" value="Outstanding course! The progression from basics to advanced topics is perfect. Charlie's teaching style is engaging and easy to follow."/>
+            <column name="reviewed_at" value="2025-02-14 11:20:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Reviews for Course 002: Machine Learning Fundamentals -->
+        <insert tableName="reviews">
+            <column name="id" value="review-004"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-002"/>
+            <column name="rating" value="4"/>
+            <column name="review_text" value="Julia does a great job explaining complex ML concepts in simple terms. The practical examples really help understand the theory."/>
+            <column name="reviewed_at" value="2025-01-14 13:15:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" value="review-005"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="course_id" value="course-002"/>
+            <column name="rating" value="5"/>
+            <column name="review_text" value="Fantastic introduction to machine learning! Julia's explanations are clear and the course structure is logical. Perfect for beginners."/>
+            <column name="reviewed_at" value="2025-01-18 09:45:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Reviews for Course 003: Mobile App Development with React Native -->
+        <insert tableName="reviews">
+            <column name="id" value="review-006"/>
+            <column name="user_id" value="user-009"/> <!-- Ian Clark -->
+            <column name="course_id" value="course-003"/>
+            <column name="rating" value="4"/>
+            <column name="review_text" value="Solid course on React Native. Fiona covers both iOS and Android development well. The project-based approach is very effective."/>
+            <column name="reviewed_at" value="2025-01-26 15:30:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Reviews for Course 004: Cybersecurity Essentials -->
+        <insert tableName="reviews">
+            <column name="id" value="review-007"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-004"/>
+            <column name="rating" value="5"/>
+            <column name="review_text" value="Comprehensive cybersecurity course! Hannah covers all the essential topics and provides practical insights from real-world scenarios."/>
+            <column name="reviewed_at" value="2025-01-22 12:00:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" value="review-008"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-004"/>
+            <column name="rating" value="4"/>
+            <column name="review_text" value="Very informative course on cybersecurity fundamentals. Hannah explains complex security concepts in an accessible way."/>
+            <column name="reviewed_at" value="2025-02-12 14:20:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Reviews for Course 005: Frontend Web Design Masterclass -->
+        <insert tableName="reviews">
+            <column name="id" value="review-009"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-005"/>
+            <column name="rating" value="5"/>
+            <column name="review_text" value="Perfect course for learning frontend design! Diana's teaching style is excellent and the practical exercises really help reinforce the concepts."/>
+            <column name="reviewed_at" value="2025-01-24 10:15:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" value="review-010"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="course_id" value="course-005"/>
+            <column name="rating" value="4"/>
+            <column name="review_text" value="Great introduction to frontend design. Diana covers HTML, CSS, and responsive design thoroughly. Highly recommended for beginners."/>
+            <column name="reviewed_at" value="2025-02-10 16:45:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Reviews for Course 006: DevOps and Cloud Infrastructure -->
+        <insert tableName="reviews">
+            <column name="id" value="review-011"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-006"/>
+            <column name="rating" value="5"/>
+            <column name="review_text" value="Excellent DevOps course! Charlie explains containerization and cloud deployment concepts very well. The hands-on labs are particularly valuable."/>
+            <column name="reviewed_at" value="2025-02-08 13:30:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Reviews for Course 007: Python for Data Science -->
+        <insert tableName="reviews">
+            <column name="id" value="review-012"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-007"/>
+            <column name="rating" value="5"/>
+            <column name="review_text" value="Outstanding Python course! Julia makes data science approachable and the practical exercises with real datasets are fantastic."/>
+            <column name="reviewed_at" value="2025-02-02 11:00:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" value="review-013"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="course_id" value="course-007"/>
+            <column name="rating" value="4"/>
+            <column name="review_text" value="Great course for learning Python in the context of data science. Julia's explanations are clear and the progression is well-paced."/>
+            <column name="reviewed_at" value="2025-02-05 15:20:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Reviews for Course 009: Game Development with Unity -->
+        <insert tableName="reviews">
+            <column name="id" value="review-014"/>
+            <column name="user_id" value="user-009"/> <!-- Ian Clark -->
+            <column name="course_id" value="course-009"/>
+            <column name="rating" value="4"/>
+            <column name="review_text" value="Fun and engaging Unity course! Fiona makes game development accessible and the step-by-step approach works well for beginners."/>
+            <column name="reviewed_at" value="2025-02-06 14:45:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Reviews for Course 010: Advanced JavaScript and Node.js -->
+        <insert tableName="reviews">
+            <column name="id" value="review-015"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-010"/>
+            <column name="rating" value="5"/>
+            <column name="review_text" value="Incredible advanced JavaScript course! Diana covers ES6+ features thoroughly and the Node.js section is comprehensive. Learned so much!"/>
+            <column name="reviewed_at" value="2025-02-04 17:30:00"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

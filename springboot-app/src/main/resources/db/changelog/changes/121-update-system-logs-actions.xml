@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Update system_logs action column to only include CRUD operations -->
+    <changeSet id="121-update-system-logs-actions" author="ktc">
+        <!-- First, delete any existing logs with non-CRUD actions -->
+        <sql>
+            DELETE FROM system_logs 
+            WHERE action NOT IN ('CREATE', 'UPDATE', 'DELETE');
+        </sql>
+        
+        <!-- Then modify the column to use the new ENUM -->
+        <modifyDataType tableName="system_logs" 
+                       columnName="action" 
+                       newDataType="ENUM('CREATE','UPDATE','DELETE')"/>
+        
+        <rollback>
+            <modifyDataType tableName="system_logs" 
+                           columnName="action" 
+                           newDataType="ENUM('CREATE','UPDATE','DELETE','READ','LOGIN','LOGOUT','EXPORT','IMPORT')"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

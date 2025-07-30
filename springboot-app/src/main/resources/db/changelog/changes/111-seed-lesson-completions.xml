@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for lesson_completions table -->
+    <changeSet id="111-seed-lesson-completions" author="ktc">
+        <!-- Bob's completions for React Course -->
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-001"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-001"/> <!-- Introduction to React -->
+            <column name="completed_at" value="2025-01-15 11:30:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-002"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-002"/> <!-- React Basics Quiz -->
+            <column name="completed_at" value="2025-01-15 12:15:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-003"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-003"/> <!-- Understanding Components -->
+            <column name="completed_at" value="2025-01-16 10:45:00"/>
+        </insert>
+        
+        <!-- Bob's completions for Frontend Design (Completed Course) -->
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-004"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-019"/> <!-- HTML CSS Basics -->
+            <column name="completed_at" value="2025-01-20 15:00:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-005"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-020"/> <!-- Build Your First Webpage -->
+            <column name="completed_at" value="2025-01-21 09:30:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-006"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-021"/> <!-- Media Queries and Flexbox -->
+            <column name="completed_at" value="2025-01-22 14:20:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-007"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-022"/> <!-- Responsive Design Quiz -->
+            <column name="completed_at" value="2025-01-22 15:10:00"/>
+        </insert>
+        
+        <!-- Emily Chen's completions for Python Course (Completed) -->
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-008"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="lesson_id" value="lesson-027"/> <!-- Python Fundamentals -->
+            <column name="completed_at" value="2025-01-25 12:30:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-009"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="lesson_id" value="lesson-028"/> <!-- Python Syntax Quiz -->
+            <column name="completed_at" value="2025-01-26 10:15:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-010"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="lesson_id" value="lesson-029"/> <!-- Pandas DataFrames -->
+            <column name="completed_at" value="2025-01-28 16:45:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-011"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="lesson_id" value="lesson-030"/> <!-- Data Visualization Project -->
+            <column name="completed_at" value="2025-01-30 11:20:00"/>
+        </insert>
+        
+        <!-- Emily Chen's partial completions for ML Course -->
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-012"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="lesson_id" value="lesson-007"/> <!-- ML Fundamentals -->
+            <column name="completed_at" value="2025-01-10 17:00:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-013"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="lesson_id" value="lesson-008"/> <!-- Types of Machine Learning -->
+            <column name="completed_at" value="2025-01-11 14:30:00"/>
+        </insert>
+        
+        <!-- Linda Martinez's completions for ML Course (Completed) -->
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-014"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="lesson_id" value="lesson-007"/> <!-- ML Fundamentals -->
+            <column name="completed_at" value="2025-01-12 10:30:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-015"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="lesson_id" value="lesson-008"/> <!-- Types of Machine Learning -->
+            <column name="completed_at" value="2025-01-13 15:45:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-016"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="lesson_id" value="lesson-009"/> <!-- Advanced ML Algorithms -->
+            <column name="completed_at" value="2025-01-15 09:20:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-017"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="lesson_id" value="lesson-010"/> <!-- Data Cleaning Exercise -->
+            <column name="completed_at" value="2025-01-16 14:10:00"/>
+        </insert>
+        
+        <!-- George Wilson's partial completions -->
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-018"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="lesson_id" value="lesson-015"/> <!-- Cybersecurity Overview -->
+            <column name="completed_at" value="2025-01-18 14:15:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-019"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="lesson_id" value="lesson-016"/> <!-- Security Threats Assessment -->
+            <column name="completed_at" value="2025-01-19 11:30:00"/>
+        </insert>
+        
+        <!-- Ian Clark's partial completions -->
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-020"/>
+            <column name="user_id" value="user-009"/> <!-- Ian Clark -->
+            <column name="lesson_id" value="lesson-011"/> <!-- Setting up React Native -->
+            <column name="completed_at" value="2025-01-22 16:00:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-021"/>
+            <column name="user_id" value="user-009"/> <!-- Ian Clark -->
+            <column name="lesson_id" value="lesson-033"/> <!-- Unity Interface Overview -->
+            <column name="completed_at" value="2025-02-03 13:30:00"/>
+        </insert>
+        
+        <!-- Kevin Lee's partial completions -->
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-022"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="lesson_id" value="lesson-001"/> <!-- Introduction to React -->
+            <column name="completed_at" value="2025-01-28 11:45:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-023"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="lesson_id" value="lesson-019"/> <!-- HTML CSS Basics -->
+            <column name="completed_at" value="2025-02-08 15:20:00"/>
+        </insert>
+        
+        <!-- Additional partial completions for realistic progress -->
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-024"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="lesson_id" value="lesson-027"/> <!-- Python Fundamentals -->
+            <column name="completed_at" value="2025-01-30 17:00:00"/>
+        </insert>
+        <insert tableName="lesson_completions">
+            <column name="id" value="completion-025"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="lesson_id" value="lesson-001"/> <!-- Introduction to React -->
+            <column name="completed_at" value="2025-02-12 14:30:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

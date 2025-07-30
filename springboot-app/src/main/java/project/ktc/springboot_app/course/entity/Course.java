@@ -17,14 +17,14 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
-@Table(name = "COURSE")
+@Table(name = "courses")
 @Getter
 @Setter
 public class Course extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -51,14 +51,10 @@ public class Course extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "level")
-    private CourseLevel level;
+    private CourseLevel level = CourseLevel.BEGINNER;
 
     @ManyToMany
-    @JoinTable(
-        name = "COURSE_CATEGORY",
-        joinColumns = @JoinColumn(name = "course_id"),
-        inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
+    @JoinTable(name = "course_categories", joinColumns = @JoinColumn(name = "course_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private List<Category> categories;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -75,4 +71,4 @@ public class Course extends BaseEntity {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InstructorEarning> instructorEarnings;
-} 
+}

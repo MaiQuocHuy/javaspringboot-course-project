@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for refresh_tokens table -->
+    <changeSet id="118-seed-refresh-tokens" author="ktc">
+        <!-- Active refresh tokens for current users -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-alice-001"/>
+            <column name="user_id" value="user-001"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGljZUBleGFtcGxlLmNvbSIsInJvbGUiOiJBRE1JTiIsInRva2VuVHlwZSI6InJlZnJlc2gifQ.alice-refresh-token-hash-001"/>
+            <column name="expires_at" value="2025-03-17 10:00:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-15 10:00:00"/>
+        </insert>
+        
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-bob-001"/>
+            <column name="user_id" value="user-002"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJib2JAZXhhbXBsZS5jb20iLCJyb2xlIjoiU1RVREVOVCIsInRva2VuVHlwZSI6InJlZnJlc2gifQ.bob-refresh-token-hash-001"/>
+            <column name="expires_at" value="2025-03-18 14:30:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-16 14:30:00"/>
+        </insert>
+        
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-charlie-001"/>
+            <column name="user_id" value="user-003"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGFybGllQGV4YW1wbGUuY29tIiwicm9sZSI6IklOU1RSVUNUT1IiLCJ0b2tlblR5cGUiOiJyZWZyZXNoIn0.charlie-refresh-token-hash-001"/>
+            <column name="expires_at" value="2025-03-19 09:15:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-17 09:15:00"/>
+        </insert>
+        
+        <!-- Linda's active refresh token -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-linda-001"/>
+            <column name="user_id" value="user-004"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsaW5kYUBleGFtcGxlLmNvbSIsInJvbGUiOiJTVFVERU5UIiwidG9rZW5UeXBlIjoicmVmcmVzaCJ9.linda-refresh-token-hash-001"/>
+            <column name="expires_at" value="2025-03-16 16:45:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-14 16:45:00"/>
+        </insert>
+        
+        <!-- Edward's expired refresh token -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-edward-001"/>
+            <column name="user_id" value="user-005"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlZHdhcmRAZXhhbXBsZS5jb20iLCJyb2xlIjoiU1RVREVOVCIsInRva2VuVHlwZSI6InJlZnJlc2gifQ.edward-refresh-token-hash-expired"/>
+            <column name="expires_at" value="2025-02-10 08:00:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-01-11 08:00:00"/>
+        </insert>
+        
+        <!-- Fiona's revoked refresh token (logout) -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-fiona-001"/>
+            <column name="user_id" value="user-006"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmaW9uYUBleGFtcGxlLmNvbSIsInJvbGUiOiJJTlNUUlVDVE9SIiwidG9rZW5UeXBlIjoicmVmcmVzaCJ9.fiona-refresh-token-hash-revoked"/>
+            <column name="expires_at" value="2025-03-15 12:30:00"/>
+            <column name="is_revoked" value="1"/>
+            <column name="created_at" value="2025-02-13 12:30:00"/>
+        </insert>
+        
+        <!-- George's active refresh token -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-george-001"/>
+            <column name="user_id" value="user-007"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnZW9yZ2VAZXhhbXBsZS5jb20iLCJyb2xlIjoiU1RVREVOVCIsInRva2VuVHlwZSI6InJlZnJlc2gifQ.george-refresh-token-hash-001"/>
+            <column name="expires_at" value="2025-03-20 11:20:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-18 11:20:00"/>
+        </insert>
+        
+        <!-- Hannah's multiple refresh tokens (different devices) -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-hannah-001"/>
+            <column name="user_id" value="user-008"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJoYW5uYWhAZXhhbXBsZS5jb20iLCJyb2xlIjoiSU5TVFJVQ1RPUiIsInRva2VuVHlwZSI6InJlZnJlc2gifQ.hannah-refresh-token-desktop"/>
+            <column name="expires_at" value="2025-03-21 08:45:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-19 08:45:00"/>
+        </insert>
+        
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-hannah-002"/>
+            <column name="user_id" value="user-008"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJoYW5uYWhAZXhhbXBsZS5jb20iLCJyb2xlIjoiSU5TVFJVQ1RPUiIsInRva2VuVHlwZSI6InJlZnJlc2gifQ.hannah-refresh-token-mobile"/>
+            <column name="expires_at" value="2025-03-19 15:30:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-17 15:30:00"/>
+        </insert>
+        
+        <!-- Ian's revoked refresh token -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-ian-001"/>
+            <column name="user_id" value="user-009"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJpYW4udGhvbXBzb25AZXhhbXBsZS5jb20iLCJyb2xlIjoiU1RVREVOVCIsInRva2VuVHlwZSI6InJlZnJlc2gifQ.ian-refresh-token-hash-revoked"/>
+            <column name="expires_at" value="2025-03-12 10:15:00"/>
+            <column name="is_revoked" value="1"/>
+            <column name="created_at" value="2025-02-10 10:15:00"/>
+        </insert>
+        
+        <!-- Julia's active refresh token -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-julia-001"/>
+            <column name="user_id" value="user-010"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdWxpYUBleGFtcGxlLmNvbSIsInJvbGUiOiJJTlNUUlVDVE9SIiwidG9rZW5UeXBlIjoicmVmcmVzaCJ9.julia-refresh-token-hash-001"/>
+            <column name="expires_at" value="2025-03-22 13:40:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-20 13:40:00"/>
+        </insert>
+        
+        <!-- Kevin's active refresh token -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-kevin-001"/>
+            <column name="user_id" value="user-011"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJrZXZpbkBleGFtcGxlLmNvbSIsInJvbGUiOiJTVFVERU5UIiwidG9rZW5UeXBlIjoicmVmcmVzaCJ9.kevin-refresh-token-hash-001"/>
+            <column name="expires_at" value="2025-03-14 17:25:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-12 17:25:00"/>
+        </insert>
+        
+        <!-- Lisa's expired refresh token -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-lisa-001"/>
+            <column name="user_id" value="user-012"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsaXNhQGV4YW1wbGUuY29tIiwicm9sZSI6IlNUVURFTlQiLCJ0b2tlblR5cGUiOiJyZWZyZXNoIn0.lisa-refresh-token-hash-expired"/>
+            <column name="expires_at" value="2025-02-01 14:20:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-01-02 14:20:00"/>
+        </insert>
+        
+        <!-- Charlie's additional refresh token from different device -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-charlie-002"/>
+            <column name="user_id" value="user-003"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGFybGllQGV4YW1wbGUuY29tIiwicm9sZSI6IklOU1RSVUNUT1IiLCJ0b2tlblR5cGUiOiJyZWZyZXNoIn0.charlie-refresh-token-mobile"/>
+            <column name="expires_at" value="2025-03-23 09:50:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2025-02-21 09:50:00"/>
+        </insert>
+        
+        <!-- Old expired tokens for cleanup testing -->
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-old-001"/>
+            <column name="user_id" value="user-002"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJib2JAZXhhbXBsZS5jb20iLCJyb2xlIjoiU1RVREVOVCIsInRva2VuVHlwZSI6InJlZnJlc2gifQ.bob-old-expired-token"/>
+            <column name="expires_at" value="2024-12-15 10:00:00"/>
+            <column name="is_revoked" value="0"/>
+            <column name="created_at" value="2024-11-15 10:00:00"/>
+        </insert>
+        
+        <insert tableName="refresh_tokens">
+            <column name="id" value="rt-old-002"/>
+            <column name="user_id" value="user-003"/>
+            <column name="token" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGFybGllQGV4YW1wbGUuY29tIiwicm9sZSI6IklOU1RSVUNUT1IiLCJ0b2tlblR5cGUiOiJyZWZyZXNoIn0.charlie-old-revoked-token"/>
+            <column name="expires_at" value="2025-01-20 15:30:00"/>
+            <column name="is_revoked" value="1"/>
+            <column name="created_at" value="2024-12-21 15:30:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

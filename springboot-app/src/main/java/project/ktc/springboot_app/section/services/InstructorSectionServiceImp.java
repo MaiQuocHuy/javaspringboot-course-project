@@ -35,12 +35,18 @@ import project.ktc.springboot_app.section.dto.QuizQuestionDto;
 import project.ktc.springboot_app.section.dto.ReorderSectionsDto;
 import project.ktc.springboot_app.section.dto.SectionResponseDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
+import project.ktc.springboot_app.section.dto.UpdateSectionDto;
 import project.ktc.springboot_app.section.dto.VideoDto;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.interfaces.InstructorSectionService;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.video.repositories.VideoContentRepository;
+import project.ktc.springboot_app.log.services.SystemLogHelper;
+import project.ktc.springboot_app.log.dto.SectionLogDto;
+import project.ktc.springboot_app.log.utils.SectionLogMapper;
+import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.user.repositories.UserRepository;
 
 @Service
 @Slf4j
@@ -54,6 +60,8 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
     private final VideoContentRepository videoContentRepository;
     private final CourseRepository courseRepository;
     private final ObjectMapper objectMapper;
+    private final SystemLogHelper systemLogHelper;
+    private final UserRepository userRepository;
 
     @Override
     public ResponseEntity<ApiResponse<List<SectionWithLessonsDto>>> getCourseSections(
@@ -114,20 +122,22 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
 
     private LessonDto convertToLessonDto(Lesson lesson, String currentUserId) {
         Boolean isCompleted = lessonCompletionRepository.existsByUserIdAndLessonId(currentUserId, lesson.getId());
+        String lessonType = lesson.getLessonType() != null ? lesson.getLessonType().getName() : "UNKNOWN";
+
         LessonDto.LessonDtoBuilder builder = LessonDto.builder()
                 .id(lesson.getId())
                 .title(lesson.getTitle())
-                .type(lesson.getType())
+                .type(lessonType)
                 .order(lesson.getOrderIndex())
                 .isCompleted(isCompleted);
 
-        // Add type-specific data based on content_id
-        if (lesson.getContentId() != null) {
-            // If content_id is not null, this is a VIDEO lesson
-            VideoDto videoDto = getVideoContent(lesson.getContentId());
+        // Add type-specific data based on lesson type and content
+        if ("VIDEO".equals(lessonType) && lesson.getContent() != null) {
+            // This is a VIDEO lesson with content
+            VideoDto videoDto = getVideoContent(lesson.getContent().getId());
             builder.video(videoDto);
-        } else {
-            // If content_id is null, this is a QUIZ lesson
+        } else if ("QUIZ".equals(lessonType)) {
+            // This is a QUIZ lesson
             QuizDto quizDto = getQuizContent(lesson.getId());
             builder.quiz(quizDto);
         }
@@ -222,16 +232,31 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
             Section section = new Section();
             section.setId(UUID.randomUUID().toString());
             section.setTitle(createSectionDto.getTitle());
+            section.setDescription(createSectionDto.getDescription());
             section.setCourse(course);
             section.setOrderIndex(nextOrderIndex);
 
             // Save section
             Section savedSection = sectionRepository.save(section);
 
+            // Log the section creation
+            try {
+                User instructor = userRepository.findById(instructorId).orElse(null);
+                if (instructor != null) {
+                    SectionLogDto sectionLogDto = SectionLogMapper.toLogDto(savedSection);
+                    systemLogHelper.logCreate(instructor, "Section", savedSection.getId(), sectionLogDto);
+                    log.debug("Section creation logged successfully for sectionId: {}", savedSection.getId());
+                }
+            } catch (Exception logException) {
+                log.warn("Failed to log section creation: {}", logException.getMessage());
+                // Don't fail the whole operation due to logging error
+            }
+
             // Convert to response DTO
             SectionResponseDto responseDto = SectionResponseDto.builder()
                     .id(savedSection.getId())
                     .title(savedSection.getTitle())
+                    .description(savedSection.getDescription())
                     .orderIndex(savedSection.getOrderIndex())
                     .courseId(savedSection.getCourse().getId())
                     .build();
@@ -258,10 +283,10 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
             String courseId,
             String sectionId,
             String instructorId,
-            CreateSectionDto updateSectionDto) {
+            UpdateSectionDto updateSectionDto) {
 
-        log.info("Updating section {} for courseId: {}, instructorId: {}, title: {}",
-                sectionId, courseId, instructorId, updateSectionDto.getTitle());
+        log.info("Updating section {} for courseId: {}, instructorId: {}, title: {}, description: {}",
+                sectionId, courseId, instructorId, updateSectionDto.getTitle(), updateSectionDto.getDescription());
 
         try {
             // Verify course exists and instructor owns it
@@ -290,16 +315,39 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
                 return ApiResponseUtil.notFound("Section not found in this course");
             }
 
+            // Capture old values for logging
+            SectionLogDto oldSectionLogDto = SectionLogMapper.toLogDto(section);
+
             // Update section title
-            section.setTitle(updateSectionDto.getTitle());
+            if (!updateSectionDto.getTitle().isEmpty()) {
+                section.setTitle(updateSectionDto.getTitle());
+            }
+            if (!updateSectionDto.getDescription().isEmpty()) {
+                section.setDescription(updateSectionDto.getDescription());
+            }
 
             // Save updated section
             Section updatedSection = sectionRepository.save(section);
+
+            // Log the section update
+            try {
+                User instructor = userRepository.findById(instructorId).orElse(null);
+                if (instructor != null) {
+                    SectionLogDto newSectionLogDto = SectionLogMapper.toLogDto(updatedSection);
+                    systemLogHelper.logUpdate(instructor, "Section", updatedSection.getId(), oldSectionLogDto,
+                            newSectionLogDto);
+                    log.debug("Section update logged successfully for sectionId: {}", updatedSection.getId());
+                }
+            } catch (Exception logException) {
+                log.warn("Failed to log section update: {}", logException.getMessage());
+                // Don't fail the whole operation due to logging error
+            }
 
             // Convert to response DTO
             SectionResponseDto responseDto = SectionResponseDto.builder()
                     .id(updatedSection.getId())
                     .title(updatedSection.getTitle())
+                    .description(updatedSection.getDescription())
                     .orderIndex(updatedSection.getOrderIndex())
                     .courseId(updatedSection.getCourse().getId())
                     .build();
@@ -352,9 +400,24 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
             // Get the order index of the section to be deleted for reordering
             Integer deletedSectionOrder = section.getOrderIndex();
 
+            // Capture section data for logging before deletion
+            SectionLogDto sectionLogDto = SectionLogMapper.toLogDto(section);
+
             // Delete the section (this will cascade delete lessons if configured properly)
             sectionRepository.delete(section);
             log.info("Section {} deleted successfully", sectionId);
+
+            // Log the section deletion
+            try {
+                User instructor = userRepository.findById(instructorId).orElse(null);
+                if (instructor != null) {
+                    systemLogHelper.logDelete(instructor, "Section", sectionId, sectionLogDto);
+                    log.debug("Section deletion logged successfully for sectionId: {}", sectionId);
+                }
+            } catch (Exception logException) {
+                log.warn("Failed to log section deletion: {}", logException.getMessage());
+                // Don't fail the whole operation due to logging error
+            }
 
             // Reorder remaining sections to maintain continuous order values
             reorderSectionsAfterDeletion(courseId, deletedSectionOrder);

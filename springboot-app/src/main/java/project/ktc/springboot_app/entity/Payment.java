@@ -12,10 +12,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "PAYMENT", indexes = {
-        @Index(name = "idx_user", columnList = "user_id"),
-        @Index(name = "idx_course", columnList = "course_id"),
-        @Index(name = "idx_status", columnList = "status")
+@Table(name = "payments", indexes = {
+        @Index(name = "idx_pay_user", columnList = "user_id"),
+        @Index(name = "idx_pay_course", columnList = "course_id"),
+        @Index(name = "idx_pay_status", columnList = "status"),
+        @Index(name = "idx_pay_session_id", columnList = "session_id")
 })
 @Getter
 @Setter
@@ -31,11 +32,15 @@ public class Payment extends BaseEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private PaymentStatus status = PaymentStatus.PENDING;
 
-    @Column(name = "payment_method")
+    @Column(name = "payment_method", length = 50)
     private String paymentMethod;
+
+    @Column(name = "session_id", columnDefinition = "TEXT")
+    private String sessionId;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
@@ -45,4 +50,8 @@ public class Payment extends BaseEntity {
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InstructorEarning> instructorEarnings;
-} 
+
+    public enum PaymentStatus {
+        PENDING, COMPLETED, FAILED, REFUNDED
+    }
+}
