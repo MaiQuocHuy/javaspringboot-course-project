@@ -29,6 +29,7 @@ import project.ktc.springboot_app.refresh_token.repositories.RefreshTokenReposit
 import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.service.FileValidationService;
 import project.ktc.springboot_app.user.repositories.UserRepository;
+import project.ktc.springboot_app.user_role.repositories.UserRoleRepository;
 import project.ktc.springboot_app.utils.JwtTokenProvider;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.common.dto.ApiResponse;
@@ -36,7 +37,6 @@ import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +51,7 @@ import project.ktc.springboot_app.auth.interfaces.AuthService;
 public class AuthServiceImp implements AuthService {
 
     private final UserRepository userRepository;
+    private final UserRoleRepository userRoleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -84,27 +85,29 @@ public class AuthServiceImp implements AuthService {
         }
 
         try {
-            // Create user with empty roles list
+            // First, find or create the role
+            UserRole.RoleType roleType = UserRole.RoleType.valueOf(registerUserDto.getRole().name());
+            Optional<UserRole> existingRoleOpt = userRoleRepository.findByRole(roleType);
+            UserRole userRole;
+
+            if (existingRoleOpt.isPresent()) {
+                userRole = existingRoleOpt.get();
+            } else {
+                userRole = UserRole.builder()
+                        .role(roleType)
+                        .build();
+                userRole = userRoleRepository.save(userRole);
+            }
+
+            // Create user with role reference
             User user = User.builder()
                     .name(registerUserDto.getName())
                     .email(registerUserDto.getEmail())
                     .password(passwordEncoder.encode(registerUserDto.getPassword()))
-                    .roles(new ArrayList<>()) // Explicitly initialize the roles list
+                    .role(userRole)
                     .build();
 
-            String selectedRole = registerUserDto.getRole().name(); // -> "STUDENT" or "INSTRUCTOR"
-
-            // Create role and set the relationship properly
-            UserRole role = UserRole.builder()
-                    .user(user) // Set the user reference
-                    .role(selectedRole)
-                    .build();
-
-            // Add the role to the user's roles list (bidirectional relationship)
-            user.getRoles().add(role);
-
-            // Save user with cascade - this should save both user and role in one
-            // transaction
+            // Save user
             User savedUser = userRepository.save(user);
 
             log.info("User registered successfully: {}", savedUser.getEmail());
@@ -112,7 +115,10 @@ public class AuthServiceImp implements AuthService {
 
         } catch (Exception e) {
             log.error("Error during user registration: {}", e.getMessage(), e);
-            return ApiResponseUtil.internalServerError("Registration failed. Please try again later.");
+            // return ApiResponseUtil.internalServerError("Registration failed. Please try
+            // again later.");
+            throw new RuntimeException("Registration failed. Root cause: " + e.getMessage(), e);
+
         }
     }
 
@@ -171,27 +177,29 @@ public class AuthServiceImp implements AuthService {
         }
 
         try {
-            // Create user with empty roles list
+            // First, find or create the role
+            UserRole.RoleType roleType = UserRole.RoleType.valueOf(registerApplicationDto.getRole().name());
+            Optional<UserRole> existingRoleOpt = userRoleRepository.findByRole(roleType);
+            UserRole userRole;
+
+            if (existingRoleOpt.isPresent()) {
+                userRole = existingRoleOpt.get();
+            } else {
+                userRole = UserRole.builder()
+                        .role(roleType)
+                        .build();
+                userRole = userRoleRepository.save(userRole);
+            }
+
+            // Create user with role reference
             User user = User.builder()
                     .name(registerApplicationDto.getName())
                     .email(registerApplicationDto.getEmail())
                     .password(passwordEncoder.encode(registerApplicationDto.getPassword()))
-                    .roles(new ArrayList<>()) // Explicitly initialize the roles list
+                    .role(userRole)
                     .build();
 
-            String selectedRole = registerApplicationDto.getRole().name(); // -> "STUDENT" or "INSTRUCTOR"
-
-            // Create role and set the relationship properly
-            UserRole role = UserRole.builder()
-                    .user(user) // Set the user reference
-                    .role(selectedRole)
-                    .build();
-
-            // Add the role to the user's roles list (bidirectional relationship)
-            user.getRoles().add(role);
-
-            // Save user with cascade - this should save both user and role in one
-            // transaction
+            // Save user
             User savedUser = userRepository.save(user);
 
             // If instructor role, create instructor application
@@ -207,7 +215,8 @@ public class AuthServiceImp implements AuthService {
                 }
             }
 
-            log.info("User registered successfully with role {}: {}", selectedRole, savedUser.getEmail());
+            log.info("User registered successfully with role {}: {}", registerApplicationDto.getRole().name(),
+                    savedUser.getEmail());
             return ApiResponseUtil.created("Registration successful");
 
         } catch (Exception e) {
@@ -259,6 +268,7 @@ public class AuthServiceImp implements AuthService {
             refreshTokenRepository.save(refreshToken);
 
             UserResponseDto userResponseDto = new UserResponseDto(foundUser);
+            userResponseDto.setRole(null);
             Map<String, Object> loginResponse = Map.of(
                     "accessToken", accessToken,
                     "refreshToken", refreshTokenStr,
@@ -459,7 +469,7 @@ public class AuthServiceImp implements AuthService {
             InstructorApplication application = new InstructorApplication();
             application.setUser(user);
             application.setDocuments(documentsJson);
-            application.setStatus("PENDING");
+            application.setStatus(InstructorApplication.ApplicationStatus.PENDING);
             application.setSubmittedAt(LocalDateTime.now());
 
             instructorApplicationRepository.save(application);

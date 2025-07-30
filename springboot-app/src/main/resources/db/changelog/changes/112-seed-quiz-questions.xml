@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for quiz_questions table -->
+    <changeSet id="112-seed-quiz-questions" author="ktc">
+        <!-- Questions for lesson-002: React Basics Quiz -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-001"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="question_text" value="What is React primarily used for?"/>
+            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="React is a JavaScript library primarily used for building user interfaces, especially for web applications."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-002"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="question_text" value="What does JSX stand for?"/>
+            <column name="options" value='["A. JavaScript XML", "B. Java Syntax Extension", "C. JSON XML", "D. JavaScript Xtended"]'/>
+            <column name="correct_answer" value="A"/>
+            <column name="explanation" value="JSX stands for JavaScript XML and allows you to write HTML-like syntax in JavaScript."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-003"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="question_text" value="Which method is used to render a React component?"/>
+            <column name="options" value='["A. ReactDOM.render()", "B. React.display()", "C. React.show()", "D. ReactDOM.display()"]'/>
+            <column name="correct_answer" value="A"/>
+            <column name="explanation" value="ReactDOM.render() is the method used to render React components to the DOM."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Questions for lesson-006: State Management Quiz -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-004"/>
+            <column name="lesson_id" value="lesson-006"/>
+            <column name="question_text" value="What hook is used to manage local state in functional components?"/>
+            <column name="options" value='["A. useEffect", "B. useState", "C. useContext", "D. useReducer"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="useState is the React hook used to add state to functional components."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-005"/>
+            <column name="lesson_id" value="lesson-006"/>
+            <column name="question_text" value="When does useEffect run by default?"/>
+            <column name="options" value='["A. Only on mount", "B. Only on unmount", "C. After every render", "D. Only when state changes"]'/>
+            <column name="correct_answer" value="C"/>
+            <column name="explanation" value="By default, useEffect runs after every render (both mount and update)."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Questions for lesson-012: Environment Setup Quiz -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-006"/>
+            <column name="lesson_id" value="lesson-012"/>
+            <column name="question_text" value="What is the recommended way to create a new React Native project?"/>
+            <column name="options" value='["A. react-native init", "B. npx react-native init", "C. Expo CLI", "D. All of the above"]'/>
+            <column name="correct_answer" value="D"/>
+            <column name="explanation" value="All methods are valid ways to create React Native projects, each with different advantages."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-007"/>
+            <column name="lesson_id" value="lesson-012"/>
+            <column name="question_text" value="Which platforms can React Native target?"/>
+            <column name="options" value='["A. iOS only", "B. Android only", "C. iOS and Android", "D. Web only"]'/>
+            <column name="correct_answer" value="C"/>
+            <column name="explanation" value="React Native can build applications for both iOS and Android platforms."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Questions for lesson-016: Security Threats Assessment -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-008"/>
+            <column name="lesson_id" value="lesson-016"/>
+            <column name="question_text" value="What is a common type of cyber attack that involves tricking users into revealing sensitive information?"/>
+            <column name="options" value='["A. DDoS", "B. Phishing", "C. SQL Injection", "D. Malware"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="Phishing attacks trick users into revealing sensitive information by impersonating trusted entities."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-009"/>
+            <column name="lesson_id" value="lesson-016"/>
+            <column name="question_text" value="What does CIA stand for in cybersecurity?"/>
+            <column name="options" value='["A. Central Intelligence Agency", "B. Confidentiality, Integrity, Availability", "C. Computer Information Access", "D. Cyber Intelligence Analysis"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="In cybersecurity, CIA refers to the three pillars: Confidentiality, Integrity, and Availability."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Questions for lesson-022: Responsive Design Quiz -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-010"/>
+            <column name="lesson_id" value="lesson-022"/>
+            <column name="question_text" value="What CSS feature is primarily used for responsive design?"/>
+            <column name="options" value='["A. Flexbox", "B. Grid", "C. Media queries", "D. Animations"]'/>
+            <column name="correct_answer" value="C"/>
+            <column name="explanation" value="Media queries are the primary CSS feature used to create responsive designs by applying different styles based on device characteristics."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-011"/>
+            <column name="lesson_id" value="lesson-022"/>
+            <column name="question_text" value="What is the mobile-first approach in responsive design?"/>
+            <column name="options" value='["A. Designing for mobile only", "B. Starting with mobile design and scaling up", "C. Ignoring desktop users", "D. Using only touch interfaces"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="Mobile-first approach means starting with the mobile design and then progressively enhancing for larger screens."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Questions for lesson-028: Python Syntax Quiz -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-012"/>
+            <column name="lesson_id" value="lesson-028"/>
+            <column name="question_text" value="What is the correct way to define a function in Python?"/>
+            <column name="options" value='["A. function myFunc():", "B. def myFunc():", "C. func myFunc():", "D. define myFunc():"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="In Python, functions are defined using the 'def' keyword followed by the function name and parentheses."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-013"/>
+            <column name="lesson_id" value="lesson-028"/>
+            <column name="question_text" value="Which of the following is a mutable data type in Python?"/>
+            <column name="options" value='["A. Tuple", "B. String", "C. List", "D. Integer"]'/>
+            <column name="correct_answer" value="C"/>
+            <column name="explanation" value="Lists are mutable in Python, meaning their contents can be changed after creation."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Questions for lesson-032: Database Design Quiz -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-014"/>
+            <column name="lesson_id" value="lesson-032"/>
+            <column name="question_text" value="What is the primary purpose of database normalization?"/>
+            <column name="options" value='["A. Increase data redundancy", "B. Reduce data redundancy", "C. Slow down queries", "D. Increase storage space"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="Database normalization primarily aims to reduce data redundancy and improve data integrity."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-015"/>
+            <column name="lesson_id" value="lesson-032"/>
+            <column name="question_text" value="What is a primary key?"/>
+            <column name="options" value='["A. A key that opens the database", "B. A unique identifier for each record", "C. The most important column", "D. A password for the database"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="A primary key is a unique identifier that ensures each record in a table can be uniquely identified."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Questions for lesson-034: Unity Basics Quiz -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-016"/>
+            <column name="lesson_id" value="lesson-034"/>
+            <column name="question_text" value="What programming language is primarily used for Unity scripting?"/>
+            <column name="options" value='["A. JavaScript", "B. Python", "C. C#", "D. Java"]'/>
+            <column name="correct_answer" value="C"/>
+            <column name="explanation" value="C# is the primary programming language used for scripting in Unity game development."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-017"/>
+            <column name="lesson_id" value="lesson-034"/>
+            <column name="question_text" value="What is a GameObject in Unity?"/>
+            <column name="options" value='["A. A game rule", "B. A container for components", "C. A player score", "D. A game level"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="A GameObject in Unity is a container that holds components, which define the object's behavior and properties."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Questions for lesson-038: JavaScript Patterns Quiz -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-018"/>
+            <column name="lesson_id" value="lesson-038"/>
+            <column name="question_text" value="What is a closure in JavaScript?"/>
+            <column name="options" value='["A. A way to close the browser", "B. A function with access to outer scope variables", "C. A type of loop", "D. A JavaScript library"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="A closure is a function that has access to variables in its outer (enclosing) scope even after the outer function has returned."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-019"/>
+            <column name="lesson_id" value="lesson-038"/>
+            <column name="question_text" value="What does 'async/await' help with in JavaScript?"/>
+            <column name="options" value='["A. Synchronous programming", "B. Handling asynchronous operations", "C. Variable declaration", "D. DOM manipulation"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="Async/await provides a cleaner way to handle asynchronous operations in JavaScript, making code more readable than promises."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Additional question for variety -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-020"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="question_text" value="What is the virtual DOM in React?"/>
+            <column name="options" value='["A. A real DOM element", "B. A JavaScript representation of the DOM", "C. A browser feature", "D. A database"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="The virtual DOM is a JavaScript representation of the real DOM that React uses to optimize rendering performance."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

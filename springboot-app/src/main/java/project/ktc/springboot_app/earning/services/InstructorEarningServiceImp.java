@@ -103,7 +103,7 @@ public class InstructorEarningServiceImp implements InstructorEarningService {
                 .amount(totalAmount)
                 .platformCut(platformCut)
                 .instructorShare(instructorShare)
-                .status(earning.getStatus())
+                .status(earning.getStatus().name())
                 .paidAt(earning.getPaidAt())
                 .build();
     }
@@ -186,7 +186,7 @@ public class InstructorEarningServiceImp implements InstructorEarningService {
                 .platformCut(platformCut)
                 .platformCutPercentage(20) // 20% platform fee
                 .instructorShare(instructorShare)
-                .status(earning.getStatus())
+                .status(earning.getStatus().name())
                 .paidAt(earning.getPaidAt())
                 .build();
     }

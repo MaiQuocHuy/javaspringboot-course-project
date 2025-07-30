@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.entity.BaseEntity;
@@ -17,7 +18,6 @@ import project.ktc.springboot_app.instructor_application.entity.InstructorApplic
 import project.ktc.springboot_app.review.entity.Review;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,9 +29,10 @@ import java.util.Collection;
 @Setter
 @Builder
 @Entity
-@Table(name = "USER")
+@Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private String name;
@@ -58,9 +59,9 @@ public class User extends BaseEntity implements UserDetails {
     @Builder.Default
     private String bio = "";
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @Builder.Default
-    private List<UserRole> roles = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    private UserRole role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -93,17 +94,16 @@ public class User extends BaseEntity implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         try {
-            if (roles != null && !roles.isEmpty()) {
-                return roles.stream()
-                        .map(role -> new SimpleGrantedAuthority(role.getRole()))
-                        .collect(Collectors.toList());
+            if (role != null && role.getRole() != null) {
+                log.info(" - Loading user authorities for role: {}", role.getRole().name());
+                return List.of(new SimpleGrantedAuthority(role.getRole().name()));
             }
         } catch (Exception e) {
             // Log the exception if needed
             System.err.println("Error loading user authorities: " + e.getMessage());
         }
-        // Return empty list if roles cannot be loaded
-        return new ArrayList<>();
+        // Return default STUDENT role if role cannot be loaded
+        return List.of(new SimpleGrantedAuthority("STUDENT"));
     }
 
     @Override

@@ -96,6 +96,11 @@ public class StripeCheckoutService {
         try {
             Session session = Session.create(params);
             log.info("Checkout session created successfully: {}", session.getId());
+
+            // Update payment record with session ID
+            paymentService.updatePaymentSessionId(paymentId, session.getId());
+            log.info("Payment {} updated with session ID {}", paymentId, session.getId());
+
             return session;
         } catch (StripeException e) {
             log.error("Failed to create checkout session: {}", e.getMessage(), e);

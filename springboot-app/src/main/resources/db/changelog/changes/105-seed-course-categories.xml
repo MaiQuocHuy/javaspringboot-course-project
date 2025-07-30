@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for course_categories table -->
+    <changeSet id="105-seed-course-categories" author="ktc">
+        <!-- Complete React Development Course -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-001"/>
+            <column name="category_id" value="cat-001"/> <!-- Web Development -->
+        </insert>
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-001"/>
+            <column name="category_id" value="cat-002"/> <!-- Frontend -->
+        </insert>
+        <!-- Machine Learning Fundamentals -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-002"/>
+            <column name="category_id" value="cat-003"/> <!-- Data Science -->
+        </insert>
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-002"/>
+            <column name="category_id" value="cat-004"/> <!-- Machine Learning -->
+        </insert>
+        <!-- Mobile App Development with React Native -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-003"/>
+            <column name="category_id" value="cat-005"/> <!-- Mobile Development -->
+        </insert>
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-003"/>
+            <column name="category_id" value="cat-002"/> <!-- Frontend -->
+        </insert>
+        <!-- Cybersecurity Essentials -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-004"/>
+            <column name="category_id" value="cat-006"/> <!-- Cybersecurity -->
+        </insert>
+        <!-- Frontend Web Design Masterclass -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-005"/>
+            <column name="category_id" value="cat-001"/> <!-- Web Development -->
+        </insert>
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-005"/>
+            <column name="category_id" value="cat-002"/> <!-- Frontend -->
+        </insert>
+        <!-- DevOps and Cloud Infrastructure -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-006"/>
+            <column name="category_id" value="cat-007"/> <!-- DevOps -->
+        </insert>
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-006"/>
+            <column name="category_id" value="cat-008"/> <!-- Cloud Computing -->
+        </insert>
+        <!-- Python for Data Science -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-007"/>
+            <column name="category_id" value="cat-003"/> <!-- Data Science -->
+        </insert>
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-007"/>
+            <column name="category_id" value="cat-009"/> <!-- Programming -->
+        </insert>
+        <!-- Database Design and Optimization -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-008"/>
+            <column name="category_id" value="cat-010"/> <!-- Database -->
+        </insert>
+        <!-- Game Development with Unity -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-009"/>
+            <column name="category_id" value="cat-005"/> <!-- Mobile Development -->
+        </insert>
+        <!-- Advanced JavaScript and Node.js -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-010"/>
+            <column name="category_id" value="cat-001"/> <!-- Web Development -->
+        </insert>
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-010"/>
+            <column name="category_id" value="cat-009"/> <!-- Programming -->
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

@@ -12,7 +12,6 @@ import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.interfaces.StudentCourseService;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.entity.QuizQuestion;
-import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.lesson.repositories.InstructorLessonRepository;
 import project.ktc.springboot_app.lesson.repositories.LessonCompletionRepository;
@@ -21,7 +20,6 @@ import project.ktc.springboot_app.section.dto.*;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
-import project.ktc.springboot_app.video.repositories.VideoContentRepository;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +36,6 @@ public class StudentCourseServiceImpl implements StudentCourseService {
     private final EnrollmentRepository enrollmentRepository;
     private final LessonCompletionRepository lessonCompletionRepository;
     private final QuizQuestionRepository quizQuestionRepository;
-    private final VideoContentRepository videoContentRepository;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -93,25 +90,24 @@ public class StudentCourseServiceImpl implements StudentCourseService {
         // Check if lesson is completed by the user
         boolean isCompleted = lessonCompletionRepository.existsByUserIdAndLessonId(userId, lesson.getId());
 
+        String lessonType = lesson.getLessonType() != null ? lesson.getLessonType().getName() : "UNKNOWN";
+
         LessonDto.LessonDtoBuilder lessonBuilder = LessonDto.builder()
                 .id(lesson.getId())
                 .title(lesson.getTitle())
-                .type(lesson.getType())
+                .type(lessonType)
                 .order(lesson.getOrderIndex())
                 .isCompleted(isCompleted);
 
         // Add content based on lesson type
-        if ("VIDEO".equals(lesson.getType()) && lesson.getContentId() != null) {
-            VideoContent video = videoContentRepository.findById(lesson.getContentId()).orElse(null);
-            if (video != null) {
-                VideoDto videoDto = VideoDto.builder()
-                        .id(video.getId())
-                        .url(video.getUrl())
-                        .duration(video.getDuration())
-                        .build();
-                lessonBuilder.video(videoDto);
-            }
-        } else if ("QUIZ".equals(lesson.getType())) {
+        if ("VIDEO".equals(lessonType) && lesson.getContent() != null) {
+            VideoDto videoDto = VideoDto.builder()
+                    .id(lesson.getContent().getId())
+                    .url(lesson.getContent().getUrl())
+                    .duration(lesson.getContent().getDuration())
+                    .build();
+            lessonBuilder.video(videoDto);
+        } else if ("QUIZ".equals(lessonType)) {
             List<QuizQuestion> questions = quizQuestionRepository.findQuestionsByLessonId(lesson.getId());
             List<QuizQuestionDto> questionDtos = questions.stream()
                     .map(this::mapToQuizQuestionDto)

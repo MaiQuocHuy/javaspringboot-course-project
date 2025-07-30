@@ -1,8 +1,5 @@
 package project.ktc.springboot_app.auth.dto;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.AllArgsConstructor;
@@ -11,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.auth.enums.UserRoleEnum;
-import project.ktc.springboot_app.entity.UserRole;
 
 @Getter
 @Setter
@@ -22,7 +18,7 @@ public class UserResponseDto {
     private String id;
     private String email;
     private String name;
-    private List<UserRoleEnum> roles; // optional: chỉ hiển thị khi cần
+    private UserRoleEnum role; // Single role instead of list
     private String thumbnailUrl; // URL to user profile picture
     private String thumbnailId; // ID of the thumbnail image
     private String bio; // Short biography or description
@@ -36,9 +32,8 @@ public class UserResponseDto {
         this.thumbnailId = user.getThumbnailId();
         this.bio = user.getBio();
         this.isActive = user.getIsActive();
-        this.roles = user.getRoles().stream()
-                .map(UserRole::getRole) // Lấy String
-                .map(UserRoleEnum::valueOf) // Convert String -> Enum
-                .collect(Collectors.toList());
+        if (user.getRole() != null && user.getRole().getRole() != null) {
+            this.role = UserRoleEnum.valueOf(user.getRole().getRole().name());
+        }
     }
 }
