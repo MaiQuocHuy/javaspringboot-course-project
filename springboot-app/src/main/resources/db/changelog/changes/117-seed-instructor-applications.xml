@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for instructor_applications table -->
+    <changeSet id="117-seed-instructor-applications" author="ktc">
+        <!-- Charlie's approved application (existing instructor) -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-001"/>
+            <column name="user_id" value="user-003"/> <!-- Charlie -->
+            <column name="reviewed_by" value="user-001"/> <!-- Alice -->
+            <column name="status" value="APPROVED"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1706000000/certificates/charlie-certification.pdf", "portfolio": "https://github.com/charlie-dev", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1706000000/cvs/charlie-resume.pdf", "other": "https://res.cloudinary.com/ktc-platform/image/upload/v1706000000/awards/charlie-teaching-award.pdf"}'/>
+            <column name="submitted_at" value="2024-12-01 10:00:00"/>
+            <column name="reviewed_at" value="2024-12-05 14:30:00"/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+        
+        <!-- David Kim's pending application -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-002"/>
+            <column name="user_id" value="user-006"/> <!-- David -->
+            <column name="status" value="PENDING"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1708000000/certificates/david-aws-cert.pdf", "portfolio": "https://linkedin.com/in/david-kim-cloud", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1708000000/cvs/david-cv.pdf", "other": "https://res.cloudinary.com/ktc-platform/image/upload/v1708000000/projects/david-portfolio.pdf"}'/>
+            <column name="submitted_at" value="2025-02-01 09:15:00"/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+        
+        <!-- Emily Chen's approved application -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-003"/>
+            <column name="user_id" value="user-005"/> <!-- Emily -->
+            <column name="reviewed_by" value="user-001"/> <!-- Alice -->
+            <column name="status" value="APPROVED"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1707000000/certificates/emily-react-cert.pdf", "portfolio": "https://github.com/emily-frontend", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1707000000/cvs/emily-resume.pdf"}'/>
+            <column name="submitted_at" value="2025-01-10 11:30:00"/>
+            <column name="reviewed_at" value="2025-01-15 16:45:00"/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+        
+        <!-- George Wilson's rejected application -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-004"/>
+            <column name="user_id" value="user-007"/> <!-- George -->
+            <column name="reviewed_by" value="user-001"/> <!-- Alice -->
+            <column name="status" value="REJECTED"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1707500000/certificates/george-cert.pdf", "portfolio": "https://georgedevops.com", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1707500000/cvs/george-cv.pdf"}'/>
+            <column name="submitted_at" value="2025-01-20 08:45:00"/>
+            <column name="reviewed_at" value="2025-01-25 13:20:00"/>
+            <column name="rejection_reason" value="Portfolio lacks sufficient technical depth and teaching experience. Please resubmit with more comprehensive examples of instructional content and advanced technical projects."/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+        
+        <!-- Hannah Taylor's pending application -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-005"/>
+            <column name="user_id" value="user-008"/>
+            <column name="status" value="PENDING"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1708200000/certificates/hannah-google-cert.pdf", "portfolio": "https://hannahtaylor.dev", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1708200000/cvs/hannah-resume.pdf", "other": "https://res.cloudinary.com/ktc-platform/image/upload/v1708200000/recommendations/hannah-references.pdf"}'/>
+            <column name="submitted_at" value="2025-02-05 14:00:00"/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+        
+        <!-- Ian Miller's approved application -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-006"/>
+            <column name="user_id" value="user-009"/>
+            <column name="reviewed_by" value="user-001"/>
+            <column name="status" value="APPROVED"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1707800000/certificates/ian-devops-cert.pdf", "portfolio": "https://github.com/ian-fullstack", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1707800000/cvs/ian-cv.pdf", "other": "https://res.cloudinary.com/ktc-platform/image/upload/v1707800000/testimonials/ian-testimonials.pdf"}'/>
+            <column name="submitted_at" value="2025-01-12 10:20:00"/>
+            <column name="reviewed_at" value="2025-01-18 09:30:00"/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+        
+        <!-- Julia Anderson's rejected application -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-007"/>
+            <column name="user_id" value="user-010"/>
+            <column name="reviewed_by" value="user-001"/>
+            <column name="status" value="REJECTED"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1707300000/certificates/julia-unity-cert.pdf", "portfolio": "https://juliaai.itch.io", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1707300000/cvs/julia-cv.pdf"}'/>
+            <column name="submitted_at" value="2025-01-08 16:30:00"/>
+            <column name="reviewed_at" value="2025-01-12 11:15:00"/>
+            <column name="rejection_reason" value="Insufficient professional teaching experience. While technical skills are strong, we require demonstrated experience in educational content creation and student mentorship."/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+        
+        <!-- Kevin Lee's pending application -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-008"/>
+            <column name="user_id" value="user-011"/>
+            <column name="status" value="PENDING"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1708400000/certificates/kevin-cyber-cert.pdf", "portfolio": "https://linkedin.com/in/kevin-cs", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1708400000/cvs/kevin-resume.pdf", "other": "https://res.cloudinary.com/ktc-platform/image/upload/v1708400000/publications/kevin-research.pdf"}'/>
+            <column name="submitted_at" value="2025-02-08 12:45:00"/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+        
+        <!-- Lisa Brown's approved application -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-009"/>
+            <column name="user_id" value="user-012"/>
+            <column name="reviewed_by" value="user-001"/>
+            <column name="status" value="APPROVED"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1707600000/certificates/lisa-design-cert.pdf", "portfolio": "https://lisadesigns.portfolio.com", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1707600000/cvs/lisa-cv.pdf", "other": "https://res.cloudinary.com/ktc-platform/image/upload/v1707600000/samples/lisa-work-samples.pdf"}'/>
+            <column name="submitted_at" value="2025-01-05 15:20:00"/>
+            <column name="reviewed_at" value="2025-01-10 10:45:00"/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+        
+        <!-- Linda Davis's resubmitted application (updated after rejection) -->
+        <insert tableName="instructor_applications">
+            <column name="id" value="app-010"/>
+            <column name="user_id" value="user-004"/>
+            <column name="status" value="PENDING"/>
+            <column name="documents" value='{"certificate": "https://res.cloudinary.com/ktc-platform/image/upload/v1708300000/certificates/linda-python-advanced.pdf", "portfolio": "https://github.com/linda-python-tutorials", "cv": "https://res.cloudinary.com/ktc-platform/image/upload/v1708300000/cvs/linda-updated-cv.pdf", "other": "https://res.cloudinary.com/ktc-platform/image/upload/v1708300000/courses/linda-sample-content.pdf"}'/>
+            <column name="submitted_at" value="2025-02-10 09:30:00"/>
+            <column name="rejection_reason" value="Previous application lacked sufficient teaching examples. Please include more detailed instructional content and student feedback."/>
+            
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

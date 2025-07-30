@@ -14,7 +14,7 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.email = :email")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.email = :email")
     Optional<User> findByEmailWithRoles(@Param("email") String email);
 
 }

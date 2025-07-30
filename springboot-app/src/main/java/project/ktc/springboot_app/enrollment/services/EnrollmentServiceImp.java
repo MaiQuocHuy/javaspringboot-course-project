@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,7 +79,7 @@ public class EnrollmentServiceImp implements EnrollmentService {
         enrollment.setUser(user);
         enrollment.setCourse(course);
         enrollment.setEnrolledAt(LocalDateTime.now());
-        enrollment.setCompletionStatus("IN_PROGRESS");
+        enrollment.setCompletionStatus(Enrollment.CompletionStatus.IN_PROGRESS);
 
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
         log.info("Successfully enrolled user {} in course {}", currentUserId, courseId);
@@ -139,7 +138,7 @@ public class EnrollmentServiceImp implements EnrollmentService {
                 .level(course.getLevel())
                 .price(course.getPrice())
                 .progress(progress)
-                .completionStatus(enrollment.getCompletionStatus())
+                .completionStatus(enrollment.getCompletionStatus().name())
                 .instructor(MyEnrolledCourseDto.InstructorSummary.builder()
                         .id(course.getInstructor().getId())
                         .name(course.getInstructor().getName())
@@ -226,7 +225,7 @@ public class EnrollmentServiceImp implements EnrollmentService {
             enrollment.setUser(user);
             enrollment.setCourse(course);
             enrollment.setEnrolledAt(LocalDateTime.now());
-            enrollment.setCompletionStatus("IN_PROGRESS");
+            enrollment.setCompletionStatus(Enrollment.CompletionStatus.IN_PROGRESS);
 
             enrollmentRepository.save(enrollment);
 

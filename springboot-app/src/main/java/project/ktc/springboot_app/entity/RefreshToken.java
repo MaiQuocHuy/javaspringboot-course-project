@@ -1,19 +1,16 @@
 package project.ktc.springboot_app.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import project.ktc.springboot_app.auth.entitiy.User;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "REFRESH_TOKEN", indexes = {
-        @Index(name = "idx_user_id", columnList = "user_id"),
-        @Index(name = "idx_token", columnList = "token", unique = true)
+@Table(name = "refresh_tokens", indexes = {
+        @Index(name = "idx_rt_user", columnList = "user_id")
 })
 @Getter
 @Setter
@@ -21,10 +18,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RefreshToken {
+
     @Id
-    @Column(length = 36)
+    @Column(length = 36, updatable = false, nullable = false)
     @Builder.Default
-    private String id = java.util.UUID.randomUUID().toString();
+    private String id = UUID.randomUUID().toString();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -33,13 +31,14 @@ public class RefreshToken {
     @Column(nullable = false, length = 512, unique = true)
     private String token;
 
-    @Column(nullable = false)
+    @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
-    @Column(name = "is_revoked")
+    @Column(name = "is_revoked", nullable = false)
     @Builder.Default
     private Boolean isRevoked = false;
 
-    @Column(updatable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-} 
+}

@@ -24,7 +24,6 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.interfaces.CourseService;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.entity.QuizQuestion;
-import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 import project.ktc.springboot_app.section.dto.LessonDto;
@@ -35,7 +34,6 @@ import project.ktc.springboot_app.section.dto.VideoDto;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.utils.StringUtil;
-import project.ktc.springboot_app.video.repositories.VideoContentRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -50,7 +48,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CourseServiceImp implements CourseService {
     private final CourseRepository courseRepository;
-    private final VideoContentRepository videoContentRepository;
     private final InstructorSectionRepository sectionRepository;
     private final QuizQuestionRepository quizQuestionRepository;
 
@@ -246,15 +243,10 @@ public class CourseServiceImp implements CourseService {
             for (Section section : course.getSections()) {
                 if (section.getLessons() != null && !section.getLessons().isEmpty()) {
                     for (Lesson lesson : section.getLessons()) {
-                        if ("VIDEO".equals(lesson.getType()) && lesson.getContentId() != null) {
+                        if (lesson.getLessonType() != null && "VIDEO".equals(lesson.getLessonType().getName())
+                                && lesson.getContent() != null) {
                             // Get the actual video URL from VideoContent entity
-                            Optional<VideoContent> videoContent = videoContentRepository
-                                    .findById(lesson.getContentId());
-                            if (videoContent.isPresent()) {
-                                return videoContent.get().getUrl();
-                            } else {
-                                log.warn("VideoContent not found for contentId: {}", lesson.getContentId());
-                            }
+                            return lesson.getContent().getUrl();
                         }
                     }
                 }
@@ -319,7 +311,7 @@ public class CourseServiceImp implements CourseService {
                     .map(lesson -> CourseDetailResponseDto.LessonSummary.builder()
                             .id(lesson.getId())
                             .title(lesson.getTitle())
-                            .type(lesson.getType())
+                            .type(lesson.getLessonType() != null ? lesson.getLessonType().getName() : "UNKNOWN")
                             .build())
                     .collect(Collectors.toList());
         }
@@ -502,28 +494,27 @@ public class CourseServiceImp implements CourseService {
     }
 
     private LessonDto mapToLessonDto(Lesson lesson) {
+        String lessonType = lesson.getLessonType() != null ? lesson.getLessonType().getName() : "UNKNOWN";
+
         LessonDto.LessonDtoBuilder builder = LessonDto.builder()
                 .id(lesson.getId())
                 .title(lesson.getTitle())
-                .type(lesson.getType())
+                .type(lessonType)
                 .order(lesson.getOrderIndex())
                 .isCompleted(false); // For admin view, completion status is not relevant
 
         // Handle video content
-        if ("VIDEO".equals(lesson.getType()) && lesson.getContentId() != null) {
-            Optional<VideoContent> videoContent = videoContentRepository.findById(lesson.getContentId());
-            if (videoContent.isPresent()) {
-                VideoDto videoDto = VideoDto.builder()
-                        .id(videoContent.get().getId())
-                        .url(videoContent.get().getUrl())
-                        .duration(videoContent.get().getDuration())
-                        .build();
-                builder.video(videoDto);
-            }
+        if ("VIDEO".equals(lessonType) && lesson.getContent() != null) {
+            VideoDto videoDto = VideoDto.builder()
+                    .id(lesson.getContent().getId())
+                    .url(lesson.getContent().getUrl())
+                    .duration(lesson.getContent().getDuration())
+                    .build();
+            builder.video(videoDto);
         }
 
         // Handle quiz content
-        if ("QUIZ".equals(lesson.getType())) {
+        if ("QUIZ".equals(lessonType)) {
             List<QuizQuestion> questions = quizQuestionRepository.findQuestionsByLessonId(lesson.getId());
             if (!questions.isEmpty()) {
                 List<QuizQuestionDto> questionDtos = questions.stream()

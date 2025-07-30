@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Drop all existing tables to recreate from scratch -->
+    <!-- <changeSet id="100-drop-all" author="ktc">
+        <dropAllForeignKeyConstraints baseTableName="quiz_questions"/>
+        <dropAllForeignKeyConstraints baseTableName="quiz_questions"/>
+        <dropAllForeignKeyConstraints baseTableName="instructor_applications"/>
+        <dropAllForeignKeyConstraints baseTableName="instructor_earnings"/>
+        <dropAllForeignKeyConstraints baseTableName="refunds"/>
+        <dropAllForeignKeyConstraints baseTableName="payments"/>
+        <dropAllForeignKeyConstraints baseTableName="reviews"/>
+        <dropAllForeignKeyConstraints baseTableName="lesson_completions"/>
+        <dropAllForeignKeyConstraints baseTableName="enrollments"/>
+        <dropAllForeignKeyConstraints baseTableName="lessons"/>
+        <dropAllForeignKeyConstraints baseTableName="video_contents"/>
+        <dropAllForeignKeyConstraints baseTableName="sections"/>
+        <dropAllForeignKeyConstraints baseTableName="course_categories"/>
+        <dropAllForeignKeyConstraints baseTableName="courses"/>
+        <dropAllForeignKeyConstraints baseTableName="refresh_tokens"/>
+        <dropAllForeignKeyConstraints baseTableName="user_roles"/>
+        <dropAllForeignKeyConstraints baseTableName="users"/>
+
+        <dropTable tableName="quiz_results" cascadeConstraints="true"/>
+        <dropTable tableName="quiz_questions" cascadeConstraints="true"/>
+        <dropTable tableName="instructor_applications" cascadeConstraints="true"/>
+        <dropTable tableName="instructor_earnings" cascadeConstraints="true"/>
+        <dropTable tableName="refunds" cascadeConstraints="true"/>
+        <dropTable tableName="payments" cascadeConstraints="true"/>
+        <dropTable tableName="reviews" cascadeConstraints="true"/>
+        <dropTable tableName="lesson_completions" cascadeConstraints="true"/>
+        <dropTable tableName="enrollments" cascadeConstraints="true"/>
+        <dropTable tableName="lessons" cascadeConstraints="true"/>
+        <dropTable tableName="video_contents" cascadeConstraints="true"/>
+        <dropTable tableName="sections" cascadeConstraints="true"/>
+        <dropTable tableName="course_categories" cascadeConstraints="true"/>
+        <dropTable tableName="courses" cascadeConstraints="true"/>
+        <dropTable tableName="categories" cascadeConstraints="true"/>
+        <dropTable tableName="refresh_tokens" cascadeConstraints="true"/>
+        <dropTable tableName="user_roles" cascadeConstraints="true"/>
+        <dropTable tableName="users" cascadeConstraints="true"/>
+    </changeSet> -->
+
+    <!-- Create user_roles table -->
+    <changeSet id="100-01" author="ktc">
+        <createTable tableName="user_roles">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create users table -->
+    <changeSet id="100-02" author="ktc">
+        <createTable tableName="users">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="thumbnail_url" type="VARCHAR(255)"/>
+            <column name="thumbnail_id" type="VARCHAR(255)"/>
+            <column name="bio" type="TEXT"/>
+            <column name="role_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="users" baseColumnNames="role_id" 
+                               referencedTableName="user_roles" referencedColumnNames="id" 
+                               onDelete="RESTRICT" constraintName="fk_user_roles"/>
+    </changeSet>
+
+    <!-- Create categories table -->
+    <changeSet id="100-03" author="ktc">
+        <createTable tableName="categories">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Create courses table -->
+    <changeSet id="100-04" author="ktc">
+        <createTable tableName="courses">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="instructor_id" type="VARCHAR(36)"/>
+            <column name="price" type="DECIMAL(10,2)" defaultValueNumeric="0.00"/>
+            <column name="is_published" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="is_approved" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="thumbnail_url" type="VARCHAR(255)"/>
+            <column name="thumbnail_id" type="VARCHAR(255)"/>
+            <column name="level" type="VARCHAR(20)" defaultValue="BEGINNER"/>
+            <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="courses" indexName="idx_course_instructor">
+            <column name="instructor_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="courses" baseColumnNames="instructor_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="SET NULL" constraintName="fk_course_instructor"/>
+    </changeSet>
+
+    <!-- Create course_categories table -->
+    <changeSet id="100-05" author="ktc">
+        <createTable tableName="course_categories">
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="course_categories" columnNames="course_id,category_id"/>
+        <addForeignKeyConstraint baseTableName="course_categories" baseColumnNames="course_id" 
+                               referencedTableName="courses" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_cc_course"/>
+        <addForeignKeyConstraint baseTableName="course_categories" baseColumnNames="category_id" 
+                               referencedTableName="categories" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_cc_category"/>
+    </changeSet>
+
+    <!-- Create sections table -->
+    <changeSet id="100-06" author="ktc">
+        <createTable tableName="sections">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_index" type="INT" defaultValueNumeric="0"/>
+            <column name="description" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="sections" columnNames="course_id,order_index" constraintName="unique_section_order"/>
+        <addForeignKeyConstraint baseTableName="sections" baseColumnNames="course_id" 
+                               referencedTableName="courses" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_section_course"/>
+    </changeSet>
+
+    <!-- Create video_contents table -->
+    <changeSet id="100-07" author="ktc">
+        <createTable tableName="video_contents">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="url" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="INT"/>
+            <column name="uploaded_by" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="video_contents" baseColumnNames="uploaded_by" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_video_uploader"/>
+    </changeSet>
+
+    <!-- Create lesson_types table -->
+    <changeSet id="100-08" author="ktc">
+        <createTable tableName="lesson_types">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Create lessons table -->
+    <changeSet id="100-09" author="ktc">
+        <createTable tableName="lessons">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="section_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lesson_type_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_id" type="VARCHAR(36)"/>
+            <column name="order_index" type="INT" defaultValueNumeric="0"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="lessons" columnNames="section_id,order_index" constraintName="unique_lesson_order"/>
+        <addForeignKeyConstraint baseTableName="lessons" baseColumnNames="section_id" 
+                               referencedTableName="sections" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_lesson_section"/>
+        <addForeignKeyConstraint baseTableName="lessons" baseColumnNames="lesson_type_id" 
+                               referencedTableName="lesson_types" referencedColumnNames="id" 
+                               onDelete="RESTRICT" constraintName="fk_lesson_type"/>
+        <addForeignKeyConstraint baseTableName="lessons" baseColumnNames="content_id" 
+                               referencedTableName="video_contents" referencedColumnNames="id" 
+                               onDelete="SET NULL" constraintName="fk_lesson_content"/>
+    </changeSet>
+
+    <!-- Create enrollments table -->
+    <changeSet id="100-10" author="ktc">
+        <createTable tableName="enrollments">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enrolled_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="completion_status" type="VARCHAR(20)" defaultValue="IN_PROGRESS"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="enrollments" columnNames="user_id,course_id" constraintName="unique_enrollment"/>
+        <addForeignKeyConstraint baseTableName="enrollments" baseColumnNames="user_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_enr_user"/>
+        <addForeignKeyConstraint baseTableName="enrollments" baseColumnNames="course_id" 
+                               referencedTableName="courses" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_enr_course"/>
+    </changeSet>
+
+    <!-- Create lesson_completions table -->
+    <changeSet id="100-11" author="ktc">
+        <createTable tableName="lesson_completions">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lesson_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="completed_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="lesson_completions" columnNames="user_id,lesson_id" constraintName="unique_completion"/>
+        <addForeignKeyConstraint baseTableName="lesson_completions" baseColumnNames="user_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_lc_user"/>
+        <addForeignKeyConstraint baseTableName="lesson_completions" baseColumnNames="lesson_id" 
+                               referencedTableName="lessons" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_lc_lesson"/>
+    </changeSet>
+
+    <!-- Create reviews table -->
+    <changeSet id="100-12" author="ktc">
+        <createTable tableName="reviews">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rating" type="INT" defaultValueNumeric="5"/>
+            <column name="review_text" type="TEXT"/>
+            <column name="reviewed_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="reviews" columnNames="user_id,course_id" constraintName="unique_review"/>
+        <createIndex tableName="reviews" indexName="idx_review_course">
+            <column name="course_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="reviews" baseColumnNames="user_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_rev_user"/>
+        <addForeignKeyConstraint baseTableName="reviews" baseColumnNames="course_id" 
+                               referencedTableName="courses" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_rev_course"/>
+    </changeSet>
+
+    <!-- Create payments table -->
+    <changeSet id="100-13" author="ktc">
+        <createTable tableName="payments">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="payment_method" type="VARCHAR(50)"/>
+            <column name="session_id" type="TEXT"/>
+            <column name="paid_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="payments" indexName="idx_pay_user">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="payments" indexName="idx_pay_course">
+            <column name="course_id"/>
+        </createIndex>
+        <createIndex tableName="payments" indexName="idx_pay_status">
+            <column name="status"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="payments" baseColumnNames="user_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_pay_user"/>
+        <addForeignKeyConstraint baseTableName="payments" baseColumnNames="course_id" 
+                               referencedTableName="courses" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_pay_course"/>
+    </changeSet>
+
+    <!-- Create refunds table -->
+    <changeSet id="100-14" author="ktc">
+        <createTable tableName="refunds">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="payment_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="reason" type="TEXT"/>
+            <column name="requested_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="processed_at" type="TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="refunds" columnNames="payment_id" constraintName="unique_refund_payment"/>
+        <createIndex tableName="refunds" indexName="idx_refund_status">
+            <column name="status"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="refunds" baseColumnNames="payment_id" 
+                               referencedTableName="payments" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_refund_payment"/>
+    </changeSet>
+
+    <!-- Create instructor_earnings table -->
+    <changeSet id="100-15" author="ktc">
+        <createTable tableName="instructor_earnings">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="instructor_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="paid_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="instructor_earnings" indexName="idx_earn_instructor">
+            <column name="instructor_id"/>
+        </createIndex>
+        <addUniqueConstraint tableName="instructor_earnings" columnNames="payment_id" constraintName="unique_earn_payment"/>
+        <createIndex tableName="instructor_earnings" indexName="idx_earn_status">
+            <column name="status"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="instructor_earnings" baseColumnNames="instructor_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_earn_instructor"/>
+        <addForeignKeyConstraint baseTableName="instructor_earnings" baseColumnNames="payment_id" 
+                               referencedTableName="payments" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_earn_payment"/>
+        <addForeignKeyConstraint baseTableName="instructor_earnings" baseColumnNames="course_id" 
+                               referencedTableName="courses" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_earn_course"/>
+    </changeSet>
+
+    <!-- Create instructor_applications table -->
+    <changeSet id="100-16" author="ktc">
+        <createTable tableName="instructor_applications">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reviewed_by" type="VARCHAR(36)"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="documents" type="JSON"/>
+            <column name="submitted_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="reviewed_at" type="TIMESTAMP"/>
+            <column name="rejection_reason" type="TEXT"/>
+        </createTable>
+        <addUniqueConstraint tableName="instructor_applications" columnNames="user_id" constraintName="unique_app_user"/>
+        <createIndex tableName="instructor_applications" indexName="idx_app_status">
+            <column name="status"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="instructor_applications" baseColumnNames="user_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_app_user"/>
+        <addForeignKeyConstraint baseTableName="instructor_applications" baseColumnNames="reviewed_by" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="SET NULL" constraintName="fk_app_reviewer"/>
+    </changeSet>
+
+    <!-- Create refresh_tokens table -->
+    <changeSet id="100-17" author="ktc">
+        <createTable tableName="refresh_tokens">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token" type="VARCHAR(512)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="expires_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_revoked" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="refresh_tokens" indexName="idx_rt_user">
+            <column name="user_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="refresh_tokens" baseColumnNames="user_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_rt_user"/>
+    </changeSet>
+
+    <!-- Create quiz_questions table -->
+    <changeSet id="100-18" author="ktc">
+        <createTable tableName="quiz_questions">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="lesson_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="question_text" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="options" type="JSON">
+                <constraints nullable="false"/>
+            </column>
+            <column name="correct_answer" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="explanation" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="quiz_questions" indexName="idx_qq_lesson">
+            <column name="lesson_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="quiz_questions" baseColumnNames="lesson_id" 
+                               referencedTableName="lessons" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_qq_lesson"/>
+    </changeSet>
+
+    <!-- Create quiz_results table -->
+    <changeSet id="100-19" author="ktc">
+        <createTable tableName="quiz_results">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lesson_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="score" type="DECIMAL(5,2)"/>
+            <column name="answers" type="JSON"/>
+            <column name="completed_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addUniqueConstraint tableName="quiz_results" columnNames="user_id,lesson_id" constraintName="unique_quiz_res"/>
+        <addForeignKeyConstraint baseTableName="quiz_results" baseColumnNames="user_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_qr_user"/>
+        <addForeignKeyConstraint baseTableName="quiz_results" baseColumnNames="lesson_id" 
+                               referencedTableName="lessons" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_qr_lesson"/>
+    </changeSet>
+
+    <!-- Create system_logs table -->
+    <changeSet id="100-20" author="ktc">
+        <createTable tableName="system_logs">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+            </column>
+            <column name="action" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_id" type="VARCHAR(36)"/>
+            <column name="old_values" type="JSON"/>
+            <column name="new_values" type="JSON"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex tableName="system_logs" indexName="idx_logs_user">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="system_logs" indexName="idx_logs_action">
+            <column name="action"/>
+        </createIndex>
+        <createIndex tableName="system_logs" indexName="idx_logs_created">
+            <column name="created_at"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="system_logs" baseColumnNames="user_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="SET NULL" constraintName="fk_logs_user"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for user_roles table -->
+    <changeSet id="101-seed-user-roles" author="ktc">
+        <insert tableName="user_roles">
+            <column name="id" value="role-001"/>
+            <column name="role" value="STUDENT"/>
+        </insert>
+        <insert tableName="user_roles">
+            <column name="id" value="role-002"/>
+            <column name="role" value="INSTRUCTOR"/>
+        </insert>
+        <insert tableName="user_roles">
+            <column name="id" value="role-003"/>
+            <column name="role" value="ADMIN"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

@@ -19,7 +19,9 @@ import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.lesson.interfaces.LessonService;
 import project.ktc.springboot_app.lesson.repositories.InstructorLessonRepository;
 import project.ktc.springboot_app.lesson.repositories.LessonCompletionRepository;
+import project.ktc.springboot_app.lesson.repositories.LessonTypeRepository;
 import project.ktc.springboot_app.entity.LessonCompletion;
+import project.ktc.springboot_app.entity.LessonType;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.entity.QuizQuestion;
@@ -38,6 +40,9 @@ import project.ktc.springboot_app.upload.exception.InvalidVideoFormatException;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.video.repositories.VideoContentRepository;
+import project.ktc.springboot_app.log.services.SystemLogHelper;
+import project.ktc.springboot_app.log.dto.LessonLogDto;
+import project.ktc.springboot_app.log.utils.LessonLogMapper;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -62,10 +67,12 @@ public class InstructorLessonServiceImp implements LessonService {
     private final VideoContentRepository videoContentRepository;
     private final QuizQuestionRepository quizQuestionRepository;
     private final LessonCompletionRepository lessonCompletionRepository;
+    private final LessonTypeRepository lessonTypeRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
+    private final SystemLogHelper systemLogHelper;
 
     @Override
     public ResponseEntity<ApiResponse<SectionWithLessonsDto>> getSectionWithLessons(String sectionId) {
@@ -110,17 +117,23 @@ public class InstructorLessonServiceImp implements LessonService {
 
     private LessonDto convertToLessonDto(Lesson lesson, String currentUserId) {
         Boolean isCompleted = lessonCompletionRepository.existsByUserIdAndLessonId(currentUserId, lesson.getId());
+        String lessonType = lesson.getLessonType() != null ? lesson.getLessonType().getName() : "UNKNOWN";
+
         LessonDto.LessonDtoBuilder builder = LessonDto.builder()
                 .id(lesson.getId())
                 .title(lesson.getTitle())
-                .type(lesson.getType())
+                .type(lessonType)
                 .order(lesson.getOrderIndex())
                 .isCompleted(isCompleted);
 
-        // Add type-specific data based on content_id
-        if (lesson.getContentId() != null) {
-            // If content_id is not null, this is a VIDEO lesson
-            VideoDto videoDto = getVideoContent(lesson.getContentId());
+        // Add type-specific data based on content relationship
+        if (lesson.getContent() != null) {
+            // If content is not null, this is a VIDEO lesson
+            VideoDto videoDto = VideoDto.builder()
+                    .id(lesson.getContent().getId())
+                    .url(lesson.getContent().getUrl())
+                    .duration(lesson.getContent().getDuration())
+                    .build();
             builder.video(videoDto);
         } else {
             // If content_id is null, this is a QUIZ lesson
@@ -218,9 +231,8 @@ public class InstructorLessonServiceImp implements LessonService {
         }
 
         try {
-            String contentId = null;
-
             // 3. Handle video upload for VIDEO type lessons
+            final String contentId;
             if ("VIDEO".equals(lessonDto.getType()) && videoFile != null && !videoFile.isEmpty()) {
                 // Validate the video file
                 fileValidationService.validateVideoFile(videoFile);
@@ -257,6 +269,8 @@ public class InstructorLessonServiceImp implements LessonService {
                 contentId = savedVideoContent.getId();
 
                 log.info("VideoContent created with ID: {}", contentId);
+            } else {
+                contentId = null;
             }
 
             // 4. Get current lesson count in section for order index (0-based)
@@ -268,8 +282,20 @@ public class InstructorLessonServiceImp implements LessonService {
             // 5. Create lesson entity
             Lesson lesson = new Lesson();
             lesson.setTitle(lessonDto.getTitle().trim());
-            lesson.setType(lessonDto.getType());
-            lesson.setContentId(contentId); // null for QUIZ type
+
+            // Set lesson type using LessonType entity
+            LessonType lessonType = lessonTypeRepository.findByName(lessonDto.getType())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid lesson type: " + lessonDto.getType()));
+            lesson.setLessonType(lessonType);
+
+            // Set content for VIDEO type
+            if (contentId != null) {
+                VideoContent videoContent = videoContentRepository.findById(contentId)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("Video content not found with ID: " + contentId));
+                lesson.setContent(videoContent);
+            }
+
             lesson.setOrderIndex(nextOrderIndex);
             lesson.setSection(section);
 
@@ -278,17 +304,30 @@ public class InstructorLessonServiceImp implements LessonService {
             log.info("Lesson created successfully with ID: {} and order index: {}", savedLesson.getId(),
                     nextOrderIndex);
 
+            // Log the lesson creation
+            try {
+                User instructor = section.getCourse().getInstructor();
+                LessonLogDto lessonLogDto = LessonLogMapper.toLogDto(savedLesson);
+                systemLogHelper.logCreate(instructor, "Lesson", savedLesson.getId(), lessonLogDto);
+                log.debug("Lesson creation logged successfully for lessonId: {}", savedLesson.getId());
+            } catch (Exception logException) {
+                log.warn("Failed to log lesson creation: {}", logException.getMessage());
+                // Don't fail the whole operation due to logging error
+            }
+
             // 6. Build response DTO
             CreateLessonResponseDto responseDto = CreateLessonResponseDto.builder()
                     .id(savedLesson.getId())
                     .title(savedLesson.getTitle())
-                    .type(savedLesson.getType())
+                    .type(savedLesson.getLessonType() != null ? savedLesson.getLessonType().getName() : "UNKNOWN")
                     .orderIndex(savedLesson.getOrderIndex())
                     .build();
 
             // Add video information if it's a video lesson
-            if ("VIDEO".equals(savedLesson.getType()) && contentId != null) {
-                VideoDto videoDto = getVideoContent(contentId);
+            String lessonTypeName = savedLesson.getLessonType() != null ? savedLesson.getLessonType().getName()
+                    : "UNKNOWN";
+            if ("VIDEO".equals(lessonTypeName) && savedLesson.getContent() != null) {
+                VideoDto videoDto = getVideoContent(savedLesson.getContent().getId());
                 responseDto.setVideo(videoDto);
             }
 
@@ -338,6 +377,9 @@ public class InstructorLessonServiceImp implements LessonService {
             return ApiResponseUtil.badRequest("Lesson does not belong to the specified section");
         }
 
+        // Capture old values for logging
+        LessonLogDto oldLessonLogDto = LessonLogMapper.toLogDto(lesson);
+
         // 3. Validate that at least one field is being updated
         boolean hasValidTitle = lessonDto.getTitle() != null && !lessonDto.getTitle().trim().isEmpty();
         boolean hasValidVideoFile = videoFile != null && !videoFile.isEmpty();
@@ -347,16 +389,16 @@ public class InstructorLessonServiceImp implements LessonService {
         }
 
         // 4. Validate lesson type cannot be changed (only if type is provided)
-        if (lessonDto.getType() != null && !lesson.getType().equals(lessonDto.getType())) {
+        String currentLessonType = lesson.getLessonType() != null ? lesson.getLessonType().getName() : "UNKNOWN";
+        if (lessonDto.getType() != null && !currentLessonType.equals(lessonDto.getType())) {
             return ApiResponseUtil.badRequest(
-                    "Lesson type cannot be changed. Current type: " + lesson.getType());
+                    "Lesson type cannot be changed. Current type: " + currentLessonType);
         }
 
         try {
-            String newContentId = lesson.getContentId(); // Keep existing content ID by default
-
             // 5. Handle video upload for VIDEO type lessons
-            if ("VIDEO".equals(lesson.getType()) && videoFile != null && !videoFile.isEmpty()) {
+            final String newContentId;
+            if ("VIDEO".equals(currentLessonType) && videoFile != null && !videoFile.isEmpty()) {
                 // Validate the video file
                 fileValidationService.validateVideoFile(videoFile);
 
@@ -365,18 +407,15 @@ public class InstructorLessonServiceImp implements LessonService {
                 log.info("New video uploaded successfully: {}", uploadResult.getPublicId());
 
                 // Delete old video if exists
-                if (lesson.getContentId() != null) {
-                    Optional<VideoContent> oldVideoOpt = videoContentRepository.findById(lesson.getContentId());
-                    if (oldVideoOpt.isPresent()) {
-                        VideoContent oldVideo = oldVideoOpt.get();
-                        String publicId = extractPublicIdFromUrl(oldVideo.getUrl());
-                        if (publicId != null) {
-                            cloudinaryService.deleteVideo(publicId);
-                            log.info("Old video deleted: {}", publicId);
-                        }
-                        // Delete old video content record
-                        videoContentRepository.delete(oldVideo);
+                if (lesson.getContent() != null) {
+                    VideoContent oldVideo = lesson.getContent();
+                    String publicId = extractPublicIdFromUrl(oldVideo.getUrl());
+                    if (publicId != null) {
+                        cloudinaryService.deleteVideo(publicId);
+                        log.info("Old video deleted: {}", publicId);
                     }
+                    // Delete old video content record
+                    videoContentRepository.delete(oldVideo);
                 }
 
                 // Create new VideoContent entity
@@ -406,29 +445,54 @@ public class InstructorLessonServiceImp implements LessonService {
                 newContentId = savedVideoContent.getId();
 
                 log.info("New VideoContent created with ID: {}", newContentId);
+            } else {
+                newContentId = lesson.getContent() != null ? lesson.getContent().getId() : null;
             }
 
             // 6. Update lesson (only update fields that are provided)
             if (lessonDto.getTitle() != null && !lessonDto.getTitle().trim().isEmpty()) {
                 lesson.setTitle(lessonDto.getTitle().trim());
             }
-            lesson.setContentId(newContentId);
+
+            // Set content for the lesson
+            if (newContentId != null) {
+                VideoContent videoContent = videoContentRepository.findById(newContentId)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("Video content not found with ID: " + newContentId));
+                lesson.setContent(videoContent);
+            } else if (!"VIDEO".equals(currentLessonType)) {
+                // For non-video lessons, ensure content is null
+                lesson.setContent(null);
+            }
 
             // Save updated lesson
             Lesson savedLesson = lessonRepository.save(lesson);
             log.info("Lesson updated successfully with ID: {}", savedLesson.getId());
 
+            // Log the lesson update
+            try {
+                User instructor = section.getCourse().getInstructor();
+                LessonLogDto newLessonLogDto = LessonLogMapper.toLogDto(savedLesson);
+                systemLogHelper.logUpdate(instructor, "Lesson", savedLesson.getId(), oldLessonLogDto, newLessonLogDto);
+                log.debug("Lesson update logged successfully for lessonId: {}", savedLesson.getId());
+            } catch (Exception logException) {
+                log.warn("Failed to log lesson update: {}", logException.getMessage());
+                // Don't fail the whole operation due to logging error
+            }
+
             // 7. Build response DTO
             UpdateLessonResponseDto responseDto = UpdateLessonResponseDto.builder()
                     .id(savedLesson.getId())
                     .title(savedLesson.getTitle())
-                    .type(savedLesson.getType())
+                    .type(savedLesson.getLessonType() != null ? savedLesson.getLessonType().getName() : "UNKNOWN")
                     .orderIndex(savedLesson.getOrderIndex())
                     .build();
 
             // Add video information if it's a video lesson
-            if ("VIDEO".equals(savedLesson.getType()) && newContentId != null) {
-                VideoDto videoDto = getVideoContent(newContentId);
+            String savedLessonType = savedLesson.getLessonType() != null ? savedLesson.getLessonType().getName()
+                    : "UNKNOWN";
+            if ("VIDEO".equals(savedLessonType) && savedLesson.getContent() != null) {
+                VideoDto videoDto = getVideoContent(savedLesson.getContent().getId());
                 responseDto.setVideo(videoDto);
             }
 
@@ -528,25 +592,36 @@ public class InstructorLessonServiceImp implements LessonService {
         }
 
         try {
+            // Capture lesson data for logging before deletion
+            LessonLogDto lessonLogDto = LessonLogMapper.toLogDto(lesson);
+
             // 3. Delete associated video if lesson is of type VIDEO
-            if ("VIDEO".equals(lesson.getType()) && lesson.getContentId() != null) {
-                Optional<VideoContent> videoOpt = videoContentRepository.findById(lesson.getContentId());
-                if (videoOpt.isPresent()) {
-                    VideoContent video = videoOpt.get();
-                    String publicId = extractPublicIdFromUrl(video.getUrl());
-                    if (publicId != null) {
-                        cloudinaryService.deleteVideo(publicId);
-                        log.info("Video deleted from Cloudinary: {}", publicId);
-                    }
-                    // Delete video content record
-                    videoContentRepository.delete(video);
-                    log.info("VideoContent record deleted with ID: {}", video.getId());
+            String lessonTypeName = lesson.getLessonType() != null ? lesson.getLessonType().getName() : "UNKNOWN";
+            if ("VIDEO".equals(lessonTypeName) && lesson.getContent() != null) {
+                VideoContent video = lesson.getContent();
+                String publicId = extractPublicIdFromUrl(video.getUrl());
+                if (publicId != null) {
+                    cloudinaryService.deleteVideo(publicId);
+                    log.info("Video deleted from Cloudinary: {}", publicId);
                 }
+                // Delete video content record
+                videoContentRepository.delete(video);
+                log.info("VideoContent record deleted with ID: {}", video.getId());
             }
 
             // 4. Delete the lesson
             lessonRepository.delete(lesson);
             log.info("Lesson deleted successfully with ID: {}", lessonId);
+
+            // Log the lesson deletion
+            try {
+                User instructor = section.getCourse().getInstructor();
+                systemLogHelper.logDelete(instructor, "Lesson", lessonId, lessonLogDto);
+                log.debug("Lesson deletion logged successfully for lessonId: {}", lessonId);
+            } catch (Exception logException) {
+                log.warn("Failed to log lesson deletion: {}", logException.getMessage());
+                // Don't fail the whole operation due to logging error
+            }
 
             // Get the order index of the lesson
             Integer deletedOrderIndex = lesson.getOrderIndex();

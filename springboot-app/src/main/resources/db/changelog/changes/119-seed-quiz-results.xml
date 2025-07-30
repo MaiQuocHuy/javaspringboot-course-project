@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for quiz_results table -->
+    <changeSet id="119-seed-quiz-results" author="ktc">
+        <!-- Bob's quiz results for React course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-001"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-002"/> <!-- React Basics Quiz -->
+            <column name="score" value="85.00"/>
+            <column name="answers" value='{"question-005": "A", "question-006": "B", "question-007": "C", "question-008": "A"}'/>
+            <column name="completed_at" value="2025-01-25 14:30:00"/>
+            <column name="created_at" value="2025-01-25 14:30:00"/>
+            <column name="updated_at" value="2025-01-25 14:30:00"/>
+        </insert>
+        
+        <!-- Emily's quiz results for Machine Learning course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-002"/>
+            <column name="user_id" value="user-005"/> <!-- Emily -->
+            <column name="lesson_id" value="lesson-012"/> <!-- ML Algorithms Quiz -->
+            <column name="score" value="92.50"/>
+            <column name="answers" value='{"question-001": "A", "question-002": "C", "question-003": "B", "question-004": "A"}'/>
+            <column name="completed_at" value="2025-01-18 16:45:00"/>
+            <column name="created_at" value="2025-01-18 16:45:00"/>
+            <column name="updated_at" value="2025-01-18 16:45:00"/>
+        </insert>
+        
+        <!-- David's quiz results for Python course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-003"/>
+            <column name="user_id" value="user-006"/> <!-- David -->
+            <column name="lesson_id" value="lesson-023"/> <!-- Python Basics Quiz -->
+            <column name="score" value="78.00"/>
+            <column name="answers" value='{"question-009": "B", "question-010": "A", "question-011": "C", "question-012": "B"}'/>
+            <column name="completed_at" value="2025-02-02 10:20:00"/>
+            <column name="created_at" value="2025-02-02 10:20:00"/>
+            <column name="updated_at" value="2025-02-02 10:20:00"/>
+        </insert>
+        
+        <!-- Frank's quiz results for UI/UX course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-004"/>
+            <column name="user_id" value="user-007"/> <!-- Frank -->
+            <column name="lesson_id" value="lesson-033"/> <!-- Design Principles Quiz -->
+            <column name="score" value="88.50"/>
+            <column name="answers" value='{"question-013": "A", "question-014": "B", "question-015": "A", "question-016": "C"}'/>
+            <column name="completed_at" value="2025-01-28 11:15:00"/>
+            <column name="created_at" value="2025-01-28 11:15:00"/>
+            <column name="updated_at" value="2025-01-28 11:15:00"/>
+        </insert>
+        
+        <!-- Grace's quiz results for DevOps course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-005"/>
+            <column name="user_id" value="user-008"/> <!-- Grace -->
+            <column name="lesson_id" value="lesson-038"/> <!-- Docker Fundamentals Quiz -->
+            <column name="score" value="95.00"/>
+            <column name="answers" value='{"question-017": "A", "question-018": "B", "question-019": "A", "question-020": "B"}'/>
+            <column name="completed_at" value="2025-02-05 13:40:00"/>
+            <column name="created_at" value="2025-02-05 13:40:00"/>
+            <column name="updated_at" value="2025-02-05 13:40:00"/>
+        </insert>
+        
+        <!-- Henry's quiz results for Cybersecurity course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-006"/>
+            <column name="user_id" value="user-009"/> <!-- Henry -->
+            <column name="lesson_id" value="lesson-027"/> <!-- Security Basics Quiz -->
+            <column name="score" value="82.00"/>
+            <column name="answers" value='{"question-013": "B", "question-014": "A", "question-015": "C", "question-016": "A"}'/>
+            <column name="completed_at" value="2025-01-22 09:25:00"/>
+            <column name="created_at" value="2025-01-22 09:25:00"/>
+            <column name="updated_at" value="2025-01-22 09:25:00"/>
+        </insert>
+        
+        <!-- Ian's quiz results for Unity course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-007"/>
+            <column name="user_id" value="user-010"/> <!-- Ian -->
+            <column name="lesson_id" value="lesson-017"/> <!-- Game Design Quiz -->
+            <column name="score" value="75.50"/>
+            <column name="answers" value='{"question-005": "C", "question-006": "A", "question-007": "B", "question-008": "C"}'/>
+            <column name="completed_at" value="2025-02-01 15:10:00"/>
+            <column name="created_at" value="2025-02-01 15:10:00"/>
+            <column name="updated_at" value="2025-02-01 15:10:00"/>
+        </insert>
+        
+        <!-- Jessica's quiz results for React Native course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-008"/>
+            <column name="user_id" value="user-011"/> <!-- Jessica -->
+            <column name="lesson_id" value="lesson-019"/> <!-- Mobile Dev Quiz -->
+            <column name="score" value="90.00"/>
+            <column name="answers" value='{"question-009": "A", "question-010": "B", "question-011": "A", "question-012": "C"}'/>
+            <column name="completed_at" value="2025-02-08 12:30:00"/>
+            <column name="created_at" value="2025-02-08 12:30:00"/>
+            <column name="updated_at" value="2025-02-08 12:30:00"/>
+        </insert>
+        
+        <!-- Kevin's quiz results for Frontend Design course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-009"/>
+            <column name="user_id" value="user-012"/> <!-- Kevin -->
+            <column name="lesson_id" value="lesson-033"/> <!-- Design Principles Quiz -->
+            <column name="score" value="87.50"/>
+            <column name="answers" value='{"question-013": "A", "question-014": "A", "question-015": "B", "question-016": "A"}'/>
+            <column name="completed_at" value="2025-02-12 14:45:00"/>
+            <column name="created_at" value="2025-02-12 14:45:00"/>
+            <column name="updated_at" value="2025-02-12 14:45:00"/>
+        </insert>
+        
+        <!-- Linda's quiz results for Python course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-010"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin -->
+            <column name="lesson_id" value="lesson-023"/> <!-- Python Basics Quiz -->
+            <column name="score" value="94.00"/>
+            <column name="answers" value='{"question-009": "A", "question-010": "A", "question-011": "A", "question-012": "A"}'/>
+            <column name="completed_at" value="2025-01-30 16:20:00"/>
+            <column name="created_at" value="2025-01-30 16:20:00"/>
+            <column name="updated_at" value="2025-01-30 16:20:00"/>
+        </insert>
+        
+        <!-- Mark's quiz results for React Native course -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-011"/>
+            <column name="user_id" value="user-012"/> <!-- Lisa -->
+            <column name="lesson_id" value="lesson-019"/> <!-- Mobile Dev Quiz -->
+            <column name="score" value="83.50"/>
+            <column name="answers" value='{"question-009": "B", "question-010": "A", "question-011": "A", "question-012": "B"}'/>
+            <column name="completed_at" value="2025-02-14 10:15:00"/>
+            <column name="created_at" value="2025-02-14 10:15:00"/>
+            <column name="updated_at" value="2025-02-14 10:15:00"/>
+        </insert>
+        
+        <!-- Bob's second quiz attempt (retake) -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-012"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-015"/> <!-- React useState Quiz (retake) -->
+            <column name="score" value="92.00"/>
+            <column name="answers" value='{"question-005": "A", "question-006": "A", "question-007": "A", "question-008": "A"}'/>
+            <column name="completed_at" value="2025-01-27 10:45:00"/>
+            <column name="created_at" value="2025-01-27 10:45:00"/>
+            <column name="updated_at" value="2025-01-27 10:45:00"/>
+        </insert>
+        
+        <!-- Emily's second quiz for Advanced ML -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-013"/>
+            <column name="user_id" value="user-005"/> <!-- Emily -->
+            <column name="lesson_id" value="lesson-013"/> <!-- ML Advanced Algorithms Quiz -->
+            <column name="score" value="96.50"/>
+            <column name="answers" value='{"question-001": "A", "question-002": "A", "question-003": "A", "question-004": "A"}'/>
+            <column name="completed_at" value="2025-01-20 18:30:00"/>
+            <column name="created_at" value="2025-01-20 18:30:00"/>
+            <column name="updated_at" value="2025-01-20 18:30:00"/>
+        </insert>
+        
+        <!-- Grace's perfect score on DevOps advanced quiz -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-014"/>
+            <column name="user_id" value="user-008"/> <!-- Grace -->
+            <column name="lesson_id" value="lesson-039"/> <!-- Docker Advanced Quiz -->
+            <column name="score" value="100.00"/>
+            <column name="answers" value='{"question-017": "A", "question-018": "A", "question-019": "A", "question-020": "A"}'/>
+            <column name="completed_at" value="2025-02-07 11:20:00"/>
+            <column name="created_at" value="2025-02-07 11:20:00"/>
+            <column name="updated_at" value="2025-02-07 11:20:00"/>
+        </insert>
+        
+        <!-- David's improvement on second attempt -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-015"/>
+            <column name="user_id" value="user-006"/> <!-- David -->
+            <column name="lesson_id" value="lesson-025"/> <!-- Python Advanced Quiz -->
+            <column name="score" value="89.00"/>
+            <column name="answers" value='{"question-009": "A", "question-010": "A", "question-011": "A", "question-012": "B"}'/>
+            <column name="completed_at" value="2025-02-04 14:35:00"/>
+            <column name="created_at" value="2025-02-04 14:35:00"/>
+            <column name="updated_at" value="2025-02-04 14:35:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

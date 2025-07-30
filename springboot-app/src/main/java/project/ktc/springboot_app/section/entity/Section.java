@@ -10,7 +10,8 @@ import project.ktc.springboot_app.lesson.entity.Lesson;
 import java.util.List;
 
 @Entity
-@Table(name = "SECTION", uniqueConstraints = @UniqueConstraint(name = "unique_section_order", columnNames = {"course_id", "order_index"}))
+@Table(name = "sections", uniqueConstraints = @UniqueConstraint(name = "unique_section_order", columnNames = {
+        "course_id", "order_index" }))
 @Getter
 @Setter
 public class Section extends BaseEntity {
@@ -24,6 +25,9 @@ public class Section extends BaseEntity {
     @Column(name = "order_index")
     private Integer orderIndex = 0;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lesson> lessons;
-} 
+}

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for sections table -->
+    <changeSet id="108-seed-sections" author="ktc">
+        <!-- Course 001: Complete React Development Course -->
+        <insert tableName="sections">
+            <column name="id" value="section-001"/>
+            <column name="course_id" value="course-001"/>
+            <column name="title" value="Getting Started with React"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="Introduction to React fundamentals and setting up your development environment"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-002"/>
+            <column name="course_id" value="course-001"/>
+            <column name="title" value="React Components and JSX"/>
+            <column name="order_index" value="1"/>
+            <column name="description" value="Learn about React components, JSX syntax, and component composition"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-003"/>
+            <column name="course_id" value="course-001"/>
+            <column name="title" value="Hooks and State Management"/>
+            <column name="order_index" value="2"/>
+            <column name="description" value="Master React hooks including useState, useEffect, and custom hooks"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Course 002: Machine Learning Fundamentals -->
+        <insert tableName="sections">
+            <column name="id" value="section-004"/>
+            <column name="course_id" value="course-002"/>
+            <column name="title" value="Introduction to Machine Learning"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="Basic concepts and types of machine learning algorithms"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-005"/>
+            <column name="course_id" value="course-002"/>
+            <column name="title" value="Data Preprocessing"/>
+            <column name="order_index" value="1"/>
+            <column name="description" value="Cleaning and preparing data for machine learning models"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Course 003: Mobile App Development with React Native -->
+        <insert tableName="sections">
+            <column name="id" value="section-006"/>
+            <column name="course_id" value="course-003"/>
+            <column name="title" value="React Native Setup"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="Setting up development environment for React Native"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-007"/>
+            <column name="course_id" value="course-003"/>
+            <column name="title" value="Building Mobile UI"/>
+            <column name="order_index" value="1"/>
+            <column name="description" value="Creating responsive mobile user interfaces"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Course 004: Cybersecurity Essentials -->
+        <insert tableName="sections">
+            <column name="id" value="section-008"/>
+            <column name="course_id" value="course-004"/>
+            <column name="title" value="Introduction to Cybersecurity"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="Understanding cybersecurity threats and defense strategies"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-009"/>
+            <column name="course_id" value="course-004"/>
+            <column name="title" value="Network Security"/>
+            <column name="order_index" value="1"/>
+            <column name="description" value="Securing network infrastructure and communications"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Course 005: Frontend Web Design Masterclass -->
+        <insert tableName="sections">
+            <column name="id" value="section-010"/>
+            <column name="course_id" value="course-005"/>
+            <column name="title" value="HTML and CSS Fundamentals"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="Building the foundation of web development"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-011"/>
+            <column name="course_id" value="course-005"/>
+            <column name="title" value="Responsive Design"/>
+            <column name="order_index" value="1"/>
+            <column name="description" value="Creating designs that work across all devices"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Course 006: DevOps and Cloud Infrastructure -->
+        <insert tableName="sections">
+            <column name="id" value="section-012"/>
+            <column name="course_id" value="course-006"/>
+            <column name="title" value="Introduction to DevOps"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="Understanding DevOps culture and practices"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-013"/>
+            <column name="course_id" value="course-006"/>
+            <column name="title" value="Containerization with Docker"/>
+            <column name="order_index" value="1"/>
+            <column name="description" value="Packaging applications with Docker containers"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Course 007: Python for Data Science -->
+        <insert tableName="sections">
+            <column name="id" value="section-014"/>
+            <column name="course_id" value="course-007"/>
+            <column name="title" value="Python Programming Basics"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="Python syntax and fundamental programming concepts"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-015"/>
+            <column name="course_id" value="course-007"/>
+            <column name="title" value="Data Analysis with Pandas"/>
+            <column name="order_index" value="1"/>
+            <column name="description" value="Manipulating and analyzing data using Pandas library"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Course 008: Database Design and Optimization -->
+        <insert tableName="sections">
+            <column name="id" value="section-016"/>
+            <column name="course_id" value="course-008"/>
+            <column name="title" value="Database Design Principles"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="Fundamentals of database design and normalization"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Course 009: Game Development with Unity -->
+        <insert tableName="sections">
+            <column name="id" value="section-017"/>
+            <column name="course_id" value="course-009"/>
+            <column name="title" value="Unity Basics"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="Getting started with Unity game engine"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-018"/>
+            <column name="course_id" value="course-009"/>
+            <column name="title" value="2D Game Development"/>
+            <column name="order_index" value="1"/>
+            <column name="description" value="Creating 2D games in Unity"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Course 010: Advanced JavaScript and Node.js -->
+        <insert tableName="sections">
+            <column name="id" value="section-019"/>
+            <column name="course_id" value="course-010"/>
+            <column name="title" value="Advanced JavaScript Concepts"/>
+            <column name="order_index" value="0"/>
+            <column name="description" value="ES6+ features and advanced JavaScript patterns"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-020"/>
+            <column name="course_id" value="course-010"/>
+            <column name="title" value="Backend Development with Node.js"/>
+            <column name="order_index" value="1"/>
+            <column name="description" value="Building server-side applications with Node.js"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
