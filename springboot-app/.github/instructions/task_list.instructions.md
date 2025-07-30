@@ -2347,3 +2347,78 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
 - Assign the `INSTRUCTOR` role to the user in the `USER_ROLE` table.
 - **Security:** Requires `ADMIN` role.
 - **Testing:** Test the full application approval flow.
+
+## 6. System Logs
+
+### 6.1. `GET /api/admin/logs`
+
+- **Description:** Retrieves system logs for monitoring and debugging purposes.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/admin/logs`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "System logs retrieved successfully",
+      "data": []
+    }
+    ```
+- **Controller:** Create `AdminLogController` with a `getLogs` endpoint.
+- **Service:** Implement `getLogs` in `LogService`.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Test retrieval of logs.
+- **Error Handling:** If no logs are found, return an empty array.
+- **Business Rules:**
+  - Logs should include timestamps, log levels, and messages.
+  - Support filtering by date range and log level (INFO, WARN, ERROR).
+
+### 6.2 `POST /api/admin/logs`
+
+- **Description:** Creates a new system log entry to track admin actions.
+- **Request:**
+
+  - **Method:** `POST`
+  - **Path:** `/api/admin/logs`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body:**
+
+    ```json
+    {
+      "userId": "user-uuid",
+      "action": "CREATE",
+      "entityType": "COURSE",
+      "entityId": "course-uuid",
+      "oldValues": {
+        "title": "Old Title"
+      },
+      "newValues": {
+        "title": "New Course Title",
+        "description": "Updated course description"
+      }
+    }
+    ```
+
+    **Note**:
+
+  - userId is required (system_logs.user column is non-nullable).
+  - action must be one of: "CREATE", "UPDATE", "DELETE".
+  - oldValues and newValues must be valid JSON objects (or null).
+
+- **Response:**
+  ```json
+  {
+    "statusCode": 201,
+    "message": "Log entry created successfully",
+    "data": {
+      "id": "log-entry-id"
+    }
+  }
+  ```
+- **Controller:** Create `AdminLogController` with a `createLog` endpoint.
+- **Service:** Implement `createLog` in `LogService`.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Test log creation.
+- **Error Handling:** If the log entry is invalid, return a 400 Bad Request with error details. 403 Forbidden: Invalid token or user does not have ADMIN role. 500 Internal Server Error: Internal server/database error.

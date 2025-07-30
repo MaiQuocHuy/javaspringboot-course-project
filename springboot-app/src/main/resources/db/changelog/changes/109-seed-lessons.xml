@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for lessons table -->
+    <changeSet id="109-seed-lessons" author="ktc">
+        <!-- Section 001: Getting Started with React -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-001"/>
+            <column name="section_id" value="section-001"/>
+            <column name="title" value="Introduction to React"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-001"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-002"/>
+            <column name="section_id" value="section-001"/>
+            <column name="title" value="React Basics Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 002: React Components and JSX -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-003"/>
+            <column name="section_id" value="section-002"/>
+            <column name="title" value="Understanding Components"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-002"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-004"/>
+            <column name="section_id" value="section-002"/>
+            <column name="title" value="JSX Syntax Deep Dive"/>
+            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 003: Hooks and State Management -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-005"/>
+            <column name="section_id" value="section-003"/>
+            <column name="title" value="React Hooks Tutorial"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-011"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-006"/>
+            <column name="section_id" value="section-003"/>
+            <column name="title" value="State Management Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 004: Introduction to Machine Learning -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-007"/>
+            <column name="section_id" value="section-004"/>
+            <column name="title" value="ML Fundamentals"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-003"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-008"/>
+            <column name="section_id" value="section-004"/>
+            <column name="title" value="Types of Machine Learning"/>
+            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 005: Data Preprocessing -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-009"/>
+            <column name="section_id" value="section-005"/>
+            <column name="title" value="Advanced ML Algorithms"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-012"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-010"/>
+            <column name="section_id" value="section-005"/>
+            <column name="title" value="Data Cleaning Exercise"/>
+            <column name="lesson_type_id" value="type-007"/> <!-- CODE_EXERCISE -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 006: React Native Setup -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-011"/>
+            <column name="section_id" value="section-006"/>
+            <column name="title" value="Setting up React Native"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-004"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-012"/>
+            <column name="section_id" value="section-006"/>
+            <column name="title" value="Environment Setup Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 007: Building Mobile UI -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-013"/>
+            <column name="section_id" value="section-007"/>
+            <column name="title" value="Mobile UI Components"/>
+            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-014"/>
+            <column name="section_id" value="section-007"/>
+            <column name="title" value="Building Your First App"/>
+            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 008: Introduction to Cybersecurity -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-015"/>
+            <column name="section_id" value="section-008"/>
+            <column name="title" value="Cybersecurity Overview"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-005"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-016"/>
+            <column name="section_id" value="section-008"/>
+            <column name="title" value="Security Threats Assessment"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 009: Network Security -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-017"/>
+            <column name="section_id" value="section-009"/>
+            <column name="title" value="Network Defense Strategies"/>
+            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-018"/>
+            <column name="section_id" value="section-009"/>
+            <column name="title" value="Penetration Testing Lab"/>
+            <column name="lesson_type_id" value="type-008"/> <!-- INTERACTIVE -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 010: HTML and CSS Fundamentals -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-019"/>
+            <column name="section_id" value="section-010"/>
+            <column name="title" value="HTML CSS Basics"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-006"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-020"/>
+            <column name="section_id" value="section-010"/>
+            <column name="title" value="Build Your First Webpage"/>
+            <column name="lesson_type_id" value="type-007"/> <!-- CODE_EXERCISE -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 011: Responsive Design -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-021"/>
+            <column name="section_id" value="section-011"/>
+            <column name="title" value="Media Queries and Flexbox"/>
+            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-022"/>
+            <column name="section_id" value="section-011"/>
+            <column name="title" value="Responsive Design Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 012: Introduction to DevOps -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-023"/>
+            <column name="section_id" value="section-012"/>
+            <column name="title" value="DevOps Culture and Practices"/>
+            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-024"/>
+            <column name="section_id" value="section-012"/>
+            <column name="title" value="CI/CD Pipeline Discussion"/>
+            <column name="lesson_type_id" value="type-010"/> <!-- DISCUSSION -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 013: Containerization with Docker -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-025"/>
+            <column name="section_id" value="section-013"/>
+            <column name="title" value="Docker Introduction"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-007"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-026"/>
+            <column name="section_id" value="section-013"/>
+            <column name="title" value="Container Deployment Project"/>
+            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 014: Python Programming Basics -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-027"/>
+            <column name="section_id" value="section-014"/>
+            <column name="title" value="Python Fundamentals"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-008"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-028"/>
+            <column name="section_id" value="section-014"/>
+            <column name="title" value="Python Syntax Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 015: Data Analysis with Pandas -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-029"/>
+            <column name="section_id" value="section-015"/>
+            <column name="title" value="Pandas DataFrames"/>
+            <column name="lesson_type_id" value="type-007"/> <!-- CODE_EXERCISE -->
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-030"/>
+            <column name="section_id" value="section-015"/>
+            <column name="title" value="Data Visualization Project"/>
+            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 016: Database Design Principles -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-031"/>
+            <column name="section_id" value="section-016"/>
+            <column name="title" value="Database Normalization"/>
+            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-032"/>
+            <column name="section_id" value="section-016"/>
+            <column name="title" value="Database Design Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 017: Unity Basics -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-033"/>
+            <column name="section_id" value="section-017"/>
+            <column name="title" value="Unity Interface Overview"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-009"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-034"/>
+            <column name="section_id" value="section-017"/>
+            <column name="title" value="Unity Basics Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 018: 2D Game Development -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-035"/>
+            <column name="section_id" value="section-018"/>
+            <column name="title" value="2D Game Mechanics"/>
+            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-036"/>
+            <column name="section_id" value="section-018"/>
+            <column name="title" value="Build a 2D Platformer"/>
+            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 019: Advanced JavaScript Concepts -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-037"/>
+            <column name="section_id" value="section-019"/>
+            <column name="title" value="Advanced JavaScript Features"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-010"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-038"/>
+            <column name="section_id" value="section-019"/>
+            <column name="title" value="JavaScript Patterns Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Section 020: Backend Development with Node.js -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-039"/>
+            <column name="section_id" value="section-020"/>
+            <column name="title" value="Node.js Server Setup"/>
+            <column name="lesson_type_id" value="type-007"/> <!-- CODE_EXERCISE -->
+            <column name="order_index" value="0"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-040"/>
+            <column name="section_id" value="section-020"/>
+            <column name="title" value="Full Stack Application Project"/>
+            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

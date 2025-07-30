@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for categories table -->
+    <changeSet id="103-seed-categories" author="ktc">
+        <insert tableName="categories">
+            <column name="id" value="cat-001"/>
+            <column name="name" value="Web Development"/>
+            <column name="description" value="Learn to build modern web applications using latest technologies and frameworks"/>
+            <column name="created_at" value="2024-12-15 10:00:00"/>
+            <column name="updated_at" value="2024-12-15 10:00:00"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-002"/>
+            <column name="name" value="Mobile Development"/>
+            <column name="description" value="Create native and cross-platform mobile applications for iOS and Android"/>
+            <column name="created_at" value="2024-12-16 10:00:00"/>
+            <column name="updated_at" value="2024-12-16 10:00:00"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-003"/>
+            <column name="name" value="Data Science"/>
+            <column name="description" value="Master data analysis, visualization, and machine learning techniques"/>
+            <column name="created_at" value="2024-12-17 10:00:00"/>
+            <column name="updated_at" value="2024-12-17 10:00:00"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-004"/>
+            <column name="name" value="DevOps"/>
+            <column name="description" value="Learn infrastructure automation, CI/CD, and cloud deployment strategies"/>
+            <column name="created_at" value="2024-12-18 10:00:00"/>
+            <column name="updated_at" value="2024-12-18 10:00:00"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-005"/>
+            <column name="name" value="Cybersecurity"/>
+            <column name="description" value="Understand security principles, ethical hacking, and threat mitigation"/>
+            <column name="created_at" value="2024-12-19 10:00:00"/>
+            <column name="updated_at" value="2024-12-19 10:00:00"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-006"/>
+            <column name="name" value="Machine Learning"/>
+            <column name="description" value="Dive deep into AI algorithms, neural networks, and deep learning"/>
+            <column name="created_at" value="2024-12-20 10:00:00"/>
+            <column name="updated_at" value="2024-12-20 10:00:00"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-007"/>
+            <column name="name" value="Cloud Computing"/>
+            <column name="description" value="Master AWS, Azure, and Google Cloud Platform services"/>
+            <column name="created_at" value="2024-12-21 10:00:00"/>
+            <column name="updated_at" value="2024-12-21 10:00:00"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-008"/>
+            <column name="name" value="Database Design"/>
+            <column name="description" value="Learn relational and NoSQL database design and optimization"/>
+            <column name="created_at" value="2024-12-22 10:00:00"/>
+            <column name="updated_at" value="2024-12-22 10:00:00"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-009"/>
+            <column name="name" value="Software Architecture"/>
+            <column name="description" value="Design scalable and maintainable software systems"/>
+            <column name="created_at" value="2024-12-23 10:00:00"/>
+            <column name="updated_at" value="2024-12-23 10:00:00"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" value="cat-010"/>
+            <column name="name" value="Game Development"/>
+            <column name="description" value="Create games using popular engines and programming languages"/>
+            <column name="created_at" value="2024-12-24 10:00:00"/>
+            <column name="updated_at" value="2024-12-24 10:00:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

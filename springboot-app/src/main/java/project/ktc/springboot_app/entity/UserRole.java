@@ -4,13 +4,11 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import project.ktc.springboot_app.auth.entitiy.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-
 @Entity
-@Table(name = "USER_ROLE", uniqueConstraints = @UniqueConstraint(name = "unique_user_role", columnNames = {"user_id", "role"}))
+@Table(name = "user_roles")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,14 +16,15 @@ import lombok.Getter;
 @Setter
 public class UserRole {
     @Id
-    @Column(length = 36)
+    @Column(length = 36, nullable = false)
     @Builder.Default
     private String id = java.util.UUID.randomUUID().toString();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
-} 
+    private RoleType role;
+
+    public enum RoleType {
+        STUDENT, INSTRUCTOR, ADMIN
+    }
+}
