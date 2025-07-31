@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="115-seed-instructor-earnings" author="ktc">
+    <!-- Charlie's earnings from React Course (payment-001) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-001"/>
+        <column name="instructor_id" value="user-003"/>
+        <column name="payment_id" value="payment-001"/>
+        <column name="course_id" value="course-001"/>
+        <column name="amount" value="69.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-01-22 10:00:00"/>
+        <column name="created_at" value="2025-01-15 10:25:00"/>
+    </insert>
+
+    <!-- Diana's earnings from Frontend Design (payment-002) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-002"/>
+        <column name="instructor_id" value="user-004"/>
+        <column name="payment_id" value="payment-002"/>
+        <column name="course_id" value="course-005"/>
+        <column name="amount" value="55.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-01-27 10:00:00"/>
+        <column name="created_at" value="2025-01-20 14:10:00"/>
+    </insert>
+
+    <!-- Diana's earnings from Advanced JavaScript (payment-003) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-003"/>
+        <column name="instructor_id" value="user-004"/>
+        <column name="payment_id" value="payment-003"/>
+        <column name="course_id" value="course-010"/>
+        <column name="amount" value="76.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-02-15 10:00:00"/>
+        <column name="created_at" value="2025-02-01 08:55:00"/>
+    </insert>
+
+    <!-- Julia's earnings from Machine Learning (payment-004) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-004"/>
+        <column name="instructor_id" value="user-010"/>
+        <column name="payment_id" value="payment-004"/>
+        <column name="course_id" value="course-002"/>
+        <column name="amount" value="104.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-01-17 10:00:00"/>
+        <column name="created_at" value="2025-01-10 16:15:00"/>
+    </insert>
+
+    <!-- Julia's earnings from Python for Data Science (payment-005) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-005"/>
+        <column name="instructor_id" value="user-010"/>
+        <column name="payment_id" value="payment-005"/>
+        <column name="course_id" value="course-007"/>
+        <column name="amount" value="83.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-02-01 10:00:00"/>
+        <column name="created_at" value="2025-01-25 11:40:00"/>
+    </insert>
+
+    <!-- Hannah's earnings from Cybersecurity (payment-006) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-006"/>
+        <column name="instructor_id" value="user-008"/>
+        <column name="payment_id" value="payment-006"/>
+        <column name="course_id" value="course-004"/>
+        <column name="amount" value="139.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-02-15 10:00:00"/>
+        <column name="created_at" value="2025-02-10 10:55:00"/>
+    </insert>
+
+    <!-- Hannah's earnings from Cybersecurity (payment-007) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-007"/>
+        <column name="instructor_id" value="user-008"/>
+        <column name="payment_id" value="payment-007"/>
+        <column name="course_id" value="course-004"/>
+        <column name="amount" value="139.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-01-25 10:00:00"/>
+        <column name="created_at" value="2025-01-18 13:25:00"/>
+    </insert>
+
+    <!-- Charlie's earnings from DevOps (payment-008) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-008"/>
+        <column name="instructor_id" value="user-003"/>
+        <column name="payment_id" value="payment-008"/>
+        <column name="course_id" value="course-006"/>
+        <column name="amount" value="125.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-02-15 10:00:00"/>
+        <column name="created_at" value="2025-02-05 08:10:00"/>
+    </insert>
+
+    <!-- Charlie's earnings from React Course (payment-009) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-009"/>
+        <column name="instructor_id" value="user-003"/>
+        <column name="payment_id" value="payment-009"/>
+        <column name="course_id" value="course-001"/>
+        <column name="amount" value="69.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-02-15 10:00:00"/>
+        <column name="created_at" value="2025-02-12 13:40:00"/>
+    </insert>
+
+    <!-- Fiona's earnings from React Native (payment-010) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-010"/>
+        <column name="instructor_id" value="user-006"/>
+        <column name="payment_id" value="payment-010"/>
+        <column name="course_id" value="course-003"/>
+        <column name="amount" value="90.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-01-29 10:00:00"/>
+        <column name="created_at" value="2025-01-22 15:05:00"/>
+    </insert>
+
+    <!-- Fiona's earnings from Unity Game Dev (payment-011) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-011"/>
+        <column name="instructor_id" value="user-006"/>
+        <column name="payment_id" value="payment-011"/>
+        <column name="course_id" value="course-009"/>
+        <column name="amount" value="111.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-02-15 10:00:00"/>
+        <column name="created_at" value="2025-02-03 11:55:00"/>
+    </insert>
+
+    <!-- Charlie's earnings from React Course (payment-012) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-012"/>
+        <column name="instructor_id" value="user-003"/>
+        <column name="payment_id" value="payment-012"/>
+        <column name="course_id" value="course-001"/>
+        <column name="amount" value="69.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-02-15 10:00:00"/>
+        <column name="created_at" value="2025-01-28 10:40:00"/>
+    </insert>
+
+    <!-- Diana's earnings from Frontend Design (payment-013) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-013"/>
+        <column name="instructor_id" value="user-004"/>
+        <column name="payment_id" value="payment-013"/>
+        <column name="course_id" value="course-005"/>
+        <column name="amount" value="55.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-02-15 10:00:00"/>
+        <column name="created_at" value="2025-02-08 14:25:00"/>
+    </insert>
+
+    <!-- Julia's earnings from Machine Learning (payment-014) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-014"/>
+        <column name="instructor_id" value="user-010"/>
+        <column name="payment_id" value="payment-014"/>
+        <column name="course_id" value="course-002"/>
+        <column name="amount" value="104.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-01-19 10:00:00"/>
+        <column name="created_at" value="2025-01-12 09:15:00"/>
+    </insert>
+
+    <!-- Julia's earnings from Python for Data Science (payment-015) -->
+    <insert tableName="instructor_earnings">
+        <column name="id" value="earning-015"/>
+        <column name="instructor_id" value="user-010"/>
+        <column name="payment_id" value="payment-015"/>
+        <column name="course_id" value="course-007"/>
+        <column name="amount" value="83.99"/>
+        <column name="status" value="PAID"/>
+        <column name="paid_at" value="2025-02-15 10:00:00"/>
+        <column name="created_at" value="2025-01-30 16:10:00"/>
+    </insert>
+</changeSet>
+
+
+</databaseChangeLog>

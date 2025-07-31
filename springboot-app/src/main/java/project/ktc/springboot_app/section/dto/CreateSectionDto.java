@@ -16,4 +16,8 @@ public class CreateSectionDto {
     @NotBlank(message = "Section title is required")
     @Size(min = 3, max = 255, message = "Section title must be between 3 and 255 characters")
     private String title;
+
+    @NotBlank(message = "Section description is required")
+    @Size(max = 255, message = "Section description must not exceed 255 characters")
+    private String description;
 }

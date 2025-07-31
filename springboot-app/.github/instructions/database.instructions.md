@@ -2,257 +2,284 @@
 applyTo: "**"
 ---
 
--- Users table
-CREATE TABLE `USER` (
-`id` varchar(36) PRIMARY KEY,
-`name` varchar(255) NOT NULL,
-`email` varchar(255) UNIQUE NOT NULL,
-`password` varchar(255) NOT NULL COMMENT 'Hashed password',
-`is_active` boolean DEFAULT true,
-`thumbnail_url` varchar(255) DEFAULT NULL COMMENT 'URL to user profile picture',
-`thumbnail_id` varchar(255) DEFAULT NULL COMMENT 'ID of the thumbnail image',
-`bio` text DEFAULT NULL COMMENT 'Short biography or description',
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+CREATE TABLE IF NOT EXISTS `users` (
+`id` VARCHAR(36) PRIMARY KEY,
+`name` VARCHAR(255) NOT NULL,
+`email` VARCHAR(255) NOT NULL UNIQUE,
+`password` VARCHAR(255) NOT NULL COMMENT 'Hashed password',
+`is_active` BOOLEAN DEFAULT TRUE,
+`thumbnail_url` VARCHAR(255) DEFAULT NULL,
+`thumbnail_id` VARCHAR(255) DEFAULT NULL,
+`bio` TEXT DEFAULT NULL,
+`role_id` VARCHAR(36) NOT NULL,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+constraint `fk_user_roles`
+FOREIGN KEY (`role_id`) REFERENCES `user_roles`(`id`) ON DELETE RESTRICT
+) ENGINE = InnoDB;
 
--- User roles table
-CREATE TABLE `USER_ROLE` (
-`id` int PRIMARY KEY,
-`user_id` varchar(36) NOT NULL,
-`role` enum('STUDENT', 'INSTRUCTOR', 'ADMIN') NOT NULL,
-UNIQUE KEY `unique_user_role` (`user_id`, `role`),
-FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE
-);
+CREATE TABLE `user_roles` (
+`id` VARCHAR(36) PRIMARY KEY,
+`role` ENUM('STUDENT','INSTRUCTOR','ADMIN') NOT NULL,
+) ENGINE = InnoDB;
 
--- Refresh tokens for JWT authentication
-CREATE TABLE `REFRESH_TOKEN` (
-`id` int PRIMARY KEY,
-`user_id` varchar(36) NOT NULL,
-`token` varchar(512) NOT NULL,
-`expires_at` timestamp NOT NULL,
-`is_revoked` boolean DEFAULT false,
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-INDEX `idx_user_id` (`user_id`),
-UNIQUE INDEX `idx_token` (`token`),
-FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE
-);
+CREATE TABLE IF NOT EXISTS `categories` (
+`id` VARCHAR(36) PRIMARY KEY,
+`name` VARCHAR(255) NOT NULL UNIQUE,
+`description` TEXT,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
 
--- Course Management
--- Categories table
-CREATE TABLE `CATEGORY` (
-`id` varchar(36) PRIMARY KEY,
-`name` varchar(255) UNIQUE NOT NULL,
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+CREATE TABLE IF NOT EXISTS `courses` (
+`id` VARCHAR(36) PRIMARY KEY,
+`title` VARCHAR(255) NOT NULL,
+`description` TEXT,
+`instructor_id` VARCHAR(36),
+`price` DECIMAL(10,2) DEFAULT 0.00,
+`is_published` BOOLEAN DEFAULT FALSE,
+`is_approved` BOOLEAN DEFAULT FALSE,
+`thumbnail_url` VARCHAR(255),
+`thumbnail_id` VARCHAR(255),
+`level` ENUM('BEGINNER','INTERMEDIATE','ADVANCED') DEFAULT 'BEGINNER',
+`is_deleted` BOOLEAN DEFAULT FALSE,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+INDEX `idx_course_instructor` (`instructor_id`),
+CONSTRAINT `fk_course_instructor`
+FOREIGN KEY (`instructor_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
--- Courses table
-CREATE TABLE `COURSE` (
-`id` varchar(36) PRIMARY KEY,
-`title` varchar(255) NOT NULL,
-`description` text,
-`instructor_id` varchar(36),
-`price` decimal(10,2) DEFAULT 0.00,
-`is_published` boolean DEFAULT false,
-`is_approved` boolean DEFAULT false,
-`thumbnail_url` varchar(255) DEFAULT NULL COMMENT 'URL to course thumbnail image',
-`thumbnail_id` varchar(255) DEFAULT NULL COMMENT 'ID of the thumbnail image',
-`level` enum('BEGINNER', 'INTERMEDIATE', 'ADVANCED') DEFAULT 'BEGINNER',
-`is_deleted` boolean DEFAULT false,
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-INDEX `idx_instructor` (`instructor_id`),
-INDEX `idx_title` (`title`),
-FOREIGN KEY (`instructor_id`) REFERENCES `USER`(`id`) ON DELETE SET NULL
-);
-
--- Course categories junction table
-CREATE TABLE `COURSE_CATEGORY` (
-`course_id` varchar(36) NOT NULL,
-`category_id` varchar(36) NOT NULL,
+CREATE TABLE IF NOT EXISTS `course_categories` (
+`course_id` VARCHAR(36) NOT NULL,
+`category_id` VARCHAR(36) NOT NULL,
 PRIMARY KEY (`course_id`, `category_id`),
-FOREIGN KEY (`course_id`) REFERENCES `COURSE`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`category_id`) REFERENCES `CATEGORY`(`id`) ON DELETE CASCADE
-);
+CONSTRAINT `fk_cc_course`
+FOREIGN KEY (`course_id`) REFERENCES `courses`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_cc_category`
+FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Course Content
--- Sections table
-CREATE TABLE `SECTION` (
-`id` varchar(36) PRIMARY KEY,
-`course_id` varchar(36) NOT NULL,
-`title` varchar(255) NOT NULL,
-`order_index` int DEFAULT 0,
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-INDEX `idx_course` (`course_id`),
+CREATE TABLE IF NOT EXISTS `sections` (
+`id` VARCHAR(36) PRIMARY KEY,
+`course_id` VARCHAR(36) NOT NULL,
+`title` VARCHAR(255) NOT NULL,
+`order_index` INT DEFAULT 0,
+`description` TEXT,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 UNIQUE KEY `unique_section_order` (`course_id`, `order_index`),
-FOREIGN KEY (`course_id`) REFERENCES `COURSE`(`id`) ON DELETE CASCADE
-);
+CONSTRAINT `fk_section_course`
+FOREIGN KEY (`course_id`) REFERENCES `courses`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Video content table
-CREATE TABLE `VIDEO_CONTENT` (
-`id` varchar(36) PRIMARY KEY,
-`url` text NOT NULL COMMENT 'Video file URL or streaming link',
-`duration` int COMMENT 'Duration in seconds',
-`uploaded_by` varchar(36) NOT NULL,
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-FOREIGN KEY (`uploaded_by`) REFERENCES `USER`(`id`) ON DELETE CASCADE
-);
+CREATE TABLE IF NOT EXISTS `video_contents` (
+`id` VARCHAR(36) PRIMARY KEY,
+`url` TEXT NOT NULL,
+`duration` INT,
+`uploaded_by` VARCHAR(36) NOT NULL,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+CONSTRAINT `fk_video_uploader`
+FOREIGN KEY (`uploaded_by`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Lessons table
-CREATE TABLE `LESSON` (
-`id` varchar(36) PRIMARY KEY,
-`section_id` varchar(36) NOT NULL,
-`title` varchar(255) NOT NULL,
-`type` enum('VIDEO', 'QUIZ') DEFAULT 'VIDEO',
-`content_id` varchar(36) COMMENT 'Refers to VIDEO/PDF/... content',
-`order_index` int DEFAULT 0,
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-INDEX `idx_section` (`section_id`),
+CREATE TABLE IF NOT EXISTS `lessons` (
+`id` VARCHAR(36) PRIMARY KEY,
+`section_id` VARCHAR(36) NOT NULL,
+`title` VARCHAR(255) NOT NULL,
+`lesson_type_id` VARCHAR(36) NOT NULL,
+`content_id` VARCHAR(36),
+`order_index` INT DEFAULT 0,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 UNIQUE KEY `unique_lesson_order` (`section_id`, `order_index`),
-FOREIGN KEY (`section_id`) REFERENCES `SECTION`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`content_id`) REFERENCES `VIDEO_CONTENT`(`id`) ON DELETE SET NULL
-);
+CONSTRAINT `fk_lesson_section`
+FOREIGN KEY (`section_id`) REFERENCES `sections`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_lesson_type`
+FOREIGN KEY (`lesson_type_id`) REFERENCES `lesson_types`(`id`) ON DELETE RESTRICT,
+CONSTRAINT `fk_lesson_content`
+FOREIGN KEY (`content_id`) REFERENCES `video_contents`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
--- Enrollment and Progress
--- Enrollments table
-CREATE TABLE `ENROLLMENT` (
-`id` varchar(36) PRIMARY KEY,
-`user_id` varchar(36) NOT NULL,
-`course_id` varchar(36) NOT NULL,
-`enrolled_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`completion_status` enum('IN_PROGRESS', 'COMPLETED') DEFAULT 'IN_PROGRESS' COMMENT 'Derived or updated based on lesson completions',
+CREATE TABLE IF NOT EXISTS `lesson_types` (
+`id` VARCHAR(36) PRIMARY KEY,
+`name` VARCHAR(50) NOT NULL UNIQUE,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `enrollments` (
+`id` VARCHAR(36) PRIMARY KEY,
+`user_id` VARCHAR(36) NOT NULL,
+`course_id` VARCHAR(36) NOT NULL,
+`enrolled_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`completion_status` ENUM('IN_PROGRESS','COMPLETED') DEFAULT 'IN_PROGRESS',
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 UNIQUE KEY `unique_enrollment` (`user_id`, `course_id`),
-FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`course_id`) REFERENCES `COURSE`(`id`) ON DELETE CASCADE
-);
+CONSTRAINT `fk_enr_user`
+FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_enr_course`
+FOREIGN KEY (`course_id`) REFERENCES `courses`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Lesson completions table
-CREATE TABLE `LESSON_COMPLETION` (
-`id` varchar(36) PRIMARY KEY,
-`user_id` varchar(36) NOT NULL,
-`lesson_id` varchar(36) NOT NULL,
-`completed_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE IF NOT EXISTS `lesson_completions` (
+`id` VARCHAR(36) PRIMARY KEY,
+`user_id` VARCHAR(36) NOT NULL,
+`lesson_id` VARCHAR(36) NOT NULL,
+`completed_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
 UNIQUE KEY `unique_completion` (`user_id`, `lesson_id`),
-FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`lesson_id`) REFERENCES `LESSON`(`id`) ON DELETE CASCADE
-);
+CONSTRAINT `fk_lc_user`
+FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_lc_lesson`
+FOREIGN KEY (`lesson_id`) REFERENCES `lessons`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Reviews and Ratings
--- Reviews table
-CREATE TABLE `REVIEW` (
-`id` varchar(36) PRIMARY KEY,
-`user_id` varchar(36) NOT NULL,
-`course_id` varchar(36) NOT NULL,
-`rating` int DEFAULT 5 COMMENT '1 to 5',
-`review_text` text,
-`reviewed_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+CREATE TABLE IF NOT EXISTS `reviews` (
+`id` VARCHAR(36) PRIMARY KEY,
+`user_id` VARCHAR(36) NOT NULL,
+`course_id` VARCHAR(36) NOT NULL,
+`rating` INT DEFAULT 5,
+`review_text` TEXT,
+`reviewed_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 UNIQUE KEY `unique_review` (`user_id`, `course_id`),
-INDEX `idx_course` (`course_id`),
-FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`course_id`) REFERENCES `COURSE`(`id`) ON DELETE CASCADE,
-CHECK (rating >= 1 AND rating <= 5)
-);
+INDEX `idx_review_course` (`course_id`),
+CONSTRAINT `fk_rev_user`
+FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_rev_course`
+FOREIGN KEY (`course_id`) REFERENCES `courses`(`id`) ON DELETE CASCADE,
+CHECK (`rating` BETWEEN 1 AND 5)
+) ENGINE=InnoDB;
 
--- Payment System
--- Payments table
-CREATE TABLE `PAYMENT` (
-`id` varchar(36) PRIMARY KEY,
-`user_id` varchar(36) NOT NULL,
-`course_id` varchar(36) NOT NULL,
-`amount` decimal(10,2) NOT NULL,
-`status` enum('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED') DEFAULT 'PENDING',
-`payment_method` varchar(50),
-`paid_at` timestamp NULL,
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-INDEX `idx_user` (`user_id`),
-INDEX `idx_course` (`course_id`),
-INDEX `idx_status` (`status`),
-FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`course_id`) REFERENCES `COURSE`(`id`) ON DELETE CASCADE
-);
+CREATE TABLE IF NOT EXISTS `payments` (
+`id` VARCHAR(36) PRIMARY KEY,
+`user_id` VARCHAR(36) NOT NULL,
+`course_id` VARCHAR(36) NOT NULL,
+`amount` DECIMAL(10,2) NOT NULL,
+`status` ENUM('PENDING','COMPLETED','FAILED','REFUNDED') DEFAULT 'PENDING',
+`payment_method` VARCHAR(50),
+`session_id` TEXT, -- lưu Stripe Checkout Session ID
+`paid_at` DATETIME,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+INDEX `idx_pay_user` (`user_id`),
+INDEX `idx_pay_course` (`course_id`),
+INDEX `idx_pay_status` (`status`),
+INDEX `idx_pay_session_id` (`session_id`(255)), -- prefix index cho TEXT
+CONSTRAINT `fk_pay_user`
+FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_pay_course`
+FOREIGN KEY (`course_id`) REFERENCES `courses`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Refunds table
-CREATE TABLE `REFUND` (
-`id` varchar(36) PRIMARY KEY,
-`payment_id` varchar(36) NOT NULL,
-`amount` decimal(10,2) NOT NULL,
-`status` enum('PENDING', 'COMPLETED', 'FAILED') DEFAULT 'PENDING',
-`reason` text,
-`requested_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`processed_at` timestamp NULL,
-UNIQUE KEY `unique_payment` (`payment_id`),
-INDEX `idx_status` (`status`),
-FOREIGN KEY (`payment_id`) REFERENCES `PAYMENT`(`id`) ON DELETE CASCADE
-);
+CREATE TABLE IF NOT EXISTS `refunds` (
+`id` VARCHAR(36) PRIMARY KEY,
+`payment_id` VARCHAR(36) NOT NULL,
+`amount` DECIMAL(10,2) NOT NULL,
+`status` ENUM('PENDING','COMPLETED','FAILED') DEFAULT 'PENDING',
+`reason` TEXT,
+`requested_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`processed_at` DATETIME,
+UNIQUE KEY `unique_refund_payment` (`payment_id`),
+INDEX `idx_refund_status` (`status`),
+CONSTRAINT `fk_refund_payment`
+FOREIGN KEY (`payment_id`) REFERENCES `payments`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Instructor earnings table
-CREATE TABLE `INSTRUCTOR_EARNING` (
-`id` varchar(36) PRIMARY KEY,
-`instructor_id` varchar(36) NOT NULL,
-`payment_id` varchar(36) NOT NULL,
-`course_id` varchar(36) NOT NULL,
-`amount` decimal(10,2) NOT NULL COMMENT 'Instructor''s share after platform cut',
-`status` enum('PENDING', 'AVAILABLE', 'PAID') DEFAULT 'PENDING',
-`available_at` timestamp NULL,
-`paid_at` timestamp NULL,
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-INDEX `idx_instructor` (`instructor_id`),
-UNIQUE KEY `unique_payment` (`payment_id`),
-INDEX `idx_status` (`status`),
-FOREIGN KEY (`instructor_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`payment_id`) REFERENCES `PAYMENT`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`course_id`) REFERENCES `COURSE`(`id`) ON DELETE CASCADE
-);
+CREATE TABLE IF NOT EXISTS `instructor_earnings` (
+`id` VARCHAR(36) PRIMARY KEY,
+`instructor_id` VARCHAR(36) NOT NULL,
+`payment_id` VARCHAR(36) NOT NULL,
+`course_id` VARCHAR(36) NOT NULL,
+`amount` DECIMAL(10,2) NOT NULL,
+`status` ENUM('PENDING','AVAILABLE','PAID') DEFAULT 'PENDING',
+`paid_at` DATETIME,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+INDEX `idx_earn_instructor` (`instructor_id`),
+UNIQUE KEY `unique_earn_payment` (`payment_id`),
+INDEX `idx_earn_status` (`status`),
+CONSTRAINT `fk_earn_instructor`
+FOREIGN KEY (`instructor_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_earn_payment`
+FOREIGN KEY (`payment_id`) REFERENCES `payments`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_earn_course`
+FOREIGN KEY (`course_id`) REFERENCES `courses`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Instructor Management
--- Instructor applications table
-CREATE TABLE `INSTRUCTOR_APPLICATION` (
-`id` varchar(36) PRIMARY KEY,
-`user_id` varchar(36) NOT NULL,
-`reviewed_by` varchar(36),
-`status` enum('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
-`documents` json COMMENT 'Array of document URLs or details',
-`submitted_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`reviewed_at` timestamp NULL,
-`rejection_reason` text,
-UNIQUE KEY `unique_application` (`user_id`),
-INDEX `idx_status` (`status`),
-FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`reviewed_by`) REFERENCES `USER`(`id`) ON DELETE SET NULL
-);
+CREATE TABLE IF NOT EXISTS `instructor_applications` (
+`id` VARCHAR(36) PRIMARY KEY,
+`user_id` VARCHAR(36) NOT NULL,
+`reviewed_by` VARCHAR(36),
+`status` ENUM('PENDING','APPROVED','REJECTED') DEFAULT 'PENDING',
+`documents` JSON,
+`submitted_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`reviewed_at` DATETIME,
+`rejection_reason` TEXT,
+UNIQUE KEY `unique_app_user` (`user_id`),
+INDEX `idx_app_status` (`status`),
+CONSTRAINT `fk_app_user`
+FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_app_reviewer`
+FOREIGN KEY (`reviewed_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
--- Quiz System
--- Quiz questions table
-CREATE TABLE `QUIZ_QUESTION` (
-`id` varchar(36) PRIMARY KEY,
-`lesson_id` varchar(36) NOT NULL COMMENT 'Belongs to a lesson',
-`question_text` text NOT NULL,
-`options` json NOT NULL COMMENT 'Array of options: e.g. ["A", "B", "C", "D"]',
-`correct_answer` varchar(255) NOT NULL COMMENT 'Could be the correct option key/value',
-`explanation` text COMMENT 'Optional explanation for the answer',
-`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-INDEX `idx_lesson` (`lesson_id`),
-FOREIGN KEY (`lesson_id`) REFERENCES `LESSON`(`id`) ON DELETE CASCADE
-);
+CREATE TABLE IF NOT EXISTS `refresh_tokens` (
+`id` VARCHAR(36) PRIMARY KEY,
+`user_id` VARCHAR(36) NOT NULL,
+`token` VARCHAR(512) NOT NULL UNIQUE,
+`expires_at` DATETIME NOT NULL,
+`is_revoked` TINYINT(1) DEFAULT 0,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+INDEX `idx_rt_user` (`user_id`),
+CONSTRAINT `fk_rt_user`
+FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Quiz results table
-CREATE TABLE `QUIZ_RESULT` (
-`id` varchar(36) PRIMARY KEY,
-`user_id` varchar(36) NOT NULL,
-`lesson_id` varchar(36) NOT NULL COMMENT 'Should be a QUIZ lesson',
-`score` decimal(5,2) COMMENT 'Percentage score',
-`answers` json COMMENT 'User answers: e.g. {"question_id_1": "B", "question_id_2": "D"}',
-`completed_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-``created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-UNIQUE KEY `unique_result` (`user_id`, `lesson_id`),
-FOREIGN KEY (`user_id`) REFERENCES `USER`(`id`) ON DELETE CASCADE,
-FOREIGN KEY (`lesson_id`) REFERENCES `LESSON`(`id`) ON DELETE CASCADE
-);
+CREATE TABLE IF NOT EXISTS `quiz_questions` (
+`id` VARCHAR(36) PRIMARY KEY,
+`lesson_id` VARCHAR(36) NOT NULL,
+`question_text` TEXT NOT NULL,
+`options` JSON NOT NULL,
+`correct_answer` VARCHAR(255) NOT NULL,
+`explanation` TEXT,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+INDEX `idx_qq_lesson` (`lesson_id`),
+CONSTRAINT `fk_qq_lesson`
+FOREIGN KEY (`lesson_id`) REFERENCES `lessons`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `quiz_results` (
+`id` VARCHAR(36) PRIMARY KEY,
+`user_id` VARCHAR(36) NOT NULL,
+`lesson_id` VARCHAR(36) NOT NULL,
+`score` DECIMAL(5,2),
+`answers` JSON,
+`completed_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+`updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+UNIQUE KEY `unique_quiz_res` (`user_id`, `lesson_id`),
+CONSTRAINT `fk_qr_user`
+FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+CONSTRAINT `fk_qr_lesson`
+FOREIGN KEY (`lesson_id`) REFERENCES `lessons`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `system_logs` (
+`id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+`user_id` VARCHAR(36) NOT NULL COMMENT 'Người thực hiện',
+`action` ENUM('CREATE','UPDATE','DELETE') NOT NULL,
+`entity_type` VARCHAR(50) NOT NULL COMMENT 'Tên bảng hoặc module, ví dụ: courses, lessons…',
+`entity_id` VARCHAR(36) COMMENT 'ID của bản ghi bị tác động (nullable nếu không có)',
+`old_values` JSON COMMENT 'Giá trị cũ (JSON object, chỉ dùng cho UPDATE/DELETE)',
+`new_values` JSON COMMENT 'Giá trị mới (JSON object, chỉ dùng cho CREATE/UPDATE)',
+`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+INDEX `idx_logs_user` (`user_id`),
+INDEX `idx_logs_action` (`action`),
+INDEX `idx_logs_entity` (`entity_type`, `entity_id`),
+INDEX `idx_logs_created` (`created_at`),
+CONSTRAINT `fk_logs_user`
+FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE NULL 
+) ENGINE=InnoDB;

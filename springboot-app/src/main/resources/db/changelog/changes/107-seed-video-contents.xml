@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for video_contents table -->
+     <changeSet id="107-seed-video-contents" author="ktc">
+        <insert tableName="video_contents">
+            <column name="id" value="video-001"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"/>
+            <column name="duration" value="1800"/> <!-- 30 minutes -->
+            <column name="uploaded_by" value="user-003"/> <!-- Charlie -->
+            <column name="created_at" value="2024-12-25 10:30:00"/>
+            <column name="updated_at" value="2024-12-25 10:30:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-002"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"/>
+            <column name="duration" value="2400"/> <!-- 40 minutes -->
+            <column name="uploaded_by" value="user-003"/> <!-- Charlie -->
+            <column name="created_at" value="2024-12-25 11:15:00"/>
+            <column name="updated_at" value="2024-12-25 11:15:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-003"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"/>
+            <column name="duration" value="2700"/> <!-- 45 minutes -->
+            <column name="uploaded_by" value="user-010"/> <!-- Julia Anderson -->
+            <column name="created_at" value="2024-12-26 12:00:00"/>
+            <column name="updated_at" value="2024-12-26 12:00:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-004"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"/>
+            <column name="duration" value="1200"/> <!-- 20 minutes -->
+            <column name="uploaded_by" value="user-006"/> <!-- Fiona Davis -->
+             <column name="created_at" valueComputed="NOW()"/>
+             <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-005"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"/>
+            <column name="duration" value="2100"/> <!-- 35 minutes -->
+            <column name="uploaded_by" value="user-008"/> <!-- Hannah Taylor -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-006"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"/>
+            <column name="duration" value="1500"/> <!-- 25 minutes -->
+            <column name="uploaded_by" value="user-004"/> <!-- Diana Roberts -->
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-007"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"/>
+            <column name="duration" value="3000"/> <!-- 50 minutes -->
+            <column name="uploaded_by" value="user-003"/> <!-- Charlie -->
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-008"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"/>
+            <column name="duration" value="2200"/> <!-- 37 minutes -->
+            <column name="uploaded_by" value="user-010"/> <!-- Julia Anderson -->
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-009"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"/>
+            <column name="duration" value="1800"/> <!-- 30 minutes -->
+            <column name="uploaded_by" value="user-006"/> <!-- Fiona Davis -->
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-010"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"/>
+            <column name="duration" value="2800"/> <!-- 47 minutes -->
+            <column name="uploaded_by" value="user-004"/> <!-- Diana Roberts -->
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-011"/>
+            <column name="url" value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"/>
+            <column name="duration" value="2600"/> <!-- 43 minutes -->
+            <column name="uploaded_by" value="user-003"/> <!-- Charlie -->
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-012"/>
+            <column name="url" value="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_10mb.mp4"/>
+            <column name="duration" value="3200"/> <!-- 53 minutes -->
+            <column name="uploaded_by" value="user-010"/> <!-- Julia Anderson -->
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

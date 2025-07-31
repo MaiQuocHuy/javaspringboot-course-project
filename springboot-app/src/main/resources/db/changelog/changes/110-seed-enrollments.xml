@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for enrollments table -->
+    <changeSet id="110-seed-enrollments" author="ktc">
+        <!-- Bob (Student) enrollments -->
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-001"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-001"/> <!-- React Course -->
+            <column name="enrolled_at" value="2025-01-15 10:30:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-002"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-005"/> <!-- Frontend Design -->
+            <column name="enrolled_at" value="2025-01-20 14:15:00"/>
+            <column name="completion_status" value="COMPLETED"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-003"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-010"/> <!-- Advanced JavaScript -->
+            <column name="enrolled_at" value="2025-02-01 09:00:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Emily Chen enrollments -->
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-004"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-002"/> <!-- Machine Learning -->
+            <column name="enrolled_at" value="2025-01-10 16:20:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-005"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-007"/> <!-- Python for Data Science -->
+            <column name="enrolled_at" value="2025-01-25 11:45:00"/>
+            <column name="completion_status" value="COMPLETED"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- George Wilson enrollments -->
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-006"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-004"/> <!-- Cybersecurity -->
+            <column name="enrolled_at" value="2025-01-18 13:30:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-007"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-006"/> <!-- DevOps -->
+            <column name="enrolled_at" value="2025-02-05 08:15:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Ian Clark enrollments -->
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-008"/>
+            <column name="user_id" value="user-009"/> <!-- Ian Clark -->
+            <column name="course_id" value="course-003"/> <!-- React Native -->
+            <column name="enrolled_at" value="2025-01-22 15:10:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-009"/>
+            <column name="user_id" value="user-009"/> <!-- Ian Clark -->
+            <column name="course_id" value="course-009"/> <!-- Unity Game Dev -->
+            <column name="enrolled_at" value="2025-02-03 12:00:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Kevin Lee enrollments -->
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-010"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="course_id" value="course-001"/> <!-- React Course -->
+            <column name="enrolled_at" value="2025-01-28 10:45:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-011"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="course_id" value="course-005"/> <!-- Frontend Design -->
+            <column name="enrolled_at" value="2025-02-08 14:30:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Linda Martinez enrollments -->
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-012"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="course_id" value="course-002"/> <!-- Machine Learning -->
+            <column name="enrolled_at" value="2025-01-12 09:20:00"/>
+            <column name="completion_status" value="COMPLETED"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-013"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="course_id" value="course-007"/> <!-- Python for Data Science -->
+            <column name="enrolled_at" value="2025-01-30 16:15:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        
+        <!-- Additional enrollments for diversity -->
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-014"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-004"/> <!-- Cybersecurity -->
+            <column name="enrolled_at" value="2025-02-10 11:00:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="enrollments">
+            <column name="id" value="enroll-015"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-001"/> <!-- React Course -->
+            <column name="enrolled_at" value="2025-02-12 13:45:00"/>
+            <column name="completion_status" value="IN_PROGRESS"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

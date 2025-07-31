@@ -8,5 +8,5 @@ import project.ktc.springboot_app.entity.UserRole;
 
 @Repository
 public interface UserRoleRepository extends JpaRepository<UserRole, String> {
-    Optional<UserRole> findByUserId(String userId);
+    Optional<UserRole> findByRole(UserRole.RoleType role);
 }

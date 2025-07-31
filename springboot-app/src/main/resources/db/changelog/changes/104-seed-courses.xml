@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for courses table -->
+    <changeSet id="104-seed-courses" author="ktc">
+        <insert tableName="courses">
+            <column name="id" value="course-001"/>
+            <column name="title" value="Complete React Development Course"/>
+            <column name="description" value="Master React.js from fundamentals to advanced concepts including hooks, context, and modern state management"/>
+            <column name="instructor_id" value="user-003"/> <!-- Charlie -->
+            <column name="price" value="99.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800"/>
+            <column name="level" value="INTERMEDIATE"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2024-12-25 10:00:00"/>
+            <column name="updated_at" value="2025-01-05 14:30:00"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" value="course-002"/>
+            <column name="title" value="Machine Learning Fundamentals"/>
+            <column name="description" value="Introduction to machine learning algorithms, data preprocessing, and model evaluation"/>
+            <column name="instructor_id" value="user-010"/> <!-- Julia Anderson -->
+            <column name="price" value="149.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2024-12-26 11:00:00"/>
+            <column name="updated_at" value="2025-01-08 16:15:00"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" value="course-003"/>
+            <column name="title" value="Mobile App Development with React Native"/>
+            <column name="description" value="Build cross-platform mobile applications using React Native and modern development practices"/>
+            <column name="instructor_id" value="user-006"/> <!-- Fiona Davis -->
+            <column name="price" value="129.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800"/>
+            <column name="level" value="INTERMEDIATE"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2024-12-27 09:00:00"/>
+            <column name="updated_at" value="2025-01-10 11:20:00"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" value="course-004"/>
+            <column name="title" value="Cybersecurity Essentials"/>
+            <column name="description" value="Learn fundamental cybersecurity concepts, threat analysis, and defense strategies"/>
+            <column name="instructor_id" value="user-008"/> <!-- Hannah Taylor -->
+            <column name="price" value="199.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2024-12-28 14:00:00"/>
+            <column name="updated_at" value="2025-01-12 10:45:00"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" value="course-005"/>
+            <column name="title" value="Advanced Python Programming"/>
+            <column name="description" value="Deep dive into Python's advanced features, decorators, metaclasses, and performance optimization"/>
+            <column name="instructor_id" value="user-005"/> <!-- Eve -->
+            <column name="price" value="179.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800"/>
+            <column name="level" value="ADVANCED"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2024-12-29 08:30:00"/>
+            <column name="updated_at" value="2025-01-14 15:20:00"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" value="course-006"/>
+            <column name="title" value="Full Stack Web Development"/>
+            <column name="description" value="Complete web development bootcamp covering frontend, backend, and database technologies"/>
+            <column name="instructor_id" value="user-003"/> <!-- Charlie -->
+            <column name="price" value="249.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800"/>
+            <column name="level" value="INTERMEDIATE"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2024-12-30 12:00:00"/>
+            <column name="updated_at" value="2025-01-16 09:15:00"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" value="course-007"/>
+            <column name="title" value="Cloud Computing with AWS"/>
+            <column name="description" value="Master Amazon Web Services including EC2, S3, Lambda, and cloud architecture patterns"/>
+            <column name="instructor_id" value="user-009"/> <!-- Ivan Clark -->
+            <column name="price" value="199.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800"/>
+            <column name="level" value="INTERMEDIATE"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2024-12-31 16:00:00"/>
+            <column name="updated_at" value="2025-01-18 13:30:00"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" value="course-008"/>
+            <column name="title" value="Database Design and Optimization"/>
+            <column name="description" value="Learn relational database design, SQL optimization, and NoSQL databases"/>
+            <column name="instructor_id" value="user-007"/> <!-- Grace Wilson -->
+            <column name="price" value="139.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800"/>
+            <column name="level" value="INTERMEDIATE"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-01 10:00:00"/>
+            <column name="updated_at" value="2025-01-20 14:45:00"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" value="course-009"/>
+            <column name="title" value="DevOps and CI/CD Pipeline"/>
+            <column name="description" value="Master DevOps practices, containerization with Docker, and continuous integration/deployment"/>
+            <column name="instructor_id" value="user-004"/> <!-- David -->
+            <column name="price" value="189.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1605379399843-5870eea9b74e?w=800"/>
+            <column name="level" value="ADVANCED"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-02 14:30:00"/>
+            <column name="updated_at" value="2025-01-22 11:00:00"/>
+        </insert>
+        <insert tableName="courses">
+            <column name="id" value="course-010"/>
+            <column name="title" value="Introduction to Artificial Intelligence"/>
+            <column name="description" value="Explore AI fundamentals, neural networks, and practical applications in various industries"/>
+            <column name="instructor_id" value="user-010"/> <!-- Julia Anderson -->
+            <column name="price" value="219.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=800"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-03 09:00:00"/>
+            <column name="updated_at" value="2025-01-24 16:30:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

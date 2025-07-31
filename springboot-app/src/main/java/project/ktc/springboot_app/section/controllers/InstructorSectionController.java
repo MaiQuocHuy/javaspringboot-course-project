@@ -26,7 +26,8 @@ import project.ktc.springboot_app.section.dto.CreateSectionDto;
 import project.ktc.springboot_app.section.dto.ReorderSectionsDto;
 import project.ktc.springboot_app.section.dto.SectionResponseDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
-import project.ktc.springboot_app.section.interfaces.InstructorSectionService;
+import project.ktc.springboot_app.section.dto.UpdateSectionDto;
+import project.ktc.springboot_app.section.services.InstructorSectionServiceImp;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
 @RestController
@@ -37,7 +38,7 @@ import project.ktc.springboot_app.utils.SecurityUtil;
 @Slf4j
 public class InstructorSectionController {
 
-        private final InstructorSectionService sectionService;
+        private final InstructorSectionServiceImp sectionService;
 
         @GetMapping("/{id}/sections")
         @Operation(summary = "Get course sections with lessons", description = """
@@ -86,6 +87,7 @@ public class InstructorSectionController {
 
                         **Request Body:**
                         - title: Section title (required, 3-255 characters)
+                        - description: Section description (optional, max 255 characters)
 
                         **Business Rules:**
                         - Only course owner can create sections
@@ -110,8 +112,9 @@ public class InstructorSectionController {
                         @Parameter(description = "Course ID", required = true) @PathVariable("id") String courseId,
                         @Parameter(description = "Section creation data", required = true) @Valid @RequestBody CreateSectionDto createSectionDto) {
 
-                log.info("Received request to create section for course: {} with title: {}", courseId,
-                                createSectionDto.getTitle());
+                log.info("Received request to create section for course: {} with title: {} and description: {}",
+                                courseId,
+                                createSectionDto.getTitle(), createSectionDto.getDescription());
 
                 String instructorId = SecurityUtil.getCurrentUserId();
 
@@ -152,7 +155,7 @@ public class InstructorSectionController {
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<SectionResponseDto>> updateSection(
                         @Parameter(description = "Course ID", required = true) @PathVariable("courseId") String courseId,
                         @Parameter(description = "Section ID", required = true) @PathVariable("sectionId") String sectionId,
-                        @Parameter(description = "Section update data", required = true) @Valid @RequestBody CreateSectionDto updateSectionDto) {
+                        @Parameter(description = "Section update data", required = true) @Valid @RequestBody UpdateSectionDto updateSectionDto) {
 
                 log.info("Received request to update section {} in course: {} with title: {}",
                                 sectionId, courseId, updateSectionDto.getTitle());

@@ -5,12 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import project.ktc.springboot_app.auth.dto.UserResponseDto;
 import project.ktc.springboot_app.auth.entitiy.User;
@@ -62,16 +59,8 @@ public class UserServiceImp implements UserService {
                 return ApiResponseUtil.unauthorized("User not authenticated");
             }
 
-            // Extract roles from authentication authorities
-            List<UserRoleEnum> roles = authentication.getAuthorities()
-                    .stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .map(authority -> authority.replace("ROLE_", "")) // Remove ROLE_ prefix if present
-                    .map(UserRoleEnum::valueOf)
-                    .collect(Collectors.toList());
-
-            // Find the user by email (without roles since we get them from auth)
-            User user = userRepository.findByEmail(userEmail)
+            // Find the user by email (with role information)
+            User user = userRepository.findByEmailWithRoles(userEmail)
                     .orElse(null);
 
             if (user == null) {
@@ -79,11 +68,11 @@ public class UserServiceImp implements UserService {
                 return ApiResponseUtil.notFound("User not found");
             }
 
-            // Create user response DTO with roles from authentication
+            // Create user response DTO (role information comes from the user entity)
             UserResponseDto userResponseDto = new UserResponseDto(user);
-            userResponseDto.setRoles(roles);
 
-            log.info("Profile retrieved successfully for user: {} with roles: {}", userEmail, roles);
+            log.info("Profile retrieved successfully for user: {} with role: {}", userEmail,
+                    user.getRole() != null ? user.getRole().getRole() : "No role");
             return ApiResponseUtil.success(userResponseDto, "Profile retrieved successfully");
 
         } catch (Exception e) {
@@ -196,8 +185,8 @@ public class UserServiceImp implements UserService {
 
             // Retrieve all users from the repository
             List<User> users = userRepository.findAll();
-            users.forEach(user -> log.debug("User ID: {}, Email: {}, Roles: {}", user.getId(), user.getEmail(),
-                    user.getRoles()));
+            users.forEach(user -> log.debug("User ID: {}, Email: {}, Role: {}", user.getId(), user.getEmail(),
+                    user.getRole() != null ? user.getRole().getRole() : "No role"));
 
             if (users.isEmpty()) {
                 log.info("No users found in the database");
@@ -284,27 +273,32 @@ public class UserServiceImp implements UserService {
                 return ApiResponseUtil.badRequest("Invalid role. Valid roles are: STUDENT, INSTRUCTOR, ADMIN");
             }
 
-            // Find existing user role to update (not insert new)
-            Optional<UserRole> existingUserRoleOpt = userRoleRepository.findByUserId(user.getId());
-            if (existingUserRoleOpt.isEmpty()) {
-                log.warn("User role not found for user ID: {}", user.getId());
-                return ApiResponseUtil.notFound("User role not found");
+            // Find or create the new role
+            UserRole.RoleType newRoleType = UserRole.RoleType.valueOf(roleEnum.name());
+            Optional<UserRole> newRoleOpt = userRoleRepository.findByRole(newRoleType);
+            UserRole newRole;
+
+            if (newRoleOpt.isPresent()) {
+                newRole = newRoleOpt.get();
+            } else {
+                newRole = UserRole.builder()
+                        .role(newRoleType)
+                        .build();
+                newRole = userRoleRepository.save(newRole);
             }
 
-            // Update the existing role (not creating new one)
-            UserRole existingUserRole = existingUserRoleOpt.get();
-            String oldRole = existingUserRole.getRole();
-            existingUserRole.setRole(roleEnum.name());
+            // Update user's role reference
+            // String oldRoleId = user.getRoleId();
+            // user.setRoleId(newRole.getId());
+            UserRole oldRole = user.getRole();
+            user.setRole(newRole);
+            User updatedUser = userRepository.save(user);
 
-            // Save the updated role
-            UserRole updatedUserRole = userRoleRepository.save(existingUserRole);
+            log.info("User role updated successfully from role ID {} to {} for user ID: {}",
+                    oldRole.getId(), newRole.getRole().name(), user.getId());
 
-            log.info("User role updated successfully from {} to {} for user ID: {}",
-                    oldRole, roleEnum.name(), user.getId());
-
-            // Prepare response with updated role
-            user.setRoles(List.of(updatedUserRole));
-            UserResponseDto userResponseDto = new UserResponseDto(user);
+            // Prepare response
+            UserResponseDto userResponseDto = new UserResponseDto(updatedUser);
 
             return ApiResponseUtil.success(userResponseDto, "User role updated successfully");
         } catch (Exception e) {

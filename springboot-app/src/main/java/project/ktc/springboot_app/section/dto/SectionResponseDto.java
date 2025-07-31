@@ -15,6 +15,8 @@ public class SectionResponseDto {
 
     private String title;
 
+    private String description;
+
     private Integer orderIndex;
 
     private String courseId;

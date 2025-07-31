@@ -9,13 +9,16 @@ import project.ktc.springboot_app.entity.BaseEntity;
 import java.util.List;
 
 @Entity
-@Table(name = "CATEGORY")
+@Table(name = "categories")
 @Getter
 @Setter
 public class Category extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @ManyToMany(mappedBy = "categories")
     private List<Course> courses;
-} 
+}

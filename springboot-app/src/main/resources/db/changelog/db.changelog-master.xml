@@ -6,7 +6,45 @@
       http://www.liquibase.org/xml/ns/dbchangelog
       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
 
-    <!-- Liên kết đến các changeSet con -->
+    <!-- Complete Database Schema Regeneration -->
+    <!-- 1. New Complete Schema (replaces all previous table definitions) -->
+    <include file="db/changelog/changes/100-new-schema-complete.xml"/>
+    
+    <!-- 2. Seed Data Files (in dependency order) -->
+    <!-- User Management -->
+    <include file="db/changelog/changes/101-seed-user-roles.xml"/>
+    <include file="db/changelog/changes/102-seed-users.xml"/>
+    
+    <!-- Course Content Structure -->
+    <include file="db/changelog/changes/103-seed-categories.xml"/>
+    <include file="db/changelog/changes/104-seed-courses.xml"/>
+    <include file="db/changelog/changes/105-seed-course-categories.xml"/>
+    <include file="db/changelog/changes/106-seed-lesson-types.xml"/>
+    <include file="db/changelog/changes/107-seed-video-contents.xml"/>
+    <include file="db/changelog/changes/108-seed-sections.xml"/>
+    <include file="db/changelog/changes/109-seed-lessons.xml"/>
+    
+    <!-- Student Activity -->
+    <include file="db/changelog/changes/110-seed-enrollments.xml"/>
+    <include file="db/changelog/changes/111-seed-lesson-completions.xml"/>
+    <include file="db/changelog/changes/112-seed-quiz-questions.xml"/>
+    <include file="db/changelog/changes/113-seed-reviews.xml"/>
+    <include file="db/changelog/changes/119-seed-quiz-results.xml"/>
+    
+    <!-- Payment & Financial -->
+    <include file="db/changelog/changes/114-seed-payments.xml"/>
+    <include file="db/changelog/changes/115-seed-instructor-earnings.xml"/>
+    <include file="db/changelog/changes/116-seed-refunds.xml"/>
+    
+    <!-- Administrative -->
+    <include file="db/changelog/changes/117-seed-instructor-applications.xml"/>
+    <include file="db/changelog/changes/118-seed-refresh-tokens.xml"/>
+    <include file="db/changelog/changes/120-seed-system-logs.xml"/>
+    
+    <!-- Schema Updates -->
+    <include file="db/changelog/changes/121-update-system-logs-actions.xml"/>
+
+    <!-- Legacy files (commented out - replaced by new schema and seed data above)
     <include file="db/changelog/changes/001-init-tables.xml"/>
     <include file="db/changelog/changes/002-seed-data.xml"/>
     <include file="db/changelog/changes/003-add-missing-timestamps.xml"/>
@@ -15,4 +53,6 @@
     <include file="db/changelog/changes/006-add-thumbnail.xml"/>
     <include file="db/changelog/changes/007-enhanced-seed-data.xml"/>
     <include file="db/changelog/changes/008-add-lesson-quiz-data.xml"/>
+    <include file="db/changelog/changes/009-add-lesson-types.xml"/>
+    -->
 </databaseChangeLog>

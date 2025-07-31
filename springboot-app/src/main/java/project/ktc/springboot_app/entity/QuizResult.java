@@ -3,6 +3,7 @@ package project.ktc.springboot_app.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 
@@ -10,7 +11,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "QUIZ_RESULT", uniqueConstraints = @UniqueConstraint(name = "unique_result", columnNames = {"user_id", "lesson_id"}))
+@Table(name = "quiz_results", uniqueConstraints = @UniqueConstraint(name = "unique_quiz_res", columnNames = { "user_id",
+        "lesson_id" }))
 @Getter
 @Setter
 public class QuizResult extends BaseEntity {
@@ -25,9 +27,10 @@ public class QuizResult extends BaseEntity {
     @Column(precision = 5, scale = 2)
     private BigDecimal score;
 
-    @Column(columnDefinition = "json")
+    @Column(columnDefinition = "JSON")
     private String answers;
 
+    @CreationTimestamp
     @Column(name = "completed_at", updatable = false)
     private LocalDateTime completedAt;
-} 
+}

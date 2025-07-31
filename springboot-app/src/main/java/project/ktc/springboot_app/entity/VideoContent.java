@@ -5,14 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "VIDEO_CONTENT")
+@Table(name = "video_contents")
 @Getter
 @Setter
 public class VideoContent extends BaseEntity {
-    @Column(columnDefinition = "text", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String url;
 
     @Column
@@ -21,10 +19,4 @@ public class VideoContent extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_by", nullable = false)
     private User uploadedBy;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-} 
+}

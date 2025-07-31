@@ -5,13 +5,15 @@ import lombok.Getter;
 import lombok.Setter;
 import project.ktc.springboot_app.entity.BaseEntity;
 import project.ktc.springboot_app.entity.LessonCompletion;
+import project.ktc.springboot_app.entity.LessonType;
 import project.ktc.springboot_app.entity.QuizQuestion;
+import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.section.entity.Section;
 
 import java.util.List;
 
 @Entity
-@Table(name = "LESSON", uniqueConstraints = @UniqueConstraint(name = "unique_lesson_order", columnNames = {
+@Table(name = "lessons", uniqueConstraints = @UniqueConstraint(name = "unique_lesson_order", columnNames = {
         "section_id", "order_index" }))
 @Getter
 @Setter
@@ -23,11 +25,13 @@ public class Lesson extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    private String type;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lesson_type_id", nullable = false)
+    private LessonType lessonType;
 
-    @Column(name = "content_id")
-    private String contentId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "content_id")
+    private VideoContent content;
 
     @Column(name = "order_index")
     private Integer orderIndex = 0;

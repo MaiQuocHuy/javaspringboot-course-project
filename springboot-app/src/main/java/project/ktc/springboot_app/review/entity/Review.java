@@ -3,22 +3,21 @@ package project.ktc.springboot_app.review.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.CreationTimestamp;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;
+import project.ktc.springboot_app.entity.BaseEntity;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
-@Table(name = "REVIEW", uniqueConstraints = @UniqueConstraint(name = "unique_review", columnNames = { "user_id",
+@Table(name = "reviews", uniqueConstraints = @UniqueConstraint(name = "unique_review", columnNames = { "user_id",
         "course_id" }))
+@Check(constraints = "rating >= 1 AND rating <= 5")
 @Getter
 @Setter
-public class Review {
-    @Id
-    @Column(length = 36, updatable = false, nullable = false)
-    private String id = UUID.randomUUID().toString();
-
+public class Review extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -28,26 +27,12 @@ public class Review {
     private Course course;
 
     @Column(nullable = false)
-    private Integer rating;
+    private Integer rating = 5;
 
-    @Column(name = "review_text")
+    @Column(name = "review_text", columnDefinition = "TEXT")
     private String reviewText;
 
+    @CreationTimestamp
     @Column(name = "reviewed_at", updatable = false)
     private LocalDateTime reviewedAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void prePersist() {
-        LocalDateTime now = LocalDateTime.now();
-        this.reviewedAt = now;
-        this.updatedAt = now;
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 }

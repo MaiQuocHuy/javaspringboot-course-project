@@ -120,8 +120,8 @@ public class StudentLessonServiceImp implements StudentService {
                 Optional<Enrollment> enrollmentOpt = enrollmentRepository.findByUserIdAndCourseId(userId, courseId);
                 if (enrollmentOpt.isPresent()) {
                     Enrollment enrollment = enrollmentOpt.get();
-                    if (!"COMPLETED".equals(enrollment.getCompletionStatus())) {
-                        enrollment.setCompletionStatus("COMPLETED");
+                    if (enrollment.getCompletionStatus() != Enrollment.CompletionStatus.COMPLETED) {
+                        enrollment.setCompletionStatus(Enrollment.CompletionStatus.COMPLETED);
                         enrollmentRepository.save(enrollment);
                         log.info("Updated enrollment status to COMPLETED for user {} in course {}", userId, courseId);
                     }

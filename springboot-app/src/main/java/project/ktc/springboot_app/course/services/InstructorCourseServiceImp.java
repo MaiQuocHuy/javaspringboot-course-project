@@ -37,6 +37,9 @@ import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.service.FileValidationService;
 import project.ktc.springboot_app.user.repositories.UserRepository;
+import project.ktc.springboot_app.log.services.SystemLogHelper;
+import project.ktc.springboot_app.log.dto.CourseLogDto;
+import project.ktc.springboot_app.log.utils.CourseLogMapper;
 
 @Service
 @Slf4j
@@ -49,6 +52,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
     private final InstructorSectionRepository sectionRepository;
+    private final SystemLogHelper systemLogHelper;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> findInstructorCourses(
@@ -221,6 +225,16 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             Course savedCourse = courseRepository.save(course);
             log.info("Course created successfully with ID: {}", savedCourse.getId());
 
+            // Log the course creation
+            try {
+                CourseLogDto courseLogDto = CourseLogMapper.toLogDto(savedCourse);
+                systemLogHelper.logCreate(instructor, "Course", savedCourse.getId(), courseLogDto);
+                log.debug("Course creation logged successfully for courseId: {}", savedCourse.getId());
+            } catch (Exception logException) {
+                log.warn("Failed to log course creation: {}", logException.getMessage());
+                // Don't fail the whole operation due to logging error
+            }
+
             // Create response DTO
             List<CategoryInfo> categoryInfoList = categories.stream()
                     .map(cat -> CourseResponseDto.CategoryInfo.builder()
@@ -287,6 +301,9 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 log.warn("Course {} cannot be edited - already approved", courseId);
                 return ApiResponseUtil.forbidden("Cannot edit approved courses");
             }
+
+            // Capture old values for logging
+            CourseLogDto oldCourseLogDto = CourseLogMapper.toLogDto(existingCourse);
 
             // Validate instructor exists
             User instructor = userRepository.findById(instructorId).orElse(null);
@@ -356,6 +373,17 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             // Save the updated course
             Course updatedCourse = courseRepository.save(existingCourse);
             log.info("Course updated successfully with ID: {}", updatedCourse.getId());
+
+            // Log the course update
+            try {
+                CourseLogDto newCourseLogDto = CourseLogMapper.toLogDto(updatedCourse);
+                systemLogHelper.logUpdate(instructor, "Course", updatedCourse.getId(), oldCourseLogDto,
+                        newCourseLogDto);
+                log.debug("Course update logged successfully for courseId: {}", updatedCourse.getId());
+            } catch (Exception logException) {
+                log.warn("Failed to log course update: {}", logException.getMessage());
+                // Don't fail the whole operation due to logging error
+            }
 
             // Create response DTO
             CourseResponseDto responseDto = CourseResponseDto.builder()
@@ -436,9 +464,21 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 return ApiResponseUtil.badRequest("Cannot delete a course that is approved or has enrolled students");
             }
 
+            // Capture course data for logging before deletion
+            CourseLogDto courseLogDto = CourseLogMapper.toLogDto(course);
+
             // Delete the course (soft delete by setting isDeleted = true)
             course.setIsDeleted(true);
             courseRepository.save(course);
+
+            // Log the course deletion
+            try {
+                systemLogHelper.logDelete(instructor, "Course", courseId, courseLogDto);
+                log.debug("Course deletion logged successfully for courseId: {}", courseId);
+            } catch (Exception logException) {
+                log.warn("Failed to log course deletion: {}", logException.getMessage());
+                // Don't fail the whole operation due to logging error
+            }
 
             log.info("Course {} deleted successfully by instructor {}", courseId, instructorId);
             return ApiResponseUtil.success(null, "Course deleted successfully");

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for payments table -->
+    <changeSet id="114-seed-payments" author="ktc">
+        <!-- Bob's payments -->
+        <insert tableName="payments">
+            <column name="id" value="payment-001"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-001"/> <!-- React Course -->
+            <column name="amount" value="99.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_1234567890abcdef"/>
+            <column name="paid_at" value="2025-01-15 10:25:00"/>
+            <column name="created_at" value="2025-01-15 10:20:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-002"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-005"/> <!-- Frontend Design -->
+            <column name="amount" value="79.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_abcdef1234567890"/>
+            <column name="paid_at" value="2025-01-20 14:10:00"/>
+            <column name="created_at" value="2025-01-20 14:05:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-003"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-010"/> <!-- Advanced JavaScript -->
+            <column name="amount" value="109.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="paypal"/>
+            <column name="session_id" value="paypal_session_xyz789"/>
+            <column name="paid_at" value="2025-02-01 08:55:00"/>
+            <column name="created_at" value="2025-02-01 08:50:00"/>
+        </insert>
+        
+        <!-- Emily Chen's payments -->
+        <insert tableName="payments">
+            <column name="id" value="payment-004"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-002"/> <!-- Machine Learning -->
+            <column name="amount" value="149.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_ml_course_001"/>
+            <column name="paid_at" value="2025-01-10 16:15:00"/>
+            <column name="created_at" value="2025-01-10 16:10:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-005"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-007"/> <!-- Python for Data Science -->
+            <column name="amount" value="119.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_python_ds_001"/>
+            <column name="paid_at" value="2025-01-25 11:40:00"/>
+            <column name="created_at" value="2025-01-25 11:35:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-006"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-004"/> <!-- Cybersecurity -->
+            <column name="amount" value="199.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_cybersec_001"/>
+            <column name="paid_at" value="2025-02-10 10:55:00"/>
+            <column name="created_at" value="2025-02-10 10:50:00"/>
+        </insert>
+        
+        <!-- George Wilson's payments -->
+        <insert tableName="payments">
+            <column name="id" value="payment-007"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-004"/> <!-- Cybersecurity -->
+            <column name="amount" value="199.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="paypal"/>
+            <column name="session_id" value="paypal_security_course"/>
+            <column name="paid_at" value="2025-01-18 13:25:00"/>
+            <column name="created_at" value="2025-01-18 13:20:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-008"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-006"/> <!-- DevOps -->
+            <column name="amount" value="179.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_devops_001"/>
+            <column name="paid_at" value="2025-02-05 08:10:00"/>
+            <column name="created_at" value="2025-02-05 08:05:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-009"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-001"/> <!-- React Course -->
+            <column name="amount" value="99.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_react_george"/>
+            <column name="paid_at" value="2025-02-12 13:40:00"/>
+            <column name="created_at" value="2025-02-12 13:35:00"/>
+        </insert>
+        
+        <!-- Ian Clark's payments -->
+        <insert tableName="payments">
+            <column name="id" value="payment-010"/>
+            <column name="user_id" value="user-009"/> <!-- Ian Clark -->
+            <column name="course_id" value="course-003"/> <!-- React Native -->
+            <column name="amount" value="129.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_rn_mobile_001"/>
+            <column name="paid_at" value="2025-01-22 15:05:00"/>
+            <column name="created_at" value="2025-01-22 15:00:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-011"/>
+            <column name="user_id" value="user-009"/> <!-- Ian Clark -->
+            <column name="course_id" value="course-009"/> <!-- Unity Game Dev -->
+            <column name="amount" value="159.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="paypal"/>
+            <column name="session_id" value="paypal_unity_game_dev"/>
+            <column name="paid_at" value="2025-02-03 11:55:00"/>
+            <column name="created_at" value="2025-02-03 11:50:00"/>
+        </insert>
+        
+        <!-- Kevin Lee's payments -->
+        <insert tableName="payments">
+            <column name="id" value="payment-012"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="course_id" value="course-001"/> <!-- React Course -->
+            <column name="amount" value="99.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_react_kevin"/>
+            <column name="paid_at" value="2025-01-28 10:40:00"/>
+            <column name="created_at" value="2025-01-28 10:35:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-013"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="course_id" value="course-005"/> <!-- Frontend Design -->
+            <column name="amount" value="79.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_frontend_kevin"/>
+            <column name="paid_at" value="2025-02-08 14:25:00"/>
+            <column name="created_at" value="2025-02-08 14:20:00"/>
+        </insert>
+        
+        <!-- Linda Martinez's payments -->
+        <insert tableName="payments">
+            <column name="id" value="payment-014"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="course_id" value="course-002"/> <!-- Machine Learning -->
+            <column name="amount" value="149.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="paypal"/>
+            <column name="session_id" value="paypal_ml_linda"/>
+            <column name="paid_at" value="2025-01-12 09:15:00"/>
+            <column name="created_at" value="2025-01-12 09:10:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-015"/>
+            <column name="user_id" value="user-012"/> <!-- Linda Martinez -->
+            <column name="course_id" value="course-007"/> <!-- Python for Data Science -->
+            <column name="amount" value="119.99"/>
+            <column name="status" value="COMPLETED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_python_linda"/>
+            <column name="paid_at" value="2025-01-30 16:10:00"/>
+            <column name="created_at" value="2025-01-30 16:05:00"/>
+        </insert>
+        
+        <!-- Additional failed/pending payments for variety -->
+        <insert tableName="payments">
+            <column name="id" value="payment-016"/>
+            <column name="user_id" value="user-005"/> <!-- Emily Chen -->
+            <column name="course_id" value="course-003"/> <!-- React Native -->
+            <column name="amount" value="129.99"/>
+            <column name="status" value="FAILED"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_failed_001"/>
+            <column name="created_at" value="2025-02-14 10:00:00"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" value="payment-017"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="course_id" value="course-006"/> <!-- DevOps -->
+            <column name="amount" value="179.99"/>
+            <column name="status" value="PENDING"/>
+            <column name="payment_method" value="stripe"/>
+            <column name="session_id" value="cs_test_pending_001"/>
+            <column name="created_at" value="2025-02-15 14:30:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

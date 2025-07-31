@@ -19,4 +19,9 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
 
     @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.user.id = :userId AND p.course.id = :courseId AND p.status = 'COMPLETED'")
     BigDecimal getTotalPaidAmountByUserAndCourse(@Param("userId") String userId, @Param("courseId") String courseId);
+
+    /**
+     * Find payment by Stripe session ID
+     */
+    Optional<Payment> findBySessionId(String sessionId);
 }

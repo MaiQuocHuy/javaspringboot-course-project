@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for system_logs table - CRUD operations only -->
+    <changeSet id="120-seed-system-logs" author="ktc">
+        <!-- Admin creates a new category -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-001"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="categories"/>
+            <column name="entity_id" value="cat-001"/>
+            <column name="new_values" value='{"name": "Web Development", "description": "Learn to build modern web applications"}'/>
+            <column name="created_at" value="2025-02-15 09:00:00"/>
+        </insert>
+        
+        <!-- Instructor creates a course -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-003"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="courses"/>
+            <column name="entity_id" value="course-001"/>
+            <column name="new_values" value='{"title": "Complete React Development Course", "price": 99.99, "level": "INTERMEDIATE"}'/>
+            <column name="created_at" value="2025-01-15 16:45:00"/>
+        </insert>
+        
+        <!-- Instructor updates course details -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-003"/>
+            <column name="action" value="UPDATE"/>
+            <column name="entity_type" value="courses"/>
+            <column name="entity_id" value="course-001"/>
+            <column name="old_values" value='{"description": "Learn React basics"}'/>
+            <column name="new_values" value='{"description": "Master React.js from fundamentals to advanced concepts"}'/>
+            <column name="created_at" value="2025-01-20 10:30:00"/>
+        </insert>
+        
+        <!-- Instructor creates a section -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-003"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="sections"/>
+            <column name="entity_id" value="section-001"/>
+            <column name="new_values" value='{"title": "Introduction to React", "course_id": "course-001"}'/>
+            <column name="created_at" value="2025-02-17 08:30:00"/>
+        </insert>
+        
+        <!-- Instructor creates a lesson -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-003"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="lessons"/>
+            <column name="entity_id" value="lesson-001"/>
+            <column name="new_values" value='{"title": "What is React?", "type": "VIDEO", "section_id": "section-001"}'/>
+            <column name="created_at" value="2025-01-10 14:20:00"/>
+        </insert>
+        
+        <!-- Student creates a review -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-002"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="reviews"/>
+            <column name="entity_id" value="review-001"/>
+            <column name="new_values" value='{"rating": 5, "review_text": "Excellent course!", "course_id": "course-001"}'/>
+            <column name="created_at" value="2025-01-11 09:15:00"/>
+        </insert>
+        
+        <!-- Instructor updates lesson content -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-006"/>
+            <column name="action" value="UPDATE"/>
+            <column name="entity_type" value="lessons"/>
+            <column name="entity_id" value="lesson-003"/>
+            <column name="old_values" value='{"title": "React Native Basics"}'/>
+            <column name="new_values" value='{"title": "React Native Components and Navigation"}'/>
+            <column name="created_at" value="2025-02-16 14:30:00"/>
+        </insert>
+        
+        <!-- Admin creates a new instructor role -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-001"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="user_roles"/>
+            <column name="entity_id" value="role-003"/>
+            <column name="new_values" value='{"user_id": "user-011", "role": "INSTRUCTOR"}'/>
+            <column name="created_at" value="2025-01-15 10:00:00"/>
+        </insert>
+        
+        <!-- Student updates their profile -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-002"/>
+            <column name="action" value="UPDATE"/>
+            <column name="entity_type" value="users"/>
+            <column name="entity_id" value="user-002"/>
+            <column name="old_values" value='{"name": "Bob Smith"}'/>
+            <column name="new_values" value='{"name": "Robert Smith", "bio": "Passionate learner"}'/>
+            <column name="created_at" value="2025-01-15 09:55:00"/>
+        </insert>
+        
+        <!-- Instructor deletes a draft lesson -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-005"/>
+            <column name="action" value="DELETE"/>
+            <column name="entity_type" value="lessons"/>
+            <column name="entity_id" value="lesson-999"/>
+            <column name="old_values" value='{"title": "Draft Lesson", "type": "VIDEO", "section_id": "section-005"}'/>
+            <column name="created_at" value="2025-02-14 16:45:00"/>
+        </insert>
+        
+        <!-- Instructor creates video content -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-010"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="video_contents"/>
+            <column name="entity_id" value="video-015"/>
+            <column name="new_values" value='{"url": "https://res.cloudinary.com/ktc/video/ml-advanced.mp4", "duration": 2400}'/>
+            <column name="created_at" value="2025-01-18 16:30:00"/>
+        </insert>
+        
+        <!-- Admin updates category details -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-001"/>
+            <column name="action" value="UPDATE"/>
+            <column name="entity_type" value="categories"/>
+            <column name="entity_id" value="cat-002"/>
+            <column name="old_values" value='{"description": "Basic mobile development"}'/>
+            <column name="new_values" value='{"description": "Create native and cross-platform mobile applications for iOS and Android"}'/>
+            <column name="created_at" value="2025-02-01 09:15:00"/>
+        </insert>
+        
+        <!-- Instructor creates quiz questions -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-008"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="quiz_questions"/>
+            <column name="entity_id" value="quiz-q-010"/>
+            <column name="new_values" value='{"question_text": "What is a firewall?", "lesson_id": "lesson-004"}'/>
+            <column name="created_at" value="2025-02-05 13:40:00"/>
+        </insert>
+        
+        <!-- Student deletes their review -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-012"/>
+            <column name="action" value="DELETE"/>
+            <column name="entity_type" value="reviews"/>
+            <column name="entity_id" value="review-008"/>
+            <column name="old_values" value='{"rating": 3, "review_text": "Average course", "course_id": "course-005"}'/>
+            <column name="created_at" value="2025-01-22 09:00:00"/>
+        </insert>
+        
+        <!-- Instructor updates section order -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-004"/>
+            <column name="action" value="UPDATE"/>
+            <column name="entity_type" value="sections"/>
+            <column name="entity_id" value="section-008"/>
+            <column name="old_values" value='{"order_index": 2}'/>
+            <column name="new_values" value='{"order_index": 1}'/>
+            <column name="created_at" value="2025-02-01 16:20:00"/>
+        </insert>
+        
+        <!-- Admin creates a new user -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-001"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="users"/>
+            <column name="entity_id" value="user-025"/>
+            <column name="new_values" value='{"name": "New User", "email": "newuser@example.com", "role": "STUDENT"}'/>
+            <column name="created_at" value="2025-02-08 12:15:00"/>
+        </insert>
+        
+        <!-- Instructor creates enrollment manually -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-003"/>
+            <column name="action" value="CREATE"/>
+            <column name="entity_type" value="enrollments"/>
+            <column name="entity_id" value="enrollment-050"/>
+            <column name="new_values" value='{"user_id": "user-014", "course_id": "course-001", "completion_status": "IN_PROGRESS"}'/>
+            <column name="created_at" value="2025-02-12 15:30:00"/>
+        </insert>
+        
+        <!-- Instructor deletes outdated video content -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-005"/>
+            <column name="action" value="DELETE"/>
+            <column name="entity_type" value="video_contents"/>
+            <column name="entity_id" value="video-old-001"/>
+            <column name="old_values" value='{"url": "https://old-cdn.com/outdated-video.mp4", "duration": 1800}'/>
+            <column name="created_at" value="2025-02-01 08:00:00"/>
+        </insert>
+        
+        <!-- Admin updates user status -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-001"/>
+            <column name="action" value="UPDATE"/>
+            <column name="entity_type" value="users"/>
+            <column name="entity_id" value="user-020"/>
+            <column name="old_values" value='{"is_active": true}'/>
+            <column name="new_values" value='{"is_active": false}'/>
+            <column name="created_at" value="2025-02-15 11:30:00"/>
+        </insert>
+        
+        <!-- Automated cleanup: Delete expired refresh tokens -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-001"/>
+            <column name="action" value="DELETE"/>
+            <column name="entity_type" value="refresh_tokens"/>
+            <column name="entity_id" value="token-expired-batch"/>
+            <column name="old_values" value='{"count": 25, "reason": "expired_cleanup"}'/>
+            <column name="created_at" value="2025-02-10 02:00:00"/>
+        </insert>
+        
+        <!-- Instructor updates course thumbnail -->
+        <insert tableName="system_logs">
+            <column name="user_id" value="user-007"/>
+            <column name="action" value="UPDATE"/>
+            <column name="entity_type" value="courses"/>
+            <column name="entity_id" value="course-008"/>
+            <column name="old_values" value='{"thumbnail_url": "https://old-images.com/thumb1.jpg"}'/>
+            <column name="new_values" value='{"thumbnail_url": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800"}'/>
+            <column name="created_at" value="2025-02-10 04:30:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

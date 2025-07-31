@@ -224,7 +224,7 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
                 // Update existing application for resubmission
                 application = existingApplication.get();
                 application.setDocuments(documentsJson);
-                application.setStatus("PENDING");
+                application.setStatus(InstructorApplication.ApplicationStatus.PENDING);
                 application.setSubmittedAt(LocalDateTime.now());
                 application.setReviewedAt(null);
                 application.setReviewedBy(null);
@@ -238,7 +238,7 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
                 application = new InstructorApplication();
                 application.setUser(user);
                 application.setDocuments(documentsJson);
-                application.setStatus("PENDING");
+                application.setStatus(InstructorApplication.ApplicationStatus.PENDING);
                 application.setSubmittedAt(LocalDateTime.now());
                 log.info("Creating new application for user: {}", userId);
             }

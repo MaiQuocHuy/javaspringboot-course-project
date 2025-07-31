@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for users table - Including required users and additional ones -->
+    <changeSet id="102-seed-users" author="ktc">
+        <!-- Required users -->
+        <insert tableName="users">
+            <column name="id" value="user-001"/>
+            <column name="name" value="Alice"/>
+            <column name="email" value="alice@example.com"/>
+            <column name="password" value="$2a$10$0EIyXA/TZqL4PW4ojYJFROnF.AmJgIoht5O.r5Gmrp21b9JfLHsx2"/> <!-- password: password123 -->
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Alice&amp;background=6366f1&amp;color=fff"/>
+            <column name="bio" value="System administrator with extensive experience in managing learning platforms"/>
+            <column name="role_id" value="role-003"/> <!-- ADMIN -->
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-002"/>
+            <column name="name" value="Bob"/>
+            <column name="email" value="bob@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/> <!-- password: password123 -->
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Bob&amp;background=10b981&amp;color=fff"/>
+            <column name="bio" value="Enthusiastic learner passionate about technology and software development"/>
+            <column name="role_id" value="role-001"/> <!-- STUDENT -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-003"/>
+            <column name="name" value="Charlie"/>
+            <column name="email" value="charlie@example.com"/>
+            <column name="password" value="$2a$10$/gEUnxYgII3vj.6cNVP39OTewhRYHlrtnqNyWF0mSQknB5ajJv6ti"/> <!-- password: charlie123 -->
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Charlie&amp;background=f59e0b&amp;color=fff"/>
+            <column name="bio" value="Senior software developer and instructor with 10+ years of experience"/>
+            <column name="role_id" value="role-002"/> <!-- INSTRUCTOR -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+
+        <!-- Additional users to meet minimum requirement -->
+        <insert tableName="users">
+            <column name="id" value="user-004"/>
+            <column name="name" value="Diana Roberts"/>
+            <column name="email" value="diana@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Diana+Roberts&amp;background=ec4899&amp;color=fff"/>
+            <column name="bio" value="Frontend developer passionate about user experience and modern web technologies"/>
+            <column name="role_id" value="role-002"/> <!-- INSTRUCTOR -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-005"/>
+            <column name="name" value="Edward Chen"/>
+            <column name="email" value="edward@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Edward+Chen&amp;background=8b5cf6&amp;color=fff"/>
+            <column name="bio" value="Data scientist and machine learning enthusiast"/>
+            <column name="role_id" value="role-001"/> <!-- STUDENT -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-006"/>
+            <column name="name" value="Fiona Davis"/>
+            <column name="email" value="fiona@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Fiona+Davis&amp;background=06b6d4&amp;color=fff"/>
+            <column name="bio" value="Mobile app developer with expertise in React Native and Flutter"/>
+            <column name="role_id" value="role-002"/> <!-- INSTRUCTOR -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-007"/>
+            <column name="name" value="George Wilson"/>
+            <column name="email" value="george@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=George+Wilson&amp;background=ef4444&amp;color=fff"/>
+            <column name="bio" value="DevOps engineer focused on cloud infrastructure and automation"/>
+            <column name="role_id" value="role-001"/> <!-- STUDENT -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-008"/>
+            <column name="name" value="Hannah Taylor"/>
+            <column name="email" value="hannah@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Hannah+Taylor&amp;background=84cc16&amp;color=fff"/>
+            <column name="bio" value="Cybersecurity specialist and ethical hacker"/>
+            <column name="role_id" value="role-002"/> <!-- INSTRUCTOR -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-009"/>
+            <column name="name" value="Ian Miller"/>
+            <column name="email" value="ian@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Ian+Miller&amp;background=f97316&amp;color=fff"/>
+            <column name="bio" value="Full-stack developer and coding bootcamp graduate"/>
+            <column name="role_id" value="role-001"/> <!-- STUDENT -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-010"/>
+            <column name="name" value="Julia Anderson"/>
+            <column name="email" value="julia@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Julia+Anderson&amp;background=a855f7&amp;color=fff"/>
+            <column name="bio" value="AI researcher and deep learning expert"/>
+            <column name="role_id" value="role-002"/> <!-- INSTRUCTOR -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-011"/>
+            <column name="name" value="Kevin Lee"/>
+            <column name="email" value="kevin@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Kevin+Lee&amp;background=14b8a6&amp;color=fff"/>
+            <column name="bio" value="Computer science student interested in algorithms and data structures"/>
+            <column name="role_id" value="role-001"/> <!-- STUDENT -->
+             <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="users">
+            <column name="id" value="user-012"/>
+            <column name="name" value="Lisa Brown"/>
+            <column name="email" value="lisa@example.com"/>
+            <column name="password" value="$2a$10$Cd7U0cfpsMT8r1vPnHTID.mwqcY9Ao8J4jUxG4FBtwXvKQLZ8OGcC"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=Lisa+Brown&amp;background=3b82f6&amp;color=fff"/>
+            <column name="bio" value="Business analyst transitioning to data science"/>
+            <column name="role_id" value="role-001"/> <!-- STUDENT -->
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

@@ -11,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import project.ktc.springboot_app.enrollment.interfaces.EnrollmentService;
+import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 import project.ktc.springboot_app.payment.service.PaymentService;
+import project.ktc.springboot_app.payment.service.PaymentServiceImp;
 import project.ktc.springboot_app.stripe.config.StripeConfig;
 
 /**
@@ -23,8 +25,8 @@ import project.ktc.springboot_app.stripe.config.StripeConfig;
 public class StripeWebhookService {
 
     private final StripeConfig stripeConfig;
-    private final PaymentService paymentService;
-    private final EnrollmentService enrollmentService;
+    private final PaymentServiceImp paymentService;
+    private final EnrollmentServiceImp enrollmentService;
 
     /**
      * Processes incoming webhook events from Stripe
@@ -181,12 +183,26 @@ public class StripeWebhookService {
                 return;
             }
 
-            // Update payment status to COMPLETED
-            String paymentId = session.getMetadata().get("paymentId");
-            if (paymentId != null) {
-                paymentService.updatePaymentStatusFromWebhook(paymentId, "COMPLETED", session.getId());
-                log.info("Payment {} marked as COMPLETED", paymentId);
+            // Verify payment amount matches what was recorded in database
+            // session.getAmountTotal() is in cents, convert to dollars for comparison
+            double stripeAmountInDollars = session.getAmountTotal() / 100.0;
+
+            var paymentOpt = paymentService.findPaymentBySessionIdAndVerifyAmount(session.getId(),
+                    stripeAmountInDollars);
+            if (paymentOpt.isEmpty()) {
+                log.error(
+                        "Payment verification failed for session {}. Either payment not found or amount mismatch. Stripe amount: ${}",
+                        session.getId(), stripeAmountInDollars);
+                return;
             }
+
+            var payment = paymentOpt.get();
+            log.info("Payment amount verified successfully. Database: ${}, Stripe: ${}",
+                    payment.getAmount(), stripeAmountInDollars);
+
+            // Update payment status to COMPLETED
+            paymentService.updatePaymentStatusFromWebhook(payment.getId(), "COMPLETED", session.getId());
+            log.info("Payment {} marked as COMPLETED", payment.getId());
 
             // Create enrollment for the user
             enrollmentService.createEnrollmentFromWebhook(userId, courseId, session.getId());
@@ -229,11 +245,14 @@ public class StripeWebhookService {
 
             log.info("Processing expired checkout session: {}", session.getId());
 
-            // Update payment status to FAILED if payment exists
-            String paymentId = session.getMetadata().get("paymentId");
-            if (paymentId != null) {
-                paymentService.updatePaymentStatusFromWebhook(paymentId, "FAILED", session.getId());
-                log.info("Payment {} marked as FAILED due to session expiration", paymentId);
+            // Find payment by session ID and update status to FAILED
+            var paymentOpt = paymentService.findPaymentBySessionIdAndVerifyAmount(session.getId(), 0.0);
+            if (paymentOpt.isPresent()) {
+                var payment = paymentOpt.get();
+                paymentService.updatePaymentStatusFromWebhook(payment.getId(), "FAILED", session.getId());
+                log.info("Payment {} marked as FAILED due to session expiration", payment.getId());
+            } else {
+                log.warn("No payment found for expired session: {}", session.getId());
             }
 
         } catch (Exception e) {
