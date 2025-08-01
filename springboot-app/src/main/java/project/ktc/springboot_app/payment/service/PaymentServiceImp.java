@@ -10,6 +10,9 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.entity.Payment;
 import project.ktc.springboot_app.payment.repositories.PaymentRepository;
+import project.ktc.springboot_app.log.services.SystemLogHelper;
+import project.ktc.springboot_app.log.mapper.PaymentLogMapper;
+import project.ktc.springboot_app.utils.SecurityUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,6 +31,7 @@ public class PaymentServiceImp implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final SystemLogHelper systemLogHelper;
 
     @Override
     public void updatePaymentStatusFromWebhook(String paymentId, String status, String stripeSessionId) {
@@ -38,13 +42,33 @@ public class PaymentServiceImp implements PaymentService {
 
             if (paymentOpt.isPresent()) {
                 Payment payment = paymentOpt.get();
+
+                // Capture old values for logging
+                var oldPaymentLog = PaymentLogMapper.toLogDto(payment);
+
+                // Update payment status
+                Payment.PaymentStatus oldStatus = payment.getStatus();
                 payment.setStatus(Payment.PaymentStatus.valueOf(status));
 
                 if ("COMPLETED".equals(status)) {
                     payment.setPaidAt(LocalDateTime.now());
                 }
 
-                paymentRepository.save(payment);
+                Payment updatedPayment = paymentRepository.save(payment);
+
+                // Capture new values for logging
+                var newPaymentLog = PaymentLogMapper.toLogDto(updatedPayment);
+
+                // Log the status update operation
+                try {
+                    User currentUser = getCurrentUserForLogging();
+                    systemLogHelper.logUpdate(currentUser, "PAYMENT", paymentId, oldPaymentLog, newPaymentLog);
+                    log.info("Payment status update logged for payment {}: {} -> {}", paymentId, oldStatus, status);
+                } catch (Exception logError) {
+                    log.warn("Failed to log payment status update for payment {}: {}", paymentId,
+                            logError.getMessage());
+                }
+
                 log.info("Payment {} status updated to {}", paymentId, status);
             } else {
                 log.error("Payment with ID {} not found", paymentId);
@@ -83,13 +107,24 @@ public class PaymentServiceImp implements PaymentService {
             payment.setAmount(BigDecimal.valueOf(amount));
             payment.setStatus(Payment.PaymentStatus.PENDING);
             payment.setPaymentMethod("stripe");
-            
+
             // Set session ID if provided
             if (stripeSessionId != null) {
                 payment.setSessionId(stripeSessionId);
             }
 
             Payment savedPayment = paymentRepository.save(payment);
+
+            // Log the payment creation
+            try {
+                User currentUser = getCurrentUserForLogging();
+                var paymentLog = PaymentLogMapper.toLogDto(savedPayment);
+                systemLogHelper.logCreate(currentUser, "PAYMENT", savedPayment.getId(), paymentLog);
+                log.info("Payment creation logged for payment {}", savedPayment.getId());
+            } catch (Exception logError) {
+                log.warn("Failed to log payment creation for payment {}: {}", savedPayment.getId(),
+                        logError.getMessage());
+            }
 
             log.info("Payment created with ID: {}", savedPayment.getId());
             return savedPayment.getId();
@@ -109,8 +144,27 @@ public class PaymentServiceImp implements PaymentService {
 
             if (paymentOpt.isPresent()) {
                 Payment payment = paymentOpt.get();
+
+                // Capture old values for logging
+                var oldPaymentLog = PaymentLogMapper.toLogDto(payment);
+
+                // Update session ID
                 payment.setSessionId(stripeSessionId);
-                paymentRepository.save(payment);
+                Payment updatedPayment = paymentRepository.save(payment);
+
+                // Capture new values for logging
+                var newPaymentLog = PaymentLogMapper.toLogDto(updatedPayment);
+
+                // Log the session ID update
+                try {
+                    User currentUser = getCurrentUserForLogging();
+                    systemLogHelper.logUpdate(currentUser, "PAYMENT", paymentId, oldPaymentLog, newPaymentLog);
+                    log.info("Payment session ID update logged for payment {}", paymentId);
+                } catch (Exception logError) {
+                    log.warn("Failed to log payment session ID update for payment {}: {}", paymentId,
+                            logError.getMessage());
+                }
+
                 log.info("Payment {} updated with session ID {}", paymentId, stripeSessionId);
             } else {
                 log.error("Payment with ID {} not found", paymentId);
@@ -136,12 +190,12 @@ public class PaymentServiceImp implements PaymentService {
                 // Compare amounts with small tolerance for floating point precision
                 double tolerance = 0.01; // 1 cent tolerance
                 if (Math.abs(expectedAmount - paidAmount) <= tolerance) {
-                    log.info("Payment amount verified successfully for session {}: expected={}, paid={}", 
-                             stripeSessionId, expectedAmount, paidAmount);
+                    log.info("Payment amount verified successfully for session {}: expected={}, paid={}",
+                            stripeSessionId, expectedAmount, paidAmount);
                     return paymentOpt;
                 } else {
-                    log.error("Payment amount mismatch for session {}: expected={}, paid={}", 
-                              stripeSessionId, expectedAmount, paidAmount);
+                    log.error("Payment amount mismatch for session {}: expected={}, paid={}",
+                            stripeSessionId, expectedAmount, paidAmount);
                     return Optional.empty();
                 }
             } else {
@@ -152,5 +206,36 @@ public class PaymentServiceImp implements PaymentService {
             log.error("Error finding payment by session ID {}: {}", stripeSessionId, e.getMessage(), e);
             return Optional.empty();
         }
+    }
+
+    /**
+     * Helper method to get current user for logging purposes
+     * Returns a system user if no authenticated user is available (e.g., webhook
+     * operations)
+     */
+    private User getCurrentUserForLogging() {
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            if (currentUserId != null) {
+                return userRepository.findById(currentUserId).orElse(getSystemUser());
+            }
+        } catch (Exception e) {
+            log.debug("No authenticated user found for logging, using system user: {}", e.getMessage());
+        }
+
+        return getSystemUser();
+    }
+
+    /**
+     * Returns a system user for logging when no authenticated user is available
+     */
+    private User getSystemUser() {
+        // Create a system user for logging purposes when no authenticated user is
+        // available
+        User systemUser = new User();
+        systemUser.setId("SYSTEM");
+        systemUser.setName("System");
+        systemUser.setEmail("system@ktc.com");
+        return systemUser;
     }
 }

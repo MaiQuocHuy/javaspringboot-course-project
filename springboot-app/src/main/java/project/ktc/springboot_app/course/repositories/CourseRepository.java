@@ -21,9 +21,9 @@ import java.util.Optional;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, String> {
 
-        @Query("SELECT c FROM Course c " +
+        @Query("SELECT DISTINCT c FROM Course c " +
                         "LEFT JOIN FETCH c.instructor i " +
-                        "LEFT JOIN FETCH c.categories cat " +
+                        "LEFT JOIN c.categories cat " +
                         "WHERE c.isPublished = true AND c.isApproved = true AND c.isDeleted = false " +
                         "AND (:search IS NULL OR " +
                         "     LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
@@ -80,9 +80,9 @@ public interface CourseRepository extends JpaRepository<Course, String> {
         List<Object[]> findEnrollmentCountsByCourseIds(@Param("courseIds") List<String> courseIds);
 
         // Admin specific queries
-        @Query("SELECT c FROM Course c " +
+        @Query("SELECT DISTINCT c FROM Course c " +
                         "LEFT JOIN FETCH c.instructor i " +
-                        "LEFT JOIN FETCH c.categories cat " +
+                        "LEFT JOIN c.categories cat " +
                         "WHERE c.isDeleted = false " +
                         "AND (:isApproved IS NULL OR c.isApproved = :isApproved) " +
                         "AND (:categoryId IS NULL OR cat.id = :categoryId) " +
@@ -107,4 +107,23 @@ public interface CourseRepository extends JpaRepository<Course, String> {
                         "WHERE r.course.id = :courseId " +
                         "ORDER BY r.reviewedAt DESC")
         List<Review> findReviewsByCourseId(@Param("courseId") String courseId);
+
+        // Debug query to check actual course count
+        @Query("SELECT COUNT(DISTINCT c.id) FROM Course c " +
+                        "LEFT JOIN c.categories cat " +
+                        "WHERE c.isPublished = true AND c.isApproved = true AND c.isDeleted = false " +
+                        "AND (:search IS NULL OR " +
+                        "     LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "     LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "     LOWER(c.instructor.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+                        "AND (:categoryId IS NULL OR cat.id = :categoryId) " +
+                        "AND (:minPrice IS NULL OR c.price >= :minPrice) " +
+                        "AND (:maxPrice IS NULL OR c.price <= :maxPrice) " +
+                        "AND (:level IS NULL OR c.level = :level)")
+        Long countPublishedCoursesWithFilters(
+                        @Param("search") String search,
+                        @Param("categoryId") String categoryId,
+                        @Param("minPrice") BigDecimal minPrice,
+                        @Param("maxPrice") BigDecimal maxPrice,
+                        @Param("level") CourseLevel level);
 }
