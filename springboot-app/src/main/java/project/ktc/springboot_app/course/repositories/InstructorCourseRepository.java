@@ -16,7 +16,7 @@ import project.ktc.springboot_app.course.entity.Course;
 @Repository
 public interface InstructorCourseRepository extends JpaRepository<Course, String> {
 
-        @Query("SELECT c FROM Course c " +
+        @Query("SELECT DISTINCT c FROM Course c " +
                         "LEFT JOIN FETCH c.categories cat " +
                         "WHERE c.instructor.id = :instructorId AND c.isDeleted = false " +
                         "AND (:search IS NULL OR " +
@@ -52,5 +52,4 @@ public interface InstructorCourseRepository extends JpaRepository<Course, String
                         "WHERE s.course.id = :courseId")
         Optional<LocalDateTime> getLastContentUpdateByCourseId(@Param("courseId") String courseId);
 
-       
 }
