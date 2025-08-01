@@ -187,9 +187,9 @@
 				<version>4.31.1</version>
 				<configuration>
 					<changeLogFile>src/main/resources/db/changelog/db.changelog-master.xml</changeLogFile>
-					<url>jdbc:mysql://localhost:3306/ktc_learning</url>
-					<username>root</username>
-					<password>123456789</password>
+					<url>${DB_URL}</url>
+					<username>${DB_USERNAME}</username>
+					<password>${DB_PASSWORD}</password>
 					<driver>com.mysql.cj.jdbc.Driver</driver>
 				</configuration>
 			</plugin>
