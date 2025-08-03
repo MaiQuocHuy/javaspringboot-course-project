@@ -35,7 +35,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/{id}/reviews")
-    @PreAuthorize("hasAuthority('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Submit a review for a course", description = "Allow authenticated students to submit a review for a course only if they are enrolled and have not already reviewed the course", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Review submitted successfully"),
@@ -85,7 +85,7 @@ public class ReviewController {
     }
 
     @PutMapping("/reviews/{reviewId}")
-    @PreAuthorize("hasAuthority('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Update a review", description = "Allow students to update their own reviews", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Review updated successfully"),
@@ -103,7 +103,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("/reviews/{reviewId}")
-    @PreAuthorize("hasAuthority('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Delete a review", description = "Allow students to delete their own reviews", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Review deleted successfully"),

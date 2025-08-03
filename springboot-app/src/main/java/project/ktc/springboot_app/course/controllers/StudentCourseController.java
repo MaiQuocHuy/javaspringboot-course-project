@@ -24,8 +24,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.ApiErrorResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
-import project.ktc.springboot_app.course.interfaces.StudentCourseService;
+import project.ktc.springboot_app.course.services.StudentCourseServiceImp;
 import project.ktc.springboot_app.enrollment.dto.MyEnrolledCourseDto;
+import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 
@@ -40,7 +41,7 @@ import java.util.List;
 @PreAuthorize("hasRole('STUDENT')")
 public class StudentCourseController {
     private final EnrollmentServiceImp enrollmentService;
-    private final StudentCourseService studentCourseService;
+    private final StudentCourseServiceImp studentCourseService;
 
     @GetMapping()
     @Operation(summary = "Get my enrolled courses", description = "Retrieve a paginated list of all courses the currently authenticated student is enrolled in, including course metadata and progress status.")
@@ -50,7 +51,7 @@ public class StudentCourseController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User does not have STUDENT role", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(
-            @Parameter(description = "Filter by enrollment status (IN_PROGRESS, COMPLETED)", example = "IN_PROGRESS") @RequestParam(required = false) String status,
+            @Parameter(description = "Filter by enrollment status (IN_PROGRESS, COMPLETED)", example = "IN_PROGRESS") @RequestParam(required = false) Enrollment.CompletionStatus status,
 
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
 

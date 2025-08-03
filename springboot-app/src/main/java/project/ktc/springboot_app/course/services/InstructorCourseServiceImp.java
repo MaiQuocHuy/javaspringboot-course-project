@@ -132,6 +132,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 .id(course.getId())
                 .title(course.getTitle())
                 .price(course.getPrice())
+                .description(course.getDescription())
                 .level(course.getLevel())
                 .thumbnailUrl(course.getThumbnailUrl())
                 .category(categoryInfo)

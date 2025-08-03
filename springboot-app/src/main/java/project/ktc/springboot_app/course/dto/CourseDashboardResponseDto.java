@@ -17,6 +17,7 @@ public class CourseDashboardResponseDto {
     private String id;
     private String title;
     private BigDecimal price;
+    private String description;
     private CourseLevel level;
     private String thumbnailUrl;
 

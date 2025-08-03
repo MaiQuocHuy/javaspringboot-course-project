@@ -95,15 +95,16 @@ public class User extends BaseEntity implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         try {
             if (role != null && role.getRole() != null) {
-                log.info(" - Loading user authorities for role: {}", role.getRole().name());
-                return List.of(new SimpleGrantedAuthority(role.getRole().name()));
+                String roleName = "ROLE_" + role.getRole().name();
+                log.info(" - Loading user authorities for role: {}", roleName);
+                return List.of(new SimpleGrantedAuthority(roleName));
             }
         } catch (Exception e) {
             // Log the exception if needed
             System.err.println("Error loading user authorities: " + e.getMessage());
         }
         // Return default STUDENT role if role cannot be loaded
-        return List.of(new SimpleGrantedAuthority("STUDENT"));
+        return List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
     }
 
     @Override
