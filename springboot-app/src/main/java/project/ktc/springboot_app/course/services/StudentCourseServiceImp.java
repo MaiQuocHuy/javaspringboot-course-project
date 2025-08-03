@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class StudentCourseServiceImpl implements StudentCourseService {
+public class StudentCourseServiceImp implements StudentCourseService {
 
     private final InstructorSectionRepository sectionRepository;
     private final InstructorLessonRepository lessonRepository;

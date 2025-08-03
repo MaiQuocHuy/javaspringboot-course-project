@@ -264,5 +264,4 @@ public class InstructorLessonController {
 
                 return instructorLessonService.completeLesson(sectionId, lessonId);
         }
-
 }

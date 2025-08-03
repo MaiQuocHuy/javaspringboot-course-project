@@ -92,7 +92,8 @@ public class EnrollmentServiceImp implements EnrollmentService {
     }
 
     @Override
-    public ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(String status,
+    public ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(
+            Enrollment.CompletionStatus status,
             Pageable pageable) {
         log.info("Fetching enrolled courses for current user with status: {} and page: {}", status, pageable);
 
@@ -138,6 +139,7 @@ public class EnrollmentServiceImp implements EnrollmentService {
                 .level(course.getLevel())
                 .price(course.getPrice())
                 .progress(progress)
+                .enrolledAt(enrollment.getEnrolledAt())
                 .completionStatus(enrollment.getCompletionStatus().name())
                 .instructor(MyEnrolledCourseDto.InstructorSummary.builder()
                         .id(course.getInstructor().getId())

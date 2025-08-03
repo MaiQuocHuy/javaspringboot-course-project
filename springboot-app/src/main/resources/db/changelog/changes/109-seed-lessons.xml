@@ -43,8 +43,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-004"/>
             <column name="section_id" value="section-002"/>
-            <column name="title" value="JSX Syntax Deep Dive"/>
-            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="title" value="JSX Syntax Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -85,8 +85,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-008"/>
             <column name="section_id" value="section-004"/>
-            <column name="title" value="Types of Machine Learning"/>
-            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="title" value="Machine Learning Types Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -106,8 +106,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-010"/>
             <column name="section_id" value="section-005"/>
-            <column name="title" value="Data Cleaning Exercise"/>
-            <column name="lesson_type_id" value="type-007"/> <!-- CODE_EXERCISE -->
+            <column name="title" value="Data Preprocessing Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -139,7 +139,8 @@
             <column name="id" value="lesson-013"/>
             <column name="section_id" value="section-007"/>
             <column name="title" value="Mobile UI Components"/>
-            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-001"/>
             <column name="order_index" value="0"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -147,8 +148,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-014"/>
             <column name="section_id" value="section-007"/>
-            <column name="title" value="Building Your First App"/>
-            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="title" value="Mobile UI Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -180,7 +181,8 @@
             <column name="id" value="lesson-017"/>
             <column name="section_id" value="section-009"/>
             <column name="title" value="Network Defense Strategies"/>
-            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-002"/>
             <column name="order_index" value="0"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -188,8 +190,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-018"/>
             <column name="section_id" value="section-009"/>
-            <column name="title" value="Penetration Testing Lab"/>
-            <column name="lesson_type_id" value="type-008"/> <!-- INTERACTIVE -->
+            <column name="title" value="Network Security Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -209,8 +211,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-020"/>
             <column name="section_id" value="section-010"/>
-            <column name="title" value="Build Your First Webpage"/>
-            <column name="lesson_type_id" value="type-007"/> <!-- CODE_EXERCISE -->
+            <column name="title" value="HTML CSS Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -221,7 +223,8 @@
             <column name="id" value="lesson-021"/>
             <column name="section_id" value="section-011"/>
             <column name="title" value="Media Queries and Flexbox"/>
-            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-003"/>
             <column name="order_index" value="0"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -241,7 +244,8 @@
             <column name="id" value="lesson-023"/>
             <column name="section_id" value="section-012"/>
             <column name="title" value="DevOps Culture and Practices"/>
-            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-004"/>
             <column name="order_index" value="0"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -249,8 +253,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-024"/>
             <column name="section_id" value="section-012"/>
-            <column name="title" value="CI/CD Pipeline Discussion"/>
-            <column name="lesson_type_id" value="type-010"/> <!-- DISCUSSION -->
+            <column name="title" value="DevOps Concepts Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -270,8 +274,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-026"/>
             <column name="section_id" value="section-013"/>
-            <column name="title" value="Container Deployment Project"/>
-            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="title" value="Docker Containerization Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -303,7 +307,8 @@
             <column name="id" value="lesson-029"/>
             <column name="section_id" value="section-015"/>
             <column name="title" value="Pandas DataFrames"/>
-            <column name="lesson_type_id" value="type-007"/> <!-- CODE_EXERCISE -->
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-009"/>
             <column name="order_index" value="0"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -311,8 +316,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-030"/>
             <column name="section_id" value="section-015"/>
-            <column name="title" value="Data Visualization Project"/>
-            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="title" value="Data Analysis Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -323,7 +328,8 @@
             <column name="id" value="lesson-031"/>
             <column name="section_id" value="section-016"/>
             <column name="title" value="Database Normalization"/>
-            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-010"/>
             <column name="order_index" value="0"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -364,7 +370,8 @@
             <column name="id" value="lesson-035"/>
             <column name="section_id" value="section-018"/>
             <column name="title" value="2D Game Mechanics"/>
-            <column name="lesson_type_id" value="type-003"/> <!-- TEXT -->
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-011"/>
             <column name="order_index" value="0"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -372,8 +379,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-036"/>
             <column name="section_id" value="section-018"/>
-            <column name="title" value="Build a 2D Platformer"/>
-            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="title" value="Game Development Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -405,7 +412,8 @@
             <column name="id" value="lesson-039"/>
             <column name="section_id" value="section-020"/>
             <column name="title" value="Node.js Server Setup"/>
-            <column name="lesson_type_id" value="type-007"/> <!-- CODE_EXERCISE -->
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-012"/>
             <column name="order_index" value="0"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>
@@ -413,8 +421,8 @@
         <insert tableName="lessons">
             <column name="id" value="lesson-040"/>
             <column name="section_id" value="section-020"/>
-            <column name="title" value="Full Stack Application Project"/>
-            <column name="lesson_type_id" value="type-009"/> <!-- PROJECT -->
+            <column name="title" value="Node.js Development Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
             <column name="order_index" value="1"/>
             <column name="created_at" valueComputed="NOW()"/>
             <column name="updated_at" valueComputed="NOW()"/>

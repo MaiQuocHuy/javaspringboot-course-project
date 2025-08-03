@@ -57,7 +57,7 @@ public class InstructorCourseController {
         private final InstructorCourseServiceImp instructorCourseService;
 
         @GetMapping
-        @PreAuthorize("hasAuthority('INSTRUCTOR')")
+        @PreAuthorize("hasRole('INSTRUCTOR')")
         @Operation(summary = "Get instructor's courses", description = "Retrieve paginated list of courses created by the instructor with filtering options", security = @SecurityRequirement(name = "bearerAuth"))
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> getInstructorCourses(
                         @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
@@ -91,7 +91,7 @@ public class InstructorCourseController {
         }
 
         @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        @PreAuthorize("hasAuthority('INSTRUCTOR')")
+        @PreAuthorize("hasRole('INSTRUCTOR')")
         @Operation(summary = "Create a new course", description = """
                         Create a new course with thumbnail upload for instructors.
 
@@ -161,7 +161,7 @@ public class InstructorCourseController {
         }
 
         @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        @PreAuthorize("hasAuthority('INSTRUCTOR')")
+        @PreAuthorize("hasRole('INSTRUCTOR')")
         @Operation(summary = "Update an existing course", description = """
                         Update an existing course with optional thumbnail upload for instructors.
 
@@ -246,7 +246,7 @@ public class InstructorCourseController {
         }
 
         @DeleteMapping("/{id}")
-        @PreAuthorize("hasAuthority('INSTRUCTOR')")
+        @PreAuthorize("hasRole('INSTRUCTOR')")
         @Operation(summary = "Delete a course", description = """
                         Delete a course created by the instructor.
 
@@ -279,7 +279,7 @@ public class InstructorCourseController {
         }
 
         @PatchMapping("/{id}/status")
-        @PreAuthorize("hasAuthority('INSTRUCTOR')")
+        @PreAuthorize("hasRole('INSTRUCTOR')")
         @Operation(summary = "Update course status", description = """
                         Update the visibility status of a course between PUBLISHED and UNPUBLISHED.
 
