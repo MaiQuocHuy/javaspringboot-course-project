@@ -33,7 +33,7 @@ import project.ktc.springboot_app.utils.SecurityUtil;
 @RestController
 @Tag(name = "Instructor Course Sections API", description = "Endpoints for managing course sections and lessons")
 @RequestMapping("/api/instructor/courses")
-@PreAuthorize("hasAuthority('INSTRUCTOR')")
+@PreAuthorize("hasRole('INSTRUCTOR')")
 @RequiredArgsConstructor
 @Slf4j
 public class InstructorSectionController {

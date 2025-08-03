@@ -51,20 +51,20 @@ public class SecurityConfig {
                                                                 "/error")
                                                 .permitAll()
                                                 // Admin
-                                                .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                                                 // Instructor
-                                                .requestMatchers("/api/instructor/**").hasAnyAuthority("INSTRUCTOR")
+                                                .requestMatchers("/api/instructor/**").hasAnyRole("INSTRUCTOR")
 
                                                 // Student
                                                 .requestMatchers("/api/student/**", "/api/enrollments/**")
-                                                .hasAnyAuthority("STUDENT")
+                                                .hasAnyRole("STUDENT")
 
                                                 .requestMatchers("/api/users/profile").authenticated() // Profile
 
                                                 // authentication
                                                 .requestMatchers("/api/upload/**")
-                                                .hasAnyAuthority("STUDENT", "INSTRUCTOR", "ADMIN") // Secured
+                                                .hasAnyRole("STUDENT", "INSTRUCTOR", "ADMIN") // Secured
 
                                                 .anyRequest().authenticated())
                                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

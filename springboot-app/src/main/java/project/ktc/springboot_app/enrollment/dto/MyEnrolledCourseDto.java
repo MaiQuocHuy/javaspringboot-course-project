@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -22,6 +23,7 @@ public class MyEnrolledCourseDto {
     private Double progress;
     private String completionStatus;
     private InstructorSummary instructor;
+    private LocalDateTime enrolledAt;
 
     @Data
     @Builder
