@@ -16,38 +16,6 @@
             <column name="id" value="type-002"/>
             <column name="name" value="QUIZ"/>
         </insert>
-        <insert tableName="lesson_types">
-            <column name="id" value="type-003"/>
-            <column name="name" value="TEXT"/>
-        </insert>
-        <insert tableName="lesson_types">
-            <column name="id" value="type-004"/>
-            <column name="name" value="ASSIGNMENT"/>
-        </insert>
-        <insert tableName="lesson_types">
-            <column name="id" value="type-005"/>
-            <column name="name" value="LIVE"/>
-        </insert>
-        <insert tableName="lesson_types">
-            <column name="id" value="type-006"/>
-            <column name="name" value="DOWNLOAD"/>
-        </insert>
-        <insert tableName="lesson_types">
-            <column name="id" value="type-007"/>
-            <column name="name" value="CODE_EXERCISE"/>
-        </insert>
-        <insert tableName="lesson_types">
-            <column name="id" value="type-008"/>
-            <column name="name" value="INTERACTIVE"/>
-        </insert>
-        <insert tableName="lesson_types">
-            <column name="id" value="type-009"/>
-            <column name="name" value="PROJECT"/>
-        </insert>
-        <insert tableName="lesson_types">
-            <column name="id" value="type-010"/>
-            <column name="name" value="DISCUSSION"/>
-        </insert>
     </changeSet>
 
 </databaseChangeLog>

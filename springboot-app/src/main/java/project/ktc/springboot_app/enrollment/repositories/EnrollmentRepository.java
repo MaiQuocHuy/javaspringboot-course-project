@@ -30,7 +30,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
                         "AND (:status IS NULL OR e.completionStatus = :status)")
         Page<Enrollment> findByUserIdWithCourseAndInstructor(
                         @Param("userId") String userId,
-                        @Param("status") String status,
+                        @Param("status") Enrollment.CompletionStatus status,
                         Pageable pageable);
 
         @Query("SELECT COUNT(lc) FROM LessonCompletion lc " +

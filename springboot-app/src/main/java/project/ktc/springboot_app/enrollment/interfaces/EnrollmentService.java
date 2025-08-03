@@ -7,11 +7,13 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.enrollment.dto.EnrollmentResponseDto;
 import project.ktc.springboot_app.enrollment.dto.MyEnrolledCourseDto;
+import project.ktc.springboot_app.enrollment.entity.Enrollment;
 
 public interface EnrollmentService {
     ResponseEntity<ApiResponse<EnrollmentResponseDto>> enroll(String courseId);
 
-    ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(String status, Pageable pageable);
+    ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(Enrollment.CompletionStatus status,
+            Pageable pageable);
 
     /**
      * Creates enrollment from webhook (bypassing authentication)
