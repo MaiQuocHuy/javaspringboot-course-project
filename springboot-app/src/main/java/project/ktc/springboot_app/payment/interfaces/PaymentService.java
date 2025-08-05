@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.payment.service;
+package project.ktc.springboot_app.payment.interfaces;
 
 import java.util.Optional;
 import project.ktc.springboot_app.entity.Payment;
