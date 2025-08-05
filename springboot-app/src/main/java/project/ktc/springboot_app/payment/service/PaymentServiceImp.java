@@ -208,6 +208,18 @@ public class PaymentServiceImp implements PaymentService {
         }
     }
 
+    @Override
+    public Optional<Payment> findPaymentBySessionId(String stripeSessionId) {
+        log.info("Finding payment by session ID {}", stripeSessionId);
+
+        try {
+            return paymentRepository.findBySessionId(stripeSessionId);
+        } catch (Exception e) {
+            log.error("Error finding payment by session ID {}: {}", stripeSessionId, e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
     /**
      * Helper method to get current user for logging purposes
      * Returns a system user if no authenticated user is available (e.g., webhook
