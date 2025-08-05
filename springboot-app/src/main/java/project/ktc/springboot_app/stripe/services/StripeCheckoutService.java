@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import project.ktc.springboot_app.course.entity.Course;
-import project.ktc.springboot_app.payment.service.PaymentService;
+import project.ktc.springboot_app.payment.interfaces.PaymentService;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
