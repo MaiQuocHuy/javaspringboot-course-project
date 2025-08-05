@@ -6,6 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.lesson.dto.CreateLessonDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
+import project.ktc.springboot_app.lesson.dto.CreateLessonWithQuizDto;
+import project.ktc.springboot_app.lesson.dto.LessonWithQuizResponseDto;
 import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
@@ -77,4 +79,16 @@ public interface LessonService {
          * @return ApiResponse with success message
          */
         ResponseEntity<ApiResponse<String>> completeLesson(String sectionId, String lessonId);
+
+        /**
+         * Creates a new lesson with quiz in a single transaction
+         * Allows instructors to create a lesson and attach a quiz in one operation
+         * 
+         * @param sectionId         The ID of the section
+         * @param lessonWithQuizDto The lesson and quiz creation data
+         * @return LessonWithQuizResponseDto containing the created lesson and quiz
+         *         details
+         */
+        ResponseEntity<ApiResponse<LessonWithQuizResponseDto>> createLessonWithQuiz(String sectionId,
+                        CreateLessonWithQuizDto lessonWithQuizDto);
 }

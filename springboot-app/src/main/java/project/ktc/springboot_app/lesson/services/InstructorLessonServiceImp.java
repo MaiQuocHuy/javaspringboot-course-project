@@ -12,6 +12,8 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.lesson.dto.CreateLessonDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
+import project.ktc.springboot_app.lesson.dto.CreateLessonWithQuizDto;
+import project.ktc.springboot_app.lesson.dto.LessonWithQuizResponseDto;
 import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
@@ -46,6 +48,7 @@ import project.ktc.springboot_app.log.utils.LessonLogMapper;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +58,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -878,6 +882,131 @@ public class InstructorLessonServiceImp implements LessonService {
         } catch (Exception e) {
             log.error("Error completing lesson {} for instructor: {}", lessonId, e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to record lesson completion: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<LessonWithQuizResponseDto>> createLessonWithQuiz(String sectionId,
+            CreateLessonWithQuizDto lessonWithQuizDto) {
+        try {
+            log.info("Creating lesson with quiz for section: {}", sectionId);
+
+            // Get current instructor
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            // Verify user exists
+            userRepository.findById(currentUserId)
+                    .orElseThrow(() -> new RuntimeException("Instructor not found"));
+
+            // Validate section ownership
+            Optional<Section> sectionOpt = sectionRepository.findById(sectionId);
+            if (sectionOpt.isEmpty()) {
+                throw new RuntimeException("Section not found with id: " + sectionId);
+            }
+
+            Section section = sectionOpt.get();
+            // Check if the section belongs to the instructor (section -> course ->
+            // instructor)
+            if (!section.getCourse().getInstructor().getId().equals(currentUserId)) {
+                throw new RuntimeException("You do not have permission to add lessons to this section");
+            }
+
+            // Get QUIZ lesson type
+            LessonType quizLessonType = lessonTypeRepository.findByName("QUIZ")
+                    .orElseThrow(() -> new RuntimeException("QUIZ lesson type not found"));
+
+            // Calculate next order index
+            Integer nextOrder = calculateNextOrderIndex(sectionId);
+
+            // Create lesson entity
+            Lesson lesson = new Lesson();
+            lesson.setTitle(lessonWithQuizDto.getTitle());
+            lesson.setSection(section);
+            lesson.setLessonType(quizLessonType);
+            lesson.setOrderIndex(nextOrder);
+            lesson.setContent(null); // Quiz lessons don't have video content
+            lesson.setCreatedAt(LocalDateTime.now());
+            lesson.setUpdatedAt(LocalDateTime.now());
+
+            // Save lesson
+            Lesson savedLesson = lessonRepository.save(lesson);
+            log.info("Lesson created with ID: {}", savedLesson.getId());
+
+            // Create quiz questions
+            List<QuizQuestion> savedQuestions = new ArrayList<>();
+            for (var questionDto : lessonWithQuizDto.getQuiz().getQuestions()) {
+                QuizQuestion question = new QuizQuestion();
+                question.setLesson(savedLesson);
+                question.setQuestionText(questionDto.getQuestionText());
+                question.setOptions(convertOptionsToJson(questionDto.getOptions()));
+                question.setCorrectAnswer(questionDto.getCorrectAnswer());
+                question.setExplanation(questionDto.getExplanation());
+                question.setCreatedAt(LocalDateTime.now());
+                question.setUpdatedAt(LocalDateTime.now());
+
+                QuizQuestion savedQuestion = quizQuestionRepository.save(question);
+                savedQuestions.add(savedQuestion);
+            }
+            log.info("Created {} quiz questions for lesson {}", savedQuestions.size(), savedLesson.getId());
+
+            // Log the action (simplified)
+            log.info("Successfully created lesson with quiz: {}", savedLesson.getTitle());
+
+            // Build response
+            var lessonResponse = LessonWithQuizResponseDto.LessonResponseDto.builder()
+                    .id(savedLesson.getId())
+                    .title(savedLesson.getTitle())
+                    .sectionId(savedLesson.getSection().getId())
+                    .orderIndex(savedLesson.getOrderIndex())
+                    .createdAt(savedLesson.getCreatedAt())
+                    .build();
+
+            List<project.ktc.springboot_app.quiz.dto.QuizQuestionResponseDto> questionResponses = savedQuestions
+                    .stream()
+                    .map(q -> project.ktc.springboot_app.quiz.dto.QuizQuestionResponseDto.builder()
+                            .id(q.getId())
+                            .questionText(q.getQuestionText())
+                            .options(convertJsonToOptions(q.getOptions()))
+                            .correctAnswer(q.getCorrectAnswer())
+                            .explanation(q.getExplanation())
+                            .build())
+                    .toList();
+
+            var quizResponse = LessonWithQuizResponseDto.QuizWithinLessonResponseDto.builder()
+                    .id(savedLesson.getId()) // Using lesson ID as quiz ID
+                    .title(lessonWithQuizDto.getTitle()) // Using lesson title as quiz title
+                    .questions(questionResponses)
+                    .build();
+
+            LessonWithQuizResponseDto response = LessonWithQuizResponseDto.builder()
+                    .lesson(lessonResponse)
+                    .quiz(quizResponse)
+                    .build();
+
+            return ApiResponseUtil.created(response, "Lesson and quiz created successfully");
+
+        } catch (Exception e) {
+            log.error("Error creating lesson with quiz for section {}: {}", sectionId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to create lesson with quiz: " + e.getMessage());
+        }
+    }
+
+    private String convertOptionsToJson(Map<String, String> options) {
+        try {
+            return objectMapper.writeValueAsString(options);
+        } catch (JsonProcessingException e) {
+            log.error("Error converting options to JSON", e);
+            throw new RuntimeException("Invalid options format");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> convertJsonToOptions(String optionsJson) {
+        try {
+            return objectMapper.readValue(optionsJson, Map.class);
+        } catch (JsonProcessingException e) {
+            log.error("Error converting JSON to options", e);
+            return new HashMap<>();
         }
     }
 

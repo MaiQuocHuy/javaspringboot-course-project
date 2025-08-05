@@ -7,7 +7,7 @@
       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
 
     <!-- Seed data for courses table -->
-    <changeSet id="122-add-more-seed-courses" author="ktc">
+    <changeSet id="122-seed-more-courses" author="ktc">
        <insert tableName="courses">
             <column name="id" value="course-011"/>
             <column name="title" value="Introduction to Artificial Intelligence"/>
@@ -16,7 +16,7 @@
             <column name="price" value="219.99"/>
             <column name="is_published" valueBoolean="true"/>
             <column name="is_approved" valueBoolean="true"/>
-            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=800"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800"/>
             <column name="level" value="BEGINNER"/>
             <column name="is_deleted" valueBoolean="false"/>
             <column name="created_at" value="2025-01-03 09:00:00"/>
@@ -30,7 +30,7 @@
             <column name="price" value="167.99"/>
             <column name="is_published" valueBoolean="true"/>
             <column name="is_approved" valueBoolean="true"/>
-            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=800"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800"/>
             <column name="level" value="INTERMEDIATE"/>
             <column name="is_deleted" valueBoolean="false"/>
             <column name="created_at" value="2025-01-03 09:00:00"/>
@@ -44,7 +44,7 @@
             <column name="price" value="336.99"/>
             <column name="is_published" valueBoolean="true"/>
             <column name="is_approved" valueBoolean="true"/>
-            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=800"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800"/>
             <column name="level" value="ADVANCED"/>
             <column name="is_deleted" valueBoolean="false"/>
             <column name="created_at" value="2025-01-03 09:00:00"/>
@@ -58,7 +58,7 @@
             <column name="price" value="123.99"/>
             <column name="is_published" valueBoolean="true"/>
             <column name="is_approved" valueBoolean="true"/>
-            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=800"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800"/>
             <column name="level" value="INTERMEDIATE"/>
             <column name="is_deleted" valueBoolean="false"/>
             <column name="created_at" value="2025-01-03 09:00:00"/>
@@ -72,7 +72,7 @@
             <column name="price" value="155.99"/>
             <column name="is_published" valueBoolean="true"/>
             <column name="is_approved" valueBoolean="true"/>
-            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=800"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800"/>
             <column name="level" value="ADVANCED"/>
             <column name="is_deleted" valueBoolean="false"/>
             <column name="created_at" value="2025-01-03 09:00:00"/>
