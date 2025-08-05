@@ -13,6 +13,7 @@ import project.ktc.springboot_app.payment.repositories.PaymentRepository;
 import project.ktc.springboot_app.log.services.SystemLogHelper;
 import project.ktc.springboot_app.log.mapper.PaymentLogMapper;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import project.ktc.springboot_app.payment.interfaces.PaymentService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -202,6 +203,18 @@ public class PaymentServiceImp implements PaymentService {
                 log.error("Payment not found for session ID {}", stripeSessionId);
                 return Optional.empty();
             }
+        } catch (Exception e) {
+            log.error("Error finding payment by session ID {}: {}", stripeSessionId, e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<Payment> findPaymentBySessionId(String stripeSessionId) {
+        log.info("Finding payment by session ID {}", stripeSessionId);
+
+        try {
+            return paymentRepository.findBySessionId(stripeSessionId);
         } catch (Exception e) {
             log.error("Error finding payment by session ID {}: {}", stripeSessionId, e.getMessage(), e);
             return Optional.empty();

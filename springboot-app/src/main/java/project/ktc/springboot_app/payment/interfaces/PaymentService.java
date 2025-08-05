@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.payment.service;
+package project.ktc.springboot_app.payment.interfaces;
 
 import java.util.Optional;
 import project.ktc.springboot_app.entity.Payment;
@@ -44,4 +44,12 @@ public interface PaymentService {
      * @return The payment entity if found and amount matches
      */
     Optional<Payment> findPaymentBySessionIdAndVerifyAmount(String stripeSessionId, Double paidAmount);
+
+    /**
+     * Finds payment by Stripe session ID
+     * 
+     * @param stripeSessionId The Stripe session ID
+     * @return The payment entity if found
+     */
+    Optional<Payment> findPaymentBySessionId(String stripeSessionId);
 }

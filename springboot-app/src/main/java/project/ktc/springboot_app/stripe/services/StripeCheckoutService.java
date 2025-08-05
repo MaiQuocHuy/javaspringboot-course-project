@@ -55,8 +55,8 @@ public class StripeCheckoutService {
         // Build session parameters
         SessionCreateParams.Builder paramsBuilder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl(frontendUrl + "/course/" + course.getId() + "/success?session_id={CHECKOUT_SESSION_ID}")
-                .setCancelUrl(frontendUrl + "/course/" + course.getId() + "/cancel")
+                .setSuccessUrl(frontendUrl + "/courses/" + course.getId() + "/success?session_id={CHECKOUT_SESSION_ID}")
+                .setCancelUrl(frontendUrl + "/courses/" + course.getId() + "/cancel")
                 .putAllMetadata(metadata)
                 .setLocale(SessionCreateParams.Locale.EN) // Set locale to English
                 .addLineItem(
