@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed SYSTEM role and SYSTEM user for internal system operations -->
+    <changeSet id="124-add-system-user" author="ktc">
+        
+        <!-- Insert SYSTEM user -->
+        <insert tableName="users">
+            <column name="id" value="SYSTEM"/>
+            <column name="name" value="System User"/>
+            <column name="email" value="system@ktc.com"/>
+            <column name="password" value="$2a$10$dXJ3SW6G7P4GeKjVkqTz.O5xY8JbxgE9r7SjbL2LvP7iGMt1x8k.2"/> <!-- password: system123 -->
+            <column name="is_active" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://ui-avatars.com/api/?name=System+User&amp;background=64748b&amp;color=fff"/>
+            <column name="bio" value="System user for automated operations and webhook processing"/>
+            <column name="role_id" value="role-003"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

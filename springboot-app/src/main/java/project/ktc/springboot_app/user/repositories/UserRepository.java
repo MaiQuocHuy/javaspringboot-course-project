@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import project.ktc.springboot_app.auth.entitiy.User;
-import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {

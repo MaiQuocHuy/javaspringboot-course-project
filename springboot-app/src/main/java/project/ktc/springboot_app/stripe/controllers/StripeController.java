@@ -88,28 +88,32 @@ public class StripeController {
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(
             @RequestBody String payload,
-            @RequestHeader("Stripe-Signature") String sigHeader) {
+            @RequestHeader(value = "Stripe-Signature", required = false) String sigHeader) {
 
-        log.info("Received Stripe webhook event");
+        log.info("========== STRIPE WEBHOOK RECEIVED ==========");
+        log.info("Payload length: {}", payload != null ? payload.length() : 0);
+        log.info("Signature header present: {}", sigHeader != null);
+        log.info("Payload preview: {}",
+                payload != null && payload.length() > 100 ? payload.substring(0, 100) + "..." : payload);
 
         try {
             boolean processed = stripeWebhookService.processWebhookEvent(payload, sigHeader);
 
             if (processed) {
-                log.info("Webhook event processed successfully");
+                log.info("✅ Webhook event processed successfully");
                 return ResponseEntity.ok("Webhook processed successfully");
             } else {
-                log.error("Failed to process webhook event");
+                log.error("❌ Failed to process webhook event");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Failed to process webhook");
             }
 
         } catch (SignatureVerificationException e) {
-            log.error("Webhook signature verification failed: {}", e.getMessage());
+            log.error("❌ Webhook signature verification failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Invalid signature");
         } catch (Exception e) {
-            log.error("Error processing webhook: {}", e.getMessage(), e);
+            log.error("❌ Error processing webhook: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Webhook processing error");
         }
@@ -121,5 +125,62 @@ public class StripeController {
     @GetMapping("/webhook/health")
     public ResponseEntity<String> webhookHealth() {
         return ResponseEntity.ok("Stripe webhook endpoint is healthy");
+    }
+
+    /**
+     * TEST ENDPOINT: Simulate a successful payment completion
+     * This is for development/testing purposes only
+     */
+    @PostMapping("/test-payment-success/{sessionId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<String>> testPaymentSuccess(@PathVariable String sessionId) {
+        log.info("🧪 TEST: Simulating payment success for session: {}", sessionId);
+
+        try {
+            // Create a mock webhook payload for checkout.session.completed
+            String mockPayload = String.format("""
+                    {
+                      "id": "evt_test_%s",
+                      "object": "event",
+                      "api_version": "2020-08-27",
+                      "created": %d,
+                      "type": "checkout.session.completed",
+                      "data": {
+                        "object": {
+                          "id": "%s",
+                          "object": "checkout_session",
+                          "amount_total": 9999,
+                          "currency": "usd",
+                          "customer_email": "test@example.com",
+                          "metadata": {
+                            "courseId": "course-001",
+                            "userId": "user-002"
+                          },
+                          "payment_status": "paid",
+                          "status": "complete"
+                        }
+                      }
+                    }
+                    """,
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis() / 1000,
+                    sessionId);
+
+            // Process the mock webhook (without signature verification)
+            boolean processed = stripeWebhookService.processWebhookEvent(mockPayload, null);
+
+            if (processed) {
+                return ApiResponseUtil.success("Payment simulation completed successfully",
+                        "Test payment processed for session: " + sessionId);
+            } else {
+                return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Failed to process test payment");
+            }
+
+        } catch (Exception e) {
+            log.error("Error in test payment simulation: {}", e.getMessage(), e);
+            return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Test payment simulation failed: " + e.getMessage());
+        }
     }
 }
