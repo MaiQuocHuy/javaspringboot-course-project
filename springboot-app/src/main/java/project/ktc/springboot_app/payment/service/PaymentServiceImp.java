@@ -217,12 +217,17 @@ public class PaymentServiceImp implements PaymentService {
         try {
             String currentUserId = SecurityUtil.getCurrentUserId();
             if (currentUserId != null) {
-                return userRepository.findById(currentUserId).orElse(getSystemUser());
+                Optional<User> userOpt = userRepository.findById(currentUserId);
+                if (userOpt.isPresent()) {
+                    return userOpt.get();
+                }
             }
         } catch (Exception e) {
             log.debug("No authenticated user found for logging, using system user: {}", e.getMessage());
         }
 
+        // Return system user for webhook operations or when no authenticated user is
+        // available
         return getSystemUser();
     }
 
@@ -230,12 +235,10 @@ public class PaymentServiceImp implements PaymentService {
      * Returns a system user for logging when no authenticated user is available
      */
     private User getSystemUser() {
-        // Create a system user for logging purposes when no authenticated user is
-        // available
-        User systemUser = new User();
-        systemUser.setId("SYSTEM");
-        systemUser.setName("System");
-        systemUser.setEmail("system@ktc.com");
-        return systemUser;
+        // Fetch the SYSTEM user from database for logging purposes when no
+        // authenticated user is available
+        return userRepository.findById("SYSTEM")
+                .orElseThrow(() -> new RuntimeException(
+                        "SYSTEM user not found in database. Please run database migrations."));
     }
 }

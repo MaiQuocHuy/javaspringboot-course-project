@@ -159,6 +159,24 @@ public class GlobalExceptionHandler {
         }
 
         /**
+         * Handle validation exceptions (business logic validation)
+         */
+        @ExceptionHandler(ValidationException.class)
+        public ResponseEntity<ApiErrorResponse> handleValidationException(
+                        ValidationException ex, HttpServletRequest request) {
+
+                log.error("Validation exception: {}", ex.getMessage());
+
+                ApiErrorResponse errorResponse = ApiErrorResponse.of(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "Validation Error",
+                                ex.getMessage(),
+                                request.getRequestURI());
+
+                return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        /**
          * Handle illegal state exceptions
          */
         @ExceptionHandler(IllegalStateException.class)

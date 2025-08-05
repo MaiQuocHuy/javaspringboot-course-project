@@ -3,16 +3,13 @@ package project.ktc.springboot_app.stripe.services;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.stripe.exception.SignatureVerificationException;
-import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import project.ktc.springboot_app.enrollment.interfaces.EnrollmentService;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
-import project.ktc.springboot_app.payment.service.PaymentService;
 import project.ktc.springboot_app.payment.service.PaymentServiceImp;
 import project.ktc.springboot_app.stripe.config.StripeConfig;
 
@@ -39,28 +36,33 @@ public class StripeWebhookService {
     public boolean processWebhookEvent(String payload, String sigHeader) throws SignatureVerificationException {
         Event event;
 
+        log.info("🔄 Processing Stripe webhook event...");
+        log.info("📝 Payload length: {}", payload != null ? payload.length() : 0);
+        log.info("🔐 Signature header: {}", sigHeader != null ? "Present" : "Missing");
+
         try {
             // Verify webhook signature if webhook secret is configured
-            if (stripeConfig.getWebhookSecret() != null && !stripeConfig.getWebhookSecret().isEmpty()) {
+            if (stripeConfig.getWebhookSecret() != null && !stripeConfig.getWebhookSecret().isEmpty()
+                    && sigHeader != null) {
                 event = Webhook.constructEvent(payload, sigHeader, stripeConfig.getWebhookSecret());
-                log.info("Webhook signature verified successfully");
+                log.info("✅ Webhook signature verified successfully");
             } else {
                 // In development, parse without verification
                 event = Event.GSON.fromJson(payload, Event.class);
-                log.warn("Webhook processed without signature verification - development mode");
+                log.warn("⚠️ Webhook processed without signature verification - development mode");
             }
 
             // Debug logging for the event
-            log.info("Parsed event - Type: {}, ID: {}, Created: {}", event.getType(), event.getId(),
+            log.info("📧 Parsed event - Type: {}, ID: {}, Created: {}", event.getType(), event.getId(),
                     event.getCreated());
-            log.debug("Event has data: {}", event.getData() != null);
-            log.debug("Event dataObjectDeserializer: {}", event.getDataObjectDeserializer() != null);
+            log.debug("📊 Event has data: {}", event.getData() != null);
+            log.debug("🔍 Event dataObjectDeserializer: {}", event.getDataObjectDeserializer() != null);
 
         } catch (SignatureVerificationException e) {
-            log.error("Webhook signature verification failed: {}", e.getMessage());
+            log.error("❌ Webhook signature verification failed: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            log.error("Error parsing webhook payload: {}", e.getMessage());
+            log.error("❌ Error parsing webhook payload: {}", e.getMessage());
             return false;
         }
 
@@ -72,52 +74,52 @@ public class StripeWebhookService {
      * Routes events to appropriate handlers based on event type
      */
     private boolean handleEvent(Event event) {
-        log.info("Processing webhook event: {} with ID: {}", event.getType(), event.getId());
+        log.info("🎯 Processing webhook event: {} with ID: {}", event.getType(), event.getId());
 
         try {
             switch (event.getType()) {
                 case "checkout.session.completed":
-                    log.info("Handling checkout session completed event: {}", event.getId());
+                    log.info("💳 Handling checkout session completed event: {}", event.getId());
                     handleCheckoutSessionCompleted(event);
                     break;
                 case "checkout.session.expired":
-                    log.info("Handling checkout session expired event: {}", event.getId());
+                    log.info("⏰ Handling checkout session expired event: {}", event.getId());
                     handleCheckoutSessionExpired(event);
                     break;
                 case "payment_intent.succeeded":
-                    log.info("Handling payment intent succeeded event: {}", event.getId());
+                    log.info("✅ Handling payment intent succeeded event: {}", event.getId());
                     handlePaymentIntentSucceeded(event);
                     break;
                 case "payment_intent.payment_failed":
-                    log.info("Handling payment intent failed event: {}", event.getId());
+                    log.info("❌ Handling payment intent failed event: {}", event.getId());
                     handlePaymentIntentFailed(event);
                     break;
                 case "invoice.payment_succeeded":
-                    log.info("Handling invoice payment succeeded event: {}", event.getId());
+                    log.info("🧾 Handling invoice payment succeeded event: {}", event.getId());
                     handleInvoicePaymentSucceeded(event);
                     break;
                 case "customer.subscription.created":
-                    log.info("Handling customer subscription created event: {}", event.getId());
+                    log.info("📅 Handling customer subscription created event: {}", event.getId());
                     handleSubscriptionCreated(event);
                     break;
                 case "customer.subscription.updated":
-                    log.info("Handling customer subscription updated event: {}", event.getId());
+                    log.info("🔄 Handling customer subscription updated event: {}", event.getId());
                     handleSubscriptionUpdated(event);
                     break;
                 case "customer.subscription.deleted":
-                    log.info("Handling customer subscription deleted event: {}", event.getId());
+                    log.info("🗑️ Handling customer subscription deleted event: {}", event.getId());
                     handleSubscriptionDeleted(event);
                     break;
                 default:
-                    log.info("Unhandled event type: {}", event.getType());
+                    log.info("❓ Unhandled event type: {}", event.getType());
                     return true; // Still return success for unhandled events
             }
 
-            log.info("Successfully processed webhook event: {}", event.getType());
+            log.info("✅ Successfully processed webhook event: {}", event.getType());
             return true;
 
         } catch (Exception e) {
-            log.error("Error processing webhook event {}: {}", event.getType(), e.getMessage(), e);
+            log.error("❌ Error processing webhook event {}: {}", event.getType(), e.getMessage(), e);
             return false;
         }
     }
@@ -170,43 +172,49 @@ public class StripeWebhookService {
             return;
         }
 
-        log.info("Processing completed checkout session: {}", session.getId());
-        log.info("Customer email: {}, Amount total: {}", session.getCustomerEmail(), session.getAmountTotal());
+        log.info("🎯 Processing completed checkout session: {}", session.getId());
+        log.info("📧 Customer email: {}, 💰 Amount total: {} cents", session.getCustomerEmail(),
+                session.getAmountTotal());
 
         try {
             // Extract metadata (courseId and userId should be stored in session metadata)
-            String courseId = session.getMetadata().get("courseId");
-            String userId = session.getMetadata().get("userId");
+            String courseId = session.getMetadata() != null ? session.getMetadata().get("courseId") : null;
+            String userId = session.getMetadata() != null ? session.getMetadata().get("userId") : null;
+
+            log.info("📊 Session metadata - CourseId: {}, UserId: {}", courseId, userId);
 
             if (courseId == null || userId == null) {
-                log.error("Missing required metadata in session. CourseId: {}, UserId: {}", courseId, userId);
+                log.error("❌ Missing required metadata in session. CourseId: {}, UserId: {}", courseId, userId);
+                log.error("📋 Available metadata keys: {}",
+                        session.getMetadata() != null ? session.getMetadata().keySet() : "No metadata");
                 return;
             }
 
             // Verify payment amount matches what was recorded in database
             // session.getAmountTotal() is in cents, convert to dollars for comparison
             double stripeAmountInDollars = session.getAmountTotal() / 100.0;
+            log.info("💵 Converting Stripe amount: {} cents = ${}", session.getAmountTotal(), stripeAmountInDollars);
 
             var paymentOpt = paymentService.findPaymentBySessionIdAndVerifyAmount(session.getId(),
                     stripeAmountInDollars);
             if (paymentOpt.isEmpty()) {
                 log.error(
-                        "Payment verification failed for session {}. Either payment not found or amount mismatch. Stripe amount: ${}",
+                        "❌ Payment verification failed for session {}. Either payment not found or amount mismatch. Stripe amount: ${}",
                         session.getId(), stripeAmountInDollars);
                 return;
             }
 
             var payment = paymentOpt.get();
-            log.info("Payment amount verified successfully. Database: ${}, Stripe: ${}",
+            log.info("✅ Payment amount verified successfully. Database: ${}, Stripe: ${}",
                     payment.getAmount(), stripeAmountInDollars);
 
             // Update payment status to COMPLETED
             paymentService.updatePaymentStatusFromWebhook(payment.getId(), "COMPLETED", session.getId());
-            log.info("Payment {} marked as COMPLETED", payment.getId());
+            log.info("✅ Payment {} marked as COMPLETED", payment.getId());
 
             // Create enrollment for the user
             enrollmentService.createEnrollmentFromWebhook(userId, courseId, session.getId());
-            log.info("Enrollment created for user {} in course {}", userId, courseId);
+            log.info("✅ Enrollment created for user {} in course {}", userId, courseId);
 
             // Send confirmation email (if you have email service)
             // emailService.sendCourseEnrollmentConfirmation(session.getCustomerEmail(),
@@ -222,6 +230,7 @@ public class StripeWebhookService {
      * Handles expired checkout sessions
      */
     private void handleCheckoutSessionExpired(Event event) {
+        log.info("⏰ Processing expired checkout session event");
         Session session = null;
 
         try {
@@ -230,33 +239,33 @@ public class StripeWebhookService {
 
             // Fallback: If session is null, try to extract session ID and retrieve it
             if (session == null) {
-                log.warn("Session deserialization failed, attempting to retrieve session manually");
+                log.warn("⚠️ Session deserialization failed, attempting to retrieve session manually");
                 String sessionId = extractSessionIdFromEventData(event);
                 if (sessionId != null) {
                     session = Session.retrieve(sessionId);
-                    log.info("Successfully retrieved session {} using fallback method", sessionId);
+                    log.info("✅ Successfully retrieved session {} using fallback method", sessionId);
                 }
             }
 
             if (session == null) {
-                log.error("Could not retrieve session from checkout.session.expired event after all attempts");
+                log.error("❌ Could not retrieve session from checkout.session.expired event after all attempts");
                 return;
             }
 
-            log.info("Processing expired checkout session: {}", session.getId());
+            log.info("🕒 Processing expired checkout session: {}", session.getId());
 
             // Find payment by session ID and update status to FAILED
             var paymentOpt = paymentService.findPaymentBySessionIdAndVerifyAmount(session.getId(), 0.0);
             if (paymentOpt.isPresent()) {
                 var payment = paymentOpt.get();
                 paymentService.updatePaymentStatusFromWebhook(payment.getId(), "FAILED", session.getId());
-                log.info("Payment {} marked as FAILED due to session expiration", payment.getId());
+                log.info("❌ Payment {} marked as FAILED due to session expiration", payment.getId());
             } else {
-                log.warn("No payment found for expired session: {}", session.getId());
+                log.warn("⚠️ No payment found for expired session: {}", session.getId());
             }
 
         } catch (Exception e) {
-            log.error("Error processing checkout session expiration: {}", e.getMessage(), e);
+            log.error("❌ Error processing checkout session expiration: {}", e.getMessage(), e);
         }
     }
 

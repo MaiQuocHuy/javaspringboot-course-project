@@ -17,11 +17,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.lesson.dto.CreateLessonDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
+import project.ktc.springboot_app.lesson.dto.CreateLessonWithQuizDto;
+import project.ktc.springboot_app.lesson.dto.LessonWithQuizResponseDto;
 import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
 import project.ktc.springboot_app.lesson.services.InstructorLessonServiceImp;
+import project.ktc.springboot_app.quiz.dto.UpdateQuizDto;
+import project.ktc.springboot_app.quiz.dto.UpdateQuizQuestionDto;
+import project.ktc.springboot_app.quiz.dto.UpdateQuizResponseDto;
+import project.ktc.springboot_app.quiz.service.QuizServiceImp;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
+import project.ktc.springboot_app.utils.SecurityUtil;
 
 @RestController
 @RequestMapping("/api/instructor/sections")
@@ -31,6 +38,7 @@ import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 public class InstructorLessonController {
 
         private final InstructorLessonServiceImp instructorLessonService;
+        private final QuizServiceImp quizService;
 
         /**
          * Get section with all its lessons for an instructor
@@ -264,4 +272,78 @@ public class InstructorLessonController {
 
                 return instructorLessonService.completeLesson(sectionId, lessonId);
         }
+
+        /**
+         * Create a new lesson with quiz in a single transaction
+         * Endpoint: POST /api/instructor/sections/{sectionId}/lessons/with-quiz
+         * 
+         * @param sectionId               The ID of the section where the lesson will be
+         *                                created
+         * @param createLessonWithQuizDto The lesson and quiz creation data
+         * @return LessonWithQuizResponseDto containing the created lesson and quiz
+         *         details
+         */
+        @PostMapping("/{sectionId}/lessons/with-quiz")
+        @Operation(summary = "Create lesson with quiz", description = """
+                        Creates a new lesson with attached quiz questions in a single transaction.
+                        This endpoint allows instructors to create both lesson content and quiz questions simultaneously,
+                        ensuring data consistency through transactional operations.
+
+                        **Important Notes:**
+                        - Quiz questions must have exactly 4 options (A, B, C, D)
+                        - Correct answer must be one of the provided options
+                        - All quiz questions are created atomically with the lesson
+                        - Lesson type is automatically set to 'QUIZ'
+                        - Order index is automatically calculated based on existing lessons
+
+                        **Business Rules:**
+                        - Section must belong to the authenticated instructor
+                        - Quiz must contain at least 1 question
+                        - Each question must have 4 options with keys A, B, C, D
+                        - Correct answer must match one of the option keys
+                        - Explanation is optional but recommended for better learning
+
+                        **Features:**
+                        - Transactional safety (all-or-nothing creation)
+                        - Automatic order index calculation
+                        - Comprehensive validation of quiz questions
+                        - Returns complete lesson and quiz data in response
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Lesson with quiz created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = LessonWithQuizResponseDto.class))),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request - validation errors in lesson or quiz data", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied - instructor does not own this section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section not found", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during lesson and quiz creation", content = @Content(mediaType = "application/json"))
+        })
+        public ResponseEntity<ApiResponse<LessonWithQuizResponseDto>> createLessonWithQuiz(
+                        @Parameter(description = "Section ID where the lesson will be created", required = true) @PathVariable String sectionId,
+                        @Parameter(description = "Lesson and quiz creation data", required = true) @Valid @RequestBody CreateLessonWithQuizDto createLessonWithQuizDto) {
+
+                return instructorLessonService.createLessonWithQuiz(sectionId, createLessonWithQuizDto);
+        }
+
+        @PutMapping("/{sectionId}/lessons/quiz")
+        @Operation(summary = "Update quiz questions for a lesson", description = """
+                            Updates the quiz questions for a lesson owned by the instructor.
+                            This endpoint allows instructors to replace existing quiz questions with new ones,
+                            ensuring that all questions are updated atomically.
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Quiz questions updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UpdateLessonResponseDto.class))),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request - validation errors in quiz data", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied - instructor does not own this section", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section or lesson not found", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during quiz update", content = @Content(mediaType = "application/json"))
+        })
+        public ResponseEntity<ApiResponse<UpdateQuizResponseDto>> updateQuizQuestions(
+                        @Parameter(description = "Section ID where the lesson belongs", required = true) @PathVariable String sectionId,
+
+                        @Parameter(description = "Lesson ID to update quiz questions for", required = true) @RequestParam String lessonId,
+
+                        @Parameter(description = "Updated quiz data", required = true) @Valid @RequestBody UpdateQuizDto updateQuizDto) {
+                String currentUserId = SecurityUtil.getCurrentUserId();
+                return quizService.updateQuiz(sectionId, lessonId, updateQuizDto, currentUserId);
+        }
+
 }
