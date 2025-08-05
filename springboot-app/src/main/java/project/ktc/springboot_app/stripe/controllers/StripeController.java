@@ -17,9 +17,12 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.stripe.dto.CreateCheckoutSessionRequest;
 import project.ktc.springboot_app.stripe.dto.CreateCheckoutSessionResponse;
+import project.ktc.springboot_app.stripe.dto.PaymentStatusResponse;
 import project.ktc.springboot_app.stripe.services.StripeCheckoutService;
 import project.ktc.springboot_app.stripe.services.StripeWebhookService;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import project.ktc.springboot_app.entity.Payment;
+import project.ktc.springboot_app.payment.service.PaymentService;
 
 import java.util.Optional;
 
@@ -36,6 +39,7 @@ public class StripeController {
     private final StripeWebhookService stripeWebhookService;
     private final StripeCheckoutService stripeCheckoutService;
     private final CourseRepository courseRepository;
+    private final PaymentService paymentService;
 
     /**
      * Creates a Stripe Checkout Session for course enrollment
@@ -181,6 +185,69 @@ public class StripeController {
             log.error("Error in test payment simulation: {}", e.getMessage(), e);
             return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Test payment simulation failed: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/payment-status/{sessionId}")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<PaymentStatusResponse>> getPaymentStatus(@PathVariable String sessionId) {
+        try {
+            log.info("Getting payment status for session: {}", sessionId);
+
+            // Get current user
+            String currentUserId = SecurityUtil.getCurrentUserId();
+
+            // Find payment by session ID
+            Optional<Payment> paymentOpt = paymentService.findPaymentBySessionId(sessionId);
+
+            if (paymentOpt.isEmpty()) {
+                log.warn("Payment not found for session: {}", sessionId);
+                return ApiResponseUtil.notFound("Payment not found for session: " + sessionId);
+            }
+
+            Payment payment = paymentOpt.get();
+
+            // Verify that the payment belongs to the current user
+            if (!payment.getUser().getId().equals(currentUserId)) {
+                log.warn("Payment {} does not belong to current user {}", payment.getId(), currentUserId);
+                return ApiResponseUtil.forbidden("You don't have permission to access this payment");
+            }
+
+            // Get course information
+            Course course = payment.getCourse();
+            PaymentStatusResponse.CourseInfo courseInfo = null;
+
+            if (course != null) {
+                courseInfo = PaymentStatusResponse.CourseInfo.builder()
+                        .id(course.getId())
+                        .title(course.getTitle())
+                        .description(course.getDescription())
+                        .thumbnailUrl(course.getThumbnailUrl())
+                        .price(course.getPrice().doubleValue())
+                        .build();
+            }
+
+            // Build response
+            PaymentStatusResponse response = PaymentStatusResponse.builder()
+                    .id(payment.getId())
+                    .sessionId(payment.getSessionId())
+                    .courseId(payment.getCourse() != null ? payment.getCourse().getId() : null)
+                    .userId(payment.getUser() != null ? payment.getUser().getId() : null)
+                    .amount(payment.getAmount().doubleValue())
+                    .currency("USD") // Assuming USD for now
+                    .status(payment.getStatus().name())
+                    .createdAt(payment.getCreatedAt())
+                    .updatedAt(payment.getUpdatedAt())
+                    .course(courseInfo)
+                    .build();
+
+            log.info("Payment status retrieved successfully for session: {}", sessionId);
+            return ApiResponseUtil.success(response, "Payment status retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error getting payment status for session {}: {}", sessionId, e.getMessage(), e);
+            return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to retrieve payment status: " + e.getMessage());
         }
     }
 }
