@@ -22,7 +22,7 @@ import project.ktc.springboot_app.stripe.services.StripeCheckoutService;
 import project.ktc.springboot_app.stripe.services.StripeWebhookService;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.entity.Payment;
-import project.ktc.springboot_app.payment.service.PaymentService;
+import project.ktc.springboot_app.payment.interfaces.PaymentService;
 
 import java.util.Optional;
 
