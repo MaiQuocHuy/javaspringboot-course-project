@@ -26,4 +26,15 @@ public interface InstructorLessonRepository extends JpaRepository<Lesson, String
 
         @Query("SELECT COUNT(l) FROM Lesson l WHERE l.section.id = :sectionId")
         Long countLessonsBySectionId(@Param("sectionId") String sectionId);
+
+        /**
+         * Check if lesson exists and instructor owns it through course
+         */
+        @Query("SELECT CASE WHEN COUNT(l) > 0 THEN true ELSE false END " +
+                        "FROM Lesson l " +
+                        "JOIN l.section s " +
+                        "JOIN s.course c " +
+                        "WHERE l.id = :lessonId AND c.instructor.id = :instructorId")
+        boolean existsByIdAndSectionCourseInstructorId(@Param("lessonId") String lessonId,
+                        @Param("instructorId") String instructorId);
 }

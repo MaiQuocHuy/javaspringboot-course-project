@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed data for course_categories table -->
+    <changeSet id="123-seed-more-course-categories" author="ktc">   
+        <!-- Advanced JavaScript Course -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-011"/>
+            <column name="category_id" value="cat-001"/> <!-- Web Development -->
+        </insert>
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-012"/>
+            <column name="category_id" value="cat-002"/> <!-- Frontend -->
+        </insert>
+        
+        <!-- Python for Data Science Course -->
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-013"/>
+            <column name="category_id" value="cat-003"/> <!-- Data Science -->
+        </insert>
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-014"/>
+            <column name="category_id" value="cat-004"/> <!-- Machine Learning -->
+        </insert>
+
+        <insert tableName="course_categories">
+            <column name="course_id" value="course-015"/>
+            <column name="category_id" value="cat-004"/> <!-- Machine Learning -->
+        </insert>
+    </changeSet>
+</databaseChangeLog>
+
+    

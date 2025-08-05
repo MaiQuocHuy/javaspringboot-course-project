@@ -44,15 +44,11 @@
     <!-- Schema Updates -->
     <include file="db/changelog/changes/121-update-system-logs-actions.xml"/>
 
-    <!-- Legacy files (commented out - replaced by new schema and seed data above)
-    <include file="db/changelog/changes/001-init-tables.xml"/>
-    <include file="db/changelog/changes/002-seed-data.xml"/>
-    <include file="db/changelog/changes/003-add-missing-timestamps.xml"/>
-    <include file="db/changelog/changes/004-add-user-thumbnail-bio.xml"/>
-    <include file="db/changelog/changes/005-add-instructor-user.xml"/>
-    <include file="db/changelog/changes/006-add-thumbnail.xml"/>
-    <include file="db/changelog/changes/007-enhanced-seed-data.xml"/>
-    <include file="db/changelog/changes/008-add-lesson-quiz-data.xml"/>
-    <include file="db/changelog/changes/009-add-lesson-types.xml"/>
-    -->
+    <!-- More course -->
+    <include file="db/changelog/changes/122-seed-more-courses.xml"/>
+    <include file="db/changelog/changes/123-seed-more-course-categories.xml"/>
+    
+    <!-- System User for Webhooks -->
+    <include file="db/changelog/changes/124-add-system-user.xml"/>
+   
 </databaseChangeLog>

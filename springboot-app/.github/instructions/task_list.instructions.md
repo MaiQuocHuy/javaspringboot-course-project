@@ -2081,6 +2081,241 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
 - **Security:** Requires `INSTRUCTOR` role.
 - **Testing:** Test export functionality with different formats and filters.
 
+### 4.27 `POST /api/instructor/quizzes`
+
+- **Description:** Creates a new quiz for a course owned by the instructor.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:**`/api/instructor/quizzes`
+  - \*\*Headers
+  - \*\*Authorization
+  - \*\*Bearer `<accessToken>`
+  - **Body (`CreateQuizDto`):**
+    ```json
+    {
+      "title": "Quiz Title",
+      "description": "Quiz Description",
+      "lessonId": "lesson-uuid",
+      "questions": [
+        {
+          "questionText": "What is Spring Boot?",
+          "options": {
+            "A": "framework",
+            "B": "library",
+            "C": "language",
+            "D": "database"
+          },
+          "correctAnswer": "A",
+          "explanation": "Spring Boot is a framework for building Java applications."
+        },
+        {
+          "questionText": "What is Spring Boot?",
+          "options": {
+            "A": "framework",
+            "B": "library",
+            "C": "language",
+            "D": "database"
+          },
+          "correctAnswer": "A",
+          "explanation": "Spring Boot is a framework for building Java applications."
+        }
+      ]
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Quiz created successfully",
+      "data": {
+        "id": "quiz-uuid",
+        "title": "Quiz Title",
+        "description": "Quiz Description",
+        "courseId": "course-uuid",
+        "questions": [
+          {
+            "id": "question-uuid-1",
+            "questionText": "What is Spring Boot?",
+            "options": {
+              "A": "framework",
+              "B": "library",
+              "C": "language",
+              "D": "database"
+            },
+            "correctAnswer": "A",
+            "explanation": "Spring Boot is a framework for building Java applications."
+          }
+        ],
+        "createdAt": "2025-07-26T10:30:00Z"
+      }
+    }
+    ```
+- **Controller:** Create `InstructorQuizController` with a `createQuiz` endpoint.
+- **Service:** Implement `createQuiz` in `QuizService`.
+- **Business Rules:**
+  - Only instructors can create quizzes for their courses.
+  - Each quiz must have a title, description, and at least one question.
+  - Questions must include options and a correct answer.
+- **Security:** Requires `INSTRUCTOR` role and course ownership.
+
+### 4.28 `POST /api/instructor/lessons/with-quiz`
+
+- **Description:** Allows instructors to create a new lesson and attach a quiz (with questions) in a single API call. Typically used when the instructor builds a lesson that requires immediate assessment.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/instructor/lessons/with-quiz`
+  - **Headers:**
+    - `Authorization: Bearer <accessToken>`
+  - **Body (`CreateLessonWithQuizDto`):**
+    ```json
+    {
+      "title": "Lesson Title",
+      "description": "Lesson Description",
+      "type": "QUIZ",
+      "createdAt": "2025-07-26T10:30:00Z",
+      "quiz": {
+        "title": "Quiz Title",
+        "description": "Quiz Description",
+        "questions": [
+          {
+            "questionText": "What is Spring Boot?",
+            "options": {
+              "A": "framework",
+              "B": "library",
+              "C": "language",
+              "D": "database"
+            },
+            "correctAnswer": "A",
+            "explanation": "Spring Boot is a framework for building Java applications."
+          }
+        ]
+      }
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Lesson and quiz created successfully",
+      "data": {
+        "lesson": {
+          "id": "lesson-uuid",
+          "title": "Lesson Title",
+          "description": "Lesson Description",
+          "quizId": "quiz-uuid",
+          "createdAt": "2025-07-26T10:30:00Z"
+        },
+        "quiz": {
+          "id": "quiz-uuid",
+          "title": "Quiz Title",
+          "description": "Quiz Description",
+          "questions": [
+            {
+              "id": "question-uuid-1",
+              "questionText": "What is Spring Boot?",
+              "options": {
+                "A": "framework",
+                "B": "library",
+                "C": "language",
+                "D": "database"
+              },
+              "correctAnswer": "A",
+              "explanation": "Spring Boot is a framework for building Java applications."
+            }
+          ]
+        }
+      }
+    }
+    ```
+- **Controller:** Create `InstructorLessonController` with a `createLessonWithQuiz` endpoint.
+- **Service:** Implement `createLessonWithQuiz` in `LessonService`.
+- **Business Rules:**
+  - Only instructors can create lessons with quizzes.
+  - Each lesson must have a title and description.
+  - The quiz must have a title, description, and at least one question.
+  - Questions must include options and a correct answer.
+    title and description of lesson and quiz must be non-empty.
+  - At least one valid question is required.
+  - Each question must:
+    - Include all 4 options (A to D).
+    - Have a correctAnswer that matches one of the options.
+    - Include an explanation.
+  - The operation is transactional — if any part fails, nothing is saved.
+- **Security:** Requires INSTRUCTOR role, Instructor must own the course/section identified by sectionId.
+
+### 4.28 `PUT /api/instructor/sections/:sectionId/lessons/:lessonId/quiz`
+
+- **Description:** Updates (replaces) the quiz associated with a specific lesson owned by the instructor.
+  ⚠️ This is a full replacement — questions not included in the request will be deleted.
+- **Request:**
+
+  - **Method:** `PUT`
+  - **Path:** `/api/instructor/sections/:sectionId/lessons/:lessonId/quiz`
+  - **Headers:**
+    - `Authorization: Bearer <accessToken>`
+  - **Body (`UpdateQuizDto`):**
+
+    ```json
+    {
+      "questions": [
+        {
+          "id": "question-uuid-1",
+          "questionText": "What is Spring Boot?",
+          "options": {
+            "A": "framework",
+            "B": "library",
+            "C": "language",
+            "D": "database"
+          },
+          "correctAnswer": "A",
+          "explanation": "Spring Boot is a framework for building Java applications."
+        }
+      ]
+    }
+    ```
+
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Quiz updated successfully",
+      "data": {
+        "questions": [
+          {
+            "id": "question-uuid-1",
+            "questionText": "What is Spring Boot?",
+            "options": {
+              "A": "framework",
+              "B": "library",
+              "C": "language",
+              "D": "database"
+            },
+            "correctAnswer": "A",
+            "explanation": "Spring Boot is a framework for building Java applications."
+          }
+        ],
+        "updatedAt": "2025-07-26T10:30:00Z"
+      }
+    }
+    ```
+- **Controller:** Create `InstructorQuizController` with an `updateQuiz` endpoint.
+- **Service:** Implement `updateQuiz` in `QuizService`.
+- **Business Rules:**
+  Questions:
+
+  - Must be between 1 and 20 per request.
+  - Each question must:
+    - Have non-empty questionText.
+    - Have an options object with exactly 4 keys: A, B, C, and D.
+    - Have correctAnswer in ["A", "B", "C", "D"].
+    - explanation is optional but recommended for educational feedback.
+
+- **Security:** Requires `INSTRUCTOR` role and section ownership.
+- **Testing:** Test quiz update with valid and invalid inputs.
+
 ## 5. Admin Role
 
 ### 5.1. `GET /api/admin/users`
