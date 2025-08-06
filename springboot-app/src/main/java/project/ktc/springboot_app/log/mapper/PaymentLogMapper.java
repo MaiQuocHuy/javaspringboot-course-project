@@ -1,7 +1,7 @@
 package project.ktc.springboot_app.log.mapper;
 
-import project.ktc.springboot_app.entity.Payment;
 import project.ktc.springboot_app.log.dto.PaymentLogDto;
+import project.ktc.springboot_app.payment.entity.Payment;
 
 /**
  * Mapper utility for converting Payment entity to PaymentLogDto for audit

@@ -114,7 +114,7 @@ public class InstructorCourseController {
                         @Parameter(description = "Course price", required = true) @RequestParam("price") String price,
                         @Parameter(description = "Category IDs (can send multiple)", required = true) @RequestParam("categoryIds") java.util.List<String> categoryIds,
                         @Parameter(description = "Course level", required = true, schema = @Schema(implementation = CourseLevel.class)) @RequestParam("level") String level,
-                        @Parameter(description = "Optional course thumbnail image file", required = false) @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
+                        @Parameter(description = " course thumbnail image file", required = true) @RequestPart(value = "thumbnail", required = true) MultipartFile thumbnailFile) {
 
                 log.info("Received request to create course with title: {} and {} categories", title,
                                 categoryIds.size());
@@ -163,19 +163,19 @@ public class InstructorCourseController {
         @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         @PreAuthorize("hasRole('INSTRUCTOR')")
         @Operation(summary = "Update an existing course", description = """
-                        Update an existing course with optional thumbnail upload for instructors.
+                        Update an existing course with  thumbnail upload for instructors.
 
                         **Permission Requirements:**
                         - Course must not be approved yet (canEdit = !isApproved)
                         - Only the course owner can update it
 
-                        **Fields:** (All fields are optional)
+                        **Fields:** (All fields)
                         - `title` (text): Course title (5-100 characters)
                         - `description` (text): Course description (20-1000 characters)
                         - `price` (number): Course price (0-9999.99)
                         - `categoryIds` (array): Category IDs (at least one if provided)
                         - `level` (text): Course level - BEGINNER, INTERMEDIATE, ADVANCED
-                        - `thumbnail` (file): Course thumbnail image (optional)
+                        - `thumbnail` (file): Course thumbnail image
 
                         **Supported Image Formats:** JPEG, PNG, GIF, BMP, WebP
                         **Max Size:** 10MB
@@ -189,7 +189,7 @@ public class InstructorCourseController {
                         @Parameter(description = "Course price", required = false) @RequestParam(value = "price", required = false) String price,
                         @Parameter(description = "Category IDs (can send multiple)", required = false) @RequestParam(value = "categoryIds", required = false) java.util.List<String> categoryIds,
                         @Parameter(description = "Course level", required = false, schema = @Schema(implementation = CourseLevel.class)) @RequestParam(value = "level", required = false) String level,
-                        @Parameter(description = "Optional course thumbnail image file", required = false) @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
+                        @Parameter(description = "Course thumbnail image file", required = false) @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
 
                 log.info("Received request to update course {} with title: {}", courseId, title);
 

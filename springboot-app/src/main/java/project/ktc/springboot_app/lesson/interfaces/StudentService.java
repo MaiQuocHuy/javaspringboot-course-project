@@ -3,6 +3,8 @@ package project.ktc.springboot_app.lesson.interfaces;
 import org.springframework.http.ResponseEntity;
 
 import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.quiz.dto.QuizSubmissionResponseDto;
+import project.ktc.springboot_app.quiz.dto.SubmitQuizDto;
 
 public interface StudentService {
 
@@ -16,5 +18,18 @@ public interface StudentService {
      * @return ApiResponse with success message
      */
     ResponseEntity<ApiResponse<String>> completeLesson(String sectionId, String lessonId);
+
+    /**
+     * Submits quiz answers for a specific lesson
+     * If a result already exists for the current user and lesson, it will be
+     * overwritten
+     * 
+     * @param sectionId     The ID of the section containing the lesson
+     * @param lessonId      The ID of the lesson being submitted
+     * @param submitQuizDto The quiz answers
+     * @return ApiResponse with quiz submission results
+     */
+    ResponseEntity<ApiResponse<QuizSubmissionResponseDto>> submitQuiz(String sectionId, String lessonId,
+            SubmitQuizDto submitQuizDto);
 
 }
