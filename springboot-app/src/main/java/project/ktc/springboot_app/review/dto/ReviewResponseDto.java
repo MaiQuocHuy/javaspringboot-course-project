@@ -22,7 +22,7 @@ public class ReviewResponseDto {
     private Integer rating;
 
     @Schema(description = "Review text content", example = "Excellent course! Very helpful and well-structured.")
-    private String review_text;
+    private String reviewText;
 
     @Schema(description = "When the review was submitted", example = "2025-07-24T10:30:00")
     private LocalDateTime reviewedAt;

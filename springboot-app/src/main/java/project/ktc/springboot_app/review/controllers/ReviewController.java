@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.CreateReviewDto;
 import project.ktc.springboot_app.review.dto.ReviewResponseDto;
-import project.ktc.springboot_app.review.interfaces.ReviewService;
+import project.ktc.springboot_app.review.services.ReviewServiceImp;
 
 @RestController
 @RequestMapping("/api/courses")
@@ -32,7 +32,7 @@ import project.ktc.springboot_app.review.interfaces.ReviewService;
 @Slf4j
 public class ReviewController {
 
-    private final ReviewService reviewService;
+    private final ReviewServiceImp reviewService;
 
     @PostMapping("/{id}/reviews")
     @PreAuthorize("hasRole('STUDENT')")
@@ -82,24 +82,6 @@ public class ReviewController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
         return reviewService.getCourseReviews(courseId, pageable);
-    }
-
-    @PutMapping("/reviews/{reviewId}")
-    @PreAuthorize("hasRole('STUDENT')")
-    @Operation(summary = "Update a review", description = "Allow students to update their own reviews", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Review updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - authentication required"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - can only update own reviews"),
-            @ApiResponse(responseCode = "404", description = "Review not found")
-    })
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<ReviewResponseDto>> updateReview(
-            @Parameter(description = "Review ID", required = true, example = "review-uuid-123") @PathVariable String reviewId,
-            @Parameter(description = "Updated review data", required = true) @Valid @RequestBody CreateReviewDto reviewDto) {
-
-        log.info("Received request to update review: {}", reviewId);
-        return reviewService.updateReview(reviewId, reviewDto);
     }
 
     @DeleteMapping("/reviews/{reviewId}")

@@ -22,8 +22,11 @@ public class CourseDetailResponseDto {
     private CourseLevel level;
     private String thumbnailUrl;
     private Integer lessonCount;
+    private Integer quizCount; // Total number of quiz lessons in the course
+    private Integer questionCount; // Total number of quiz questions in the course
     private Integer enrollCount;
     private String sampleVideoUrl;
+    private Integer totalDuration; // Total course duration in seconds
     private RatingSummary rating;
     private Boolean isEnrolled;
     private InstructorSummary instructor;
@@ -54,6 +57,9 @@ public class CourseDetailResponseDto {
     public static class SectionSummary {
         private String id;
         private String title;
+        private Integer lessonCount; // Total number of lessons in this section
+        private Integer quizCount; // Number of quiz lessons in this section
+        private Integer duration; // Section total duration in seconds
         private List<LessonSummary> lessons;
     }
 
@@ -65,6 +71,7 @@ public class CourseDetailResponseDto {
         private String id;
         private String title;
         private String type;
+        private Integer duration; // Lesson duration in seconds (only for VIDEO type)
     }
 
 }
