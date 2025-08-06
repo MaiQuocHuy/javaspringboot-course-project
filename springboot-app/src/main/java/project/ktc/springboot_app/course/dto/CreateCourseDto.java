@@ -24,6 +24,9 @@ public class CreateCourseDto {
     @Size(min = 20, max = 1000, message = "Description must be between 20 and 1000 characters")
     private String description;
 
+    @NotBlank(message = "Slug is required")
+    private String slug;
+
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Price must be greater than or equal to 0")
     @DecimalMax(value = "9999.99", message = "Price cannot exceed 9999.99")

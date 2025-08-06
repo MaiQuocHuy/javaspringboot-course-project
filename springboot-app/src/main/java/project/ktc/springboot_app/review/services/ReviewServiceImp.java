@@ -17,6 +17,8 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.review.dto.ReviewResponseDto;
+import project.ktc.springboot_app.review.dto.StudentReviewResponseDto;
+import project.ktc.springboot_app.review.dto.UpdateReviewDto;
 import project.ktc.springboot_app.review.entity.Review;
 import project.ktc.springboot_app.review.interfaces.ReviewService;
 import project.ktc.springboot_app.review.repositories.ReviewRepository;
@@ -126,8 +128,8 @@ public class ReviewServiceImp implements ReviewService {
     }
 
     @Override
-    public ResponseEntity<ApiResponse<ReviewResponseDto>> updateReview(String reviewId, CreateReviewDto reviewDto) {
-        log.info("Updating review {} by user", reviewId);
+    public ResponseEntity<ApiResponse<ReviewResponseDto>> updateReview(String reviewId, UpdateReviewDto reviewDto) {
+        log.info("Updating review {} by user", reviewDto);
 
         String currentUserId = SecurityUtil.getCurrentUserId();
 
@@ -138,15 +140,29 @@ public class ReviewServiceImp implements ReviewService {
         }
 
         Review review = reviewOpt.get();
-
+        log.info("Found review {}", review.getReviewText());
         // Check if current user owns this review
         if (!review.getUser().getId().equals(currentUserId)) {
             return ApiResponseUtil.forbidden("You can only update your own reviews");
         }
 
-        // Update the review
-        review.setRating(reviewDto.getRating());
-        review.setReviewText(reviewDto.getReview_text());
+        // PATCH semantics: only update provided fields
+        boolean isUpdated = false;
+
+        if (reviewDto.getRating() != null) {
+            review.setRating(reviewDto.getRating());
+            isUpdated = true;
+        }
+
+        if (reviewDto.getReviewText() != null) {
+            review.setReviewText(reviewDto.getReviewText());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            return ApiResponseUtil.badRequest("At least one field (rating or reviewText) must be provided for update");
+        }
+
         review.setUpdatedAt(LocalDateTime.now());
 
         Review updatedReview = reviewRepository.save(review);
@@ -182,11 +198,60 @@ public class ReviewServiceImp implements ReviewService {
         return ApiResponseUtil.success(null, "Review deleted successfully");
     }
 
+    @Override
+    public ResponseEntity<ApiResponse<PaginatedResponse<StudentReviewResponseDto>>> getStudentReviews(
+            Pageable pageable) {
+        log.info("Retrieving reviews for current student with pagination: {}", pageable);
+
+        try {
+            // Get current authenticated user
+            String currentUserId = SecurityUtil.getCurrentUserId();
+
+            if (currentUserId == null || currentUserId.trim().isEmpty()) {
+                log.warn("No authenticated user found when retrieving student reviews");
+                return ApiResponseUtil.unauthorized("User not authenticated");
+            }
+
+            // Fetch paginated reviews for the current user
+            Page<Review> reviewPage = reviewRepository.findByUserIdWithCourse(currentUserId, pageable);
+
+            // Convert to DTOs
+            List<StudentReviewResponseDto> reviewDtos = reviewPage.getContent().stream()
+                    .map(StudentReviewResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            // Create paginated response
+            PaginatedResponse.PageInfo pageInfo = PaginatedResponse.PageInfo.builder()
+                    .number(reviewPage.getNumber())
+                    .size(reviewPage.getSize())
+                    .totalElements(reviewPage.getTotalElements())
+                    .totalPages(reviewPage.getTotalPages())
+                    .first(reviewPage.isFirst())
+                    .last(reviewPage.isLast())
+                    .build();
+
+            PaginatedResponse<StudentReviewResponseDto> paginatedResponse = PaginatedResponse
+                    .<StudentReviewResponseDto>builder()
+                    .content(reviewDtos)
+                    .page(pageInfo)
+                    .build();
+
+            log.info("Successfully retrieved {} reviews for user {} (page {} of {})",
+                    reviewDtos.size(), currentUserId, reviewPage.getNumber(), reviewPage.getTotalPages());
+
+            return ApiResponseUtil.success(paginatedResponse, "Reviews retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving reviews for current student: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve reviews. Please try again later.");
+        }
+    }
+
     private ReviewResponseDto mapToResponseDto(Review review) {
         return ReviewResponseDto.builder()
                 .id(review.getId())
                 .rating(review.getRating())
-                .review_text(review.getReviewText())
+                .reviewText(review.getReviewText())
                 .reviewedAt(review.getReviewedAt())
                 .user(ReviewResponseDto.UserSummary.builder()
                         .id(review.getUser().getId())

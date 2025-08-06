@@ -1,0 +1,66 @@
+# ================================
+# .dockerignore - Loại trừ các file không cần thiết khỏi Docker context
+# ================================
+
+# Maven build artifacts
+target/
+!target/springboot-app-*.jar
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Logs
+logs/
+*.log
+
+# Environment files (chứa sensitive data)
+.env
+.env.local
+.env.*.local
+
+# Node modules (nếu có frontend)
+node_modules/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Test coverage reports
+coverage/
+
+# Spring Boot DevTools restart files
+.spring-boot-devtools.properties
+
+# Upload folders
+uploads/
+
+# Docker files (trừ Dockerfile chính)
+docker-compose*.yml
+Dockerfile.*
+
+# Backup files
+*.bak
+*.backup
+
+# Database files
+*.db
+*.sqlite
+
+# Maven wrapper không cần thiết trong container
+.mvn/wrapper/maven-wrapper.jar

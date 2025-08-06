@@ -11,6 +11,7 @@
         <insert tableName="courses">
             <column name="id" value="course-001"/>
             <column name="title" value="Complete React Development Course"/>
+            <column name="slug" value="complete-react-development-course"/>
             <column name="description" value="Master React.js from fundamentals to advanced concepts including hooks, context, and modern state management"/>
             <column name="instructor_id" value="user-003"/> <!-- Charlie -->
             <column name="price" value="99.99"/>
@@ -25,6 +26,7 @@
         <insert tableName="courses">
             <column name="id" value="course-002"/>
             <column name="title" value="Machine Learning Fundamentals"/>
+            <column name="slug" value="machine-learning-fundamentals"/> 
             <column name="description" value="Introduction to machine learning algorithms, data preprocessing, and model evaluation"/>
             <column name="instructor_id" value="user-010"/> <!-- Julia Anderson -->
             <column name="price" value="149.99"/>
@@ -39,6 +41,7 @@
         <insert tableName="courses">
             <column name="id" value="course-003"/>
             <column name="title" value="Mobile App Development with React Native"/>
+            <column name="slug" value="mobile-app-development-with-react-native"/>
             <column name="description" value="Build cross-platform mobile applications using React Native and modern development practices"/>
             <column name="instructor_id" value="user-006"/> <!-- Fiona Davis -->
             <column name="price" value="129.99"/>
@@ -53,6 +56,7 @@
         <insert tableName="courses">
             <column name="id" value="course-004"/>
             <column name="title" value="Cybersecurity Essentials"/>
+            <column name="slug" value="cybersecurity-essentials"/>
             <column name="description" value="Learn fundamental cybersecurity concepts, threat analysis, and defense strategies"/>
             <column name="instructor_id" value="user-008"/> <!-- Hannah Taylor -->
             <column name="price" value="199.99"/>
@@ -67,6 +71,7 @@
         <insert tableName="courses">
             <column name="id" value="course-005"/>
             <column name="title" value="Advanced Python Programming"/>
+            <column name="slug" value="advanced-python-programming"/>
             <column name="description" value="Deep dive into Python's advanced features, decorators, metaclasses, and performance optimization"/>
             <column name="instructor_id" value="user-005"/> <!-- Eve -->
             <column name="price" value="179.99"/>
@@ -81,6 +86,7 @@
         <insert tableName="courses">
             <column name="id" value="course-006"/>
             <column name="title" value="Full Stack Web Development"/>
+            <column name="slug" value="full-stack-web-development"/>
             <column name="description" value="Complete web development bootcamp covering frontend, backend, and database technologies"/>
             <column name="instructor_id" value="user-003"/> <!-- Charlie -->
             <column name="price" value="249.99"/>
@@ -95,6 +101,7 @@
         <insert tableName="courses">
             <column name="id" value="course-007"/>
             <column name="title" value="Cloud Computing with AWS"/>
+            <column name="slug" value="cloud-computing-with-aws"/>
             <column name="description" value="Master Amazon Web Services including EC2, S3, Lambda, and cloud architecture patterns"/>
             <column name="instructor_id" value="user-009"/> <!-- Ivan Clark -->
             <column name="price" value="199.99"/>
@@ -109,6 +116,7 @@
         <insert tableName="courses">
             <column name="id" value="course-008"/>
             <column name="title" value="Database Design and Optimization"/>
+            <column name="slug" value="database-design-and-optimization"/>
             <column name="description" value="Learn relational database design, SQL optimization, and NoSQL databases"/>
             <column name="instructor_id" value="user-007"/> <!-- Grace Wilson -->
             <column name="price" value="139.99"/>
@@ -123,6 +131,7 @@
         <insert tableName="courses">
             <column name="id" value="course-009"/>
             <column name="title" value="DevOps and CI/CD Pipeline"/>
+            <column name="slug" value="devops-and-ci-cd-pipeline"/>
             <column name="description" value="Master DevOps practices, containerization with Docker, and continuous integration/deployment"/>
             <column name="instructor_id" value="user-004"/> <!-- David -->
             <column name="price" value="189.99"/>
@@ -137,6 +146,7 @@
         <insert tableName="courses">
             <column name="id" value="course-010"/>
             <column name="title" value="Introduction to Artificial Intelligence"/>
+            <column name="slug" value="introduction-to-artificial-intelligence"/>
             <column name="description" value="Explore AI fundamentals, neural networks, and practical applications in various industries"/>
             <column name="instructor_id" value="user-010"/> <!-- Julia Anderson -->
             <column name="price" value="219.99"/>
