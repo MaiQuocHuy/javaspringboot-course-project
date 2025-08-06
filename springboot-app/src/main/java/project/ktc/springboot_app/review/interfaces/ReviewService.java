@@ -7,6 +7,8 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.CreateReviewDto;
 import project.ktc.springboot_app.review.dto.ReviewResponseDto;
+import project.ktc.springboot_app.review.dto.StudentReviewResponseDto;
+import project.ktc.springboot_app.review.dto.UpdateReviewDto;
 
 public interface ReviewService {
 
@@ -30,13 +32,13 @@ public interface ReviewService {
             Pageable pageable);
 
     /**
-     * Updates an existing review by the authenticated user
+     * Updates an existing review by the authenticated user (partial update)
      *
      * @param reviewId  the ID of the review to update
-     * @param reviewDto the updated review data
+     * @param reviewDto the updated review data (partial)
      * @return ResponseEntity with the updated review
      */
-    ResponseEntity<ApiResponse<ReviewResponseDto>> updateReview(String reviewId, CreateReviewDto reviewDto);
+    ResponseEntity<ApiResponse<ReviewResponseDto>> updateReview(String reviewId, UpdateReviewDto reviewDto);
 
     /**
      * Deletes a review by the authenticated user
@@ -45,4 +47,12 @@ public interface ReviewService {
      * @return ResponseEntity with success message
      */
     ResponseEntity<ApiResponse<Void>> deleteReview(String reviewId);
+
+    /**
+     * Gets all reviews submitted by the currently authenticated student
+     *
+     * @param pageable pagination and sorting information
+     * @return ResponseEntity with paginated student reviews
+     */
+    ResponseEntity<ApiResponse<PaginatedResponse<StudentReviewResponseDto>>> getStudentReviews(Pageable pageable);
 }

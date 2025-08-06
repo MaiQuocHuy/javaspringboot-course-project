@@ -41,7 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -147,6 +146,8 @@ public class CourseServiceImp implements CourseService {
 
                 // Get lesson count
                 Long lessonCount = courseRepository.countLessonsByCourseId(courseId);
+                Long quizCount = courseRepository.countQuizLessonsByCourseId(courseId);
+                Long questionCount = courseRepository.countQuizQuestionsByCourseId(courseId);
 
                 Long enrollMentCount = courseRepository.countUserEnrolledInCourse(courseId);
 
@@ -161,8 +162,53 @@ public class CourseServiceImp implements CourseService {
 
                 // Map to DTO
                 CourseDetailResponseDto responseDto = mapToCourseDetailResponse(
-                                course, ratingSummary, lessonCount.intValue(), isEnrolled, sampleVideoUrl, slug,
-                                enrollMentCount.intValue());
+                                course, ratingSummary, lessonCount.intValue(), quizCount.intValue(),
+                                questionCount.intValue(),
+                                isEnrolled, sampleVideoUrl, slug, enrollMentCount.intValue());
+
+                return ApiResponseUtil.success(responseDto, "Course details retrieved successfully");
+        }
+
+        @Override
+        public ResponseEntity<ApiResponse<CourseDetailResponseDto>> findOneBySlug(String slug) {
+                log.info("Finding course details for slug: {}", slug);
+
+                // Step 1: Find the course with instructor by slug
+                Course course = courseRepository.findPublishedCourseBySlugWithDetails(slug)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Course not found with slug: " + slug));
+
+                // Step 2: Fetch categories separately to avoid MultipleBagFetchException
+                Optional<Course> courseWithCategories = courseRepository.findCourseWithCategories(course.getId());
+                if (courseWithCategories.isPresent()) {
+                        course.setCategories(courseWithCategories.get().getCategories());
+                }
+
+                // Step 3: Fetch sections with lessons separately
+                List<Section> sectionsWithLessons = courseRepository.findSectionsWithLessonsByCourseId(course.getId());
+                course.setSections(sectionsWithLessons);
+
+                // Get rating information
+                CourseDetailResponseDto.RatingSummary ratingSummary = getRatingSummary(course.getId());
+
+                // Get lesson and quiz counts
+                Long lessonCount = courseRepository.countLessonsByCourseId(course.getId());
+                Long quizCount = courseRepository.countQuizLessonsByCourseId(course.getId());
+                Long questionCount = courseRepository.countQuizQuestionsByCourseId(course.getId());
+
+                Long enrollMentCount = courseRepository.countUserEnrolledInCourse(course.getId());
+
+                // Check if current user is enrolled
+                Boolean isEnrolled = getCurrentUserEnrollmentStatus(course.getId());
+
+                // Get sample video URL (first video lesson if available)
+                String sampleVideoUrl = getSampleVideoUrl(course);
+
+                // Map to DTO with quiz count
+                CourseDetailResponseDto responseDto = mapToCourseDetailResponse(
+                                course, ratingSummary, lessonCount.intValue(), quizCount.intValue(),
+                                questionCount.intValue(),
+                                isEnrolled, sampleVideoUrl, slug, enrollMentCount.intValue());
 
                 return ApiResponseUtil.success(responseDto, "Course details retrieved successfully");
         }
@@ -286,6 +332,8 @@ public class CourseServiceImp implements CourseService {
         private CourseDetailResponseDto mapToCourseDetailResponse(Course course,
                         CourseDetailResponseDto.RatingSummary ratingSummary,
                         Integer lessonCount,
+                        Integer quizCount,
+                        Integer questionCount,
                         Boolean isEnrolled,
                         String sampleVideoUrl,
                         String slug,
@@ -302,6 +350,8 @@ public class CourseServiceImp implements CourseService {
 
                 // Map sections and lessons
                 List<CourseDetailResponseDto.SectionSummary> sectionSummaries = null;
+                Integer totalDuration = null;
+
                 if (course.getSections() != null) {
                         sectionSummaries = course.getSections().stream()
                                         .sorted((s1, s2) -> Integer.compare(
@@ -309,6 +359,16 @@ public class CourseServiceImp implements CourseService {
                                                         s2.getOrderIndex() != null ? s2.getOrderIndex() : 0))
                                         .map(this::mapToSectionSummary)
                                         .collect(Collectors.toList());
+
+                        // Calculate total course duration (sum of all section durations)
+                        totalDuration = sectionSummaries.stream()
+                                        .filter(section -> section.getDuration() != null)
+                                        .mapToInt(CourseDetailResponseDto.SectionSummary::getDuration)
+                                        .sum();
+
+                        if (totalDuration == 0) {
+                                totalDuration = null; // Don't show 0 duration
+                        }
                 }
 
                 return CourseDetailResponseDto.builder()
@@ -320,8 +380,11 @@ public class CourseServiceImp implements CourseService {
                                 .level(course.getLevel())
                                 .thumbnailUrl(course.getThumbnailUrl())
                                 .lessonCount(lessonCount)
+                                .quizCount(quizCount)
+                                .questionCount(questionCount)
                                 .enrollCount(enrollCount)
                                 .sampleVideoUrl(sampleVideoUrl)
+                                .totalDuration(totalDuration)
                                 .rating(ratingSummary)
                                 .isEnrolled(isEnrolled)
                                 .instructor(instructorSummary)
@@ -331,24 +394,73 @@ public class CourseServiceImp implements CourseService {
 
         private CourseDetailResponseDto.SectionSummary mapToSectionSummary(Section section) {
                 List<CourseDetailResponseDto.LessonSummary> lessonSummaries = null;
+                int sectionDuration = 0; // Calculate total section duration
+                int sectionLessonCount = 0;
+                int sectionQuizCount = 0;
+
                 if (section.getLessons() != null) {
+                        sectionLessonCount = section.getLessons().size();
+
+                        // Count quiz lessons in this section based on business rules:
+                        // - If lesson has type-002 (QUIZ) and content_id is null: count questions from
+                        // quiz_questions table
+                        // - Otherwise: count quiz lessons normally
+                        for (Lesson lesson : section.getLessons()) {
+                                if (lesson.getLessonType() != null && "QUIZ".equals(lesson.getLessonType().getName())) {
+                                        // Check if this is type-002 with null content_id
+                                        if (lesson.getContent() == null) {
+                                                // Count questions from quiz_questions table for this lesson
+                                                Long questionCount = courseRepository
+                                                                .countQuizQuestionsBySectionId(section.getId());
+                                                sectionQuizCount += questionCount != null ? questionCount.intValue()
+                                                                : 0;
+                                        } else {
+                                                // Regular quiz lesson with content_id
+                                                sectionQuizCount++;
+                                        }
+                                }
+                        }
+
                         lessonSummaries = section.getLessons().stream()
                                         .sorted((l1, l2) -> Integer.compare(
                                                         l1.getOrderIndex() != null ? l1.getOrderIndex() : 0,
                                                         l2.getOrderIndex() != null ? l2.getOrderIndex() : 0))
-                                        .map(lesson -> CourseDetailResponseDto.LessonSummary.builder()
-                                                        .id(lesson.getId())
-                                                        .title(lesson.getTitle())
-                                                        .type(lesson.getLessonType() != null
-                                                                        ? lesson.getLessonType().getName()
-                                                                        : "UNKNOWN")
-                                                        .build())
+                                        .map(lesson -> {
+                                                Integer lessonDuration = null;
+                                                // Only get duration for VIDEO type lessons
+                                                if (lesson.getLessonType() != null &&
+                                                                "VIDEO".equals(lesson.getLessonType().getName()) &&
+                                                                lesson.getContent() != null) {
+                                                        lessonDuration = lesson.getContent().getDuration();
+                                                }
+
+                                                return CourseDetailResponseDto.LessonSummary.builder()
+                                                                .id(lesson.getId())
+                                                                .title(lesson.getTitle())
+                                                                .type(lesson.getLessonType() != null
+                                                                                ? lesson.getLessonType().getName()
+                                                                                : "UNKNOWN")
+                                                                .duration(lessonDuration)
+                                                                .build();
+                                        })
                                         .collect(Collectors.toList());
+
+                        // Calculate section duration (sum of all VIDEO lesson durations)
+                        sectionDuration = section.getLessons().stream()
+                                        .filter(lesson -> lesson.getLessonType() != null &&
+                                                        "VIDEO".equals(lesson.getLessonType().getName()) &&
+                                                        lesson.getContent() != null &&
+                                                        lesson.getContent().getDuration() != null)
+                                        .mapToInt(lesson -> lesson.getContent().getDuration())
+                                        .sum();
                 }
 
                 return CourseDetailResponseDto.SectionSummary.builder()
                                 .id(section.getId())
                                 .title(section.getTitle())
+                                .lessonCount(sectionLessonCount)
+                                .quizCount(sectionQuizCount)
+                                .duration(sectionDuration > 0 ? sectionDuration : null)
                                 .lessons(lessonSummaries)
                                 .build();
         }
@@ -386,6 +498,7 @@ public class CourseServiceImp implements CourseService {
                                 .price(course.getPrice())
                                 .level(course.getLevel())
                                 .thumbnailUrl(course.getThumbnailUrl())
+                                .slug(course.getSlug())
                                 .enrollCount(enrollCount)
                                 .averageRating(averageRating)
                                 .sectionCount(sectionCount)

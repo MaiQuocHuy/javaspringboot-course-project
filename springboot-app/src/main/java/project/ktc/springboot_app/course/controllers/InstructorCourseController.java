@@ -45,6 +45,7 @@ import project.ktc.springboot_app.course.enums.CourseInstructorStatus;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.services.InstructorCourseServiceImp;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import project.ktc.springboot_app.utils.StringUtil;
 
 @RestController
 @Tag(name = "Instructor Courses API", description = "Endpoints for managing instructor-specific courses")
@@ -120,7 +121,7 @@ public class InstructorCourseController {
                                 categoryIds.size());
 
                 String instructorId = SecurityUtil.getCurrentUserId();
-
+                String slugString = StringUtil.generateSlug(title);
                 // Create DTO from request parameters
                 CreateCourseDto createCourseDto;
                 try {
@@ -128,6 +129,7 @@ public class InstructorCourseController {
                                         .title(title)
                                         .description(description)
                                         .price(new java.math.BigDecimal(price))
+                                        .slug(slugString)
                                         .categoryIds(categoryIds)
                                         .level(CourseLevel.valueOf(level.toUpperCase()))
                                         .build();
