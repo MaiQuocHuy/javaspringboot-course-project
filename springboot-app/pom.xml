@@ -125,11 +125,11 @@
 		</dependency>
 
 		<!-- Dotenv -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>io.github.cdimascio</groupId>
 			<artifactId>dotenv-java</artifactId>
 			<version>3.2.0</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- Stripe -->
 		<dependency>
@@ -166,6 +166,12 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -198,10 +204,10 @@
 				<version>4.31.1</version>
 				<configuration>
 					<changeLogFile>src/main/resources/db/changelog/db.changelog-master.xml</changeLogFile>
-					<url>jdbc:mysql://localhost:3306/course_platform_db</url>
-					<username>root</username>
-					<password>password</password>
-					<driver>com.mysql.cj.jdbc.Driver</driver>
+					<url>${env.DB_URL}</url>
+					<username>${env.DB_USERNAME}</username>
+					<password>${env.DB_PASSWORD}</password>
+					<driver>${env.DB_DRIVER}</driver>
 				</configuration>
 			</plugin>
 		</plugins>

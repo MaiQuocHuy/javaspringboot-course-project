@@ -3,6 +3,8 @@ package project.ktc.springboot_app.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import project.ktc.springboot_app.payment.entity.Payment;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;

@@ -133,9 +133,6 @@ public class AuthServiceImp implements AuthService {
         log.info("Starting registration with application for role: {}", registerApplicationDto.getRole());
 
         // Validation checks
-        if (registerApplicationDto == null) {
-            return ApiResponseUtil.badRequest("Registration data cannot be null");
-        }
         if (registerApplicationDto.getEmail() == null || registerApplicationDto.getEmail().trim().isEmpty()) {
             return ApiResponseUtil.badRequest("Email cannot be null or empty");
         }

@@ -1,7 +1,14 @@
 package project.ktc.springboot_app.payment.interfaces;
 
+import java.util.List;
 import java.util.Optional;
-import project.ktc.springboot_app.entity.Payment;
+
+import org.springframework.http.ResponseEntity;
+
+import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.payment.dto.PaymentDetailResponseDto;
+import project.ktc.springboot_app.payment.dto.PaymentResponseDto;
+import project.ktc.springboot_app.payment.entity.Payment;
 
 /**
  * Interface for payment-related operations
@@ -44,6 +51,22 @@ public interface PaymentService {
      * @return The payment entity if found and amount matches
      */
     Optional<Payment> findPaymentBySessionIdAndVerifyAmount(String stripeSessionId, Double paidAmount);
+
+    /**
+     * Retrieves all payment transactions for the currently authenticated student
+     * 
+     * @return ResponseEntity containing list of payment transactions
+     */
+    ResponseEntity<ApiResponse<List<PaymentResponseDto>>> getStudentPayments();
+
+    /**
+     * Retrieves detailed information about a specific payment for the currently
+     * authenticated student.
+     *
+     * @param paymentId The ID of the payment to retrieve
+     * @return ResponseEntity containing detailed payment information
+     */
+    ResponseEntity<ApiResponse<PaymentDetailResponseDto>> getStudentPaymentDetail(String paymentId);
 
     /**
      * Finds payment by Stripe session ID

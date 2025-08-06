@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.entity;
+package project.ktc.springboot_app.payment.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -6,6 +6,8 @@ import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
+import project.ktc.springboot_app.entity.BaseEntity;
+import project.ktc.springboot_app.entity.Refund;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
