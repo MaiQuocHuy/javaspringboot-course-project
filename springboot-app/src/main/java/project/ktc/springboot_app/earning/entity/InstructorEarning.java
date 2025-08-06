@@ -6,7 +6,7 @@ import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.entity.BaseEntity;
-import project.ktc.springboot_app.entity.Payment;
+import project.ktc.springboot_app.payment.entity.Payment;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
