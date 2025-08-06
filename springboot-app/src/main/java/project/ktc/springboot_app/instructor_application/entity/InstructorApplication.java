@@ -8,6 +8,7 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.entity.BaseEntity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "instructor_applications", uniqueConstraints = @UniqueConstraint(name = "unique_app_user", columnNames = {
@@ -16,7 +17,12 @@ import java.time.LocalDateTime;
                 })
 @Getter
 @Setter
-public class InstructorApplication extends BaseEntity {
+public class InstructorApplication {
+
+        @Id
+        @Column(length = 36, updatable = false, nullable = false)
+        private String id = UUID.randomUUID().toString();
+
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "user_id", nullable = false)
         private User user;
