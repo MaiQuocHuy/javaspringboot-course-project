@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.payment.service;
+package project.ktc.springboot_app.payment.interfaces;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +52,7 @@ public interface PaymentService {
     Optional<Payment> findPaymentBySessionIdAndVerifyAmount(String stripeSessionId, Double paidAmount);
 
     /**
+<<<<<<< HEAD:springboot-app/src/main/java/project/ktc/springboot_app/payment/service/PaymentService.java
      * Retrieves all payment transactions for the currently authenticated student
      * 
      * @return ResponseEntity containing list of payment transactions
@@ -67,4 +68,12 @@ public interface PaymentService {
      */
     ResponseEntity<ApiResponse<project.ktc.springboot_app.payment.dto.PaymentDetailResponseDto>> getStudentPaymentDetail(
             String paymentId);
+=======
+     * Finds payment by Stripe session ID
+     * 
+     * @param stripeSessionId The Stripe session ID
+     * @return The payment entity if found
+     */
+    Optional<Payment> findPaymentBySessionId(String stripeSessionId);
+>>>>>>> ebe3623b8c790417898331f330aea841c3682f4f:springboot-app/src/main/java/project/ktc/springboot_app/payment/interfaces/PaymentService.java
 }
