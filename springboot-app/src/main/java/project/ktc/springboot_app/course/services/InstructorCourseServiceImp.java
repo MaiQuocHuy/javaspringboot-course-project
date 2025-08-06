@@ -195,6 +195,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             course.setLevel(createCourseDto.getLevel());
             course.setInstructor(instructor);
             course.setCategories(categories);
+            course.setSlug(createCourseDto.getSlug());
 
             // Set default values for new course
             course.setIsPublished(false);

@@ -16,26 +16,28 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 
 public interface CourseService {
-    ResponseEntity<ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(
-            String search,
-            String categoryId,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
-            CourseLevel level,
-            Pageable pageable);
+        ResponseEntity<ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(
+                        String search,
+                        String categoryId,
+                        BigDecimal minPrice,
+                        BigDecimal maxPrice,
+                        CourseLevel level,
+                        Pageable pageable);
 
-    ResponseEntity<ApiResponse<CourseDetailResponseDto>> findOnePublic(String courseId);
+        ResponseEntity<ApiResponse<CourseDetailResponseDto>> findOnePublic(String courseId);
 
-    ResponseEntity<ApiResponse<PaginatedResponse<CourseAdminResponseDto>>> findCoursesForAdmin(
-            Boolean isApproved,
-            String categoryId,
-            String search,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
-            CourseLevel level,
-            Pageable pageable);
+        ResponseEntity<ApiResponse<CourseDetailResponseDto>> findOneBySlug(String slug);
 
-    ResponseEntity<ApiResponse<CourseApprovalResponseDto>> approveCourse(String courseId);
+        ResponseEntity<ApiResponse<PaginatedResponse<CourseAdminResponseDto>>> findCoursesForAdmin(
+                        Boolean isApproved,
+                        String categoryId,
+                        String search,
+                        BigDecimal minPrice,
+                        BigDecimal maxPrice,
+                        CourseLevel level,
+                        Pageable pageable);
 
-    ResponseEntity<ApiResponse<List<SectionWithLessonsDto>>> getCourseDetailsForAdmin(String courseId);
+        ResponseEntity<ApiResponse<CourseApprovalResponseDto>> approveCourse(String courseId);
+
+        ResponseEntity<ApiResponse<List<SectionWithLessonsDto>>> getCourseDetailsForAdmin(String courseId);
 }
