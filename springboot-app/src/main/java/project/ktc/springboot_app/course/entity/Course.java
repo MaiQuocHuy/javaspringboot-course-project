@@ -9,7 +9,7 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.entity.BaseEntity;
-import project.ktc.springboot_app.entity.Payment;
+import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.review.entity.Review;
 import project.ktc.springboot_app.section.entity.Section;
 

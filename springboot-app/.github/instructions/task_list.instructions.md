@@ -829,6 +829,152 @@ For lists of resources that support pagination.
 - **Security:** Requires `STUDENT` role.
 - **Testing:** Test retrieval of sections and lessons for enrolled courses.
 
+### 3.6. `GET /api/student/payments`
+
+- **Description:** Retrieve a list of all payment transactions made by the currently authenticated student.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/student/payments`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - \*\*Query Parameters: (Optional, for pagination if needed)
+    - page (default: 0)
+    - size (default: 10)
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Payments retrieved successfully",
+      "data": [
+        {
+          "id": "payment-uuid",
+          "amount": 1200000,
+          "currency": "USD",
+          "status": "COMPLETED",
+          "paymentMethod": "STRIPE",
+          "createdAt": "2025-08-01T10:30:00Z",
+          "course": {
+            "id": "course-uuid",
+            "title": "KTC Backend Spring Boot",
+            "thumbnailUrl": "https://cdn.ktc.com/images/spring-boot.png"
+          }
+        },
+        {
+          "id": "payment-uuid-2",
+          "amount": 800000,
+          "currency": "USD",
+          "status": "PENDING",
+          "paymentMethod": "BANK_TRANSFER",
+          "createdAt": "2025-08-03T09:45:00Z",
+          "course": {
+            "id": "course-uuid-2",
+            "title": "KTC Frontend React",
+            "thumbnailUrl": "https://cdn.ktc.com/images/react.png"
+          }
+        }
+      ]
+    }
+    ```
+- **Controller:** Create `StudentPaymentController` with a `getPayments` endpoint.
+- **Service:**
+  - Authenticate the user.
+  - Requires STUDENT role.
+  - Implement `getPayments` in `StudentPaymentService`.
+  - Fetch all payment transactions for the current student.
+  - Default format is USD, but can be extended to support multiple currencies.
+- **Repository:** Create a custom query in `PaymentRepository` to filter by student ID.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test retrieval of payment transactions for the current student.
+
+### 3.7 `GET /api/student/payments/:id`
+
+- **Description:** Retrieve detailed information about a specific payment made by the student, including external gateway (e.g., Stripe) data if available.
+
+- **Request:**
+  - **Method:** `GET`
+- **Endpoint:** `/api/student/payments/:id`
+- **Headers:** `Authorization: Bearer <accessToken>`
+- **Path Params:** `id` (string)
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Payment detail retrieved successfully",
+        "data": {
+          "id": "payment-uuid",
+          "amount": 1200000,
+          "currency": "VND",
+          "status": "COMPLETED",
+          "paymentMethod": "STRIPE",
+          "createdAt": "2025-08-01T10:30:00Z",
+          "transactionId": "pi_1OpYuW2eZvKYlo2Cabc123",
+          "stripeSessionId": "cs_test_a1b2c3d4e5",
+          "receiptUrl": "https://pay.stripe.com/receipts/xyz",
+          "card": {
+            "brand": "visa",
+            "last4": "4242",
+            "expMonth": 8,
+            "expYear": 2027
+          },
+        "course": {
+          "id": "course-uuid",
+          "title": "KTC Backend Spring Boot",
+          "thumbnailUrl": "https://cdn.ktc.com/images/spring-boot.png"
+        }
+      }
+    }
+    ```
+- **Controller:** Add a `getPaymentDetail` endpoint to `StudentPaymentController`.
+- **Service:** Implement `getPaymentDetail` in `StudentPaymentService`.
+- **Logic:**
+  - Validate the payment ID exists and belongs to the authenticated student.
+  - Fetch detailed payment information, including external gateway data if available.
+  - If stripeSessionId is present:
+    - Use Stripe API to fetch additional details like transaction ID, card brand, last4 digits, and receipt URL.
+    - Use Stripe API to fetch related data:
+      - PaymentIntent → Transaction ID
+      - Charge → card brand, last4, receipt URL, etc.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test retrieval of payment details for valid and invalid payment IDs.
+
+### 3.8 `GET /api/student/reviews`
+- **Description:** Retrieves all reviews submitted by the current student.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/student/reviews`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Reviews retrieved successfully",
+      "data": [
+        {
+          "id": "review-uuid-1",
+          "courseId": "course-uuid-1",
+          "rating": 5,
+          "comment": "Great course!",
+          "createdAt": "2025-08-01T10:30:00Z"
+        },
+        {
+          "id": "review-uuid-2",
+          "courseId": "course-uuid-2",
+          "rating": 4,
+          "comment": "Very informative.",
+          "createdAt": "2025-08-03T09:45:00Z"
+        }
+      ]
+    }
+    ```
+- **Controller:** Create `StudentReviewController` with a `getReviews` endpoint.
+- **Service:** Implement `getReviews` in `StudentReviewService`.
+- **Logic:**
+  - Fetch all reviews submitted by the current student.
+  - Include course details (ID, title) in the response.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test retrieval of reviews for the current student.
 ---
 
 ## 4. Instructor Role
@@ -2315,6 +2461,55 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
 
 - **Security:** Requires `INSTRUCTOR` role and section ownership.
 - **Testing:** Test quiz update with valid and invalid inputs.
+
+### 4.29 `PUT /api/student/sections/:sectionId/lessons/:lessonId/submit`
+
+- **Description:** Submits quiz answers for a specific lesson. If a result already exists for the current user and lesson, it will be overwritten (overridden).
+- **Request:**
+  - **Method:** `PUT`
+  - **Path:** `/api/student/sections/:sectionId/lessons/:lessonId/submit`
+  - **Headers:**
+    - `Authorization: Bearer <accessToken>`
+  - **Body:**
+    ```json
+    {
+      "answers": {
+        "questionId-1": "A",
+        "questionId-2": "D",
+        "questionId-3": "B"
+      }
+    }
+    ```
+  - **Path Params:**
+    - `sectionId` (string): The ID of the section containing the lesson.
+    - `lessonId` (string): The ID of the lesson being submitted.
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Quiz submitted successfully",
+      "data": {
+        "score": 85,
+        "totalQuestions": 10,
+        "correctAnswers": 8,
+        "feedback": "Great job! You answered 8 out of 10 questions correctly.",
+        "submittedAt": "2025-07-26T10:30:00Z"
+      }
+    }
+    ```
+- **Controller:** Create `StudentLessonController` with a `submitQuiz` endpoint.
+- **Service:** Implement `submitQuiz` in `LessonService`.
+- **Business Rules:**
+  - Students can only submit quizzes for lessons they are enrolled in.
+  - Answers must match the question IDs in the quiz.
+  - Calculate score based on correct answers.
+  - Provide feedback based on performance.
+  - If the student has already submitted this quiz before:
+    - The previous result will be overwritten with the new one.
+      The system updates the existing record instead of creating a new one.
+  - Only one result per user per lesson is stored.
+- **Security:** Requires `STUDENT` role and enrollment in the section.
 
 ## 5. Admin Role
 

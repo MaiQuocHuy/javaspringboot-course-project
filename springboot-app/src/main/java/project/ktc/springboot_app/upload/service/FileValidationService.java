@@ -22,6 +22,7 @@ public class FileValidationService {
             "image/png",
             "image/gif",
             "image/bmp",
+            "image/jpg",
             "image/webp");
 
     // Allowed video MIME types
