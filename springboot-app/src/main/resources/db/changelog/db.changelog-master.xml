@@ -50,5 +50,11 @@
     
     <!-- System User for Webhooks -->
     <include file="db/changelog/changes/124-add-system-user.xml"/>
-   
+
+    <!-- Quiz Questions for Lesson -->
+    <include file="db/changelog/changes/125-seed-quiz-questions-results.xml"/>
+
+    <!-- Fix Quiz Results Question IDs -->
+    <include file="db/changelog/changes/126-fix-quiz-results-question-ids.xml"/>
+
 </databaseChangeLog>
