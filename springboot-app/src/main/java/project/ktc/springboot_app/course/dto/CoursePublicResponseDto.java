@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -23,7 +24,7 @@ public class CoursePublicResponseDto {
     private Long enrollCount;
     private Double averageRating;
     private Long sectionCount;
-    private CategorySummary category;
+    private List<CategorySummary> categories;
     private InstructorSummary instructor;
 
     @Data

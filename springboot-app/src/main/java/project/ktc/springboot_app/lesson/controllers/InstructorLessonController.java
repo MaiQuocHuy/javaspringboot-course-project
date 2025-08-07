@@ -26,7 +26,7 @@ import project.ktc.springboot_app.lesson.services.InstructorLessonServiceImp;
 import project.ktc.springboot_app.quiz.dto.UpdateQuizDto;
 import project.ktc.springboot_app.quiz.dto.UpdateQuizQuestionDto;
 import project.ktc.springboot_app.quiz.dto.UpdateQuizResponseDto;
-import project.ktc.springboot_app.quiz.service.QuizServiceImp;
+import project.ktc.springboot_app.quiz.services.QuizServiceImp;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 import project.ktc.springboot_app.utils.SecurityUtil;
 

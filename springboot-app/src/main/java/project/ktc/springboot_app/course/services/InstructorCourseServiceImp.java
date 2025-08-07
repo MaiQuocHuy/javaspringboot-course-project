@@ -28,11 +28,16 @@ import project.ktc.springboot_app.course.dto.CourseResponseDto.CategoryInfo;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
 import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
+import project.ktc.springboot_app.course.dto.InstructorCourseDetailResponseDto;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
+import project.ktc.springboot_app.course.dto.common.BaseCourseResponseDto;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
+import project.ktc.springboot_app.section.entity.Section;
+import project.ktc.springboot_app.lesson.entity.Lesson;
+import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.service.FileValidationService;
@@ -52,6 +57,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
     private final InstructorSectionRepository sectionRepository;
+    private final QuizQuestionRepository quizQuestionRepository;
     private final SystemLogHelper systemLogHelper;
 
     @Override
@@ -113,13 +119,15 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
         String status = determineStatus(course);
 
         // Get primary category (first one if multiple)
-        CourseDashboardResponseDto.CategoryInfo categoryInfo = null;
+        List<CourseDashboardResponseDto.CategoryInfo> categoryInfos = new ArrayList<>();
         if (course.getCategories() != null && !course.getCategories().isEmpty()) {
-            Category category = course.getCategories().get(0);
-            categoryInfo = CourseDashboardResponseDto.CategoryInfo.builder()
-                    .id(category.getId())
-                    .name(category.getName())
-                    .build();
+            for (Category category : course.getCategories()) {
+                CourseDashboardResponseDto.CategoryInfo info = CourseDashboardResponseDto.CategoryInfo.builder()
+                        .id(category.getId())
+                        .name(category.getName())
+                        .build();
+                categoryInfos.add(info);
+            }
         }
 
         // Determine permissions
@@ -135,7 +143,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 .description(course.getDescription())
                 .level(course.getLevel())
                 .thumbnailUrl(course.getThumbnailUrl())
-                .category(categoryInfo)
+                .categories(categoryInfos)
                 .status(status)
                 .isApproved(course.getIsApproved())
                 .createdAt(course.getCreatedAt())
@@ -623,5 +631,156 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
         }
 
         return true;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<InstructorCourseDetailResponseDto>> getCourseDetails(
+            String courseId,
+            String instructorId) {
+
+        log.info("Getting course details for courseId: {} by instructor: {}", courseId, instructorId);
+
+        // Step 1: Find the course with instructor
+        Course course = instructorCourseRepository.findByIdAndInstructorId(courseId, instructorId)
+                .orElseThrow(() -> new RuntimeException("Course not found or you don't have permission to access it"));
+
+        // Step 2: Fetch categories separately to avoid MultipleBagFetchException
+        Optional<Course> courseWithCategories = courseRepository.findCourseWithCategories(courseId);
+        if (courseWithCategories.isPresent()) {
+            course.setCategories(courseWithCategories.get().getCategories());
+        }
+
+        // Step 3: Fetch sections with lessons separately
+        List<Section> sectionsWithLessons = courseRepository.findSectionsWithLessonsByCourseId(courseId);
+        course.setSections(sectionsWithLessons);
+
+        // Step 4: Get course statistics
+        Long enrollmentCount = courseRepository.countUserEnrolledInCourse(courseId);
+        Double averageRating = courseRepository.findAverageRatingByCourseId(courseId).orElse(0.0);
+        Long ratingCount = courseRepository.countReviewsByCourseId(courseId);
+        Long sectionCountLong = sectionRepository.countSectionsByCourseId(courseId);
+        Integer sectionCount = sectionCountLong != null ? sectionCountLong.intValue() : 0;
+        Optional<LocalDateTime> lastContentUpdate = instructorCourseRepository
+                .getLastContentUpdateByCourseId(course.getId());
+
+        // Step 5: Map to response DTO
+        InstructorCourseDetailResponseDto responseDto = mapToInstructorCourseDetailResponse(
+                course, enrollmentCount.intValue(), averageRating, ratingCount, sectionCount, lastContentUpdate);
+
+        return ApiResponseUtil.success(responseDto, "Course details retrieved successfully");
+    }
+
+    private InstructorCourseDetailResponseDto mapToInstructorCourseDetailResponse(
+            Course course,
+            Integer enrollmentCount,
+            Double averageRating,
+            Long ratingCount,
+            Integer sectionCount,
+            Optional<LocalDateTime> lastContentUpdate) {
+
+        // Map instructor info using common base class
+        BaseCourseResponseDto.InstructorInfo instructorInfo = null;
+        if (course.getInstructor() != null) {
+            instructorInfo = BaseCourseResponseDto.InstructorInfo.builder()
+                    .id(course.getInstructor().getId())
+                    .name(course.getInstructor().getName())
+                    .email(course.getInstructor().getEmail())
+                    .avatar(course.getInstructor().getThumbnailUrl())
+                    .build();
+        }
+
+        // Map categories using common base class
+        List<BaseCourseResponseDto.CategoryInfo> categoryInfos = new ArrayList<>();
+        if (course.getCategories() != null && !course.getCategories().isEmpty()) {
+            categoryInfos = course.getCategories().stream()
+                    .map(category -> BaseCourseResponseDto.CategoryInfo.builder()
+                            .id(category.getId())
+                            .name(category.getName())
+                            .build())
+                    .collect(Collectors.toList());
+        }
+
+        // Map sections with lessons
+        List<InstructorCourseDetailResponseDto.SectionInfo> sectionInfos = new ArrayList<>();
+        if (course.getSections() != null && !course.getSections().isEmpty()) {
+            sectionInfos = course.getSections().stream()
+                    .map(this::mapToSectionInfo)
+                    .collect(Collectors.toList());
+        }
+
+        return new InstructorCourseDetailResponseDto(
+                // Base class fields in order
+                course.getId(), // id
+                course.getTitle(), // title
+                course.getDescription(), // description
+                course.getPrice(), // price
+                course.getLevel(), // level
+                course.getThumbnailUrl(), // thumbnailUrl
+                course.getIsApproved(), // isApproved
+                course.getCreatedAt(), // createdAt
+                course.getUpdatedAt(), // updatedAt
+                categoryInfos, // categories
+                enrollmentCount, // totalStudents
+                sectionCount, // sectionCount
+                averageRating, // averageRating
+                // Child class fields in order
+                course.getSlug(), // slug
+                instructorInfo, // instructor
+                lastContentUpdate.orElse(course.getUpdatedAt()), // lastContentUpdate
+                course.getIsPublished(), // isPublished
+                enrollmentCount, // enrollmentCount
+                ratingCount, // ratingCount
+                sectionInfos // sections
+        );
+    }
+
+    private InstructorCourseDetailResponseDto.SectionInfo mapToSectionInfo(Section section) {
+        int totalVideoDuration = 0;
+        int totalQuizQuestions = 0;
+        List<InstructorCourseDetailResponseDto.LessonInfo> lessonInfos = new ArrayList<>();
+
+        if (section.getLessons() != null) {
+            for (Lesson lesson : section.getLessons()) {
+                InstructorCourseDetailResponseDto.LessonInfo lessonInfo = mapToLessonInfo(lesson);
+                lessonInfos.add(lessonInfo);
+
+                // Calculate totals based on lesson type
+                if ("VIDEO".equals(lesson.getLessonType().getName()) && lesson.getContent() != null) {
+                    totalVideoDuration += lesson.getContent().getDuration() != null ? lesson.getContent().getDuration()
+                            : 0;
+                } else if ("QUIZ".equals(lesson.getLessonType().getName())) {
+                    // Count quiz questions for this lesson
+                    Long questionCount = quizQuestionRepository.countByLessonId(lesson.getId());
+                    totalQuizQuestions += questionCount != null ? questionCount.intValue() : 0;
+                }
+            }
+        }
+
+        return InstructorCourseDetailResponseDto.SectionInfo.builder()
+                .id(section.getId())
+                .title(section.getTitle())
+                .totalVideoDuration(totalVideoDuration > 0 ? totalVideoDuration : null)
+                .totalQuizQuestion(totalQuizQuestions > 0 ? totalQuizQuestions : null)
+                .lessons(lessonInfos)
+                .build();
+    }
+
+    private InstructorCourseDetailResponseDto.LessonInfo mapToLessonInfo(Lesson lesson) {
+        InstructorCourseDetailResponseDto.LessonInfo.LessonInfoBuilder builder = InstructorCourseDetailResponseDto.LessonInfo
+                .builder()
+                .id(lesson.getId())
+                .title(lesson.getTitle())
+                .type(lesson.getLessonType().getName());
+
+        if ("VIDEO".equals(lesson.getLessonType().getName()) && lesson.getContent() != null) {
+            builder.videoUrl(lesson.getContent().getUrl())
+                    .duration(lesson.getContent().getDuration());
+        } else if ("QUIZ".equals(lesson.getLessonType().getName())) {
+            // Count quiz questions for this lesson
+            Long questionCount = quizQuestionRepository.countByLessonId(lesson.getId());
+            builder.quizQuestionCount(questionCount != null ? questionCount.intValue() : 0);
+        }
+
+        return builder.build();
     }
 }

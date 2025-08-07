@@ -51,6 +51,19 @@ public class StudentLessonServiceImp implements StudentService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Mark a lesson as completed by the current student.
+     * 
+     * This method handles lesson completion with the following logic:
+     * - If lesson was previously completed, it updates the completion timestamp
+     * - If first completion, it creates a new lesson completion record
+     * - Checks and updates course completion status if all lessons are completed
+     * - Idempotent operation - can be called multiple times safely
+     * 
+     * @param sectionId The ID of the section containing the lesson
+     * @param lessonId  The ID of the lesson to mark as completed
+     * @return ResponseEntity indicating success or failure
+     */
     @Override
     @Transactional
     public ResponseEntity<ApiResponse<String>> completeLesson(String sectionId, String lessonId) {
@@ -84,13 +97,9 @@ public class StudentLessonServiceImp implements StudentService {
                 return ApiResponseUtil.badRequest("Lesson does not belong to the specified section");
             }
 
-            // Check if lesson is already completed by the student (idempotent operation)
-            boolean alreadyCompleted = lessonCompletionRepository.existsByUserIdAndLessonId(currentUserId, lessonId);
-            if (alreadyCompleted) {
-                log.info("Lesson {} already completed by student {}", lessonId, currentUserId);
-                return ApiResponseUtil.success("Lesson completion already recorded",
-                        "Lesson marked as complete");
-            }
+            // Check if lesson is already completed by the student
+            Optional<LessonCompletion> existingCompletionOpt = lessonCompletionRepository
+                    .findByUserIdAndLessonId(currentUserId, lessonId);
 
             // Get student user entity
             Optional<User> userOpt = userRepository.findById(currentUserId);
@@ -99,11 +108,21 @@ public class StudentLessonServiceImp implements StudentService {
             }
             User student = userOpt.get();
 
-            // Create lesson completion record
-            LessonCompletion completion = new LessonCompletion();
-            completion.setUser(student);
-            completion.setLesson(lesson);
-            completion.setCompletedAt(LocalDateTime.now());
+            LessonCompletion completion;
+            if (existingCompletionOpt.isPresent()) {
+                // Update existing completion time (idempotent operation)
+                completion = existingCompletionOpt.get();
+                completion.setCompletedAt(LocalDateTime.now());
+                log.info("Updating existing lesson completion time for student {} on lesson {}", currentUserId,
+                        lessonId);
+            } else {
+                // Create new lesson completion record
+                completion = new LessonCompletion();
+                completion.setUser(student);
+                completion.setLesson(lesson);
+                completion.setCompletedAt(LocalDateTime.now());
+                log.info("Creating new lesson completion for student {} on lesson {}", currentUserId, lessonId);
+            }
 
             lessonCompletionRepository.save(completion);
             log.info("Successfully recorded lesson completion for student {} on lesson {}", currentUserId, lessonId);
@@ -149,6 +168,22 @@ public class StudentLessonServiceImp implements StudentService {
         }
     }
 
+    /**
+     * Submit quiz answers for a lesson and record completion.
+     * 
+     * This method handles quiz submission with the following logic:
+     * - If quiz was previously submitted, it updates the existing result and
+     * completion time
+     * - If first submission, it creates new quiz result and lesson completion
+     * records
+     * - Automatically marks lesson as completed after successful quiz submission
+     * - Checks and updates course completion status if all lessons are completed
+     * 
+     * @param sectionId     The ID of the section containing the lesson
+     * @param lessonId      The ID of the quiz lesson
+     * @param submitQuizDto DTO containing the submitted answers
+     * @return ResponseEntity with quiz submission result and feedback
+     */
     @Override
     @Transactional
     public ResponseEntity<ApiResponse<QuizSubmissionResponseDto>> submitQuiz(String sectionId, String lessonId,
@@ -231,7 +266,7 @@ public class StudentLessonServiceImp implements StudentService {
 
             QuizResult quizResult;
             if (existingResultOpt.isPresent()) {
-                // Update existing result
+                // Update existing result - allows multiple quiz attempts
                 quizResult = existingResultOpt.get();
                 log.info("Overwriting existing quiz result for student {} on lesson {}", currentUserId, lessonId);
             } else {
@@ -239,6 +274,7 @@ public class StudentLessonServiceImp implements StudentService {
                 quizResult = new QuizResult();
                 quizResult.setUser(student);
                 quizResult.setLesson(lesson);
+                log.info("Creating new quiz result for student {} on lesson {}", currentUserId, lessonId);
             }
 
             // 10. Save quiz result
@@ -260,8 +296,32 @@ public class StudentLessonServiceImp implements StudentService {
                     .submittedAt(quizResult.getCompletedAt())
                     .build();
 
+            // 13. Create or update lesson completion record if submitted successfully
+            Optional<LessonCompletion> existingCompletionOpt = lessonCompletionRepository
+                    .findByUserIdAndLessonId(currentUserId, lessonId);
+
+            LessonCompletion completion;
+            if (existingCompletionOpt.isPresent()) {
+                // Update existing completion time
+                completion = existingCompletionOpt.get();
+                completion.setCompletedAt(LocalDateTime.now());
+                log.info("Updating existing lesson completion for student {} on lesson {}", currentUserId, lessonId);
+            } else {
+                // Create new completion record
+                completion = new LessonCompletion();
+                completion.setUser(student);
+                completion.setLesson(lesson);
+                completion.setCompletedAt(LocalDateTime.now());
+                log.info("Creating new lesson completion for student {} on lesson {}", currentUserId, lessonId);
+            }
+
+            lessonCompletionRepository.save(completion);
+
             log.info("Successfully processed quiz submission for student {} on lesson {}. Score: {}/{}",
                     currentUserId, lessonId, correctAnswers, totalQuestions);
+
+            // Check if all lessons in the course are completed and update enrollment status
+            checkAndUpdateCourseCompletion(currentUserId, courseId);
 
             return ApiResponseUtil.success(responseDto, "Quiz submitted successfully");
 

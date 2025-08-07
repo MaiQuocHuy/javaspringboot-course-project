@@ -52,4 +52,13 @@ public interface InstructorCourseRepository extends JpaRepository<Course, String
                         "WHERE s.course.id = :courseId")
         Optional<LocalDateTime> getLastContentUpdateByCourseId(@Param("courseId") String courseId);
 
+        /**
+         * Find course by ID and instructor ID with instructor details
+         */
+        @Query("SELECT c FROM Course c " +
+                        "LEFT JOIN FETCH c.instructor " +
+                        "WHERE c.id = :courseId AND c.instructor.id = :instructorId AND c.isDeleted = false")
+        Optional<Course> findByIdAndInstructorId(@Param("courseId") String courseId,
+                        @Param("instructorId") String instructorId);
+
 }
