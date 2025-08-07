@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="125-seed-quiz-questions-results" author="ktc">
+        <!-- QUIZ Question for Course 011 -->
+         <insert tableName="quiz_questions">
+            <column name="id" value="question-011-001"/>
+            <column name="lesson_id" value="lesson-020"/>
+            <column name="question_text" value="What is React primarily used for?"/>
+            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="React is a JavaScript library primarily used for building user interfaces, especially for web applications."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-011-002"/>
+            <column name="lesson_id" value="lesson-020"/>
+            <column name="question_text" value="What is JavaScript primarily used for?"/>
+            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="JavaScript is a versatile programming language primarily used for building interactive web applications."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-011-003"/>
+            <column name="lesson_id" value="lesson-020"/>
+            <column name="question_text" value="What is Oracle primarily used for?"/>
+            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="correct_answer" value="A"/>
+            <column name="explanation" value="Oracle is primarily used for database management and enterprise applications."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+
+        <!-- Quiz Result for user-002 -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-01-001"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="lesson_id" value="lesson-020"/> <!-- React Basics Quiz -->
+            <column name="score" value="100.00"/>
+            <column name="answers" 
+                    value='{"question-011-001": "B", "question-011-002": "B", "question-011-003": "A"}'/>
+            <column name="completed_at" value="2025-01-25 14:30:00"/>
+            <column name="created_at" value="2025-01-25 14:30:00"/>
+            <column name="updated_at" value="2025-01-25 14:30:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

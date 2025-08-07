@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.quiz.dto.CreateQuizDto;
 import project.ktc.springboot_app.quiz.dto.QuizResponseDto;
-import project.ktc.springboot_app.quiz.service.QuizServiceImp;
+import project.ktc.springboot_app.quiz.services.QuizServiceImp;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
 @RestController

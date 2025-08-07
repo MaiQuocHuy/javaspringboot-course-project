@@ -8,6 +8,7 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -27,7 +28,7 @@ public class CourseAdminResponseDto {
     private Double averageRating;
     private Long ratingCount;
     private Long sectionCount;
-    private CategoryInfo category;
+    private List<CategoryInfo> categories;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

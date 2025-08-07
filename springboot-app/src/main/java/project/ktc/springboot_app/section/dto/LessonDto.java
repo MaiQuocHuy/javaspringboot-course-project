@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,4 +19,5 @@ public class LessonDto {
     private VideoDto video;
     private QuizDto quiz;
     private Boolean isCompleted;
+    private LocalDateTime completedAt;
 }

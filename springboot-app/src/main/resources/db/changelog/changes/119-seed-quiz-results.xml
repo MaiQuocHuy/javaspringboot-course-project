@@ -14,7 +14,7 @@
             <column name="user_id" value="user-002"/> <!-- Bob -->
             <column name="lesson_id" value="lesson-002"/> <!-- React Basics Quiz -->
             <column name="score" value="85.00"/>
-            <column name="answers" value='{"question-005": "A", "question-006": "B", "question-007": "C", "question-008": "A"}'/>
+            <column name="answers" value='{"question-001": "B", "question-002": "A", "question-003": "A"}'/>
             <column name="completed_at" value="2025-01-25 14:30:00"/>
             <column name="created_at" value="2025-01-25 14:30:00"/>
             <column name="updated_at" value="2025-01-25 14:30:00"/>
@@ -26,7 +26,7 @@
             <column name="user_id" value="user-005"/> <!-- Emily -->
             <column name="lesson_id" value="lesson-012"/> <!-- ML Algorithms Quiz -->
             <column name="score" value="92.50"/>
-            <column name="answers" value='{"question-001": "A", "question-002": "C", "question-003": "B", "question-004": "A"}'/>
+            <column name="answers" value='{"question-006": "D", "question-007": "C"}'/>
             <column name="completed_at" value="2025-01-18 16:45:00"/>
             <column name="created_at" value="2025-01-18 16:45:00"/>
             <column name="updated_at" value="2025-01-18 16:45:00"/>

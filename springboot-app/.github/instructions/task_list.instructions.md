@@ -1027,7 +1027,154 @@ For lists of resources that support pagination.
 - **Security:** Requires `STUDENT` role.
 - **Testing:** Test updating a review with valid and invalid data.
 
----
+### 3.10 `GET /api/student/quiz-score`
+
+- **Description:** Retrieves the quiz scores for all completed quizzes in courses the student is enrolled in.
+- **Request:**
+
+  - **Method**: `GET`
+  - **Path**: `/api/student/quiz-score`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Query Parameters: (Optional, for pagination if needed)**
+    - page (default: 0)
+    - size (default: 10)
+  - **Options:**
+    - `sort` (string, optional) - e.g., `score,desc` to sort by score in descending order, `completedAt,desc` to sort by completion date in descending order.
+
+- **Response:**
+
+  - **Success (200 OK):**
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Quiz scores retrieved successfully",
+      "data": [
+        {
+          "id": "quiz-result-uuid-1",
+          "lesson": {
+            "id": "lesson-uuid-1",
+            "title": "Quiz 1: Java Basics"
+          },
+          "section": {
+            "id": "section-uuid-1",
+            "title": "Section 1: Java Fundamentals"
+          },
+          "course": {
+            "id": "course-uuid-1",
+            "title": "KTC Backend Spring Boot"
+          },
+          "score": 85.0,
+          "totalQuestions": 10,
+          "correctAnswers": 8,
+          "completedAt": "2025-08-01T10:30:00Z",
+          "canReview": true
+        },
+        {
+          "id": "quiz-result-uuid-2",
+          "lesson": {
+            "id": "lesson-uuid-2",
+            "title": "Quiz 2: React Components"
+          },
+          "section": {
+            "id": "section-uuid-2",
+            "title": "Section 2: React Basics"
+          },
+          "course": {
+            "id": "course-uuid-2",
+            "title": "KTC Frontend React"
+          },
+          "score": 92.5,
+          "totalQuestions": 12,
+          "correctAnswers": 11,
+          "completedAt": "2025-08-03T09:45:00Z",
+          "canReview": true
+        }
+      ]
+    }
+    ```
+
+- **Controller:** Create `StudentQuizController` with a `getQuizScores` endpoint.
+- **Service:** Implement `getQuizScores` in `StudentQuizService`.
+- **Logic:**
+  - Fetch all completed quizzes for the current student.
+  - Include course details (ID, title) in the response.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test retrieval of quiz scores for the current student.
+
+### 3.11 `GET /api/student/quiz-score/:id`
+
+- **Description:** Retrieves detailed information about a specific quiz score for the currently authenticated student
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/student/quiz-score/:id`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Path Params:** `id` (string)
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Quiz score details retrieved successfully",
+      "data": {
+        "id": "quiz-result-uuid",
+        "lesson": {
+          "id": "lesson-uuid",
+          "title": "Quiz 1: Java Basics"
+        },
+        "section": {
+          "id": "section-uuid",
+          "title": "Section 1: Java Fundamentals"
+        },
+        "course": {
+          "id": "course-uuid",
+          "title": "KTC Backend Spring Boot"
+        },
+        "score": 85.0,
+        "totalQuestions": 10,
+        "correctAnswers": 8,
+        "completedAt": "2025-08-01T10:30:00Z",
+        "canReview": true,
+        "questions": [
+          {
+            "id": "q1",
+            "questionText": "What is polymorphism in OOP?",
+            "options": [
+              "A. Ability to inherit",
+              "B. Same method, different behavior",
+              "C. Data hiding",
+              "D. Code reuse"
+            ],
+            "studentAnswer": "B",
+            "correctAnswer": "B",
+            "isCorrect": true,
+            "explanation": "Polymorphism allows methods to behave differently based on input or context."
+          },
+          {
+            "id": "q2",
+            "questionText": "What is polymorphism in OOP?",
+            "options": [
+              "A. Ability to inherit",
+              "B. Same method, different behavior",
+              "C. Data hiding",
+              "D. Code reuse"
+            ],
+            "studentAnswer": "B",
+            "correctAnswer": "B",
+            "isCorrect": true,
+            "explanation": "Polymorphism allows methods to behave differently based on input or context."
+          }
+        ]
+      }
+    }
+    ```
+- ** Controller:** Add a `getQuizScoreDetail` endpoint to `StudentQuizController`.
+- **Service:** Implement `getQuizScoreDetail` in `StudentQuizService`.
+- **Logic:** Fetch the quiz score details by ID for the current student.
+  - Validate the quiz score ID exists and belongs to the authenticated student.
+  - Include detailed information about each question, including student answers, correct answers, and explanations.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test retrieval of quiz score details for valid and invalid IDs.
 
 ## 4. Instructor Role
 
@@ -2563,6 +2710,97 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - Only one result per user per lesson is stored.
 - **Security:** Requires `STUDENT` role and enrollment in the section.
 
+### 4.30 `GET /api/instructor/courses/:id`
+
+- **Description:** Retrieves full details of a specific course owned by the current instructor, including sections, lessons, and quizzes.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/instructor/courses/{id}`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course retrieved successfully",
+      "data": {
+        "id": "course-uuid",
+        "title": "Course Title",
+        "description": "Course Description",
+        "slug": "course-title",
+        "thumbnailUrl": "https://res.cloudinary.com/.../course-thumb.jpg",
+        "instructor": {
+          "id": "instructor-uuid",
+          "name": "Instructor Name",
+          "email": "instructor@example.com",
+          "avatar": "https://res.cloudinary.com/.../instructor-profile.jpg"
+        },
+        "isApproved": true,
+        "isPublished": false,
+        "level": "BEGINNER",
+        "price": 49.99,
+        "enrollmentCount": 100,
+        "averageRating": 4.5,
+        "ratingCount": 25,
+        "sectionCount": 5,
+        "categories": [
+          {
+            "id": "category-uuid",
+            "name": "Category Name"
+          }
+        ],
+        "sections": [
+          {
+            "id": "section-id",
+            "title": "Section Title",
+            "totalVideoDuration": 3600,
+            "totalQuizQuestion": 10,
+            "lessons": [
+              {
+                "id": "lesson-id",
+                "title": "Lesson Title",
+                "type": "VIDEO",
+                "videoUrl": "https://res.cloudinary.com/.../lesson.mp4",
+                "duration": 600
+              },
+              {
+                "id": "lesson-id-2",
+                "title": "Lesson Title 2",
+                "type": "QUIZ",
+                "quizCount": 10
+              }
+            ]
+          }
+        ]
+      }
+    }
+    ```
+
+````
+- **Controller:** Create `InstructorCourseController` with a `getCourseDetails` endpoint.
+- **Service:** Implement `getCourseDetails` in `CourseService`.
+- **Business Rules:**
+  - Only instructors can view their own course details.
+  - Course details include sections, lessons, and quizzes.
+  - If the course is not found, return a 404 Not Found error.
+- **Business Logic:**
+  - Only the course owner instructor can access.
+  - Fetches:
+    - Basic course info (title, description, thumbnail, etc.)
+    - Instructor info (with email)
+    - Statistics: enrollments, ratings, section count
+    - Sections with:
+      - Total video duration (for VIDEO lessons)
+      - Total question count (for QUIZ lessons)
+- **Security:**
+  - @PreAuthorize("hasRole('INSTRUCTOR')")
+  - Ownership check: only the instructor who created the course can view it
+  - 404 error if:
+    - Course not found
+    - Course not owned by instructor
+- **Testing:** Test course retrieval with valid and invalid slugs.
+
 ## 5. Admin Role
 
 ### 5.1. `GET /api/admin/users`
@@ -2898,7 +3136,8 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
       "id": "log-entry-id"
     }
   }
-  ```
+````
+
 - **Controller:** Create `AdminLogController` with a `createLog` endpoint.
 - **Service:** Implement `createLog` in `LogService`.
 - **Security:** Requires `ADMIN` role.
