@@ -46,6 +46,14 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
         List<Review> findByUserIdWithCourse(@Param("userId") String userId);
 
         /**
+         * Find all reviews by a specific user with pagination and sorting
+         */
+        @Query("SELECT r FROM Review r " +
+                        "JOIN FETCH r.course c " +
+                        "WHERE r.user.id = :userId")
+        Page<Review> findByUserIdWithCourse(@Param("userId") String userId, Pageable pageable);
+
+        /**
          * Get average rating for a course
          */
         @Query("SELECT AVG(r.rating) FROM Review r WHERE r.course.id = :courseId")

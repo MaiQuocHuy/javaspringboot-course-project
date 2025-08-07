@@ -47,12 +47,18 @@ public interface CourseRepository extends JpaRepository<Course, String> {
         Optional<Course> findPublishedCourseByIdWithDetails(@Param("courseId") String courseId);
 
         @Query("SELECT c FROM Course c " +
+                        "LEFT JOIN FETCH c.instructor i " +
+                        "WHERE c.slug = :slug AND c.isPublished = true AND c.isApproved = true AND c.isDeleted = false")
+        Optional<Course> findPublishedCourseBySlugWithDetails(@Param("slug") String slug);
+
+        @Query("SELECT c FROM Course c " +
                         "LEFT JOIN FETCH c.categories cat " +
                         "WHERE c.id = :courseId")
         Optional<Course> findCourseWithCategories(@Param("courseId") String courseId);
 
         @Query("SELECT s FROM Section s " +
                         "LEFT JOIN FETCH s.lessons l " +
+                        "LEFT JOIN FETCH l.content vc " +
                         "WHERE s.course.id = :courseId " +
                         "ORDER BY s.orderIndex ASC, l.orderIndex ASC")
         List<Section> findSectionsWithLessonsByCourseId(@Param("courseId") String courseId);
@@ -65,6 +71,23 @@ public interface CourseRepository extends JpaRepository<Course, String> {
 
         @Query("SELECT COUNT(l) FROM Lesson l JOIN l.section s WHERE s.course.id = :courseId")
         Long countLessonsByCourseId(@Param("courseId") String courseId);
+
+        @Query("SELECT COUNT(l) FROM Lesson l " +
+                        "JOIN l.section s " +
+                        "JOIN l.lessonType lt " +
+                        "WHERE s.course.id = :courseId AND lt.name = 'QUIZ'")
+        Long countQuizLessonsByCourseId(@Param("courseId") String courseId);
+
+        @Query("SELECT COUNT(qq) FROM QuizQuestion qq " +
+                        "JOIN qq.lesson l " +
+                        "JOIN l.section s " +
+                        "WHERE s.course.id = :courseId")
+        Long countQuizQuestionsByCourseId(@Param("courseId") String courseId);
+
+        @Query("SELECT COUNT(qq) FROM QuizQuestion qq " +
+                        "JOIN qq.lesson l " +
+                        "WHERE l.section.id = :sectionId")
+        Long countQuizQuestionsBySectionId(@Param("sectionId") String sectionId);
 
         @Query("SELECT CASE WHEN COUNT(e) > 0 THEN true ELSE false END " +
                         "FROM Enrollment e WHERE e.course.id = :courseId AND e.user.id = :userId")

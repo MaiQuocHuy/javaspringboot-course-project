@@ -2,12 +2,6 @@
 applyTo: "**"
 ---
 
-# KTC Learning Platform - Backend Task List
-
-This document breaks down the development tasks for each API endpoint in the backend system.
-
----
-
 ## Standard API Response Format
 
 All API responses will follow a standardized format for consistency and ease of use on the frontend.
@@ -901,22 +895,22 @@ For lists of resources that support pagination.
     {
       "statusCode": 200,
       "message": "Payment detail retrieved successfully",
-        "data": {
-          "id": "payment-uuid",
-          "amount": 1200000,
-          "currency": "VND",
-          "status": "COMPLETED",
-          "paymentMethod": "STRIPE",
-          "createdAt": "2025-08-01T10:30:00Z",
-          "transactionId": "pi_1OpYuW2eZvKYlo2Cabc123",
-          "stripeSessionId": "cs_test_a1b2c3d4e5",
-          "receiptUrl": "https://pay.stripe.com/receipts/xyz",
-          "card": {
-            "brand": "visa",
-            "last4": "4242",
-            "expMonth": 8,
-            "expYear": 2027
-          },
+      "data": {
+        "id": "payment-uuid",
+        "amount": 1200000,
+        "currency": "VND",
+        "status": "COMPLETED",
+        "paymentMethod": "STRIPE",
+        "createdAt": "2025-08-01T10:30:00Z",
+        "transactionId": "pi_1OpYuW2eZvKYlo2Cabc123",
+        "stripeSessionId": "cs_test_a1b2c3d4e5",
+        "receiptUrl": "https://pay.stripe.com/receipts/xyz",
+        "card": {
+          "brand": "visa",
+          "last4": "4242",
+          "expMonth": 8,
+          "expYear": 2027
+        },
         "course": {
           "id": "course-uuid",
           "title": "KTC Backend Spring Boot",
@@ -939,13 +933,23 @@ For lists of resources that support pagination.
 - **Testing:** Test retrieval of payment details for valid and invalid payment IDs.
 
 ### 3.8 `GET /api/student/reviews`
+
 - **Description:** Retrieves all reviews submitted by the current student.
 - **Request:**
+
   - **Method:** `GET`
   - **Path:** `/api/student/reviews`
   - **Headers:** `Authorization: Bearer <accessToken>`
+  - \*\*Query Parameters: (Optional, for pagination if needed)
+    - page (default: 0)
+    - size (default: 10)
+  - **Options:**
+    - `sort` (string, optional) - e.g., `rating,desc` to sort by rating in descending order, `reviewedAt,desc` to sort by review date in descending order.
+
 - **Response:**
+
   - **Success (200 OK):**
+
     ```json
     {
       "statusCode": 200,
@@ -953,21 +957,28 @@ For lists of resources that support pagination.
       "data": [
         {
           "id": "review-uuid-1",
-          "courseId": "course-uuid-1",
+          "course": {
+            "id": "course-uuid-1",
+            "title": "KTC Backend Spring Boot"
+          },
           "rating": 5,
-          "comment": "Great course!",
-          "createdAt": "2025-08-01T10:30:00Z"
+          "reviewText": "Great course!",
+          "reviewedAt": "2025-08-01T10:30:00Z"
         },
         {
           "id": "review-uuid-2",
-          "courseId": "course-uuid-2",
+          "course": {
+            "id": "course-uuid-2",
+            "title": "KTC Frontend React"
+          },
           "rating": 4,
-          "comment": "Very informative.",
-          "createdAt": "2025-08-03T09:45:00Z"
+          "reviewText": "Very informative.",
+          "reviewedAt": "2025-08-03T09:45:00Z"
         }
       ]
     }
     ```
+
 - **Controller:** Create `StudentReviewController` with a `getReviews` endpoint.
 - **Service:** Implement `getReviews` in `StudentReviewService`.
 - **Logic:**
@@ -975,6 +986,47 @@ For lists of resources that support pagination.
   - Include course details (ID, title) in the response.
 - **Security:** Requires `STUDENT` role.
 - **Testing:** Test retrieval of reviews for the current student.
+
+### 3.9 `PATCH /api/student/reviews/{id}`
+
+- **Description:** Updates an existing review submitted by the current student.
+- **Request:**
+  - **Method:** `PATCH`
+  - **Path:** `/api/student/reviews/{id}`
+  - **Headers:** `Authorization: Bearer <accessToken>` `Content-Type: application/json`
+  - **Body (application/json):**
+    ```json
+    {
+      "rating": 4,
+      "reviewText": "Updated review text."
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Review updated successfully",
+      "data": {
+        "id": "review-uuid",
+        "course": {
+          "id": "course-uuid",
+          "title": "KTC Backend Spring Boot"
+        },
+        "rating": 4,
+        "reviewText": "Updated review text.",
+        "reviewedAt": "2025-08-01T10:30:00Z"
+      }
+    }
+    ```
+- **Controller:** Add an `updateReview` endpoint to `StudentReviewController`.
+- **Service:** Implement `updateReview` in `StudentReviewService`.
+- **Logic:**
+  - Validate the review ID exists and belongs to the authenticated student.
+  - Update the review with the provided rating and text.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test updating a review with valid and invalid data.
+
 ---
 
 ## 4. Instructor Role

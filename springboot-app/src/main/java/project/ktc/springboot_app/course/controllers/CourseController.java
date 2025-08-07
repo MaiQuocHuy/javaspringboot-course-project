@@ -82,6 +82,22 @@ public class CourseController {
                 return result;
         }
 
+        @GetMapping("/slug/{slug}")
+        @Operation(summary = "Get course details by slug", description = "Retrieves detailed information about a single published course using slug including ratings, sections, lessons, and quiz counts")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Course details retrieved successfully"),
+                        @ApiResponse(responseCode = "404", description = "Course not found"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>> findOneBySlug(
+                        @Parameter(description = "Course slug") @PathVariable String slug) {
+
+                ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>> result = courseService
+                                .findOneBySlug(slug);
+
+                return result;
+        }
+
         @GetMapping("/{id}")
         @Operation(summary = "Get course details by ID", description = "Retrieves detailed information about a single published course including ratings, sections, and lessons")
         @ApiResponses(value = {

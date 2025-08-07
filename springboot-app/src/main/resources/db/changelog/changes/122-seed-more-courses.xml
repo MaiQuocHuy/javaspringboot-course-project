@@ -6,14 +6,17 @@
       http://www.liquibase.org/xml/ns/dbchangelog
       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
 
-    <!-- Seed data for courses table -->
+    <!-- Seed data for additional courses with sections, lessons, and reviews -->
     <changeSet id="122-seed-more-courses" author="ktc">
-       <insert tableName="courses">
+        
+        <!-- Course 011: Introduction to Artificial Intelligence -->
+        <insert tableName="courses">
             <column name="id" value="course-011"/>
-            <column name="title" value="Introduction to Artificial Intelligence"/>
-            <column name="description" value="Explore AI fundamentals, neural networks, and practical applications in various industries"/>
-            <column name="instructor_id" value="user-010"/> <!-- Julia Anderson -->
-            <column name="price" value="219.99"/>
+            <column name="title" value="Introduction to Deep Learning"/>
+            <column name="description" value="Explore AI fundamentals, machine learning algorithms, neural networks, and practical applications in various industries"/>
+            <column name="slug" value="introduction-to-deep-learning"/>
+            <column name="instructor_id" value="user-003"/> <!-- Charlie Brown -->
+            <column name="price" value="189.99"/>
             <column name="is_published" valueBoolean="true"/>
             <column name="is_approved" valueBoolean="true"/>
             <column name="thumbnail_url" value="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800"/>
@@ -22,61 +25,494 @@
             <column name="created_at" value="2025-01-03 09:00:00"/>
             <column name="updated_at" value="2025-01-24 16:30:00"/>
         </insert>
+
+        <!-- Course 012: Advanced Python Programming -->
         <insert tableName="courses">
             <column name="id" value="course-012"/>
-            <column name="title" value="Introduction to Artificial Intelligence"/>
-            <column name="description" value="Explore AI fundamentals, neural networks, and practical applications in various industries"/>
-            <column name="instructor_id" value="user-010"/> <!-- Julia Anderson -->
-            <column name="price" value="167.99"/>
+            <column name="title" value="Advanced NodeJS Programming"/>
+            <column name="description" value="Master advanced NodeJS concepts including decorators, metaclasses, async programming, and design patterns"/>
+            <column name="slug" value="advanced-nodejs-programming"/>
+            <column name="instructor_id" value="user-004"/> <!-- David Miller -->
+            <column name="price" value="149.99"/>
             <column name="is_published" valueBoolean="true"/>
             <column name="is_approved" valueBoolean="true"/>
-            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800"/>
-            <column name="level" value="INTERMEDIATE"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800"/>
+            <column name="level" value="ADVANCED"/>
             <column name="is_deleted" valueBoolean="false"/>
-            <column name="created_at" value="2025-01-03 09:00:00"/>
-            <column name="updated_at" value="2025-01-24 16:30:00"/>
+            <column name="created_at" value="2025-01-05 10:00:00"/>
+            <column name="updated_at" value="2025-01-25 14:20:00"/>
         </insert>
+
+        <!-- Course 013: Web Development with Vue.js -->
         <insert tableName="courses">
             <column name="id" value="course-013"/>
-            <column name="title" value="Introduction to Artificial Intelligence"/>
-            <column name="description" value="Explore AI fundamentals, neural networks, and practical applications in various industries"/>
-            <column name="instructor_id" value="user-010"/> <!-- Julia Anderson -->
-            <column name="price" value="336.99"/>
+            <column name="title" value="Complete Vue.js Web Development"/>
+            <column name="description" value="Build modern web applications with Vue.js 3, including Composition API, Vuex, Vue Router, and testing"/>
+            <column name="slug" value="complete-vuejs-web-development"/>
+            <column name="instructor_id" value="user-005"/> <!-- Eva Garcia -->
+            <column name="price" value="129.99"/>
             <column name="is_published" valueBoolean="true"/>
             <column name="is_approved" valueBoolean="true"/>
-            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800"/>
-            <column name="level" value="ADVANCED"/>
-            <column name="is_deleted" valueBoolean="false"/>
-            <column name="created_at" value="2025-01-03 09:00:00"/>
-            <column name="updated_at" value="2025-01-24 16:30:00"/>
-        </insert>
-        <insert tableName="courses">
-            <column name="id" value="course-014"/>
-            <column name="title" value="Introduction to Artificial Intelligence"/>
-            <column name="description" value="Explore AI fundamentals, neural networks, and practical applications in various industries"/>
-            <column name="instructor_id" value="user-010"/> <!-- Julia Anderson -->
-            <column name="price" value="123.99"/>
-            <column name="is_published" valueBoolean="true"/>
-            <column name="is_approved" valueBoolean="true"/>
-            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1593720213428-28a5b9e94613?w=800"/>
             <column name="level" value="INTERMEDIATE"/>
             <column name="is_deleted" valueBoolean="false"/>
-            <column name="created_at" value="2025-01-03 09:00:00"/>
-            <column name="updated_at" value="2025-01-24 16:30:00"/>
+            <column name="created_at" value="2025-01-07 11:30:00"/>
+            <column name="updated_at" value="2025-01-26 09:45:00"/>
         </insert>
+
+        <!-- Course 014: DevOps and Docker Containerization -->
         <insert tableName="courses">
-            <column name="id" value="course-015"/>
-            <column name="title" value="Introduction to Artificial Intelligence"/>
-            <column name="description" value="Explore AI fundamentals, neural networks, and practical applications in various industries"/>
-            <column name="instructor_id" value="user-010"/> <!-- Julia Anderson -->
-            <column name="price" value="155.99"/>
+            <column name="id" value="course-014"/>
+            <column name="title" value="DevOps and Docker Containerization"/>
+            <column name="description" value="Learn Docker, Kubernetes, CI/CD pipelines, and modern DevOps practices for scalable applications"/>
+            <column name="slug" value="devops-docker-containerization"/>
+            <column name="instructor_id" value="user-006"/> <!-- Frank Wilson -->
+            <column name="price" value="199.99"/>
             <column name="is_published" valueBoolean="true"/>
             <column name="is_approved" valueBoolean="true"/>
-            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800"/>
-            <column name="level" value="ADVANCED"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=800"/>
+            <column name="level" value="INTERMEDIATE"/>
             <column name="is_deleted" valueBoolean="false"/>
-            <column name="created_at" value="2025-01-03 09:00:00"/>
-            <column name="updated_at" value="2025-01-24 16:30:00"/>
+            <column name="created_at" value="2025-01-09 08:15:00"/>
+            <column name="updated_at" value="2025-01-27 13:10:00"/>
         </insert>
+
+        <!-- Course 015: Mobile App Development with Flutter -->
+        <insert tableName="courses">
+            <column name="id" value="course-015"/>
+            <column name="title" value="Flutter Mobile App Development"/>
+            <column name="description" value="Create beautiful cross-platform mobile apps with Flutter and Dart, from basics to advanced topics"/>
+            <column name="slug" value="flutter-mobile-app-development"/>
+            <column name="instructor_id" value="user-007"/> <!-- Grace Lee -->
+            <column name="price" value="169.99"/>
+            <column name="is_published" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="true"/>
+            <column name="thumbnail_url" value="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800"/>
+            <column name="level" value="BEGINNER"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-11 14:45:00"/>
+            <column name="updated_at" value="2025-01-28 11:25:00"/>
+        </insert>
+
+        <!-- SECTIONS for Course 011 (AI) -->
+        <insert tableName="sections">
+            <column name="id" value="section-011-01"/>
+            <column name="course_id" value="course-011"/>
+            <column name="title" value="AI Fundamentals"/>
+            <column name="description" value="Introduction to artificial intelligence concepts and history"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-03 09:30:00"/>
+            <column name="updated_at" value="2025-01-03 09:30:00"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-011-02"/>
+            <column name="course_id" value="course-011"/>
+            <column name="title" value="Machine Learning Basics"/>
+            <column name="description" value="Understanding machine learning algorithms and applications"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" value="2025-01-03 09:31:00"/>
+            <column name="updated_at" value="2025-01-03 09:31:00"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-011-03"/>
+            <column name="course_id" value="course-011"/>
+            <column name="title" value="Neural Networks"/>
+            <column name="description" value="Deep dive into neural networks and deep learning"/>
+            <column name="order_index" value="2"/>
+            <column name="created_at" value="2025-01-03 09:32:00"/>
+            <column name="updated_at" value="2025-01-03 09:32:00"/>
+        </insert>
+
+        <!-- VIDEO CONTENTS for Course 011 -->
+        <insert tableName="video_contents">
+            <column name="id" value="video-011-01"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/ai_intro.mp4"/>
+            <column name="duration" value="1800"/> <!-- 30 minutes -->
+            <column name="uploaded_by" value="user-003"/>
+            <column name="created_at" value="2025-01-03 09:00:00"/>
+            <column name="updated_at" value="2025-01-03 09:00:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-011-02"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/ai_history.mp4"/>
+            <column name="duration" value="2100"/> <!-- 35 minutes -->
+            <column name="uploaded_by" value="user-003"/>
+            <column name="created_at" value="2025-01-03 09:05:00"/>
+            <column name="updated_at" value="2025-01-03 09:05:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-011-03"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/ml_intro.mp4"/>
+            <column name="duration" value="2400"/> <!-- 40 minutes -->
+            <column name="uploaded_by" value="user-003"/>
+            <column name="created_at" value="2025-01-03 09:10:00"/>
+            <column name="updated_at" value="2025-01-03 09:10:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-011-04"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/neural_networks.mp4"/>
+            <column name="duration" value="2700"/> <!-- 45 minutes -->
+            <column name="uploaded_by" value="user-003"/>
+            <column name="created_at" value="2025-01-03 09:15:00"/>
+            <column name="updated_at" value="2025-01-03 09:15:00"/>
+        </insert>
+
+
+        <!-- LESSONS for Course 011 -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-011-01"/>
+            <column name="section_id" value="section-011-01"/>
+            <column name="title" value="What is Artificial Intelligence?"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-011-01"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-03 09:30:00"/>
+            <column name="updated_at" value="2025-01-03 09:30:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-011-02"/>
+            <column name="section_id" value="section-011-01"/>
+            <column name="title" value="History of AI"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-011-02"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" value="2025-01-03 09:31:00"/>
+            <column name="updated_at" value="2025-01-03 09:31:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-011-03"/>
+            <column name="section_id" value="section-011-01"/>
+            <column name="title" value="AI Fundamentals Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="2"/>
+            <column name="created_at" value="2025-01-03 09:32:00"/>
+            <column name="updated_at" value="2025-01-03 09:32:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-011-04"/>
+            <column name="section_id" value="section-011-02"/>
+            <column name="title" value="Introduction to Machine Learning"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-011-03"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-03 09:33:00"/>
+            <column name="updated_at" value="2025-01-03 09:33:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-011-05"/>
+            <column name="section_id" value="section-011-02"/>
+            <column name="title" value="Machine Learning Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" value="2025-01-03 09:34:00"/>
+            <column name="updated_at" value="2025-01-03 09:34:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-011-06"/>
+            <column name="section_id" value="section-011-03"/>
+            <column name="title" value="Understanding Neural Networks"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-011-04"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-03 09:35:00"/>
+            <column name="updated_at" value="2025-01-03 09:35:00"/>
+        </insert>
+
+        <!-- SECTIONS for Course 012 (Python) -->
+        <insert tableName="sections">
+            <column name="id" value="section-012-01"/>
+            <column name="course_id" value="course-012"/>
+            <column name="title" value="Advanced Python Concepts"/>
+            <column name="description" value="Decorators, metaclasses, and advanced OOP"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-05 10:30:00"/>
+            <column name="updated_at" value="2025-01-05 10:30:00"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-012-02"/>
+            <column name="course_id" value="course-012"/>
+            <column name="title" value="Asynchronous Programming"/>
+            <column name="description" value="Async/await, coroutines, and concurrent programming"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" value="2025-01-05 10:31:00"/>
+            <column name="updated_at" value="2025-01-05 10:31:00"/>
+        </insert>
+
+        <!-- VIDEO CONTENTS for Course 012 -->
+        <insert tableName="video_contents">
+            <column name="id" value="video-012-01"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/python_decorators.mp4"/>
+            <column name="duration" value="2100"/> <!-- 35 minutes -->
+            <column name="uploaded_by" value="user-004"/>
+            <column name="created_at" value="2025-01-05 10:00:00"/>
+            <column name="updated_at" value="2025-01-05 10:00:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-012-02"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/python_async.mp4"/>
+            <column name="duration" value="2700"/> <!-- 45 minutes -->
+            <column name="uploaded_by" value="user-004"/>
+            <column name="created_at" value="2025-01-05 10:05:00"/>
+            <column name="updated_at" value="2025-01-05 10:05:00"/>
+        </insert>
+
+
+        <!-- QUIZ CONTENTS for Course 011 -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-01-001"/>
+            <column name="lesson_id" value="lesson-011-03"/>
+            <column name="question_text" value="What is React primarily used for?"/>
+            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="React is a JavaScript library primarily used for building user interfaces, especially for web applications."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-01-002"/>
+            <column name="lesson_id" value="lesson-011-05"/>
+            <column name="question_text" value="What is JavaScript primarily used for?"/>
+            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="JavaScript is a versatile programming language primarily used for building interactive web applications."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-01-003"/>
+            <column name="lesson_id" value="lesson-011-05"/>
+            <column name="question_text" value="What is Oracle primarily used for?"/>
+            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="correct_answer" value="B"/>
+            <column name="explanation" value="Oracle is primarily used for database management and enterprise applications."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+
+        <!-- LESSONS for Course 012 -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-012-01"/>
+            <column name="section_id" value="section-012-01"/>
+            <column name="title" value="Python Decorators Mastery"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-012-01"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-05 10:30:00"/>
+            <column name="updated_at" value="2025-01-05 10:30:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-012-02"/>
+            <column name="section_id" value="section-012-01"/>
+            <column name="title" value="Advanced Python Quiz"/>
+            <column name="lesson_type_id" value="type-002"/> <!-- QUIZ -->
+            <column name="order_index" value="1"/>
+            <column name="created_at" value="2025-01-05 10:31:00"/>
+            <column name="updated_at" value="2025-01-05 10:31:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-012-03"/>
+            <column name="section_id" value="section-012-02"/>
+            <column name="title" value="Async Programming in Python"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-012-02"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-05 10:32:00"/>
+            <column name="updated_at" value="2025-01-05 10:32:00"/>
+        </insert>
+
+          <!-- QUIZ CONTENTS for Course 012 -->
+        <insert tableName="quiz_questions">
+            <column name="id" value="question-02-003"/>
+            <column name="lesson_id" value="lesson-012-01"/>
+            <column name="question_text" value="What is a Python decorator?"/>
+            <column name="options" value='["A. A type of function", "B. A design pattern", "C. A way to modify functions", "D. All of the above"]'/>
+            <column name="correct_answer" value="D"/>
+            <column name="explanation" value="A Python decorator is a way to modify or enhance functions or methods without changing their code."/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+
+
+        <!-- SECTIONS for Course 013 (Vue.js) -->
+        <insert tableName="sections">
+            <column name="id" value="section-013-01"/>
+            <column name="course_id" value="course-013"/>
+            <column name="title" value="Vue.js 3 Fundamentals"/>
+            <column name="description" value="Getting started with Vue.js 3 and Composition API"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-07 11:30:00"/>
+            <column name="updated_at" value="2025-01-07 11:30:00"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-013-02"/>
+            <column name="course_id" value="course-013"/>
+            <column name="title" value="State Management with Vuex"/>
+            <column name="description" value="Managing application state effectively"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" value="2025-01-07 11:31:00"/>
+            <column name="updated_at" value="2025-01-07 11:31:00"/>
+        </insert>
+
+        <!-- VIDEO CONTENTS for Course 013 -->
+        <insert tableName="video_contents">
+            <column name="id" value="video-013-01"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/vue3_intro.mp4"/>
+            <column name="duration" value="1800"/> <!-- 30 minutes -->
+            <column name="uploaded_by" value="user-005"/>
+            <column name="created_at" value="2025-01-07 11:00:00"/>
+            <column name="updated_at" value="2025-01-07 11:00:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-013-02"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/vuex_state.mp4"/>
+            <column name="duration" value="2400"/> <!-- 40 minutes -->
+            <column name="uploaded_by" value="user-005"/>
+            <column name="created_at" value="2025-01-07 11:05:00"/>
+            <column name="updated_at" value="2025-01-07 11:05:00"/>
+        </insert>
+
+        <!-- LESSONS for Course 013 -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-013-01"/>
+            <column name="section_id" value="section-013-01"/>
+            <column name="title" value="Vue.js 3 Setup and Basics"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-013-01"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-07 11:30:00"/>
+            <column name="updated_at" value="2025-01-07 11:30:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-013-02"/>
+            <column name="section_id" value="section-013-02"/>
+            <column name="title" value="Vuex State Management"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-013-02"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-07 11:31:00"/>
+            <column name="updated_at" value="2025-01-07 11:31:00"/>
+        </insert>
+
+        <!-- SECTIONS for Course 014 (DevOps) -->
+        <insert tableName="sections">
+            <column name="id" value="section-014-01"/>
+            <column name="course_id" value="course-014"/>
+            <column name="title" value="Docker Fundamentals"/>
+            <column name="description" value="Introduction to containerization with Docker"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-09 08:15:00"/>
+            <column name="updated_at" value="2025-01-09 08:15:00"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-014-02"/>
+            <column name="course_id" value="course-014"/>
+            <column name="title" value="Kubernetes Orchestration"/>
+            <column name="description" value="Container orchestration and scaling"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" value="2025-01-09 08:16:00"/>
+            <column name="updated_at" value="2025-01-09 08:16:00"/>
+        </insert>
+
+        <!-- VIDEO CONTENTS for Course 014 -->
+        <insert tableName="video_contents">
+            <column name="id" value="video-014-01"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/docker_basics.mp4"/>
+            <column name="duration" value="2700"/> <!-- 45 minutes -->
+            <column name="uploaded_by" value="user-006"/>
+            <column name="created_at" value="2025-01-09 08:00:00"/>
+            <column name="updated_at" value="2025-01-09 08:00:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-014-02"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/kubernetes_intro.mp4"/>
+            <column name="duration" value="3000"/> <!-- 50 minutes -->
+            <column name="uploaded_by" value="user-006"/>
+            <column name="created_at" value="2025-01-09 08:05:00"/>
+            <column name="updated_at" value="2025-01-09 08:05:00"/>
+        </insert>
+
+        <!-- LESSONS for Course 014 -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-014-01"/>
+            <column name="section_id" value="section-014-01"/>
+            <column name="title" value="Docker Containers and Images"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-014-01"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-09 08:15:00"/>
+            <column name="updated_at" value="2025-01-09 08:15:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-014-02"/>
+            <column name="section_id" value="section-014-02"/>
+            <column name="title" value="Kubernetes Deployment"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-014-02"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-09 08:16:00"/>
+            <column name="updated_at" value="2025-01-09 08:16:00"/>
+        </insert>
+
+        <!-- SECTIONS for Course 015 (Flutter) -->
+        <insert tableName="sections">
+            <column name="id" value="section-015-01"/>
+            <column name="course_id" value="course-015"/>
+            <column name="title" value="Flutter Basics"/>
+            <column name="description" value="Getting started with Flutter and Dart"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-11 14:45:00"/>
+            <column name="updated_at" value="2025-01-11 14:45:00"/>
+        </insert>
+        <insert tableName="sections">
+            <column name="id" value="section-015-02"/>
+            <column name="course_id" value="course-015"/>
+            <column name="title" value="UI Development"/>
+            <column name="description" value="Building beautiful user interfaces"/>
+            <column name="order_index" value="1"/>
+            <column name="created_at" value="2025-01-11 14:46:00"/>
+            <column name="updated_at" value="2025-01-11 14:46:00"/>
+        </insert>
+
+        <!-- VIDEO CONTENTS for Course 015 -->
+        <insert tableName="video_contents">
+            <column name="id" value="video-015-01"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/flutter_setup.mp4"/>
+            <column name="duration" value="1500"/> <!-- 25 minutes -->
+            <column name="uploaded_by" value="user-007"/>
+            <column name="created_at" value="2025-01-11 14:00:00"/>
+            <column name="updated_at" value="2025-01-11 14:00:00"/>
+        </insert>
+        <insert tableName="video_contents">
+            <column name="id" value="video-015-02"/>
+            <column name="url" value="https://res.cloudinary.com/demo/video/upload/flutter_widgets.mp4"/>
+            <column name="duration" value="2100"/> <!-- 35 minutes -->
+            <column name="uploaded_by" value="user-007"/>
+            <column name="created_at" value="2025-01-11 14:05:00"/>
+            <column name="updated_at" value="2025-01-11 14:05:00"/>
+        </insert>
+
+        <!-- LESSONS for Course 015 -->
+        <insert tableName="lessons">
+            <column name="id" value="lesson-015-01"/>
+            <column name="section_id" value="section-015-01"/>
+            <column name="title" value="Flutter Setup and First App"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-015-01"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-11 14:45:00"/>
+            <column name="updated_at" value="2025-01-11 14:45:00"/>
+        </insert>
+        <insert tableName="lessons">
+            <column name="id" value="lesson-015-02"/>
+            <column name="section_id" value="section-015-02"/>
+            <column name="title" value="Flutter Widgets and Layouts"/>
+            <column name="lesson_type_id" value="type-001"/> <!-- VIDEO -->
+            <column name="content_id" value="video-015-02"/>
+            <column name="order_index" value="0"/>
+            <column name="created_at" value="2025-01-11 14:46:00"/>
+            <column name="updated_at" value="2025-01-11 14:46:00"/>
+        </insert>
+
     </changeSet>
 </databaseChangeLog>

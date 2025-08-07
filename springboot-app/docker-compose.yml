@@ -1,0 +1,86 @@
+# ================================
+# Docker Compose for KTC Learning Platform
+# ================================
+version: "3.8"
+
+services:
+  # Spring Boot Application
+  app:
+    image: ktc-learning-platform:latest
+    container_name: ktc-learning-platform-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring profiles
+      SPRING_PROFILES_ACTIVE: docker
+
+      # Database connection
+      DB_URL: jdbc:mysql://db:3306/course_management
+      DB_USERNAME: course_user
+      DB_PASSWORD: course_password
+
+      # JVM settings
+      JVM_OPTS: "-Xmx512m -Xms256m"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ktc-network
+    restart: unless-stopped
+    volumes:
+      - app-uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: ktc-learning-platform-db
+    environment:
+      MYSQL_DATABASE: course_management
+      MYSQL_USER: course_user
+      MYSQL_PASSWORD: course_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db-init:/docker-entrypoint-initdb.d
+    networks:
+      - ktc-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Adminer (Database Management Tool)
+  adminer:
+    image: adminer:latest
+    container_name: ktc-learning-platform-adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+    networks:
+      - ktc-network
+    restart: unless-stopped
+
+# Networks
+networks:
+  ktc-network:
+    driver: bridge
+    name: ktc-learning-network
+
+# Volumes
+volumes:
+  db-data:
+    name: ktc-learning-db-data
+  app-uploads:
+    name: ktc-learning-app-uploads
