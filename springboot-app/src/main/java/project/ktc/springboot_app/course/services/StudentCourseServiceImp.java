@@ -11,6 +11,7 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.interfaces.StudentCourseService;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
+import project.ktc.springboot_app.entity.LessonCompletion;
 import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.lesson.repositories.InstructorLessonRepository;
@@ -21,10 +22,25 @@ import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Student Course Service Implementation
+ * 
+ * This service handles course-related operations for students including:
+ * - Retrieving course sections with lessons
+ * - Loading lesson completion status and timestamps
+ * - Optimized for performance with batch queries to avoid N+1 problems
+ * 
+ * Performance optimizations:
+ * - Batch loading of lesson completions to reduce database queries
+ * - Efficient mapping of completion data using pre-loaded maps
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -38,6 +54,20 @@ public class StudentCourseServiceImp implements StudentCourseService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Retrieves all sections and lessons for a course with completion status and
+     * timestamps.
+     * 
+     * This method performs the following operations:
+     * 1. Verifies user enrollment in the course
+     * 2. Fetches all sections for the course
+     * 3. Batch loads lesson completion data for performance optimization
+     * 4. Maps to DTOs with completion information including completedAt timestamps
+     * 
+     * @param courseId The ID of the course to retrieve sections for
+     * @return ResponseEntity containing list of sections with lessons and
+     *         completion data
+     */
     @Override
     public ResponseEntity<ApiResponse<List<SectionWithLessonsDto>>> getCourseSections(String courseId) {
         log.info("Fetching sections for course: {} for student", courseId);
@@ -73,8 +103,21 @@ public class StudentCourseServiceImp implements StudentCourseService {
         // Get lessons for this section
         List<Lesson> lessons = lessonRepository.findLessonsBySectionIdOrderByOrder(section.getId());
 
+        // Get all lesson IDs for batch query to avoid N+1 problem
+        Set<String> lessonIds = lessons.stream()
+                .map(Lesson::getId)
+                .collect(Collectors.toSet());
+
+        // Batch query for lesson completions to optimize performance
+        List<LessonCompletion> completions = lessonCompletionRepository.findByUserIdAndLessonIdIn(userId, lessonIds);
+        Map<String, LessonCompletion> completionMap = completions.stream()
+                .collect(Collectors.toMap(
+                        completion -> completion.getLesson().getId(),
+                        completion -> completion));
+
+        // Map lessons to DTOs with completion data
         List<LessonDto> lessonDtos = lessons.stream()
-                .map(lesson -> mapToLessonDto(lesson, userId))
+                .map(lesson -> mapToLessonDto(lesson, completionMap))
                 .collect(Collectors.toList());
 
         return SectionWithLessonsDto.builder()
@@ -86,9 +129,11 @@ public class StudentCourseServiceImp implements StudentCourseService {
                 .build();
     }
 
-    private LessonDto mapToLessonDto(Lesson lesson, String userId) {
-        // Check if lesson is completed by the user
-        boolean isCompleted = lessonCompletionRepository.existsByUserIdAndLessonId(userId, lesson.getId());
+    private LessonDto mapToLessonDto(Lesson lesson, Map<String, LessonCompletion> completionMap) {
+        // Get lesson completion data from the pre-loaded map (performance optimization)
+        LessonCompletion lessonCompletion = completionMap.get(lesson.getId());
+        boolean isCompleted = lessonCompletion != null;
+        LocalDateTime completedAt = isCompleted ? lessonCompletion.getCompletedAt() : null;
 
         String lessonType = lesson.getLessonType() != null ? lesson.getLessonType().getName() : "UNKNOWN";
 
@@ -97,7 +142,8 @@ public class StudentCourseServiceImp implements StudentCourseService {
                 .title(lesson.getTitle())
                 .type(lessonType)
                 .order(lesson.getOrderIndex())
-                .isCompleted(isCompleted);
+                .isCompleted(isCompleted)
+                .completedAt(completedAt);
 
         // Add content based on lesson type
         if ("VIDEO".equals(lessonType) && lesson.getContent() != null) {
@@ -108,6 +154,8 @@ public class StudentCourseServiceImp implements StudentCourseService {
                     .build();
             lessonBuilder.video(videoDto);
         } else if ("QUIZ".equals(lessonType)) {
+            // Note: This could be further optimized with batch loading for quiz questions
+            // if there are many quiz lessons in a section
             List<QuizQuestion> questions = quizQuestionRepository.findQuestionsByLessonId(lesson.getId());
             List<QuizQuestionDto> questionDtos = questions.stream()
                     .map(this::mapToQuizQuestionDto)

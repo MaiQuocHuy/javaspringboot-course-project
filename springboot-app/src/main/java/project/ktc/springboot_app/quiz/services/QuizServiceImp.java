@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.quiz.service;
+package project.ktc.springboot_app.quiz.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

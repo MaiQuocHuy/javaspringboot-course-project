@@ -37,6 +37,7 @@ import project.ktc.springboot_app.utils.StringUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,12 +72,14 @@ public class CourseServiceImp implements CourseService {
 
                 Page<Course> coursePage = courseRepository.findPublishedCoursesWithFilters(
                                 search, categoryId, minPrice, maxPrice, level, pageable);
-
+                log.info("Found {} public courses", coursePage);
                 // Load categories separately for each course to avoid N+1 problem
                 List<Course> coursesWithCategories = coursePage.getContent().stream()
                                 .map(course -> {
                                         Optional<Course> courseWithCats = courseRepository
                                                         .findCourseWithCategories(course.getId());
+                                        log.info("Found categories for course {}: {}", course.getId(),
+                                                        courseWithCats.get().getCategories());
                                         if (courseWithCats.isPresent()) {
                                                 course.setCategories(courseWithCats.get().getCategories());
                                         }
@@ -467,13 +470,14 @@ public class CourseServiceImp implements CourseService {
 
         private CoursePublicResponseDto mapToCoursePublicResponse(Course course, Long enrollCount) {
                 // Get primary category (first one if multiple)
-                CoursePublicResponseDto.CategorySummary categorySum = null;
+                List<CoursePublicResponseDto.CategorySummary> categorySummaries = new ArrayList<>();
                 if (course.getCategories() != null && !course.getCategories().isEmpty()) {
-                        Category primaryCategory = course.getCategories().get(0);
-                        categorySum = CoursePublicResponseDto.CategorySummary.builder()
-                                        .id(primaryCategory.getId())
-                                        .name(primaryCategory.getName())
-                                        .build();
+                        categorySummaries = course.getCategories().stream()
+                                        .map(cat -> CoursePublicResponseDto.CategorySummary.builder()
+                                                        .id(cat.getId())
+                                                        .name(cat.getName())
+                                                        .build())
+                                        .collect(Collectors.toList());
                 }
 
                 // Get instructor info
@@ -502,20 +506,23 @@ public class CourseServiceImp implements CourseService {
                                 .enrollCount(enrollCount)
                                 .averageRating(averageRating)
                                 .sectionCount(sectionCount)
-                                .category(categorySum)
+                                .categories(categorySummaries)
                                 .instructor(instructorSum)
                                 .build();
         }
 
         private CourseAdminResponseDto mapToCourseAdminResponse(Course course, Long enrollCount) {
                 // Get primary category (first one if multiple)
-                CourseAdminResponseDto.CategoryInfo categoryInfo = null;
+                List<CourseAdminResponseDto.CategoryInfo> categoryInfos = new ArrayList<>();
                 if (course.getCategories() != null && !course.getCategories().isEmpty()) {
-                        Category primaryCategory = course.getCategories().get(0);
-                        categoryInfo = CourseAdminResponseDto.CategoryInfo.builder()
-                                        .id(primaryCategory.getId())
-                                        .name(primaryCategory.getName())
-                                        .build();
+                        course.getCategories().forEach(cat -> {
+                                CourseAdminResponseDto.CategoryInfo categoryInfo = CourseAdminResponseDto.CategoryInfo
+                                                .builder()
+                                                .id(cat.getId())
+                                                .name(cat.getName())
+                                                .build();
+                                categoryInfos.add(categoryInfo);
+                        });
                 }
 
                 // Get instructor info
@@ -551,7 +558,7 @@ public class CourseServiceImp implements CourseService {
                                 .averageRating(averageRating)
                                 .ratingCount(ratingCount)
                                 .sectionCount(sectionCount)
-                                .category(categoryInfo)
+                                .categories(categoryInfos)
                                 .createdAt(course.getCreatedAt())
                                 .updatedAt(course.getUpdatedAt())
                                 .build();

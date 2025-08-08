@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="126-fix-quiz-results-question-ids" author="ktc">
+        <!-- Simple approach: Fix only the quiz results that have questions for their current lessons -->
+        <!-- and update answers to use correct question IDs that match each lesson -->
+        
+        <!-- qr-001: Bob's quiz result for lesson-002 -->
+        <!-- lesson-002 has questions: 001, 002, 003, 020 -->
+        <update tableName="quiz_results">
+            <column name="answers" value='{"question-001": "B", "question-002": "A", "question-003": "A", "question-020": "C"}'/>
+            <where>id = 'qr-001'</where>
+        </update>
+
+        <!-- qr-002: Emily's quiz result for lesson-012 -->
+        <!-- lesson-012 has questions: 006, 007 -->
+        <update tableName="quiz_results">
+            <column name="answers" value='{"question-006": "D", "question-007": "C"}'/>
+            <where>id = 'qr-002'</where>
+        </update>
+
+        <!-- For other quiz results, we need to delete them since their lessons don't have questions -->
+        <!-- This is safer than trying to remap to avoid constraint violations -->
+        <delete tableName="quiz_results">
+            <where>id IN ('qr-003', 'qr-004', 'qr-005', 'qr-006', 'qr-007', 'qr-008', 'qr-009', 'qr-010', 'qr-011', 'qr-012', 'qr-013', 'qr-014', 'qr-015')</where>
+        </delete>
+
+        <!-- Create new valid quiz results with correct lesson IDs that have questions -->
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-003"/>
+            <column name="user_id" value="user-006"/> <!-- David -->
+            <column name="lesson_id" value="lesson-028"/> <!-- Python Syntax Quiz -->
+            <column name="score" value="78.00"/>
+            <column name="answers" value='{"question-012": "B", "question-013": "A"}'/>
+            <column name="completed_at" value="2025-02-02 10:20:00"/>
+            <column name="created_at" value="2025-02-02 10:20:00"/>
+            <column name="updated_at" value="2025-02-02 10:20:00"/>
+        </insert>
+
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-004"/>
+            <column name="user_id" value="user-007"/> <!-- Frank -->
+            <column name="lesson_id" value="lesson-022"/> <!-- Responsive Design Quiz -->
+            <column name="score" value="88.50"/>
+            <column name="answers" value='{"question-010": "A", "question-011": "B"}'/>
+            <column name="completed_at" value="2025-01-28 11:15:00"/>
+            <column name="created_at" value="2025-01-28 11:15:00"/>
+            <column name="updated_at" value="2025-01-28 11:15:00"/>
+        </insert>
+
+        <insert tableName="quiz_results">
+            <column name="id" value="qr-005"/>
+            <column name="user_id" value="user-008"/> <!-- Grace -->
+            <column name="lesson_id" value="lesson-038"/> <!-- JavaScript Patterns Quiz -->
+            <column name="score" value="95.00"/>
+            <column name="answers" value='{"question-018": "A", "question-019": "B"}'/>
+            <column name="completed_at" value="2025-02-05 13:40:00"/>
+            <column name="created_at" value="2025-02-05 13:40:00"/>
+            <column name="updated_at" value="2025-02-05 13:40:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -41,6 +41,7 @@ import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
 import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
+import project.ktc.springboot_app.course.dto.InstructorCourseDetailResponseDto;
 import project.ktc.springboot_app.course.enums.CourseInstructorStatus;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.services.InstructorCourseServiceImp;
@@ -317,6 +318,43 @@ public class InstructorCourseController {
 
                 // Call service to update course status
                 return instructorCourseService.updateCourseStatus(courseId, updateStatusDto, instructorId);
+        }
+
+        @GetMapping("/{id}")
+        @PreAuthorize("hasRole('INSTRUCTOR')")
+        @Operation(summary = "Get course details", description = """
+                        Retrieve detailed information about a specific course owned by the instructor.
+
+                        **Permission Requirements:**
+                        - Only the course owner can access course details
+                        - Requires INSTRUCTOR role
+
+                        **Response includes:**
+                        - Complete course information (title, description, slug, thumbnail)
+                        - Instructor details (including email for own courses)
+                        - Course status (isApproved, isPublished)
+                        - Statistics (enrollment count, ratings, section count)
+                        - Categories list
+
+                        **Business Rules:**
+                        - Course must exist and belong to the authenticated instructor
+                        - Returns 404 if course not found or not owned by instructor
+                        """, security = @SecurityRequirement(name = "bearerAuth"))
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Course details retrieved successfully"),
+                        @ApiResponse(responseCode = "403", description = "You are not allowed to access this course"),
+                        @ApiResponse(responseCode = "404", description = "Course not found or you don't have permission"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<InstructorCourseDetailResponseDto>> getCourseDetails(
+                        @Parameter(description = "Course ID", required = true) @PathVariable("id") String courseId) {
+
+                log.info("Received request to get course details: {}", courseId);
+
+                String instructorId = SecurityUtil.getCurrentUserId();
+
+                // Call service to get course details
+                return instructorCourseService.getCourseDetails(courseId, instructorId);
         }
 
         private Pageable createPageable(int page, int size, String sort) {
