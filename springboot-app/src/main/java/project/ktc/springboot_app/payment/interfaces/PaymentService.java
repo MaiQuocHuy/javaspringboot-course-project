@@ -75,4 +75,23 @@ public interface PaymentService {
      * @return The payment entity if found
      */
     Optional<Payment> findPaymentBySessionId(String stripeSessionId);
+
+    /**
+     * Finds payment by course ID and user ID
+     * 
+     * @param courseId
+     * @param userId
+     * @return
+     */
+    Optional<Payment> findPaymentByCourseIdAndUserId(String courseId, String userId);
+
+    /**
+     * Finds completed payment by course ID and user ID
+     * This is used to check if user has already successfully purchased the course
+     * 
+     * @param courseId
+     * @param userId
+     * @return
+     */
+    Optional<Payment> findCompletedPaymentByCourseIdAndUserId(String courseId, String userId);
 }

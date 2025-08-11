@@ -1176,6 +1176,66 @@ For lists of resources that support pagination.
 - **Security:** Requires `STUDENT` role.
 - **Testing:** Test retrieval of quiz score details for valid and invalid IDs.
 
+### 3.12 `POST /api/student/courses/:id/refund-request`
+
+- **Description:** Requests a refund for a purchased course.
+  Students can request a refund within 3 days of the payment completion time (payment.updated_at), only if the payment was successful.
+  The request is stored in the refund table with a PENDING status for admin review.
+- **Request:**
+  - **Method:** `POST`
+  - **Path:** `/api/student/courses/:id/refund-request`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Path Params:** `id` (string)
+  - **Body:**
+    ```json
+    {
+      "reason": "string"
+    }
+    ```
+- **Response:**
+  - **Success (201 Created):**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Refund request submitted successfully",
+      "data": {
+        "id": "refund-request-uuid",
+        "course": {
+          "id": "course-uuid",
+          "title": "KTC Backend Spring Boot"
+        },
+        "reason": "string",
+        "status": "PENDING",
+        "amount": 100.0,
+        "requestedAt": "2025-08-01T10:30:00Z"
+      }
+    }
+    ```
+- **BusinessRule:**
+
+  - Ownership:
+    - Only the student who purchased the course can request a refund.
+  - Payment Validation:
+    - Must have a payment record in the payment table for this course with:
+      - status = "COMPLETED"
+      - NOW() < payment.updated_at + INTERVAL '3 days'
+  - Refund Restrictions:
+    - No existing refund request for the same payment.
+    - Refund is not allowed if:
+      - Payment is already paid out to the instructor (payout_status = "PAID_OUT").
+      - More than 3 days have passed since payment.updated_at.
+  - Refund Creation:
+    - Insert record into refund table:
+      - status = "PENDING"
+      - Linked to payment & course.
+      - Store reason from request.
+
+- **Controller:** Add a `requestRefund` endpoint to `StudentRefundController`.
+- **Service:** Implement `requestRefund` in `StudentRefundService`. Check if course in payment table is status COMPLETED and updatedAt < 3 days ago. We will create record refund in refund table.
+- **Logic:** Create a refund request associated with the course and student.
+- **Security:** Requires `STUDENT` role.
+- **Testing:** Test refund request submission.
+
 ## 4. Instructor Role
 
 ### 4.1. `POST /api/instructor/courses`
@@ -1388,16 +1448,17 @@ For lists of resources that support pagination.
 Allowed status values: "PUBLISHED" or "UNPUBLISHED".
 
 Publish conditions:
-  - Course must have title, description, thumbnail, and at least one section or lesson.
-  - Check course_review_status_history:
-  - If there is no record → create PENDING
-  - If there is any existing record → create RESUBMITTED and update status in course_review_status to RESUBMITTED
-Unpublish conditions:
-  - Course must be approved (isApproved = true) and currently published (isPublished = true).
-Not allowed to:
-  - Unpublish a course that was never published.
-  - Publish a course that is already published without any changes.
-  - Publish a course that doesn’t meet the publish conditions.
+
+- Course must have title, description, thumbnail, and at least one section or lesson.
+- Check course_review_status_history:
+- If there is no record → create PENDING
+- If there is any existing record → create RESUBMITTED and update status in course_review_status to RESUBMITTED
+  Unpublish conditions:
+- Course must be approved (isApproved = true) and currently published (isPublished = true).
+  Not allowed to:
+- Unpublish a course that was never published.
+- Publish a course that is already published without any changes.
+- Publish a course that doesn’t meet the publish conditions.
 - **Response:**
   - **Success (200 OK):**
     ```json
@@ -3505,3 +3566,126 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - Implement the logic to update the course review status in the database. Also Update status in course_review_status_history
 - **Testing:**
   - Include tests for various scenarios (e.g., course not found, invalid status, etc).
+
+### 5.6 `PATCH /api/admin/refunds/:id/status`
+
+- **Description:** Updates the status of a specific refund by its ID.
+  Only Admin role is allowed to call this API.
+- **Request:**
+  - **Method:** `PATCH`
+  - **Path:** `/api/admin/refund/:id`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body:**
+    ```json
+    {
+      "status": "COMPLETED" | "FAILED"
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Refund status updated successfully",
+      "data": {
+        "id": "refund-uuid",
+        "paymentId": "payment-uuid",
+        "amount": 100.0,
+        "status": "COMPLETED"
+      }
+    }
+    ```
+  - **Error (404 Not Found):**
+    ```json
+    {
+      "statusCode": 404,
+      "message": "Refund not found",
+      "data": null
+    }
+    ```
+  - **Error (400 Bad Request):**
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Invalid status value",
+      "data": null
+    }
+    ```
+  - **Error (403 Forbidden):**
+    ```json
+    {
+      "statusCode": 403,
+      "message": "Forbidden - Admin role required",
+      "data": null
+    }
+    ```
+- **BusinessRule:**
+  - Refund must exist and be in `PENDING` state.
+  - Allowed transitions:
+    - `PENDING` → `COMPLETED` (process refund, prevent payout to instructor).
+    - `PENDING` → `FAILED` (reject refund).
+  - No changes allowed if refund is already `COMPLETED` or `FAILED`.
+  - Must check that related payment has not been paid out.
+- **Controller:**
+  - `AdminRefundController` handles all admin refund-related requests.
+  - Validate request body (`status` is required and must be `"COMPLETED"` or `"FAILED"`).
+  - Check if refund exists and is in `PENDING`.
+  - Pass to service for processing.
+- **Service:**
+  - `AdminServiceImp`
+  - Verify admin role.
+  - Validate allowed status change.
+  - Update refund status in DB.
+  - If `COMPLETED`, trigger logic to block instructor payout for that payment.
+- **Testing:**
+  - Success case when valid refund in PENDING → COMPLETED.
+  - Success case when valid refund in PENDING → FAILED.
+  - Fail if refund not found (404).
+  - Fail if refund already COMPLETED or FAILED (400).
+  - Fail if status is not "COMPLETED" or "FAILED" (400).
+  - Fail if user is not Admin (403).
+
+### 5.7. `GET /api/admin/refunds`
+
+- **Description:** Retrieves a list of all refunds.
+  Only Admin role is allowed to call this API.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/admin/refunds`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Refunds retrieved successfully",
+      "data": [
+        {
+          "id": "refund-uuid",
+          "paymentId": "payment-uuid",
+          "amount": 100.0,
+          "status": "PENDING"
+        },
+        {
+          "id": "refund-uuid-2",
+          "paymentId": "payment-uuid-2",
+          "amount": 50.0,
+          "status": "COMPLETED"
+        }
+      ]
+    }
+    ```
+  - **Error (403 Forbidden):**
+    ```json
+    {
+      "statusCode": 403,
+      "message": "Forbidden - Admin role required",
+      "data": null
+    }
+    ```
+- **BusinessRule:**
+  - Only Admin users can access this endpoint.
+- **Controller:**
+  - `AdminRefundController` handles all admin refund-related requests.
+  - Validate request headers (Authorization).
+  - Pass to service for processing.
