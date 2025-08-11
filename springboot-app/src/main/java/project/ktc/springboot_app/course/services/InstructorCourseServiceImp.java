@@ -5,12 +5,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
@@ -30,10 +32,14 @@ import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
 import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
 import project.ktc.springboot_app.course.dto.InstructorCourseDetailResponseDto;
 import project.ktc.springboot_app.course.entity.Course;
+import project.ktc.springboot_app.course.entity.CourseReviewStatus;
+import project.ktc.springboot_app.course.entity.CourseReviewStatusHistory;
 import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
 import project.ktc.springboot_app.course.dto.common.BaseCourseResponseDto;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
+import project.ktc.springboot_app.course.repositories.CourseReviewStatusRepository;
+import project.ktc.springboot_app.course.repositories.CourseReviewStatusHistoryRepository;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.lesson.entity.Lesson;
@@ -58,6 +64,8 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final FileValidationService fileValidationService;
     private final InstructorSectionRepository sectionRepository;
     private final QuizQuestionRepository quizQuestionRepository;
+    private final CourseReviewStatusRepository courseReviewStatusRepository;
+    private final CourseReviewStatusHistoryRepository courseReviewStatusHistoryRepository;
     private final SystemLogHelper systemLogHelper;
 
     @Override
@@ -136,7 +144,10 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
         boolean canPublish = !course.getIsPublished();
         boolean canUnpublish = course.getIsApproved() && course.getIsPublished();
 
-        return CourseDashboardResponseDto.builder()
+        // Get review status information
+        ReviewStatusInfo reviewInfo = getReviewStatusInfo(course.getId());
+
+        return CourseDashboardResponseDto.dashboardBuilder()
                 .id(course.getId())
                 .title(course.getTitle())
                 .price(course.getPrice())
@@ -157,6 +168,8 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 .canUnpublish(canUnpublish)
                 .canDelete(canDelete)
                 .canPublish(canPublish)
+                .statusReview(reviewInfo.getStatusReview())
+                .reason(reviewInfo.getReason())
                 .build();
     }
 
@@ -500,6 +513,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<ApiResponse<CourseStatusUpdateResponseDto>> updateCourseStatus(
             String courseId,
             UpdateCourseStatusDto updateStatusDto,
@@ -550,6 +564,9 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 // Update to published
                 course.setIsPublished(true);
 
+                // Handle course review status
+                handleCourseReviewStatus(course);
+
             } else if ("UNPUBLISHED".equals(newStatus)) {
                 // Check if course can be unpublished
                 if (!canUnpublishCourse(course)) {
@@ -559,6 +576,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
 
                 // Update to unpublished
                 course.setIsPublished(false);
+                course.setIsApproved(false);
             }
 
             // Save changes
@@ -708,6 +726,9 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                     .collect(Collectors.toList());
         }
 
+        // Get review status information
+        ReviewStatusInfo reviewInfo = getReviewStatusInfo(course.getId());
+
         return new InstructorCourseDetailResponseDto(
                 // Base class fields in order
                 course.getId(), // id
@@ -730,7 +751,9 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 course.getIsPublished(), // isPublished
                 enrollmentCount, // enrollmentCount
                 ratingCount, // ratingCount
-                sectionInfos // sections
+                sectionInfos, // sections
+                reviewInfo.getStatusReview(), // statusReview
+                reviewInfo.getReason() // reason
         );
     }
 
@@ -782,5 +805,121 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
         }
 
         return builder.build();
+    }
+
+    /**
+     * Handle course review status when publishing a course.
+     * - First time publish: Create PENDING status
+     * - Subsequent publishes: Create RESUBMITTED status and update current status
+     */
+    private void handleCourseReviewStatus(Course course) {
+        try {
+            log.info("Handling course review status for course: {}", course.getId());
+
+            // Check if there's an existing review status record for this course
+            Optional<CourseReviewStatus> existingReviewStatus = courseReviewStatusRepository
+                    .findByCourseId(course.getId());
+
+            // Check if there's any history for this course
+            List<CourseReviewStatusHistory> histories = courseReviewStatusHistoryRepository
+                    .findByCourseIdOrderByCreatedAtDesc(course.getId());
+            boolean hasHistory = !histories.isEmpty();
+
+            CourseReviewStatus reviewStatus;
+            CourseReviewStatus.ReviewStatus newStatus;
+            String action;
+
+            if (hasHistory) {
+                // Subsequent publish - RESUBMITTED
+                newStatus = CourseReviewStatus.ReviewStatus.RESUBMITTED;
+                action = "RESUBMITTED";
+                log.info("Course {} has existing history, setting status to RESUBMITTED", course.getId());
+            } else {
+                // First time publish - PENDING
+                newStatus = CourseReviewStatus.ReviewStatus.PENDING;
+                action = "PENDING";
+                log.info("Course {} has no history, setting status to PENDING", course.getId());
+            }
+
+            // Create or update the course review status
+            if (existingReviewStatus.isPresent()) {
+                reviewStatus = existingReviewStatus.get();
+                reviewStatus.setStatus(newStatus);
+                reviewStatus.setUpdatedAt(LocalDateTime.now());
+                log.info("Updating existing course review status for course: {}", course.getId());
+            } else {
+                reviewStatus = CourseReviewStatus.builder()
+                        .id(UUID.randomUUID().toString())
+                        .course(course)
+                        .status(newStatus)
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+                log.info("Creating new course review status for course: {}", course.getId());
+            }
+
+            // Save the review status
+            reviewStatus = courseReviewStatusRepository.save(reviewStatus);
+
+            // Create a new history record
+            CourseReviewStatusHistory historyRecord = CourseReviewStatusHistory.builder()
+                    .id(UUID.randomUUID().toString())
+                    .courseReview(reviewStatus)
+                    .action(action)
+                    .reason("") // Empty reason for instructor-initiated publish actions
+                    .reviewer(course.getInstructor()) // Set instructor as the reviewer for their own publish action
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+
+            courseReviewStatusHistoryRepository.save(historyRecord);
+            log.info("Created new course review status history record for course: {} with action: {}", course.getId(),
+                    action);
+
+        } catch (Exception e) {
+            log.error("Error handling course review status for course {}: {}", course.getId(), e.getMessage(), e);
+            // Don't throw exception to avoid breaking the publish flow
+        }
+    }
+
+    /**
+     * Helper method to get review status and reason from
+     * course_review_status_history
+     * Returns a ReviewStatusInfo object with statusReview and reason
+     */
+    private ReviewStatusInfo getReviewStatusInfo(String courseId) {
+        return courseReviewStatusHistoryRepository.findLatestByCourseId(courseId)
+                .map(history -> {
+                    String statusReview = history.getAction(); // action field contains the status
+                    String reason = "";
+
+                    if ("DENIED".equals(statusReview)) {
+                        reason = history.getReason() != null ? history.getReason() : "";
+                    }
+
+                    return new ReviewStatusInfo(statusReview, reason);
+                })
+                .orElse(new ReviewStatusInfo(null, null));
+    }
+
+    /**
+     * Helper class to hold review status information
+     */
+    private static class ReviewStatusInfo {
+        private final String statusReview;
+        private final String reason;
+
+        public ReviewStatusInfo(String statusReview, String reason) {
+            this.statusReview = statusReview;
+            this.reason = reason;
+        }
+
+        public String getStatusReview() {
+            return statusReview;
+        }
+
+        public String getReason() {
+            return reason;
+        }
     }
 }

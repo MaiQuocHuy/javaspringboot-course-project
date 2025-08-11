@@ -1320,7 +1320,8 @@ For lists of resources that support pagination.
             "revenue": 5998.8,
             "canEdit": false,
             "canUnpublish": true,
-            "canDelete": false
+            "canDelete": false,
+            "reviewStatus": "PENDING"
           }
         ],
         "page": 0,
@@ -1367,8 +1368,9 @@ For lists of resources that support pagination.
 
 ### 4.8. `PATCH /api/instructor/courses/:id/status`
 
-- **Description:** Updates the visibility status of a course.
-  Instructors can only PUBLISH a course if it meets all required conditions and can only UNPUBLISH a course that is approved and already published.
+- **Description:** Updates the publish/unpublish status of a course. This endpoint also handles resubmissions:
+  - First publish → status in review history is PENDING
+  - Every publish after the first → status in review history is RESUBMITTED
 - **Request:**
   - **Method:** `PATCH`
   - **Path:** `/api/instructor/courses/:id/status`
@@ -1381,15 +1383,21 @@ For lists of resources that support pagination.
     }
     ```
   - **Business Rules:**
-    - Only the instructor who owns the course can update its status.
-    - Allowed status values: "PUBLISHED" or "UNPUBLISHED".
-    - Can only PUBLISH if:
-      - Course has complete details: title, description, thumbnail, and at least one section or lesson.
-    - Can only UNPUBLISH if:
-      - Course is approved (isApproved = true) and currently published (isPublished = true).
-    - Not allowed to:
-      - UNPUBLISH a course that has never been published
-      - Re-publish a course that is already published
+    Only the instructor who owns the course can update its status.
+
+Allowed status values: "PUBLISHED" or "UNPUBLISHED".
+
+Publish conditions:
+  - Course must have title, description, thumbnail, and at least one section or lesson.
+  - Check course_review_status_history:
+  - If there is no record → create PENDING
+  - If there is any existing record → create RESUBMITTED and update status in course_review_status to RESUBMITTED
+Unpublish conditions:
+  - Course must be approved (isApproved = true) and currently published (isPublished = true).
+Not allowed to:
+  - Unpublish a course that was never published.
+  - Publish a course that is already published without any changes.
+  - Publish a course that doesn’t meet the publish conditions.
 - **Response:**
   - **Success (200 OK):**
     ```json
@@ -2777,7 +2785,6 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
     }
     ```
 
-````
 - **Controller:** Create `InstructorCourseController` with a `getCourseDetails` endpoint.
 - **Service:** Implement `getCourseDetails` in `CourseService`.
 - **Business Rules:**
@@ -2800,6 +2807,68 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
     - Course not found
     - Course not owned by instructor
 - **Testing:** Test course retrieval with valid and invalid slugs.
+
+### 4.31 `PATCH /api/instructor/courses/:id/resubmit`
+
+- **Description:** Resubmits a course for review after making changes.
+  Only instructors can resubmit their own courses.
+  The course must be in an allowed resubmission state(isApproved = false, isPublish = true)
+- **Request:**
+  - **Method:** `PATCH`
+  - **Path:** `/api/instructor/courses/{id}/resubmit`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course resubmitted successfully",
+      "data": null
+    }
+    ```
+  - **Error (400 Bad Request):**
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Course is not in a valid state for resubmission",
+      "data": null
+    }
+    ```
+  - **Error (404 Not Found):**
+    ```json
+    {
+      "statusCode": 404,
+      "message": "Course not found",
+      "data": null
+    }
+    ```
+  - **Error (500 Internal Server Error):**
+    ```json
+    {
+      "statusCode": 500,
+      "message": "Internal server error",
+      "data": null
+    }
+    ```
+  - **Error:**
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Course has no updates since last submission",
+      "data": null
+    }
+    ```
+- **Controllers:** Create `InstructorCourseController` with a `resubmitCourse` endpoint. Validate course ownership (instructor must be the creator). Check course state — must be in one of the allowed resubmission statuses. Verify that the course content has been updated since last submission.
+  Call service to:
+  - Update course status in course_review_status_history to "PENDING".
+  - Clear reason if previously rejected (but keep history record).
+- **Service:** Implement `resubmitCourse` in `CourseService` to update the course status in course review and course review history. Create a new review history record with: action is RESUBMITTED
+
+- **Business Rules:**
+  - Only instructors can resubmit their own courses.
+  - The course must be in a non-approved state to be resubmitted.
+  - If the course is not found, return a 404 Not Found error.
+- **Testing:** Test course resubmission with valid and invalid course IDs.
 
 ## 5. Admin Role
 
@@ -3128,6 +3197,7 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - oldValues and newValues must be valid JSON objects (or null).
 
 - **Response:**
+
   ```json
   {
     "statusCode": 201,
@@ -3136,10 +3206,302 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
       "id": "log-entry-id"
     }
   }
-````
+  ```
 
 - **Controller:** Create `AdminLogController` with a `createLog` endpoint.
 - **Service:** Implement `createLog` in `LogService`.
 - **Security:** Requires `ADMIN` role.
 - **Testing:** Test log creation.
 - **Error Handling:** If the log entry is invalid, return a 400 Bad Request with error details. 403 Forbidden: Invalid token or user does not have ADMIN role. 500 Internal Server Error: Internal server/database error.
+
+- **Business Rules:**
+  - Log entries should include user ID, action type, entity type, and old/new values.
+  - Ensure proper validation of input data.
+  - Log creation should be atomic and fail if any part is invalid.
+
+### 5.2. `GET /api/admin/logs/:id`
+
+- **Description:** Retrieves a specific log entry by ID.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/admin/logs/:id`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Log entry retrieved successfully",
+      "data": {
+        "id": "log-entry-id",
+        "userId": "user-uuid",
+        "action": "CREATE",
+        "entityType": "COURSE",
+        "entityId": "course-uuid",
+        "oldValues": {
+          "title": "Old Title"
+        },
+        "newValues": {
+          "title": "New Course Title",
+          "description": "Updated course description"
+        },
+        "timestamp": "2023-01-01T00:00:00Z"
+      }
+    }
+    ```
+- **Controller:** Add a `getLogById` endpoint in `AdminLogController`.
+- **Service:** Implement `getLogById` in `LogService`.
+- **Security:** Requires `ADMIN` role.
+- **Testing:** Test retrieval of a specific log entry.
+- **Error Handling:** If the log entry is not found, return a 404 Not Found error.
+- **Business Rules:**
+  - Log entries should include user ID, action type, entity type, and old/new values.
+  - Ensure proper validation of input data.
+
+### 5.3 `GET /api/admin/courses/review-course`
+
+- **Description:** Retrieves a list of courses that match review status filters.
+  If no status query parameter is provided, the API defaults to returning only courses with statuses `PENDING` and `RESUBMITTED`.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/admin/courses/review-course`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Query Parameters:**
+    - `status`: (optional) Comma-separated list of course statuses to filter by (e.g., `PENDING,RESUBMITTED`).
+    - `createdBy`: (optional) User ID of the course creator to filter by.
+    - `dateFrom`: (optional) Start date to filter courses by creation date.
+    - `dateTo`: (optional) End date to filter courses by creation date.
+    - `page`: (optional) Page number for pagination (default is 0).
+    - `size`: (optional) Number of courses to return per page (default is 10).
+    - `sort`: (optional) Sorting criteria (e.g., `createdAt,desc`).
+- **Response:**
+
+  - **Success (200 OK):**
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Pending review courses retrieved successfully",
+      "data": {
+        "content": [
+          {
+            "id": "course-uuid",
+            "title": "Course Title",
+            "description": "Course Description",
+            "createdBy": {
+              "id": "user-uuid",
+              "name": "John Doe"
+            },
+            "createdAt": "2023-01-01T00:00:00Z",
+            "status": "PENDING",
+            "countSection": 5,
+            "countLesson": 10,
+            "totalDuration": 120,
+            "statusUpdatedAt": "2023-01-05T10:30:00Z",
+            "status": "PENDING",
+            "statusUpdatedAt": "2023-01-05T10:30:00Z",
+            "categories": [
+              {
+                "id": "category-uuid",
+                "name": "Category Name"
+              }
+            ]
+          }
+        ],
+        "page": 0,
+        "size": 10,
+        "totalPages": 5,
+        "totalElements": 42
+      }
+    }
+    ```
+
+- **Controller**: AdminCourseController.getReviewCourses
+- **Service**: CourseService.getReviewCourses
+- **Security**: Requires ADMIN role. If the requester does not have this role, return 403 Forbidden.
+- **Filtering**: Supports filtering by status, createdBy, and creation date range (dateFrom, dateTo).
+- **Pagination**: Uses page, size, and sort parameters for paginated results.
+- **Testing**:
+  - Retrieval with default status filter (PENDING + RESUBMITTED).
+  - Retrieval with custom status filter.
+  - Retrieval by createdBy.
+  - Retrieval by date range.
+  - Empty results (404).
+
+### 5.4 `GET /api/admin/courses/review-course/:id`
+
+- **Description:** Retrieves a specific course for review by ID.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/admin/courses/review-course/:id`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course retrieved successfully",
+      "data": {
+        "id": "course-uuid",
+        "title": "Course Title",
+        "description": "Course Description",
+        "createdBy": {
+          "id": "user-uuid",
+          "name": "John Doe",
+          "email": "john.doe@example.com"
+        },
+        "countSection": 5,
+        "countLesson": 10,
+        "totalDuration": 120,
+        "sections": [
+          {
+            "id": "section-uuid",
+            "title": "Introduction",
+            "order": 1,
+            "lessonCount": 3,
+            "totalVideoDuration": 3600,
+            "totalQuizQuestion": 10,
+            "lessons": [
+              {
+                "id": "lesson-uuid",
+                "title": "Getting Started",
+                "type": "VIDEO",
+                "video": {
+                  "id": "video-uuid",
+                  "url": "https://res.cloudinary.com/.../video.mp4",
+                  "duration": 300
+                }
+              },
+              {
+                "id": "lesson-uuid-2",
+                "title": "Course Overview",
+                "type": "QUIZ",
+                "quiz": {
+                  "questions": [
+                    {
+                      "id": "question-id-1",
+                      "questionText": "What is Java?",
+                      "options": [
+                        "A. Language",
+                        "B. Framework",
+                        "C. OS",
+                        "D. Compiler"
+                      ],
+                      "correctAnswer": "A",
+                      "explanation": "Java is a programming language."
+                    },
+                    {
+                      "id": "question-id-2",
+                      "questionText": "What is JVM?",
+                      "options": ["A", "B", "C", "D"],
+                      "correctAnswer": "C",
+                      "explanation": null
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "section-uuid-2",
+            "title": "Advanced Concepts",
+            "order": 2,
+            "lessonCount": 0,
+            "lessons": []
+          }
+        ]
+      }
+    }
+    ```
+- **Controller:**
+  - Ensure that all user-related information (e.g., createdBy) is included in the response.
+  - Include section details (e.g., title, order, lessonCount) in the response.
+  - Include lesson details (e.g., title, type, video, quiz) in the response.
+- **Service:**
+  - Implement the logic to retrieve the course details, including sections and lessons.
+  - Ensure that all necessary data is fetched from the database.
+  - Query database for course by id with:
+    - Creator details
+    - Sections + lessons (eager load to avoid N+1 queries)
+  - Aggregate:
+    - countSection
+    - countLesson
+    - totalDuration
+    - totalVideoDuration
+    - totalQuizQuestion
+- **Testing:**
+  - Include tests for various scenarios (e.g., course not found, user not authorized).
+
+### 5.5 `PATCH /api/admin/courses/review-course/:id`
+
+- **Description:** Updates the review status of a specific course by its ID.
+  Only Admin role is allowed to call this API. If the status is set to REJECTED, a reason must be provided.
+  The change is also recorded in the course_review_status_history table.
+- **Request:**
+  - **Method:** `PATCH`
+  - **Path:** `/api/admin/courses/review-course/:id`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+  - **Body:**
+    ```json
+    {
+      "status": "APPROVED" | "REJECTED"
+    }
+    ```
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course review status updated successfully",
+      "data": {
+        "id": "course-uuid",
+        "title": "Course Title",
+        "description": "Course Description",
+        "status": "APPROVED"
+      }
+    }
+    ```
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course review status updated successfully",
+      "data": {
+        "id": "course-uuid",
+        "title": "Course Title",
+        "description": "Course Description",
+        "status": "REJECTED",
+        "reason": "Inappropriate content"
+      }
+    }
+    ```
+  - **Error (404 Not Found):**
+    ```json
+    {
+      "statusCode": 404,
+      "message": "Course not found",
+      "data": null
+    }
+    ```
+  - **Error (400 Bad Request):**
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Invalid status value",
+      "data": null
+    }
+    ```
+  - **Error (403 Forbidden):**
+    ```json
+    {
+      "statusCode": 403,
+      "message": "Forbidden - Admin role required",
+      "data": null
+    }
+    ```
+- **Controller:**
+  - Validate the request body and ensure the status is one of the allowed values.
+  - Call the service to update the course review status.
+- **Service:**
+  - Implement the logic to update the course review status in the database. Also Update status in course_review_status_history
+- **Testing:**
+  - Include tests for various scenarios (e.g., course not found, invalid status, etc).
