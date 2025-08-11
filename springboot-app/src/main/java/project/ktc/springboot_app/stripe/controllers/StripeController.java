@@ -66,6 +66,13 @@ public class StripeController {
                 return ApiResponseUtil.badRequest("Course is not available for purchase");
             }
 
+            // Check if user has already completed payment for this course
+            Optional<Payment> completedPaymentOpt = paymentService
+                    .findCompletedPaymentByCourseIdAndUserId(course.getId(), currentUserId);
+            if (completedPaymentOpt.isPresent()) {
+                return ApiResponseUtil.badRequest("You have already purchased this course");
+            }
+
             // Create checkout session
             Session session = stripeCheckoutService.createCheckoutSession(currentUserId, course);
 
