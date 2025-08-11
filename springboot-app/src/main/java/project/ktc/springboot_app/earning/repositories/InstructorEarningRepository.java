@@ -77,4 +77,7 @@ public interface InstructorEarningRepository extends JpaRepository<InstructorEar
         java.util.Optional<InstructorEarning> findByIdAndInstructorId(
                         @Param("earningId") String earningId,
                         @Param("instructorId") String instructorId);
+
+        @Query("SELECT ie FROM InstructorEarning ie WHERE ie.payment.id = :paymentId")
+        java.util.Optional<InstructorEarning> findByPaymentId(@Param("paymentId") String paymentId);
 }

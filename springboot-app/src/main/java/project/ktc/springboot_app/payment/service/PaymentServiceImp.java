@@ -381,4 +381,16 @@ public class PaymentServiceImp implements PaymentService {
             return ApiResponseUtil.internalServerError("Failed to retrieve payment detail. Please try again later.");
         }
     }
+
+    @Override
+    public Optional<Payment> findPaymentByCourseIdAndUserId(String courseId, String userId) {
+        log.info("Finding payment by course ID {} and user ID {}", courseId, userId);
+        return paymentRepository.findByCourseIdAndUserId(courseId, userId);
+    }
+
+    @Override
+    public Optional<Payment> findCompletedPaymentByCourseIdAndUserId(String courseId, String userId) {
+        log.info("Finding completed payment by course ID {} and user ID {}", courseId, userId);
+        return paymentRepository.findCompletedPaymentByCourseIdAndUserId(courseId, userId);
+    }
 }
