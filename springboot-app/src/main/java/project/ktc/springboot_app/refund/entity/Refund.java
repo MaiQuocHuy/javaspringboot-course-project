@@ -21,7 +21,7 @@ import java.util.UUID;
 @Setter
 public class Refund {
 
-    @Id 
+    @Id
     @Column(length = 36, updatable = false, nullable = false)
     private String id = UUID.randomUUID().toString();
 
