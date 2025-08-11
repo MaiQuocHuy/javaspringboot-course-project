@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseDashboardResponseDto extends BaseCourseResponseDto {
@@ -32,6 +31,10 @@ public class CourseDashboardResponseDto extends BaseCourseResponseDto {
     private boolean canDelete;
     private boolean canPublish;
 
+    // Review status from course_review_status_history
+    private String statusReview;
+    private String reason;
+
     /**
      * Constructor with all fields including inherited ones
      */
@@ -44,7 +47,8 @@ public class CourseDashboardResponseDto extends BaseCourseResponseDto {
             java.util.List<CategoryInfo> categories, int totalStudents, int sectionCount, double averageRating,
             // Dashboard-specific fields
             String status, LocalDateTime lastContentUpdate, BigDecimal revenue,
-            boolean canEdit, boolean canUnpublish, boolean canDelete, boolean canPublish) {
+            boolean canEdit, boolean canUnpublish, boolean canDelete, boolean canPublish,
+            String statusReview, String reason) {
 
         // Set inherited fields
         this.id = id;
@@ -69,5 +73,7 @@ public class CourseDashboardResponseDto extends BaseCourseResponseDto {
         this.canUnpublish = canUnpublish;
         this.canDelete = canDelete;
         this.canPublish = canPublish;
+        this.statusReview = statusReview;
+        this.reason = reason;
     }
 }

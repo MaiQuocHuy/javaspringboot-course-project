@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="127-add-course-review-status-table" author="ktc">
+
+        <!-- 1. Tạo bảng course_review_status -->
+        <createTable tableName="course_review_status">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="status" type="ENUM('PENDING','APPROVED','DENIED','RESUBMITTED')">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <!-- 2. Khóa ngoại: course_review_status -> courses -->
+        <addForeignKeyConstraint baseTableName="course_review_status"
+                                baseColumnNames="course_id"
+                                referencedTableName="courses"
+                                referencedColumnNames="id"
+                                onDelete="CASCADE"
+                                constraintName="fk_course_review_course"/>
+
+        <!-- 3. Index trên course_id -->
+        <createIndex indexName="idx_course_review_status_course_id" tableName="course_review_status">
+            <column name="course_id"/>
+        </createIndex>
+
+
+        <!-- 4. Tạo bảng course_review_status_history -->
+        <createTable tableName="course_review_status_history">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="course_review_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reason" type="TEXT"/>
+            <column name="reviewer_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <!-- 5. Index trên course_review_id -->
+        <createIndex indexName="idx_course_review_status_history_course_review_id" 
+                     tableName="course_review_status_history">
+            <column name="course_review_id"/>
+        </createIndex>
+
+        <!-- 6. FK: history -> course_review_status -->
+        <addForeignKeyConstraint baseTableName="course_review_status_history"
+                                baseColumnNames="course_review_id"
+                                referencedTableName="course_review_status"
+                                referencedColumnNames="id"
+                                onDelete="CASCADE"
+                                constraintName="fk_course_review_status_history_course_review"/>
+
+        <!-- 7. FK: history -> users (reviewer) -->
+        <addForeignKeyConstraint baseTableName="course_review_status_history"
+                                baseColumnNames="reviewer_id"
+                                referencedTableName="users"
+                                referencedColumnNames="id"
+                                onDelete="CASCADE"
+                                constraintName="fk_course_review_status_history_reviewer"/>
+
+    </changeSet>
+</databaseChangeLog>

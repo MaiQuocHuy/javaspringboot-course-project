@@ -30,6 +30,10 @@ public class InstructorCourseDetailResponseDto extends BaseCourseResponseDto {
 
     private List<SectionInfo> sections;
 
+    // Review status from course_review_status_history
+    private String statusReview;
+    private String reason;
+
     // Manual constructor that includes base fields
     public InstructorCourseDetailResponseDto(
             // Base fields
@@ -41,7 +45,7 @@ public class InstructorCourseDetailResponseDto extends BaseCourseResponseDto {
             // Detail-specific fields
             String slug, InstructorInfo instructor, LocalDateTime lastContentUpdate,
             Boolean isPublished, int enrollmentCount, long ratingCount,
-            List<SectionInfo> sections) {
+            List<SectionInfo> sections, String statusReview, String reason) {
 
         // Set base fields
         this.id = id;
@@ -66,6 +70,8 @@ public class InstructorCourseDetailResponseDto extends BaseCourseResponseDto {
         this.enrollmentCount = enrollmentCount;
         this.ratingCount = ratingCount;
         this.sections = sections;
+        this.statusReview = statusReview;
+        this.reason = reason;
     }
 
     /**

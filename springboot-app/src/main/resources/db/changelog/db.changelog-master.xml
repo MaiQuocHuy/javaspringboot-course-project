@@ -57,4 +57,7 @@
     <!-- Fix Quiz Results Question IDs -->
     <include file="db/changelog/changes/126-fix-quiz-results-question-ids.xml"/>
 
+    <!-- Add Course Tags -->
+    <include file="db/changelog/changes/127-add-course-review-status-table.xml"/>
+    <include file="db/changelog/changes/128-seed-course-review-status.xml"/>
 </databaseChangeLog>

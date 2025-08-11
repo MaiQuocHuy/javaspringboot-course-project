@@ -18,7 +18,7 @@
             <column name="instructor_id" value="user-003"/> <!-- Charlie Brown -->
             <column name="price" value="189.99"/>
             <column name="is_published" valueBoolean="true"/>
-            <column name="is_approved" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="false"/>
             <column name="thumbnail_url" value="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800"/>
             <column name="level" value="BEGINNER"/>
             <column name="is_deleted" valueBoolean="false"/>
@@ -35,7 +35,7 @@
             <column name="instructor_id" value="user-004"/> <!-- David Miller -->
             <column name="price" value="149.99"/>
             <column name="is_published" valueBoolean="true"/>
-            <column name="is_approved" valueBoolean="true"/>
+            <column name="is_approved" valueBoolean="false"/>
             <column name="thumbnail_url" value="https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800"/>
             <column name="level" value="ADVANCED"/>
             <column name="is_deleted" valueBoolean="false"/>
