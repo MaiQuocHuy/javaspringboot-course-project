@@ -379,6 +379,14 @@ public class AdminCourseServiceImp implements AdminCourseService {
                 courseRejected.setIsPublished(false);
                 courseRejected.setUpdatedAt(LocalDateTime.now());
                 courseRepository.save(courseRejected);
+            } else if ("APPROVED".equals(updateDto.getStatus())) {
+                Course courseApproved = courseRepository.findById(courseId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Course not found with ID: " + courseId));
+                courseApproved.setIsApproved(true);
+                courseApproved.setIsPublished(true);
+                courseApproved.setUpdatedAt(LocalDateTime.now());
+                courseRepository.save(courseApproved);
             }
 
             CourseReviewStatusUpdateResponseDto responseDto = responseBuilder.build();
