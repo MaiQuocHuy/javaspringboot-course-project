@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="128-seed-course-review-status" author="ktc">
+
+        <!-- 1. APPROVED -->
+        <insert tableName="course_review_status">
+            <column name="id" value="00000000-0000-0000-0000-000000000001"/>
+            <column name="course_id" value="course-011"/>
+            <column name="status" value="APPROVED"/>
+            <column name="created_at" valueDate="2023-01-01 00:00:00"/>
+            <column name="updated_at" valueDate="2023-01-01 00:00:00"/>
+        </insert>
+
+        <!-- 2. DENIED -->
+        <insert tableName="course_review_status">
+            <column name="id" value="00000000-0000-0000-0000-000000000002"/>
+            <column name="course_id" value="course-012"/>
+            <column name="status" value="DENIED"/>
+            <column name="created_at" valueDate="2023-01-02 00:00:00"/>
+            <column name="updated_at" valueDate="2023-01-02 00:00:00"/>
+        </insert>
+
+        <!-- 3. RESUBMITTED -->
+        <insert tableName="course_review_status">
+            <column name="id" value="00000000-0000-0000-0000-000000000003"/>
+            <column name="course_id" value="course-013"/>
+            <column name="status" value="RESUBMITTED"/>
+            <column name="created_at" valueDate="2023-01-03 00:00:00"/>
+            <column name="updated_at" valueDate="2023-01-03 00:00:00"/>
+        </insert>
+
+        <!-- 4. PENDING -->
+        <insert tableName="course_review_status">
+            <column name="id" value="00000000-0000-0000-0000-000000000004"/>
+            <column name="course_id" value="course-014"/>
+            <column name="status" value="PENDING"/>
+            <column name="created_at" valueDate="2023-01-04 00:00:00"/>
+            <column name="updated_at" valueDate="2023-01-04 00:00:00"/>
+        </insert>
+
+
+
+        <!-- Lịch sử: APPROVED -->
+        <insert tableName="course_review_status_history">
+            <column name="id" value="10000000-0000-0000-0000-000000000001"/>
+            <column name="course_review_id" value="00000000-0000-0000-0000-000000000001"/>
+            <column name="action" value="APPROVED"/>
+            <column name="reason" value="Initial approval by admin"/>
+            <column name="reviewer_id" value="user-001"/>
+            <column name="created_at" valueDate="2023-01-01 01:00:00"/>
+            <column name="updated_at" valueDate="2023-01-01 01:00:00"/>
+        </insert>
+
+        <!-- Lịch sử: DENIED -->
+        <insert tableName="course_review_status_history">
+            <column name="id" value="10000000-0000-0000-0000-000000000002"/>
+            <column name="course_review_id" value="00000000-0000-0000-0000-000000000002"/>
+            <column name="action" value="DENIED"/>
+            <column name="reason" value="Content quality issues; please improve audio and add examples"/>
+            <column name="reviewer_id" value="user-001"/>
+            <column name="created_at" valueDate="2023-01-02 01:00:00"/>
+            <column name="updated_at" valueDate="2023-01-02 01:00:00"/>
+        </insert>
+
+        <!-- Lịch sử: DENIED (trước khi RESUBMITTED) -->
+        <insert tableName="course_review_status_history">
+            <column name="id" value="10000000-0000-0000-0000-000000000003"/>
+            <column name="course_review_id" value="00000000-0000-0000-0000-000000000003"/>
+            <column name="action" value="DENIED"/>
+            <column name="reason" value="Missing quizzes in Section 2"/>
+            <column name="reviewer_id" value="user-001"/>
+            <column name="created_at" valueDate="2023-01-03 00:30:00"/>
+            <column name="updated_at" valueDate="2023-01-03 00:30:00"/>
+        </insert>
+
+        <!-- Lịch sử: RESUBMITTED -->
+        <insert tableName="course_review_status_history">
+            <column name="id" value="10000000-0000-0000-0000-000000000004"/>
+            <column name="course_review_id" value="00000000-0000-0000-0000-000000000003"/>
+            <column name="action" value="RESUBMITTED"/>
+            <column name="reason" value="Updated content and added required quizzes"/>
+            <column name="reviewer_id" value="user-001"/>
+            <column name="created_at" valueDate="2023-01-03 12:00:00"/>
+            <column name="updated_at" valueDate="2023-01-03 12:00:00"/>
+        </insert>
+
+        <!-- Lịch sử: PENDING -->
+        <insert tableName="course_review_status_history">
+            <column name="id" value="10000000-0000-0000-0000-000000000005"/>
+            <column name="course_review_id" value="00000000-0000-0000-0000-000000000004"/>
+            <column name="action" value="PENDING"/>
+            <column name="reason" value="Course submitted and awaiting review"/>
+            <column name="reviewer_id" value="user-001"/>
+            <column name="created_at" valueDate="2023-01-04 00:10:00"/>
+            <column name="updated_at" valueDate="2023-01-04 00:10:00"/>
+        </insert>
+
+    </changeSet>
+</databaseChangeLog>
