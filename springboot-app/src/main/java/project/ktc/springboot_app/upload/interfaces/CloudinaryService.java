@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import project.ktc.springboot_app.upload.dto.DocumentUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
+import project.ktc.springboot_app.upload.dto.VideoMetadataResponseDto;
 import project.ktc.springboot_app.upload.dto.VideoUploadResponseDto;
 
 public interface CloudinaryService {
@@ -20,4 +21,13 @@ public interface CloudinaryService {
     boolean deleteVideo(String publicId) throws IOException;
 
     boolean deleteDocument(String publicId) throws IOException;
+
+    /**
+     * Retrieve video metadata from Cloudinary video URL or public ID
+     * 
+     * @param videoUrlOrPublicId Cloudinary video URL or public ID
+     * @return VideoMetadataResponseDto containing video metadata
+     * @throws IOException if metadata retrieval fails
+     */
+    VideoMetadataResponseDto getVideoMetadata(String videoUrlOrPublicId) throws IOException;
 }
