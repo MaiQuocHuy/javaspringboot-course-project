@@ -8,7 +8,7 @@
 
 ### Yêu Cầu Hệ Thống
 
-- Java 17+
+- Java 21+
 - MySQL 8.0+
 - Maven 3.6+
 
