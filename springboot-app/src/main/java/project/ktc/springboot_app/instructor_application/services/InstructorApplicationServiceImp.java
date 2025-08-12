@@ -18,8 +18,8 @@ import project.ktc.springboot_app.instructor_application.entity.InstructorApplic
 import project.ktc.springboot_app.instructor_application.interfaces.InstructorApplicationService;
 import project.ktc.springboot_app.instructor_application.repositories.InstructorApplicationRepository;
 import project.ktc.springboot_app.upload.exception.InvalidDocumentFormatException;
-import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
-import project.ktc.springboot_app.upload.service.FileValidationService;
+import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
+import project.ktc.springboot_app.upload.services.FileValidationService;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 

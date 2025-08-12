@@ -1,6 +1,7 @@
-package project.ktc.springboot_app.upload.service;
+package project.ktc.springboot_app.upload.services;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.upload.dto.DocumentUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
+import project.ktc.springboot_app.upload.dto.VideoMetadataResponseDto;
 import project.ktc.springboot_app.upload.dto.VideoUploadResponseDto;
 import project.ktc.springboot_app.upload.exception.ImageUploadException;
 import project.ktc.springboot_app.upload.exception.InvalidImageFormatException;
@@ -297,5 +299,164 @@ public class CloudinaryServiceImp implements CloudinaryService {
                 .resourceType((String) uploadResult.get("resource_type"))
                 .uploadedAt(LocalDateTime.now())
                 .build();
+    }
+
+    /**
+     * Retrieve video metadata from Cloudinary video URL or public ID
+     * 
+     * @param videoUrlOrPublicId Cloudinary video URL or public ID
+     * @return VideoMetadataResponseDto containing video metadata
+     * @throws IOException if metadata retrieval fails
+     */
+    @Override
+    public VideoMetadataResponseDto getVideoMetadata(String videoUrlOrPublicId) throws IOException {
+        log.info("Retrieving video metadata for: {}", videoUrlOrPublicId);
+
+        try {
+            // Extract public ID from URL if necessary
+            String publicId = extractPublicIdFromUrl(videoUrlOrPublicId);
+
+            // Get resource details from Cloudinary Admin API
+            @SuppressWarnings("unchecked")
+            Map<String, Object> resourceDetails = cloudinary.api().resource(publicId,
+                    ObjectUtils.asMap(
+                            "resource_type", "video",
+                            "type", "upload"));
+
+            log.info("Successfully retrieved metadata for video: {}", publicId);
+            log.info("Resource details: {}", resourceDetails.toString());
+            // Extract metadata from Cloudinary response
+            String title = extractTitle(resourceDetails, publicId);
+            String format = (String) resourceDetails.get("format");
+
+            // Generate thumbnail URL
+            String thumbnailUrl = generateThumbnailUrl(publicId);
+
+            Integer width = (Integer) resourceDetails.get("width");
+            Integer height = (Integer) resourceDetails.get("height");
+            Long sizeBytes = resourceDetails.get("bytes") != null
+                    ? Long.parseLong(resourceDetails.get("bytes").toString())
+                    : null;
+
+            String videoUrl = (String) resourceDetails.get("secure_url");
+
+            return VideoMetadataResponseDto.builder()
+                    .title(title)
+                    .format(format)
+                    .thumbnail(thumbnailUrl)
+                    .width(width)
+                    .height(height)
+                    .sizeBytes(sizeBytes)
+                    .videoUrl(videoUrl)
+                    .publicId(publicId)
+                    .retrievedAt(LocalDateTime.now())
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Failed to retrieve video metadata for: {}", videoUrlOrPublicId, e);
+            throw new IOException("Failed to retrieve video metadata: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Extract public ID from Cloudinary URL or return as-is if already a public ID
+     * 
+     * @param videoUrlOrPublicId Cloudinary URL or public ID
+     * @return extracted public ID
+     */
+    private String extractPublicIdFromUrl(String videoUrlOrPublicId) {
+        if (videoUrlOrPublicId == null || videoUrlOrPublicId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Video URL or public ID cannot be null or empty");
+        }
+
+        // If it's already a public ID (no http/https), return as-is
+        if (!videoUrlOrPublicId.startsWith("http")) {
+            return videoUrlOrPublicId.trim();
+        }
+
+        // Extract public ID from Cloudinary URL
+        // Example URL:
+        // https://res.cloudinary.com/cloud_name/video/upload/v1234567890/folder/video_name.mp4
+        try {
+            String[] parts = videoUrlOrPublicId.split("/");
+            for (int i = 0; i < parts.length; i++) {
+                if ("upload".equals(parts[i]) && i + 1 < parts.length) {
+                    // Skip version number if present (starts with 'v')
+                    int startIndex = i + 1;
+                    if (parts[startIndex].startsWith("v") && parts[startIndex].matches("v\\d+")) {
+                        startIndex++;
+                    }
+
+                    // Join remaining parts and remove file extension
+                    StringBuilder publicIdBuilder = new StringBuilder();
+                    for (int j = startIndex; j < parts.length; j++) {
+                        if (j > startIndex) {
+                            publicIdBuilder.append("/");
+                        }
+                        publicIdBuilder.append(parts[j]);
+                    }
+
+                    String publicId = publicIdBuilder.toString();
+                    // Remove file extension
+                    int lastDotIndex = publicId.lastIndexOf('.');
+                    if (lastDotIndex > 0) {
+                        publicId = publicId.substring(0, lastDotIndex);
+                    }
+
+                    return publicId;
+                }
+            }
+
+            throw new IllegalArgumentException("Invalid Cloudinary URL format: " + videoUrlOrPublicId);
+
+        } catch (Exception e) {
+            log.error("Failed to extract public ID from URL: {}", videoUrlOrPublicId, e);
+            throw new IllegalArgumentException("Invalid Cloudinary URL format: " + videoUrlOrPublicId, e);
+        }
+    }
+
+    /**
+     * Extract title from resource details or fallback to public ID
+     * 
+     * @param resourceDetails Cloudinary resource details
+     * @param publicId        Public ID as fallback
+     * @return video title
+     */
+    private String extractTitle(Map<String, Object> resourceDetails, String publicId) {
+        // Try to get original filename first
+        String originalFilename = (String) resourceDetails.get("original_filename");
+        if (originalFilename != null && !originalFilename.trim().isEmpty()) {
+            return originalFilename;
+        }
+
+        // Fallback to public ID, extract filename part
+        String[] pathParts = publicId.split("/");
+        String filename = pathParts[pathParts.length - 1];
+
+        return filename;
+    }
+
+    /**
+     * Generate thumbnail URL for video using Cloudinary transformation
+     * 
+     * @param publicId video public ID
+     * @return thumbnail URL
+     */
+    private String generateThumbnailUrl(String publicId) {
+        // Generate thumbnail URL with Cloudinary transformations
+        // This creates a thumbnail from the middle of the video (50% position)
+        @SuppressWarnings("rawtypes")
+        Transformation transformation = new Transformation()
+                .startOffset("50%")
+                .quality("auto")
+                .width(400)
+                .height(300)
+                .crop("fill");
+
+        return cloudinary.url()
+                .resourceType("video")
+                .format("jpg")
+                .transformation(transformation)
+                .generate(publicId);
     }
 }

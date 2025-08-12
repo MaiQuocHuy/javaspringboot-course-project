@@ -36,9 +36,9 @@ import project.ktc.springboot_app.section.dto.VideoDto;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.upload.dto.VideoUploadResponseDto;
-import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
-import project.ktc.springboot_app.upload.service.FileValidationService;
 import project.ktc.springboot_app.upload.exception.InvalidVideoFormatException;
+import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
+import project.ktc.springboot_app.upload.services.FileValidationService;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.video.repositories.VideoContentRepository;
@@ -58,6 +58,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -77,6 +79,8 @@ public class InstructorLessonServiceImp implements LessonService {
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
     private final SystemLogHelper systemLogHelper;
+
+    private final Cloudinary cloudinary;
 
     @Override
     public ResponseEntity<ApiResponse<SectionWithLessonsDto>> getSectionWithLessons(String sectionId) {
@@ -156,6 +160,8 @@ public class InstructorLessonServiceImp implements LessonService {
                         .id(videoContent.getId())
                         .url(videoContent.getUrl())
                         .duration(videoContent.getDuration())
+                        .title(videoContent.getTitle())
+                        .thumbnail(videoContent.getThumbnailUrl())
                         .build();
             }
         } catch (Exception e) {
@@ -264,7 +270,8 @@ public class InstructorLessonServiceImp implements LessonService {
                 project.ktc.springboot_app.auth.entitiy.User uploadedByUser = new project.ktc.springboot_app.auth.entitiy.User();
                 uploadedByUser.setId(currentUserIdForVideo);
                 videoContent.setUploadedBy(uploadedByUser);
-
+                videoContent.setTitle(uploadResult.getOriginalFilename());
+                videoContent.setThumbnailUrl(generateThumbnailUrl(uploadResult.getPublicId()));
                 videoContent.setCreatedAt(LocalDateTime.now());
                 videoContent.setUpdatedAt(LocalDateTime.now());
 
@@ -440,7 +447,8 @@ public class InstructorLessonServiceImp implements LessonService {
                 project.ktc.springboot_app.auth.entitiy.User uploadedByUser = new project.ktc.springboot_app.auth.entitiy.User();
                 uploadedByUser.setId(currentUserIdForVideo);
                 videoContent.setUploadedBy(uploadedByUser);
-
+                videoContent.setTitle(uploadResult.getOriginalFilename());
+                videoContent.setThumbnailUrl(generateThumbnailUrl(uploadResult.getPublicId()));
                 videoContent.setCreatedAt(LocalDateTime.now());
                 videoContent.setUpdatedAt(LocalDateTime.now());
 
@@ -1008,6 +1016,30 @@ public class InstructorLessonServiceImp implements LessonService {
             log.error("Error converting JSON to options", e);
             return new HashMap<>();
         }
+    }
+
+    /**
+     * Generate thumbnail URL for video using Cloudinary transformation
+     * 
+     * @param publicId video public ID
+     * @return thumbnail URL
+     */
+    private String generateThumbnailUrl(String publicId) {
+        // Generate thumbnail URL with Cloudinary transformations
+        // This creates a thumbnail from the middle of the video (50% position)
+        @SuppressWarnings("rawtypes")
+        Transformation transformation = new Transformation()
+                .startOffset("50%")
+                .quality("auto")
+                .width(400)
+                .height(300)
+                .crop("fill");
+
+        return cloudinary.url()
+                .resourceType("video")
+                .format("jpg")
+                .transformation(transformation)
+                .generate(publicId);
     }
 
 }
