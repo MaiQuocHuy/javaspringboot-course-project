@@ -28,4 +28,6 @@ public class CreateLessonResponseDto {
 
     @Schema(description = "Lesson order index within the section", example = "0")
     private Integer orderIndex;
+
+    
 }

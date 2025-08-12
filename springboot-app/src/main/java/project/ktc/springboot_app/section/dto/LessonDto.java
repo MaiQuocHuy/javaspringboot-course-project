@@ -20,4 +20,5 @@ public class LessonDto {
     private QuizDto quiz;
     private Boolean isCompleted;
     private LocalDateTime completedAt;
+
 }

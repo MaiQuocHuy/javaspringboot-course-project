@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.upload.service;
+package project.ktc.springboot_app.upload.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

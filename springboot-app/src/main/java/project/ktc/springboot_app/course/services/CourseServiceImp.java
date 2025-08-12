@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
-import project.ktc.springboot_app.category.entity.Category;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
@@ -23,6 +22,7 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.interfaces.CourseService;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
+import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
@@ -33,6 +33,7 @@ import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 import project.ktc.springboot_app.section.dto.VideoDto;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
+import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.utils.StringUtil;
 
 import java.math.BigDecimal;
@@ -51,6 +52,7 @@ public class CourseServiceImp implements CourseService {
         private final CourseRepository courseRepository;
         private final InstructorSectionRepository sectionRepository;
         private final QuizQuestionRepository quizQuestionRepository;
+        private final EnrollmentRepository enrollmentRepository;
 
         @Override
         public ResponseEntity<ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(
@@ -103,9 +105,25 @@ public class CourseServiceImp implements CourseService {
                         enrollmentCounts = new HashMap<>();
                 }
 
+                // Get current user ID for enrollment check
+                String currentUserId = SecurityUtil.getCurrentUserId();
+
+                // Get enrollment status for current user if logged in
+                final Map<String, Boolean> enrollmentStatus;
+                if (currentUserId != null && !courseIds.isEmpty()) {
+                        enrollmentStatus = courseIds.stream()
+                                        .collect(Collectors.toMap(
+                                                        courseId -> courseId,
+                                                        courseId -> enrollmentRepository.existsByUserIdAndCourseId(
+                                                                        currentUserId, courseId)));
+                } else {
+                        enrollmentStatus = new HashMap<>();
+                }
+
                 List<CoursePublicResponseDto> courseResponses = coursesWithCategories.stream()
                                 .map(course -> mapToCoursePublicResponse(course,
-                                                enrollmentCounts.getOrDefault(course.getId(), 0L)))
+                                                enrollmentCounts.getOrDefault(course.getId(), 0L),
+                                                enrollmentStatus.getOrDefault(course.getId(), false)))
                                 .collect(Collectors.toList());
 
                 // Create paginated response
@@ -468,7 +486,7 @@ public class CourseServiceImp implements CourseService {
                                 .build();
         }
 
-        private CoursePublicResponseDto mapToCoursePublicResponse(Course course, Long enrollCount) {
+        private CoursePublicResponseDto mapToCoursePublicResponse(Course course, Long enrollCount, Boolean isEnrolled) {
                 // Get primary category (first one if multiple)
                 List<CoursePublicResponseDto.CategorySummary> categorySummaries = new ArrayList<>();
                 if (course.getCategories() != null && !course.getCategories().isEmpty()) {
@@ -506,6 +524,7 @@ public class CourseServiceImp implements CourseService {
                                 .enrollCount(enrollCount)
                                 .averageRating(averageRating)
                                 .sectionCount(sectionCount)
+                                .isEnrolled(isEnrolled)
                                 .categories(categorySummaries)
                                 .instructor(instructorSum)
                                 .build();

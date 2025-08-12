@@ -20,7 +20,10 @@ import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 import project.ktc.springboot_app.section.dto.*;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
+import project.ktc.springboot_app.upload.dto.VideoMetadataResponseDto;
+import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import project.ktc.springboot_app.utils.StringUtil;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -52,6 +55,7 @@ public class StudentCourseServiceImp implements StudentCourseService {
     private final EnrollmentRepository enrollmentRepository;
     private final LessonCompletionRepository lessonCompletionRepository;
     private final QuizQuestionRepository quizQuestionRepository;
+    private final CloudinaryServiceImp cloudinaryService;
     private final ObjectMapper objectMapper;
 
     /**
@@ -147,12 +151,16 @@ public class StudentCourseServiceImp implements StudentCourseService {
 
         // Add content based on lesson type
         if ("VIDEO".equals(lessonType) && lesson.getContent() != null) {
-            VideoDto videoDto = VideoDto.builder()
+            String videoUrl = lesson.getContent().getUrl();
+
+            VideoDto.VideoDtoBuilder videoBuilder = VideoDto.builder()
                     .id(lesson.getContent().getId())
-                    .url(lesson.getContent().getUrl())
+                    .url(videoUrl)
                     .duration(lesson.getContent().getDuration())
-                    .build();
-            lessonBuilder.video(videoDto);
+                    .title(StringUtil.getBeforeDot(lesson.getContent().getTitle()))
+                    .thumbnail(lesson.getContent().getThumbnailUrl());
+
+            lessonBuilder.video(videoBuilder.build());
         } else if ("QUIZ".equals(lessonType)) {
             // Note: This could be further optimized with batch loading for quiz questions
             // if there are many quiz lessons in a section

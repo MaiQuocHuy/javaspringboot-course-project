@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.upload.controller;
+package project.ktc.springboot_app.upload.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,10 +16,10 @@ import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.VideoUploadResponseDto;
-import project.ktc.springboot_app.upload.service.CloudinaryServiceImp;
-import project.ktc.springboot_app.upload.service.FileValidationService;
 import project.ktc.springboot_app.upload.exception.InvalidImageFormatException;
 import project.ktc.springboot_app.upload.exception.InvalidVideoFormatException;
+import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
+import project.ktc.springboot_app.upload.services.FileValidationService;
 
 /**
  * REST Controller for handling file uploads

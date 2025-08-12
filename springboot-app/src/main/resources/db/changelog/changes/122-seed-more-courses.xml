@@ -126,33 +126,41 @@
         <!-- VIDEO CONTENTS for Course 011 -->
         <insert tableName="video_contents">
             <column name="id" value="video-011-01"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/ai_intro.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.mp4"/>
             <column name="duration" value="1800"/> <!-- 30 minutes -->
             <column name="uploaded_by" value="user-003"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.jpg"/>   
+            <column name="title" value="Introduction to Cloudinary"/>
             <column name="created_at" value="2025-01-03 09:00:00"/>
             <column name="updated_at" value="2025-01-03 09:00:00"/>
         </insert>
         <insert tableName="video_contents">
             <column name="id" value="video-011-02"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/ai_history.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.mp4"/>
             <column name="duration" value="2100"/> <!-- 35 minutes -->
             <column name="uploaded_by" value="user-003"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.jpg"/>
+            <column name="title" value="Set up React Environment"/>
             <column name="created_at" value="2025-01-03 09:05:00"/>
             <column name="updated_at" value="2025-01-03 09:05:00"/>
         </insert>
         <insert tableName="video_contents">
             <column name="id" value="video-011-03"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/ml_intro.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.mp4"/>
             <column name="duration" value="2400"/> <!-- 40 minutes -->
             <column name="uploaded_by" value="user-003"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.jpg"/>
+            <column name="title" value="Introduction to Cloudinary"/>
             <column name="created_at" value="2025-01-03 09:10:00"/>
             <column name="updated_at" value="2025-01-03 09:10:00"/>
         </insert>
         <insert tableName="video_contents">
             <column name="id" value="video-011-04"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/neural_networks.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.mp4"/>
             <column name="duration" value="2700"/> <!-- 45 minutes -->
             <column name="uploaded_by" value="user-003"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.jpg"/>
+            <column name="title" value="Set up React Environment"/>
             <column name="created_at" value="2025-01-03 09:15:00"/>
             <column name="updated_at" value="2025-01-03 09:15:00"/>
         </insert>
@@ -241,17 +249,21 @@
         <!-- VIDEO CONTENTS for Course 012 -->
         <insert tableName="video_contents">
             <column name="id" value="video-012-01"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/python_decorators.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.mp4"/>
             <column name="duration" value="2100"/> <!-- 35 minutes -->
             <column name="uploaded_by" value="user-004"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.jpg"/>
+            <column name="title" value="Introduction to Cloudinary"/>
             <column name="created_at" value="2025-01-05 10:00:00"/>
             <column name="updated_at" value="2025-01-05 10:00:00"/>
         </insert>
         <insert tableName="video_contents">
             <column name="id" value="video-012-02"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/python_async.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.mp4"/>
             <column name="duration" value="2700"/> <!-- 45 minutes -->
             <column name="uploaded_by" value="user-004"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.jpg"/>
+            <column name="title" value="Set up React Environment"/>
             <column name="created_at" value="2025-01-05 10:05:00"/>
             <column name="updated_at" value="2025-01-05 10:05:00"/>
         </insert>
@@ -357,17 +369,21 @@
         <!-- VIDEO CONTENTS for Course 013 -->
         <insert tableName="video_contents">
             <column name="id" value="video-013-01"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/vue3_intro.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.mp4"/>
             <column name="duration" value="1800"/> <!-- 30 minutes -->
             <column name="uploaded_by" value="user-005"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.jpg"/>
+            <column name="title" value="Introduction to Cloudinary"/>
             <column name="created_at" value="2025-01-07 11:00:00"/>
             <column name="updated_at" value="2025-01-07 11:00:00"/>
         </insert>
         <insert tableName="video_contents">
             <column name="id" value="video-013-02"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/vuex_state.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.mp4"/>
             <column name="duration" value="2400"/> <!-- 40 minutes -->
             <column name="uploaded_by" value="user-005"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.jpg"/>
+            <column name="title" value="Set up React Environment"/>
             <column name="created_at" value="2025-01-07 11:05:00"/>
             <column name="updated_at" value="2025-01-07 11:05:00"/>
         </insert>
@@ -417,17 +433,21 @@
         <!-- VIDEO CONTENTS for Course 014 -->
         <insert tableName="video_contents">
             <column name="id" value="video-014-01"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/docker_basics.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.mp4"/>
             <column name="duration" value="2700"/> <!-- 45 minutes -->
             <column name="uploaded_by" value="user-006"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.jpg"/>
+            <column name="title" value="Introduction to Cloudinary"/>
             <column name="created_at" value="2025-01-09 08:00:00"/>
             <column name="updated_at" value="2025-01-09 08:00:00"/>
         </insert>
         <insert tableName="video_contents">
             <column name="id" value="video-014-02"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/kubernetes_intro.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.mp4"/>
             <column name="duration" value="3000"/> <!-- 50 minutes -->
             <column name="uploaded_by" value="user-006"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.jpg"/>
+            <column name="title" value="Set up React Environment"/>
             <column name="created_at" value="2025-01-09 08:05:00"/>
             <column name="updated_at" value="2025-01-09 08:05:00"/>
         </insert>
@@ -477,17 +497,21 @@
         <!-- VIDEO CONTENTS for Course 015 -->
         <insert tableName="video_contents">
             <column name="id" value="video-015-01"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/flutter_setup.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.mp4"/>
             <column name="duration" value="1500"/> <!-- 25 minutes -->
             <column name="uploaded_by" value="user-007"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754458845/course-videos/2025-06-26_16-51-20_1754458842464_effb33bb.jpg"/>
+            <column name="title" value="Introduction to Cloudinary"/>
             <column name="created_at" value="2025-01-11 14:00:00"/>
             <column name="updated_at" value="2025-01-11 14:00:00"/>
         </insert>
         <insert tableName="video_contents">
             <column name="id" value="video-015-02"/>
-            <column name="url" value="https://res.cloudinary.com/demo/video/upload/flutter_widgets.mp4"/>
+            <column name="url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.mp4"/>
             <column name="duration" value="2100"/> <!-- 35 minutes -->
             <column name="uploaded_by" value="user-007"/>
+            <column name="thumbnail_url" value="https://res.cloudinary.com/dlusux56d/video/upload/v1754970951/course-videos/Set_up_React_Environment_1754927894955_080f1112_1754970909241_0d843a02.jpg"/>
+            <column name="title" value="Set up React Environment"/>
             <column name="created_at" value="2025-01-11 14:05:00"/>
             <column name="updated_at" value="2025-01-11 14:05:00"/>
         </insert>
