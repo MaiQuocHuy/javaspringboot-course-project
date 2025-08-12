@@ -24,7 +24,6 @@ import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
 import project.ktc.springboot_app.lesson.services.InstructorLessonServiceImp;
 import project.ktc.springboot_app.quiz.dto.UpdateQuizDto;
-import project.ktc.springboot_app.quiz.dto.UpdateQuizQuestionDto;
 import project.ktc.springboot_app.quiz.dto.UpdateQuizResponseDto;
 import project.ktc.springboot_app.quiz.services.QuizServiceImp;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;

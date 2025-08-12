@@ -19,4 +19,11 @@ public class VideoContent extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_by", nullable = false)
     private User uploadedBy;
+
+    @Column(length = 255, nullable = false)
+    private String title;
+
+    @Column(name = "thumbnail_url", length = 255, nullable = false)
+    private String thumbnailUrl;
+
 }

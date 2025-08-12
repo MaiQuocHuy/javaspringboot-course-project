@@ -19,4 +19,14 @@ public class StringUtil {
                 .replaceAll("-+", "-") // Replace multiple hyphens with single hyphen
                 .replaceAll("^-|-$", ""); // Remove leading/trailing hyphens
     }
+
+    public String getBeforeDot(String input) {
+        if (input == null)
+            return null;
+        int dotIndex = input.indexOf('.');
+        if (dotIndex != -1) {
+            return input.substring(0, dotIndex);
+        }
+        return input; // Không có dấu .
+    }
 }
