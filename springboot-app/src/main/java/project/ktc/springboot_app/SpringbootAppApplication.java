@@ -26,6 +26,13 @@ public class SpringbootAppApplication {
 		System.setProperty("STRIPE_PUBLISHABLE_KEY", dotenv.get("STRIPE_PUBLISHABLE_KEY"));
 		System.setProperty("STRIPE_WEBHOOK_SECRET", dotenv.get("STRIPE_WEBHOOK_SECRET", ""));
 		System.setProperty("FRONTEND_URL", dotenv.get("FRONTEND_URL", "http://localhost:3000"));
+		System.setProperty("EMAIL_SMTP_HOST", dotenv.get("EMAIL_SMTP_HOST"));
+		System.setProperty("EMAIL_SMTP_PORT", dotenv.get("EMAIL_SMTP_PORT"));
+		System.setProperty("EMAIL_SMTP_USERNAME", dotenv.get("EMAIL_SMTP_USERNAME"));
+		System.setProperty("EMAIL_SMTP_PASSWORD", dotenv.get("EMAIL_SMTP_PASSWORD"));
+		System.setProperty("EMAIL_FROM", dotenv.get("EMAIL_FROM"));
+		System.setProperty("EMAIL_FROM_NAME", dotenv.get("EMAIL_FROM_NAME"));
+
 		SpringApplication.run(SpringbootAppApplication.class, args);
 	}
 }

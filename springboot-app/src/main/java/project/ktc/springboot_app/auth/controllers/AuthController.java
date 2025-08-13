@@ -175,4 +175,6 @@ public class AuthController {
                 return authService.registerApplication(dto, certificate, cv, other);
         }
 
+        
+
 }

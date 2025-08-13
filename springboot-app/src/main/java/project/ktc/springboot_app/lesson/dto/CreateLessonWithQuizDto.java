@@ -19,12 +19,8 @@ public class CreateLessonWithQuizDto {
     @Size(min = 3, max = 255, message = "Lesson title must be between 3 and 255 characters")
     private String title;
 
-    @NotBlank(message = "Lesson description is required")
-    @Size(min = 10, max = 1000, message = "Lesson description must be between 10 and 1000 characters")
-    private String description;
-
-    @NotBlank(message = "Section ID is required")
-    private String sectionId;
+    // @NotBlank(message = "Section ID is required")
+    // private String sectionId;
 
     // Type is always QUIZ for this endpoint, but include for clarity
     @Builder.Default
