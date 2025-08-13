@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Course Enrollment Confirmation - KTC Learning Platform</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        border-bottom: 2px solid #28a745;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+      }
+      .logo {
+        font-size: 28px;
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 10px;
+      }
+      .success-message {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .course-info {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .button {
+        display: inline-block;
+        background-color: #28a745;
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+        font-weight: bold;
+      }
+      .footer {
+        margin-top: 30px;
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+      .learning-tips {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">KTC Learning Platform</div>
+        <div>🎓 Course Enrollment Confirmed!</div>
+      </div>
+
+      <div class="success-message">
+        <h2>
+          🎉 Congratulations,
+          <span th:text="${userName ?: 'Student'}">Student</span>!
+        </h2>
+        <p>You have successfully enrolled in your new course.</p>
+      </div>
+
+      <div class="course-info">
+        <h3>📚 Course Details</h3>
+        <p>
+          <strong>Course Title:</strong>
+          <span th:text="${courseTitle ?: 'Course Name'}">Course Name</span>
+        </p>
+        <p>
+          <strong>Instructor:</strong>
+          <span th:text="${instructorName ?: 'Instructor Name'}"
+            >Instructor Name</span
+          >
+        </p>
+        <p>
+          <strong>Start Date:</strong>
+          <span th:text="${startDate ?: 'Available Now'}">Available Now</span>
+        </p>
+        <p>
+          <strong>Duration:</strong>
+          <span th:text="${duration ?: 'Self-paced'}">Self-paced</span>
+        </p>
+        <p>
+          <strong>Level:</strong>
+          <span th:text="${level ?: 'All Levels'}">All Levels</span>
+        </p>
+      </div>
+
+      <div style="text-align: center; margin: 30px 0">
+        <a
+          href="${courseUrl ?: '#'}"
+          class="button"
+          th:href="${courseUrl ?: '#'}"
+        >
+          Start Learning Now
+        </a>
+      </div>
+
+      <div class="learning-tips">
+        <h4>💡 Learning Tips for Success:</h4>
+        <ul>
+          <li>📅 Set a regular study schedule</li>
+          <li>📝 Take notes and practice actively</li>
+          <li>💬 Engage with the community and ask questions</li>
+          <li>🎯 Complete assignments and projects</li>
+          <li>📊 Track your progress regularly</li>
+        </ul>
+      </div>
+
+      <div
+        style="
+          background-color: #fff3cd;
+          border: 1px solid #ffeaa7;
+          padding: 15px;
+          border-radius: 5px;
+          margin: 20px 0;
+        "
+      >
+        <h4>📞 Need Support?</h4>
+        <p>Our team is here to help you succeed!</p>
+        <p>
+          📧 Email:
+          <a href="mailto:support@ktc-learning.com">support@ktc-learning.com</a>
+        </p>
+        <p>💬 Live Chat: Available on the platform</p>
+        <p>
+          📖 Help Center:
+          <a href="${helpCenterUrl ?: '#'}" th:href="${helpCenterUrl ?: '#'}"
+            >Visit Help Center</a
+          >
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>© 2025 KTC Learning Platform. All rights reserved.</p>
+        <p>
+          You're receiving this email because you enrolled in a course on our
+          platform.
+        </p>
+        <p>Happy Learning! 🚀</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -25,7 +25,6 @@ public class LessonWithQuizResponseDto {
     public static class LessonResponseDto {
         private String id;
         private String title;
-        private String description;
         private String sectionId;
         private Integer orderIndex;
         private LocalDateTime createdAt;
@@ -36,9 +35,6 @@ public class LessonWithQuizResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class QuizWithinLessonResponseDto {
-        private String id; // This will be the lesson ID (same as lesson)
-        private String title;
-        private String description;
         private List<QuizQuestionResponseDto> questions;
     }
 }
