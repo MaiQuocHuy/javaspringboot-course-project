@@ -3689,3 +3689,6 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - `AdminRefundController` handles all admin refund-related requests.
   - Validate request headers (Authorization).
   - Pass to service for processing.
+
+### 6.1 `GET api/admin/payments`
+

@@ -99,4 +99,35 @@ public class ReviewController {
         log.info("Received request to delete review: {}", reviewId);
         return reviewService.deleteReview(reviewId);
     }
+
+    @GetMapping("/slug/{slug}/reviews")
+    @Operation(summary = "Get all reviews for a course", description = "Retrieves a paginated list of all reviews for a specific course")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reviews retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Course not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<ReviewResponseDto>>> getCourseReviewsSlug(
+            @Parameter(description = "Course slug", required = true, example = "course-slug-123") @PathVariable("slug") String courseSlug,
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size,
+            @Parameter(description = "Sort field and direction (e.g., 'reviewedAt,desc')") @RequestParam(defaultValue = "reviewedAt,desc") String sort) {
+
+        log.info("Received request to get reviews for course: {} with page: {}, size: {}", courseSlug, page, size);
+
+        // Parse sort parameter
+        Sort.Direction sortDirection = Sort.Direction.DESC;
+        String sortField = "reviewedAt";
+
+        if (sort != null && sort.contains(",")) {
+            String[] sortParams = sort.split(",");
+            sortField = sortParams[0];
+            if (sortParams.length > 1 && "asc".equalsIgnoreCase(sortParams[1])) {
+                sortDirection = Sort.Direction.ASC;
+            }
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
+        return reviewService.getCourseReviewsBySlug(courseSlug, pageable);
+    }
 }
