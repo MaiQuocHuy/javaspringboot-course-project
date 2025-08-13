@@ -11,10 +11,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import project.ktc.springboot_app.email.config.EmailConfig;
 import project.ktc.springboot_app.email.dto.EmailRequest;
 import project.ktc.springboot_app.email.dto.EmailSendResult;
-import project.ktc.springboot_app.email.entity.FailedEmail;
 import project.ktc.springboot_app.email.interfaces.EmailProvider;
 import project.ktc.springboot_app.email.interfaces.EmailService;
-import project.ktc.springboot_app.email.repository.FailedEmailRepository;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -32,9 +30,7 @@ import java.util.concurrent.CompletableFuture;
 public class EmailServiceImp implements EmailService {
 
     private final List<EmailProvider> emailProviders;
-    private final FailedEmailRepository failedEmailRepository;
     private final EmailConfig emailConfig;
-    private final ObjectMapper objectMapper;
 
     @Override
     public EmailSendResult sendEmail(EmailRequest emailRequest) {
@@ -120,77 +116,6 @@ public class EmailServiceImp implements EmailService {
         return sendEmailAsync(request);
     }
 
-    @Override
-    @Transactional
-    public int retryFailedEmails() {
-        log.info("Starting retry process for failed emails");
-
-        List<FailedEmail> failedEmails = failedEmailRepository.findReadyForRetry(LocalDateTime.now());
-        log.info("Found {} failed emails ready for retry", failedEmails.size());
-
-        int successCount = 0;
-
-        for (FailedEmail failedEmail : failedEmails) {
-            try {
-                // Parse the email request from JSON
-                EmailRequest emailRequest = objectMapper.readValue(
-                        failedEmail.getEmailRequestJson(),
-                        EmailRequest.class);
-
-                // Try to send the email
-                EmailSendResult result = doSendEmail(emailRequest);
-
-                if (result.isSuccess()) {
-                    log.info("Successfully retried failed email ID: {}", failedEmail.getId());
-                    failedEmailRepository.delete(failedEmail);
-                    successCount++;
-                } else {
-                    // Update failure count and next retry time
-                    failedEmail.incrementRetryCount();
-                    failedEmail.setLastError(result.getErrorMessage());
-                    failedEmail.setLastAttemptAt(LocalDateTime.now());
-                    failedEmail.calculateNextRetryAt(emailConfig.getRetry());
-
-                    if (failedEmail.getRetryCount() >= emailConfig.getRetry().getMaxAttempts()) {
-                        log.warn("Failed email ID: {} exceeded max retry attempts", failedEmail.getId());
-                        // Keep in database for manual review but don't retry
-                    }
-
-                    failedEmailRepository.save(failedEmail);
-                }
-
-            } catch (Exception e) {
-                log.error("Error retrying failed email ID: {}", failedEmail.getId(), e);
-
-                failedEmail.incrementRetryCount();
-                failedEmail.setLastError("Retry error: " + e.getMessage());
-                failedEmail.setLastAttemptAt(LocalDateTime.now());
-                failedEmail.calculateNextRetryAt(emailConfig.getRetry());
-
-                failedEmailRepository.save(failedEmail);
-            }
-        }
-
-        log.info("Retry process completed. Successfully sent: {}/{}", successCount, failedEmails.size());
-        return successCount;
-    }
-
-    @Override
-    @Transactional
-    public int cleanupFailedEmails(int days) {
-        log.info("Cleaning up failed emails older than {} days", days);
-
-        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(days);
-        List<FailedEmail> oldFailedEmails = failedEmailRepository.findOlderThan(cutoffDate);
-
-        if (!oldFailedEmails.isEmpty()) {
-            failedEmailRepository.deleteAll(oldFailedEmails);
-            log.info("Cleaned up {} old failed email records", oldFailedEmails.size());
-        }
-
-        return oldFailedEmails.size();
-    }
-
     /**
      * Handle sending email after transaction commit
      */
@@ -241,7 +166,6 @@ public class EmailServiceImp implements EmailService {
                 "unknown");
 
         // Save to failed emails for retry
-        saveFailedEmail(emailRequest, failureResult.getErrorMessage());
 
         return failureResult;
     }
@@ -280,7 +204,6 @@ public class EmailServiceImp implements EmailService {
                 "Both primary and fallback providers failed",
                 "unknown");
 
-        saveFailedEmail(emailRequest, failureResult.getErrorMessage());
         return failureResult;
     }
 
@@ -294,31 +217,4 @@ public class EmailServiceImp implements EmailService {
                 .orElse(null);
     }
 
-    /**
-     * Save failed email for retry
-     */
-    private void saveFailedEmail(EmailRequest emailRequest, String errorMessage) {
-        try {
-            String emailRequestJson = objectMapper.writeValueAsString(emailRequest);
-
-            FailedEmail failedEmail = FailedEmail.builder()
-                    .emailRequestJson(emailRequestJson)
-                    .priority(emailRequest.getPriority())
-                    .errorMessage(errorMessage)
-                    .attemptCount(0)
-                    .lastAttemptAt(LocalDateTime.now())
-                    .build();
-
-            // Calculate next retry time
-            failedEmail.calculateNextRetryAt(emailConfig.getRetry());
-
-            failedEmailRepository.save(failedEmail);
-
-            log.info("Saved failed email for retry. Recipients: {}, Subject: {}",
-                    emailRequest.getTo(), emailRequest.getSubject());
-
-        } catch (Exception e) {
-            log.error("Failed to save failed email record", e);
-        }
-    }
 }
