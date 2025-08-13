@@ -17,7 +17,4 @@ public class GoogleLoginDto {
     @Schema(description = "Google account name")
     @NotBlank(message = "Name is required")
     private String name;
-
-    @Schema(description = "Google account thumbnail URL")
-    private String thumbnailUrl;
 }

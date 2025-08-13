@@ -318,22 +318,6 @@ public class AuthServiceImp implements AuthService {
                     return ApiResponseUtil.unauthorized("User account is inactive");
                 }
 
-                // Cập nhật thông tin nếu có thay đổi
-                boolean hasChanges = false;
-                if (!user.getName().equals(dto.getName())) {
-                    user.setName(dto.getName());
-                    hasChanges = true;
-                }
-                if (dto.getThumbnailUrl() != null && !dto.getThumbnailUrl().equals(user.getThumbnailUrl())) {
-                    user.setThumbnailUrl(dto.getThumbnailUrl());
-                    hasChanges = true;
-                }
-
-                if (hasChanges) {
-                    user = userRepository.save(user);
-                    log.info("Updated user info for Google login: {}", user.getEmail());
-                }
-
             } else {
                 // User chưa tồn tại - tạo mới
                 log.info("Creating new user for Google login: {}", dto.getEmail());
@@ -360,7 +344,6 @@ public class AuthServiceImp implements AuthService {
                         .name(dto.getName())
                         .email(dto.getEmail())
                         .password(passwordEncoder.encode(randomPassword))
-                        .thumbnailUrl(dto.getThumbnailUrl() != null ? dto.getThumbnailUrl() : "")
                         .role(userRole)
                         .isActive(true)
                         .build();
