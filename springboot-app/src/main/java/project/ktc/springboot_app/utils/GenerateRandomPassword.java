@@ -1,9 +1,11 @@
 package project.ktc.springboot_app.utils;
 
 import java.security.SecureRandom;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class GenerateRandomPassword {
-    public static String generateRandomPassword(int length) {
+    public String generateRandomPassword(int length) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
         StringBuilder password = new StringBuilder();
         SecureRandom random = new SecureRandom();
