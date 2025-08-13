@@ -68,6 +68,7 @@ public class AuthController {
         }
 
         @PostMapping("/google")
+        @Operation(summary = "Login by Google account", description = "Log in a user using Google OAuth2. ")
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, Object>>> googleLogin(
                         @Valid @RequestBody GoogleLoginDto dto) {
                 return authService.googleLogin(dto);
@@ -174,7 +175,5 @@ public class AuthController {
 
                 return authService.registerApplication(dto, certificate, cv, other);
         }
-
-        
 
 }
