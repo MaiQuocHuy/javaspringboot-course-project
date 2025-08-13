@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -231,64 +230,7 @@ public class EmailController {
         }
     }
 
-    @PostMapping("/retry-failed")
-    @Operation(summary = "Retry failed emails", description = "Retry sending failed emails from the queue")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Failed emails retry completed"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Admin role required"),
-            @ApiResponse(responseCode = "500", description = "Failed email retry operation failed")
-    })
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, Integer>>> retryFailedEmails() {
 
-        log.info("Retrying failed emails");
-
-        try {
-            int processedCount = emailService.retryFailedEmails();
-
-            Map<String, Integer> result = new HashMap<>();
-            result.put("processedCount", processedCount);
-
-            return ApiResponseUtil.success(result,
-                    String.format("Processed %d failed emails for retry", processedCount));
-
-        } catch (Exception e) {
-            log.error("Error retrying failed emails: {}", e.getMessage(), e);
-            return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Failed email retry operation failed: " + e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/cleanup-failed")
-    @Operation(summary = "Cleanup old failed emails", description = "Remove old failed email records from the database")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Failed emails cleanup completed"),
-            @ApiResponse(responseCode = "400", description = "Invalid days parameter"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Admin role required"),
-            @ApiResponse(responseCode = "500", description = "Cleanup operation failed")
-    })
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, Integer>>> cleanupFailedEmails(
-            @RequestParam(defaultValue = "30") @Min(value = 1, message = "Days must be at least 1") @Parameter(description = "Number of days to keep failed email records") int days) {
-
-        log.info("Cleaning up failed emails older than {} days", days);
-
-        try {
-            int cleanedCount = emailService.cleanupFailedEmails(days);
-
-            Map<String, Integer> result = new HashMap<>();
-            result.put("cleanedCount", cleanedCount);
-            result.put("daysThreshold", days);
-
-            return ApiResponseUtil.success(result,
-                    String.format("Cleaned up %d failed email records older than %d days", cleanedCount, days));
-
-        } catch (Exception e) {
-            log.error("Error cleaning up failed emails: {}", e.getMessage(), e);
-            return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Cleanup operation failed: " + e.getMessage());
-        }
-    }
 
     @GetMapping("/health")
     @Operation(summary = "Email service health check", description = "Check if email service is running and configured properly")
