@@ -1,20 +1,17 @@
 package project.ktc.springboot_app.email.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 import project.ktc.springboot_app.email.config.EmailConfig;
 import project.ktc.springboot_app.email.dto.EmailRequest;
 import project.ktc.springboot_app.email.dto.EmailSendResult;
 import project.ktc.springboot_app.email.interfaces.EmailProvider;
 import project.ktc.springboot_app.email.interfaces.EmailService;
 
-import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,18 +114,6 @@ public class EmailServiceImp implements EmailService {
     }
 
     /**
-     * Handle sending email after transaction commit
-     */
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Async("emailTaskExecutor")
-    public void handleSendAfterCommit(EmailRequest emailRequest) {
-        if (emailRequest.isSendAfterCommit()) {
-            log.debug("Sending email after transaction commit");
-            doSendEmail(emailRequest);
-        }
-    }
-
-    /**
      * Actually send the email using available providers
      */
     private EmailSendResult doSendEmail(EmailRequest emailRequest) {
@@ -205,6 +190,66 @@ public class EmailServiceImp implements EmailService {
                 "unknown");
 
         return failureResult;
+    }
+
+    /**
+     * Send payment confirmation email asynchronously
+     */
+    @Override
+    @Async("emailTaskExecutor")
+    public CompletableFuture<EmailSendResult> sendPaymentConfirmationEmailAsync(
+            String customerEmail,
+            String customerName,
+            String courseTitle,
+            String courseUrl,
+            String instructorName,
+            String courseLevel,
+            String courseDuration,
+            String lessonCount,
+            String amount,
+            String transactionId,
+            String paymentMethod,
+            java.time.LocalDateTime paymentDate) {
+
+        try {
+            // Create template variables
+            Map<String, Object> templateVariables = new HashMap<>();
+            templateVariables.put("customerName", customerName);
+            templateVariables.put("courseTitle", courseTitle);
+            templateVariables.put("courseUrl", courseUrl);
+            templateVariables.put("instructorName", instructorName);
+            templateVariables.put("courseLevel", courseLevel);
+            templateVariables.put("courseDuration", courseDuration);
+            templateVariables.put("lessonCount", lessonCount);
+            templateVariables.put("amount", amount);
+            templateVariables.put("transactionId", transactionId);
+            templateVariables.put("paymentMethod", paymentMethod);
+            // templateVariables.put("paymentDate",
+            // paymentDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm")));
+            templateVariables.put("paymentDateFormatted",
+                    paymentDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            templateVariables.put("year", String.valueOf(Year.now().getValue()));
+
+            // Create email request
+            EmailRequest request = EmailRequest.builder()
+                    .to(List.of(customerEmail))
+                    .subject("Payment Confirmation - Welcome to " + courseTitle)
+                    .templateName("payment-confirmation-template")
+                    .templateVariables(templateVariables)
+                    .async(true)
+                    .build();
+
+            EmailSendResult result = sendEmail(request);
+            return CompletableFuture.completedFuture(result);
+
+        } catch (Exception e) {
+            log.error("Failed to send payment confirmation email to {}: {}", customerEmail, e.getMessage(), e);
+            EmailSendResult errorResult = EmailSendResult.builder()
+                    .success(false)
+                    .errorMessage("Failed to send payment confirmation email: " + e.getMessage())
+                    .build();
+            return CompletableFuture.completedFuture(errorResult);
+        }
     }
 
     /**
