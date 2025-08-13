@@ -981,8 +981,6 @@ public class InstructorLessonServiceImp implements LessonService {
                     .toList();
 
             var quizResponse = LessonWithQuizResponseDto.QuizWithinLessonResponseDto.builder()
-                    .id(savedLesson.getId()) // Using lesson ID as quiz ID
-                    .title(lessonWithQuizDto.getTitle()) // Using lesson title as quiz title
                     .questions(questionResponses)
                     .build();
 
