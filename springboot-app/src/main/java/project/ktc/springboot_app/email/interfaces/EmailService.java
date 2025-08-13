@@ -73,8 +73,34 @@ public interface EmailService {
         CompletableFuture<EmailSendResult> sendSimpleEmailAsync(String to, String subject, String content);
 
         /**
+         * Send payment confirmation email asynchronously
          * 
+         * @param customerEmail  recipient email
+         * @param customerName   customer name
+         * @param courseTitle    course title
+         * @param courseUrl      course access URL
+         * @param instructorName instructor name
+         * @param courseLevel    course level
+         * @param courseDuration course duration
+         * @param lessonCount    number of lessons
+         * @param amount         payment amount
+         * @param transactionId  transaction ID
+         * @param paymentMethod  payment method
+         * @param paymentDate    payment date
+         * @return future with email send result
          */
+        CompletableFuture<EmailSendResult> sendPaymentConfirmationEmailAsync(
+                        String customerEmail,
+                        String customerName,
+                        String courseTitle,
+                        String courseUrl,
+                        String instructorName,
+                        String courseLevel,
+                        String courseDuration,
+                        String lessonCount,
+                        String amount,
+                        String transactionId,
+                        String paymentMethod,
+                        java.time.LocalDateTime paymentDate);
 
-        void handleSendAfterCommit(EmailRequest emailRequest);
 }
