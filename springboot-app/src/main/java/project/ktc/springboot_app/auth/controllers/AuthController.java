@@ -67,7 +67,7 @@ public class AuthController {
                 return authService.loginUser(dto);
         }
 
-        @PostMapping("/auth/google")
+        @PostMapping("/google")
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, Object>>> googleLogin(
                         @Valid @RequestBody GoogleLoginDto dto) {
                 return authService.googleLogin(dto);
