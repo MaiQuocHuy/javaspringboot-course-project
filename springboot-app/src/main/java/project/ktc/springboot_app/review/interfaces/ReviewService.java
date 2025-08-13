@@ -55,4 +55,14 @@ public interface ReviewService {
      * @return ResponseEntity with paginated student reviews
      */
     ResponseEntity<ApiResponse<PaginatedResponse<StudentReviewResponseDto>>> getStudentReviews(Pageable pageable);
+
+    /**
+     * Gets all reviews for a specific course by its slug with pagination
+     *
+     * @param courseSlug the slug of the course
+     * @param pageable   pagination information
+     * @return ResponseEntity with paginated reviews
+     */
+    ResponseEntity<ApiResponse<PaginatedResponse<ReviewResponseDto>>> getCourseReviewsBySlug(String courseSlug,
+            Pageable pageable);
 }
