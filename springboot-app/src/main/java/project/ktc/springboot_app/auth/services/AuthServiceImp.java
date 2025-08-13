@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import project.ktc.springboot_app.auth.dto.GoogleLoginDto;
 import project.ktc.springboot_app.auth.dto.LoginUserDto;
 import project.ktc.springboot_app.auth.dto.RegisterApplicationDto;
 import project.ktc.springboot_app.auth.dto.RegisterUserDto;
@@ -34,6 +35,7 @@ import project.ktc.springboot_app.utils.JwtTokenProvider;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.utils.GenerateRandomPassword;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -286,6 +288,101 @@ public class AuthServiceImp implements AuthService {
         } catch (Exception e) {
             log.error("System error occurred while logging in user: {}", dto.getEmail(), e);
             return ApiResponseUtil.internalServerError("An error occurred. Please try again later.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Map<String, Object>>> googleLogin(GoogleLoginDto dto) {
+        // Validation checks
+        if (dto == null) {
+            return ApiResponseUtil.badRequest("Login data cannot be null");
+        }
+        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+            return ApiResponseUtil.badRequest("Email cannot be null or empty");
+        }
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            return ApiResponseUtil.badRequest("Name cannot be null or empty");
+        }
+        try {
+            Optional<User> existingUserOpt = userRepository.findByEmail(dto.getEmail());
+            User user;
+
+            if (existingUserOpt.isPresent()) {
+                // User đã tồn tại - đăng nhập
+                user = existingUserOpt.get();
+                log.info("Existing user found for Google login: {}", user.getEmail());
+
+                // Kiểm tra tài khoản có active không
+                if (!user.getIsActive()) {
+                    return ApiResponseUtil.unauthorized("User account is inactive");
+                }
+
+            } else {
+                // User chưa tồn tại - tạo mới
+                log.info("Creating new user for Google login: {}", dto.getEmail());
+
+                // Tìm hoặc tạo role STUDENT
+                UserRole.RoleType roleType = UserRole.RoleType.valueOf(UserRoleEnum.STUDENT.name());
+                Optional<UserRole> existingRoleOpt = userRoleRepository.findByRole(roleType);
+                UserRole userRole;
+
+                if (existingRoleOpt.isPresent()) {
+                    userRole = existingRoleOpt.get();
+                } else {
+                    userRole = UserRole.builder()
+                            .role(roleType)
+                            .build();
+                    userRole = userRoleRepository.save(userRole);
+                }
+
+                // Generate random password
+                String randomPassword = GenerateRandomPassword.generateRandomPassword(12);
+
+                // Tạo user mới
+                user = User.builder()
+                        .name(dto.getName())
+                        .email(dto.getEmail())
+                        .password(passwordEncoder.encode(randomPassword))
+                        .role(userRole)
+                        .isActive(true)
+                        .build();
+
+                user = userRepository.save(user);
+                log.info("Created new user for Google login: {}", user.getEmail());
+            }
+
+            // Generate access token
+            String accessToken = jwtTokenProvider.generateAccessToken(user);
+
+            // Generate and save refresh token
+            String refreshTokenStr = UUID.randomUUID().toString();
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_MONTH, 30); // 30 ngày
+
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .user(user)
+                    .token(refreshTokenStr)
+                    .expiresAt(LocalDateTime.ofInstant(cal.getTime().toInstant(), ZoneId.systemDefault()))
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            refreshTokenRepository.save(refreshToken);
+
+            // Prepare response
+            UserResponseDto userResponseDto = new UserResponseDto(user);
+            userResponseDto.setRole(null); // Giống như loginUser method
+
+            Map<String, Object> loginResponse = Map.of(
+                    "accessToken", accessToken,
+                    "refreshToken", refreshTokenStr,
+                    "user", userResponseDto);
+
+            log.info("Google login successful for user: {}", user.getEmail());
+            return ApiResponseUtil.success(loginResponse, "Google login successful");
+
+        } catch (Exception e) {
+            log.error("Error during Google login for email: {}, error: {}", dto.getEmail(), e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Google login failed. Please try again later.");
         }
     }
 
