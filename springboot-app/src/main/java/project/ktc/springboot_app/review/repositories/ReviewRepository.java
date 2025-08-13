@@ -70,4 +70,13 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
          */
         @Query("SELECT r.rating, COUNT(r) FROM Review r WHERE r.course.id = :courseId GROUP BY r.rating ORDER BY r.rating DESC")
         List<Object[]> getRatingDistributionByCourseId(@Param("courseId") String courseId);
+
+        /**
+         * Get course slug
+         */
+        @Query("SELECT r FROM Review r " +
+                        "JOIN FETCH r.user u " +
+                        "WHERE r.course.slug = :courseSlug " +
+                        "ORDER BY r.reviewedAt DESC")
+        Page<Review> findByCourseSlugWithUser(@Param("courseSlug") String courseSlug, Pageable pageable);
 }

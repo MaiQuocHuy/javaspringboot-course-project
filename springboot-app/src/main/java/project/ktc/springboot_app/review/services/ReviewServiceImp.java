@@ -247,6 +247,41 @@ public class ReviewServiceImp implements ReviewService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<ApiResponse<PaginatedResponse<ReviewResponseDto>>> getCourseReviewsBySlug(String courseSlug,
+            Pageable pageable) {
+        log.info("Fetching reviews for course {} with pagination: {}", courseSlug, pageable);
+
+        // Validate course exists
+        if (!courseRepository.existsBySlug(courseSlug)) {
+            return ApiResponseUtil.notFound("Course not found");
+        }
+
+        // Fetch reviews with pagination
+        Page<Review> reviewsPage = reviewRepository.findByCourseSlugWithUser(courseSlug, pageable);
+
+        // Convert to DTOs
+        List<ReviewResponseDto> reviewDtos = reviewsPage.getContent().stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+
+        // Create paginated response
+        PaginatedResponse<ReviewResponseDto> paginatedResponse = PaginatedResponse.<ReviewResponseDto>builder()
+                .content(reviewDtos)
+                .page(PaginatedResponse.PageInfo.builder()
+                        .number(reviewsPage.getNumber())
+                        .size(reviewsPage.getSize())
+                        .totalElements(reviewsPage.getTotalElements())
+                        .totalPages(reviewsPage.getTotalPages())
+                        .first(reviewsPage.isFirst())
+                        .last(reviewsPage.isLast())
+                        .build())
+                .build();
+
+        return ApiResponseUtil.success(paginatedResponse, "Course reviews retrieved successfully");
+    }
+
     private ReviewResponseDto mapToResponseDto(Review review) {
         return ReviewResponseDto.builder()
                 .id(review.getId())
