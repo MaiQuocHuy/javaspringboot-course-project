@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to KTC Learning Platform</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+      }
+      .logo {
+        font-size: 28px;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 10px;
+      }
+      .welcome-message {
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+      .button {
+        display: inline-block;
+        background-color: #007bff;
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .footer {
+        margin-top: 30px;
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+      .highlight {
+        background-color: #e3f2fd;
+        padding: 15px;
+        border-left: 4px solid #007bff;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">KTC Learning Platform</div>
+        <div>Welcome to Our Learning Community!</div>
+      </div>
+
+      <div class="welcome-message">
+        <h2>Hello <span th:text="${userName ?: 'Valued User'}">User</span>!</h2>
+
+        <p>
+          We're excited to welcome you to
+          <strong>KTC Learning Platform</strong>, your gateway to professional
+          development and skill enhancement.
+        </p>
+
+        <div class="highlight">
+          <p><strong>🎉 Your account has been successfully created!</strong></p>
+          <p>
+            You now have access to our comprehensive library of courses, expert
+            instructors, and interactive learning tools.
+          </p>
+        </div>
+
+        <h3>What's Next?</h3>
+        <ul>
+          <li>✅ Explore our course catalog</li>
+          <li>✅ Complete your profile setup</li>
+          <li>✅ Join your first course</li>
+          <li>✅ Connect with instructors and fellow learners</li>
+        </ul>
+
+        <div style="text-align: center; margin: 30px 0">
+          <a
+            href="${platformUrl ?: '#'}"
+            class="button"
+            th:href="${platformUrl ?: '#'}"
+          >
+            Start Learning Now
+          </a>
+        </div>
+
+        <div class="highlight">
+          <h4>Need Help Getting Started?</h4>
+          <p>
+            📧 Email us:
+            <a href="mailto:support@ktc-learning.com"
+              >support@ktc-learning.com</a
+            >
+          </p>
+          <p>📞 Call us: +1 (555) 123-4567</p>
+          <p>💬 Live Chat: Available 24/7 on our platform</p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>© 2025 KTC Learning Platform. All rights reserved.</p>
+        <p>
+          This email was sent to you because you registered for an account with
+          us.
+        </p>
+        <p>
+          If you have any questions, please don't hesitate to contact our
+          support team.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -60,4 +60,5 @@
     <!-- Add Course Tags -->
     <include file="db/changelog/changes/127-add-course-review-status-table.xml"/>
     <include file="db/changelog/changes/128-seed-course-review-status.xml"/>
+    <include file="db/changelog/changes/129-add-password-reset-tokens-table.xml"/>
 </databaseChangeLog>
