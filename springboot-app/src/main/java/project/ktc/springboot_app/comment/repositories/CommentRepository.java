@@ -3,102 +3,138 @@ package project.ktc.springboot_app.comment.repositories;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import project.ktc.springboot_app.comment.entity.Comment;
 
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, String> {
 
-    /**
-     * Find paginated root comments for a lesson (no parent)
-     * Ordered by creation date DESC (newest first)
-     */
-    @Query("SELECT c FROM Comment c " +
-            "WHERE c.lesson.id = :lessonId " +
-            "AND c.parent IS NULL " +
-            "ORDER BY c.createdAt DESC")
-    Page<Comment> findRootCommentsByLessonId(@Param("lessonId") String lessonId, Pageable pageable);
+        // =================== READ OPERATIONS ===================
 
-    /**
-     * Find all replies for specific parent comments
-     * Ordered by creation date ASC (oldest first)
-     */
-    @Query("SELECT c FROM Comment c " +
-            "WHERE c.parent.id IN :parentIds " +
-            "ORDER BY c.parent.id, c.createdAt ASC")
-    List<Comment> findRepliesByParentIds(@Param("parentIds") List<String> parentIds);
+        /**
+         * Find all comments for a lesson ordered by lft (flattened tree structure)
+         */
+        @Query("""
+                        SELECT c FROM Comment c
+                        JOIN FETCH c.user u
+                        WHERE c.lesson.id = :lessonId
+                        AND c.isDeleted = false
+                        ORDER BY c.lft ASC
+                        """)
+        List<Comment> findAllByLessonIdOrderByLft(@Param("lessonId") String lessonId);
 
-    /**
-     * Find all comments in a thread including replies
-     * Used for fetching complete comment trees
-     */
-    @Query("SELECT c FROM Comment c " +
-            "LEFT JOIN FETCH c.user " +
-            "WHERE c.lesson.id = :lessonId " +
-            "AND (c.parent IS NULL OR c.parent.id IN :rootCommentIds) " +
-            "ORDER BY c.parent.id NULLS FIRST, c.createdAt ASC")
-    List<Comment> findCommentsWithRepliesByLessonAndRootIds(
-            @Param("lessonId") String lessonId,
-            @Param("rootCommentIds") List<String> rootCommentIds);
+        /**
+         * Find root comments with pagination
+         */
+        @Query("""
+                        SELECT c FROM Comment c
+                        JOIN FETCH c.user u
+                        WHERE c.lesson.id = :lessonId
+                        AND c.isDeleted = false
+                        AND c.parent IS NULL
+                        ORDER BY c.createdAt DESC
+                        """)
+        Page<Comment> findRootCommentsByLessonId(@Param("lessonId") String lessonId, Pageable pageable);
 
-    /**
-     * Find comment by ID with user eagerly loaded
-     */
-    @Query("SELECT c FROM Comment c " +
-            "LEFT JOIN FETCH c.user " +
-            "LEFT JOIN FETCH c.lesson " +
-            "WHERE c.id = :commentId")
-    Optional<Comment> findByIdWithUser(@Param("commentId") String commentId);
+        /**
+         * Find subtree of a comment (all descendants)
+         */
+        @Query("""
+                        SELECT c FROM Comment c
+                        JOIN FETCH c.user u
+                        WHERE c.lesson.id = :lessonId
+                        AND c.lft > :parentLft
+                        AND c.rgt < :parentRgt
+                        AND c.isDeleted = false
+                        ORDER BY c.lft ASC
+                        """)
+        List<Comment> findSubtreeByParentLftRgt(
+                        @Param("lessonId") String lessonId,
+                        @Param("parentLft") Integer parentLft,
+                        @Param("parentRgt") Integer parentRgt);
 
-    /**
-     * Count total comments for a lesson (including replies)
-     */
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.lesson.id = :lessonId AND c.isDeleted = false")
-    Long countByLessonId(@Param("lessonId") String lessonId);
+        /**
+         * Find comment by ID with user eagerly loaded
+         */
+        @Query("SELECT c FROM Comment c JOIN FETCH c.user WHERE c.id = :id")
+        Optional<Comment> findByIdWithUser(@Param("id") String id);
 
-    /**
-     * Count replies for specific parent comment
-     */
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.parent.id = :parentId AND c.isDeleted = false")
-    Long countRepliesByParentId(@Param("parentId") String parentId);
+        /**
+         * Find comment by ID with lesson and user eagerly loaded
+         */
+        @Query("SELECT c FROM Comment c JOIN FETCH c.user JOIN FETCH c.lesson WHERE c.id = :id")
+        Optional<Comment> findByIdWithUserAndLesson(@Param("id") String id);
 
-    /**
-     * Check if user can add reply based on depth limit
-     */
-    @Query("SELECT c.depth FROM Comment c WHERE c.id = :commentId")
-    Optional<Integer> findDepthById(@Param("commentId") String commentId);
+        /**
+         * Count total comments for a lesson
+         */
+        @Query("SELECT COUNT(c) FROM Comment c WHERE c.lesson.id = :lessonId AND c.isDeleted = false")
+        Long countByLessonId(@Param("lessonId") String lessonId);
 
-    /**
-     * Soft delete comment and update content
-     */
-    @Query("UPDATE Comment c SET c.isDeleted = true, c.content = '[Deleted]' WHERE c.id = :commentId")
-    void softDeleteComment(@Param("commentId") String commentId);
+        // =================== WRITE OPERATIONS ===================
 
-    /**
-     * Check if comment exists and is not deleted
-     */
-    boolean existsByIdAndIsDeletedFalse(String commentId);
+        /**
+         * Lock parent comment for insertion (prevents race conditions)
+         */
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("SELECT c FROM Comment c WHERE c.id = :parentId")
+        Optional<Comment> findByIdForUpdate(@Param("parentId") String parentId);
 
-    /**
-     * Find all descendants of a comment (for admin operations)
-     */
-    @Query("SELECT c FROM Comment c WHERE c.parent.id = :parentId OR c.parent.parent.id = :parentId")
-    List<Comment> findDescendantsByParentId(@Param("parentId") String parentId);
+        /**
+         * Get maximum right value for a lesson
+         */
+        @Query("SELECT COALESCE(MAX(c.rgt), 0) FROM Comment c WHERE c.lesson.id = :lessonId")
+        Integer findMaxRgtByLessonId(@Param("lessonId") String lessonId);
 
-    /**
-     * Find all replies in a thread including nested replies recursively
-     * This gets all comments that belong to a thread started by root comments
-     */
-    @Query("SELECT c FROM Comment c " +
-            "LEFT JOIN FETCH c.user " +
-            "WHERE c.lesson.id = :lessonId " +
-            "AND c.parent IS NOT NULL " +
-            "AND c.isDeleted = false " +
-            "ORDER BY c.createdAt ASC")
-    List<Comment> findAllRepliesInThread(@Param("lessonId") String lessonId, @Param("rootCommentIds") List<String> rootCommentIds);
+        /**
+         * Update left values for insertion
+         */
+        @Modifying
+        @Query("""
+                        UPDATE Comment c
+                        SET c.lft = c.lft + 2
+                        WHERE c.lesson.id = :lessonId
+                        AND c.lft > :insertPosition
+                        """)
+        int shiftLeftValuesForInsertion(
+                        @Param("lessonId") String lessonId,
+                        @Param("insertPosition") Integer insertPosition);
+
+        /**
+         * Update right values for insertion
+         */
+        @Modifying
+        @Query("""
+                        UPDATE Comment c
+                        SET c.rgt = c.rgt + 2
+                        WHERE c.lesson.id = :lessonId
+                        AND c.rgt > :insertPosition
+                        """)
+        int shiftRightValuesForInsertion(
+                        @Param("lessonId") String lessonId,
+                        @Param("insertPosition") Integer insertPosition);
+
+        /**
+         * Mark subtree as deleted
+         */
+        @Modifying
+        @Query("""
+                        UPDATE Comment c
+                        SET c.isDeleted = true, c.content = '[Deleted]'
+                        WHERE c.lesson.id = :lessonId
+                        AND c.lft >= :subtreeLft
+                        AND c.rgt <= :subtreeRgt
+                        """)
+        int markSubtreeAsDeleted(
+                        @Param("lessonId") String lessonId,
+                        @Param("subtreeLft") Integer subtreeLft,
+                        @Param("subtreeRgt") Integer subtreeRgt);
 }
