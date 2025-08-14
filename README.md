@@ -48,13 +48,14 @@ DB_PASSWORD=your_password
 
 **Base Path**: `/api/auth`
 
-| Method | Endpoint                           | Mô Tả                       | Trạng Thái     |
-| ------ | ---------------------------------- | --------------------------- | -------------- |
-| POST   | `/register`                        | Đăng ký tài khoản học viên  | ✅ **(Done)**  |
-| POST   | `/register/instructor-application` | Đăng ký ứng viên giảng viên | ⏳ **Planned** |
-| POST   | `/login`                           | Đăng nhập                   | ✅ **(Done)**  |
-| POST   | `/refresh`                         | Refresh token               | ⏳ **Planned** |
-| POST   | `/reset-password`                  | Đặt lại mật khẩu            | ⏳ **Planned** |
+| Method | Endpoint                           | Mô Tả                       | Trạng Thái    |
+| ------ | ---------------------------------- | --------------------------- | ------------- |
+| POST   | `/register`                        | Đăng ký tài khoản học viên  | ✅ **(Done)** |
+| POST   | `/register/instructor-application` | Đăng ký ứng viên giảng viên | ✅ **(Done)** |
+| POST   | `/login`                           | Đăng nhập                   | ✅ **(Done)** |
+| POST   | `/google`                          | Đăng nhập = Google          | ✅ **(Done)** |
+| POST   | `/refresh`                         | Refresh token               | ✅ **(Done)** |
+| POST   | `/reset-password`                  | Đặt lại mật khẩu            | ✅ **(Done)** |
 
 ---
 
@@ -64,12 +65,12 @@ DB_PASSWORD=your_password
 
 **Base Path**: `/api/users`
 
-| Method | Endpoint           | Mô Tả                 | Trạng Thái     |
-| ------ | ------------------ | --------------------- | -------------- |
-| GET    | `/profile`         | Lấy thông tin profile | ✅ **(Done)**  |
-| PUT    | `/profile`         | Cập nhật profile      | ⏳ **Planned** |
-| PUT    | `/profile/avatar`  | Cập nhật avatar       | ⏳ **Planned** |
-| PUT    | `/change-password` | Đổi mật khẩu          | ⏳ **Planned** |
+| Method | Endpoint          | Mô Tả                 | Trạng Thái    |
+| ------ | ----------------- | --------------------- | ------------- |
+| GET    | `/profile`        | Lấy thông tin profile | ✅ **(Done)** |
+| PUT    | `/profile`        | Cập nhật profile      | ✅ **(Done)** |
+| PUT    | `/profile/avatar` | Cập nhật avatar       | ✅ **(Done)** |
+| PUT    | `/reset-password` | Đổi mật khẩu          | ✅ **(Done)** |
 
 #### 2.2 Admin User Management
 
