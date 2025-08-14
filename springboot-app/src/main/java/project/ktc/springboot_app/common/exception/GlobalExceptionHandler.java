@@ -350,6 +350,41 @@ public class GlobalExceptionHandler {
         }
 
         /**
+         * Handle comment-specific exceptions
+         */
+        @ExceptionHandler(project.ktc.springboot_app.comment.exception.CommentDepthExceededException.class)
+        public ResponseEntity<ApiErrorResponse> handleCommentDepthExceeded(
+                        project.ktc.springboot_app.comment.exception.CommentDepthExceededException ex,
+                        HttpServletRequest request) {
+
+                log.error("Comment depth exceeded error: {}", ex.getMessage());
+
+                ApiErrorResponse errorResponse = ApiErrorResponse.of(
+                                HttpStatus.CONFLICT.value(),
+                                "Conflict",
+                                ex.getMessage(),
+                                request.getRequestURI());
+
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        }
+
+        @ExceptionHandler(project.ktc.springboot_app.comment.exception.CommentOwnershipException.class)
+        public ResponseEntity<ApiErrorResponse> handleCommentOwnership(
+                        project.ktc.springboot_app.comment.exception.CommentOwnershipException ex,
+                        HttpServletRequest request) {
+
+                log.error("Comment ownership error: {}", ex.getMessage());
+
+                ApiErrorResponse errorResponse = ApiErrorResponse.of(
+                                HttpStatus.FORBIDDEN.value(),
+                                "Forbidden",
+                                ex.getMessage(),
+                                request.getRequestURI());
+
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        }
+
+        /**
          * Handle review exceptions
          */
         @ExceptionHandler(project.ktc.springboot_app.common.exception.ReviewAlreadyExistsException.class)
