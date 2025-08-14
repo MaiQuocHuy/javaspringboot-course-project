@@ -64,7 +64,7 @@ public class PasswordResetService {
     @Value("${app.password-reset.max-attempts:3}")
     private int maxAttempts;
 
-    @Value("${app.password-reset.rate-limit-minutes:5}")
+    @Value("${app.password-reset.rate-limit-minutes:3}")
     private int rateLimitMinutes;
 
     @Value("${app.password-reset.max-requests-per-hour:3}")
