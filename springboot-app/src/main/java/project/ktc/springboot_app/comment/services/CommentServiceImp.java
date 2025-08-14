@@ -6,18 +6,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import project.ktc.springboot_app.comment.dto.CommentResponse;
 import project.ktc.springboot_app.comment.dto.CreateCommentRequest;
 import project.ktc.springboot_app.comment.dto.UpdateCommentRequest;
+import project.ktc.springboot_app.comment.dto.CommentResponse;
 import project.ktc.springboot_app.comment.entity.Comment;
-import project.ktc.springboot_app.comment.exception.CommentDepthExceededException;
-import project.ktc.springboot_app.comment.exception.CommentOwnershipException;
 import project.ktc.springboot_app.comment.interfaces.CommentService;
-import project.ktc.springboot_app.comment.mapper.CommentMapper;
 import project.ktc.springboot_app.comment.repositories.CommentRepository;
-import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.lesson.entity.Lesson;
+import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.lesson.repositories.LessonRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.common.dto.ApiResponse;
@@ -27,8 +25,12 @@ import project.ktc.springboot_app.common.exception.ValidationException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Production-ready Nested Set Model Comment Service
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -38,242 +40,262 @@ public class CommentServiceImp implements CommentService {
     private final CommentRepository commentRepository;
     private final LessonRepository lessonRepository;
     private final UserRepository userRepository;
-    private final CommentMapper commentMapper;
 
-    @Override
-    public ResponseEntity<ApiResponse<CommentResponse>> createComment(String lessonId, CreateCommentRequest request,
-            String userId) {
-        log.info("Creating comment for lesson {} by user {}", lessonId, userId);
+    // =================== READ OPERATIONS ===================
 
-        // Validate and fetch lesson
-        Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
+    /**
+     * Get all comments for a lesson in flattened tree order
+     */
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getCommentsForLesson(String lessonId) {
+        List<Comment> comments = commentRepository.findAllByLessonIdOrderByLft(lessonId);
+        return comments.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
 
-        // Validate and fetch user
+    /**
+     * Get paginated root comments
+     */
+    @Transactional(readOnly = true)
+    public PaginatedResponse<CommentResponse> getRootComments(String lessonId, Pageable pageable) {
+        Page<Comment> comments = commentRepository.findRootCommentsByLessonId(lessonId, pageable);
+
+        // Convert Page to PaginatedResponse
+        List<CommentResponse> responseContent = comments.getContent().stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+
+        return PaginatedResponse.<CommentResponse>builder()
+                .content(responseContent)
+                .page(PaginatedResponse.PageInfo.builder()
+                        .number(comments.getNumber())
+                        .size(comments.getSize())
+                        .totalPages(comments.getTotalPages())
+                        .totalElements(comments.getTotalElements())
+                        .first(comments.isFirst())
+                        .last(comments.isLast())
+                        .build())
+                .build();
+    }
+
+    /**
+     * Get replies to a specific comment
+     */
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getReplies(String commentId) {
+        Comment parent = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found: " + commentId));
+
+        List<Comment> replies = commentRepository.findSubtreeByParentLftRgt(
+                parent.getLesson().getId(), parent.getLft(), parent.getRgt());
+
+        return replies.stream()
+                .map(comment -> {
+                    CommentResponse response = convertToResponseDto(comment);
+                    response.setRelativeDepth(comment.getDepth() - parent.getDepth() - 1);
+                    return response;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get comment count for a lesson
+     */
+    @Transactional(readOnly = true)
+    public Long getCommentCount(String lessonId) {
+        return commentRepository.countByLessonId(lessonId);
+    }
+
+    // =================== WRITE OPERATIONS ===================
+
+    /**
+     * Create a new comment with atomic nested set insertion
+     */
+    private Comment addComment(String lessonId, String content, String parentId, String userId) {
+        // Validate inputs
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
-        // Validate content
-        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            throw new ValidationException("Comment content cannot be empty");
-        }
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found: " + lessonId));
 
-        Comment comment = Comment.builder()
-                .lesson(lesson)
+        Comment newComment = Comment.builder()
+                .content(content)
                 .user(user)
-                .content(request.getContent().trim())
-                .depth(0)
+                .lesson(lesson)
+                .isDeleted(false)
                 .build();
 
-        // Handle reply logic
-        if (request.getParentId() != null && !request.getParentId().trim().isEmpty()) {
-            Comment parentComment = commentRepository.findByIdWithUser(request.getParentId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Parent comment not found with id: " + request.getParentId()));
-            // Check depth limit
-            if (!parentComment.canAddReply()) {
-                throw new CommentDepthExceededException("Cannot reply to this comment. Maximum depth exceeded.");
-            }
+        // Set ID manually since it's from BaseEntity
+        newComment.setId(UUID.randomUUID().toString());
 
-            // Ensure parent belongs to same lesson
-            if (!parentComment.getLesson().getId().equals(lessonId)) {
-                throw new ValidationException("Parent comment does not belong to the specified lesson");
-            }
-
-            comment.setParent(parentComment);
-            comment.setDepth(parentComment.getDepth() + 1);
+        if (parentId != null) {
+            insertReply(newComment, parentId);
+        } else {
+            insertRootComment(newComment);
         }
 
-        Comment savedComment = commentRepository.save(comment);
-        log.info("Comment created successfully with id: {}", savedComment.getId());
+        return commentRepository.save(newComment);
+    }
 
-        return ApiResponseUtil.success(commentMapper.toCommentResponse(savedComment), "Comment created successfully");
+    /**
+     * Insert a reply to an existing comment
+     */
+    private void insertReply(Comment newComment, String parentId) {
+        Comment parent = commentRepository.findByIdForUpdate(parentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Parent comment not found: " + parentId));
+
+        int insertPosition = parent.getRgt() - 1;
+
+        commentRepository.shiftRightValuesForInsertion(parent.getLesson().getId(), insertPosition);
+        commentRepository.shiftLeftValuesForInsertion(parent.getLesson().getId(), insertPosition);
+
+        newComment.setLft(insertPosition + 1);
+        newComment.setRgt(insertPosition + 2);
+        newComment.setParent(parent);
+        newComment.setDepth(parent.getDepth() + 1);
+    }
+
+    /**
+     * Insert a root comment
+     */
+    private void insertRootComment(Comment newComment) {
+        Integer maxRgt = commentRepository.findMaxRgtByLessonId(newComment.getLesson().getId());
+
+        newComment.setLft(maxRgt + 1);
+        newComment.setRgt(maxRgt + 2);
+        newComment.setParent(null);
+        newComment.setDepth(0);
+    }
+
+    /**
+     * Update comment content (internal method)
+     */
+    private Comment updateCommentInternal(String commentId, String content, String userId) {
+        Comment comment = commentRepository.findByIdWithUser(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found: " + commentId));
+
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new ValidationException("User can only update their own comments");
+        }
+
+        if (comment.getIsDeleted()) {
+            throw new ValidationException("Cannot update deleted comment");
+        }
+
+        comment.updateContent(content);
+
+        return commentRepository.save(comment);
+    }
+
+    /**
+     * Soft delete a comment and its subtree (internal method)
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    private void deleteCommentInternal(String commentId, String userId, boolean isAdmin) {
+        Comment comment = commentRepository.findByIdWithUser(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found: " + commentId));
+
+        if (!isAdmin && !comment.getUser().getId().equals(userId)) {
+            throw new ValidationException("User can only delete their own comments");
+        }
+
+        commentRepository.markSubtreeAsDeleted(
+                comment.getLesson().getId(), comment.getLft(), comment.getRgt());
+    }
+
+    // =================== INTERFACE IMPLEMENTATION METHODS ===================
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<CommentResponse>> createComment(String lessonId, CreateCommentRequest request,
+            String userId) {
+        Comment savedComment = addComment(lessonId, request.getContent(), request.getParentId(), userId);
+        return convertToResponse(savedComment);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<PaginatedResponse<CommentResponse>>> getCommentsByLesson(String lessonId,
             Pageable pageable) {
-        log.info("Fetching comments for lesson {} with pagination: page={}, size={}",
-                lessonId, pageable.getPageNumber(), pageable.getPageSize());
-
-        // Validate lesson exists
-        if (!lessonRepository.existsById(lessonId)) {
-            throw new ResourceNotFoundException("Lesson not found with id: " + lessonId);
-        }
-
-        // Get paginated root comments
-        Page<Comment> rootCommentsPage = commentRepository.findRootCommentsByLessonId(lessonId, pageable);
-
-        if (rootCommentsPage.getContent().isEmpty()) {
-            PaginatedResponse<CommentResponse> emptyResponse = PaginatedResponse.<CommentResponse>builder()
-                    .content(List.of())
-                    .page(PaginatedResponse.PageInfo.builder()
-                            .number(pageable.getPageNumber())
-                            .size(pageable.getPageSize())
-                            .totalPages(0)
-                            .totalElements(0)
-                            .first(true)
-                            .last(true)
-                            .build())
-                    .build();
-            return ApiResponseUtil.success(emptyResponse, "Comments retrieved successfully");
-        }
-
-        // Get all root comment IDs for fetching replies
-        List<String> rootCommentIds = rootCommentsPage.getContent().stream()
-                .map(Comment::getId)
-                .collect(Collectors.toList());
-
-        // Fetch ALL replies in the lesson for the root comments (including nested
-        // replies)
-        List<Comment> allReplies = commentRepository.findAllRepliesInThread(lessonId, rootCommentIds);
-
-        // Build comment tree structure recursively
-        List<CommentResponse> commentResponses = rootCommentsPage.getContent().stream()
-                .map(rootComment -> {
-                    CommentResponse response = commentMapper.toCommentResponse(rootComment);
-
-                    // Build nested replies recursively
-                    List<CommentResponse> nestedReplies = buildNestedReplies(rootComment.getId(), allReplies);
-                    response.setReplies(nestedReplies);
-                    response.setReplyCount(countTotalReplies(rootComment.getId(), allReplies));
-
-                    return response;
-                })
-                .collect(Collectors.toList());
-
-        // Create paginated response using builder pattern
-        PaginatedResponse<CommentResponse> paginatedResponse = PaginatedResponse.<CommentResponse>builder()
-                .content(commentResponses)
-                .page(PaginatedResponse.PageInfo.builder()
-                        .number(rootCommentsPage.getNumber())
-                        .size(rootCommentsPage.getSize())
-                        .totalPages(rootCommentsPage.getTotalPages())
-                        .totalElements(rootCommentsPage.getTotalElements())
-                        .first(rootCommentsPage.isFirst())
-                        .last(rootCommentsPage.isLast())
-                        .build())
-                .build();
-
-        return ApiResponseUtil.success(paginatedResponse, "Comments retrieved successfully");
+        PaginatedResponse<CommentResponse> response = getRootComments(lessonId, pageable);
+        return ApiResponseUtil.success(response, "Comments retrieved successfully");
     }
 
     @Override
+    @Transactional
     public ResponseEntity<ApiResponse<CommentResponse>> updateComment(String commentId, UpdateCommentRequest request,
             String userId) {
-        log.info("Updating comment {} by user {}", commentId, userId);
-
-        Comment comment = commentRepository.findByIdWithUser(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
-
-        // Check ownership
-        if (!comment.isOwnedBy(userId)) {
-            throw new CommentOwnershipException("You do not have permission to update this comment");
-        }
-
-        // Check if comment is deleted
-        if (comment.getIsDeleted()) {
-            throw new ValidationException("Cannot update a deleted comment");
-        }
-
-        // Validate content
-        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
-            throw new ValidationException("Comment content cannot be empty");
-        }
-
-        // Update content and mark as edited if changed
-        comment.updateContent(request.getContent().trim());
-
-        Comment savedComment = commentRepository.save(comment);
-        log.info("Comment updated successfully with id: {}", savedComment.getId());
-
-        return ApiResponseUtil.success(commentMapper.toCommentResponse(savedComment), "Comment updated successfully");
+        Comment updatedComment = updateCommentInternal(commentId, request.getContent(), userId);
+        return convertToResponse(updatedComment);
     }
 
     @Override
+    @Transactional
     public ResponseEntity<ApiResponse<Void>> deleteComment(String commentId, String userId, boolean isAdmin) {
-        log.info("Deleting comment {} by user {} (admin: {})", commentId, userId, isAdmin);
-
-        Comment comment = commentRepository.findByIdWithUser(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
-
-        // Check permissions
-        if (!isAdmin && !comment.isOwnedBy(userId)) {
-            throw new CommentOwnershipException("You do not have permission to delete this comment");
-        }
-
-        // Check if already deleted
-        if (comment.getIsDeleted()) {
-            throw new ValidationException("Comment is already deleted");
-        }
-
-        // Soft delete the comment
-        comment.markAsDeleted();
-        commentRepository.save(comment);
-
-        log.info("Comment deleted successfully with id: {}", commentId);
+        deleteCommentInternal(commentId, userId, isAdmin);
         return ApiResponseUtil.success(null, "Comment deleted successfully");
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<CommentResponse>> getCommentById(String commentId) {
-        log.info("Fetching comment by id: {}", commentId);
-
-        Comment comment = commentRepository.findByIdWithUser(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
-
-        return ApiResponseUtil.success(commentMapper.toCommentResponse(comment), "Comment retrieved successfully");
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found: " + commentId));
+        return convertToResponse(comment);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Long getCommentCountByLesson(String lessonId) {
-        log.info("Counting comments for lesson: {}", lessonId);
+        return getCommentCount(lessonId);
+    }
 
-        // Validate lesson exists
-        if (!lessonRepository.existsById(lessonId)) {
-            throw new ResourceNotFoundException("Lesson not found with id: " + lessonId);
-        }
+    // =================== UTILITY METHODS ===================
 
-        return commentRepository.countByLessonId(lessonId);
+    /**
+     * Convert Comment entity to Response DTO (for internal use)
+     */
+    private CommentResponse convertToResponseDto(Comment comment) {
+        CommentResponse.UserSummary user = CommentResponse.UserSummary.builder()
+                .id(comment.getUser().getId())
+                .name(comment.getUser().getName())
+                .avatarUrl(comment.getUser().getThumbnailUrl())
+                .build();
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .user(user)
+                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
+                .depth(comment.getDepth())
+                .lft(comment.getLft())
+                .rgt(comment.getRgt())
+                .isDeleted(comment.getIsDeleted())
+                .isEdited(comment.getIsEdited())
+                .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
+                .replyCount(calculateReplyCount(comment))
+                .hasReplies(calculateReplyCount(comment) > 0)
+                .isLeaf(calculateReplyCount(comment) == 0)
+                .build();
     }
 
     /**
-     * Build nested replies recursively for a given parent comment
+     * Convert Comment entity to Response DTO (for interface methods)
      */
-    private List<CommentResponse> buildNestedReplies(String parentId, List<Comment> allReplies) {
-        return allReplies.stream()
-                .filter(reply -> reply.getParent() != null && reply.getParent().getId().equals(parentId))
-                .map(reply -> {
-                    CommentResponse response = commentMapper.toCommentResponse(reply);
-
-                    // Recursively build nested replies for this reply
-                    List<CommentResponse> nestedReplies = buildNestedReplies(reply.getId(), allReplies);
-                    response.setReplies(nestedReplies);
-                    response.setReplyCount(nestedReplies.size());
-
-                    return response;
-                })
-                .collect(Collectors.toList());
+    private ResponseEntity<ApiResponse<CommentResponse>> convertToResponse(Comment comment) {
+        CommentResponse commentResponse = convertToResponseDto(comment);
+        return ApiResponseUtil.success(commentResponse, "Comment retrieved successfully");
     }
 
     /**
-     * Count total replies recursively for a given parent comment
+     * Calculate reply count from nested set values
      */
-    private int countTotalReplies(String parentId, List<Comment> allReplies) {
-        List<Comment> directReplies = allReplies.stream()
-                .filter(reply -> reply.getParent() != null && reply.getParent().getId().equals(parentId))
-                .collect(Collectors.toList());
-
-        int count = directReplies.size();
-
-        // Add count of nested replies
-        for (Comment reply : directReplies) {
-            count += countTotalReplies(reply.getId(), allReplies);
+    private Integer calculateReplyCount(Comment comment) {
+        if (comment.getLft() == null || comment.getRgt() == null) {
+            return 0;
         }
-
-        return count;
+        return (comment.getRgt() - comment.getLft() - 1) / 2;
     }
 }
