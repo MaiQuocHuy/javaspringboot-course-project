@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Drop existing comments table and recreate with Nested Set Model -->
+    <changeSet id="133-drop-existing-comments-table" author="ktc">
+        <dropTable tableName="comments" cascadeConstraints="true"/>
+    </changeSet>
+
+    <!-- Create new comments table with Nested Set Model support -->
+    <changeSet id="133-create-nested-comments-table" author="ktc">
+        <createTable tableName="comments">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="lesson_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="content" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Nested Set Model fields -->
+            <column name="lft" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rgt" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="depth" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Audit and status fields -->
+            <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_edited" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Add foreign key constraints -->
+    <changeSet id="133-add-nested-comments-foreign-keys" author="ktc">
+        <!-- Foreign key to lessons table -->
+        <addForeignKeyConstraint 
+            baseTableName="comments" 
+            baseColumnNames="lesson_id"
+            referencedTableName="lessons" 
+            referencedColumnNames="id"
+            onDelete="CASCADE" 
+            constraintName="fk_nested_comments_lesson"/>
+        
+        <!-- Foreign key to users table -->
+        <addForeignKeyConstraint 
+            baseTableName="comments" 
+            baseColumnNames="user_id"
+            referencedTableName="users" 
+            referencedColumnNames="id"
+            onDelete="CASCADE" 
+            constraintName="fk_nested_comments_user"/>
+        
+        <!-- Self-referencing foreign key for parent-child relationships -->
+        <addForeignKeyConstraint 
+            baseTableName="comments" 
+            baseColumnNames="parent_id"
+            referencedTableName="comments" 
+            referencedColumnNames="id"
+            onDelete="CASCADE" 
+            constraintName="fk_nested_comments_parent"/>
+    </changeSet>
+
+    <!-- Add critical indexes for Nested Set Model performance -->
+    <changeSet id="133-add-nested-comments-indexes" author="ktc">
+        <!-- Primary index for lesson with lft ordering (most important for reads) -->
+        <createIndex indexName="idx_nested_comment_lesson_lft" tableName="comments">
+            <column name="lesson_id"/>
+            <column name="lft"/>
+        </createIndex>
+        
+        <!-- Index for lft/rgt range queries -->
+        <createIndex indexName="idx_nested_comment_lft_rgt" tableName="comments">
+            <column name="lft"/>
+            <column name="rgt"/>
+        </createIndex>
+        
+        <!-- Index for subtree queries by parent -->
+        <createIndex indexName="idx_nested_comment_parent_lft" tableName="comments">
+            <column name="parent_id"/>
+            <column name="lft"/>
+        </createIndex>
+        
+        <!-- Index for user's comments with deletion status -->
+        <createIndex indexName="idx_nested_comment_user_deleted" tableName="comments">
+            <column name="user_id"/>
+            <column name="is_deleted"/>
+        </createIndex>
+
+        <!-- Composite index for lesson + deletion status + lft ordering -->
+        <createIndex indexName="idx_nested_comment_lesson_deleted_lft" tableName="comments">
+            <column name="lesson_id"/>
+            <column name="is_deleted"/>
+            <column name="lft"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Add constraints for Nested Set Model integrity -->
+    <changeSet id="133-add-nested-comments-constraints" author="ktc">
+        <!-- Ensure lft < rgt always -->
+        <sql>
+            ALTER TABLE comments 
+            ADD CONSTRAINT chk_nested_comment_lft_rgt 
+            CHECK (lft &lt; rgt);
+        </sql>
+        
+        <!-- Ensure depth is non-negative -->
+        <sql>
+            ALTER TABLE comments 
+            ADD CONSTRAINT chk_nested_comment_depth 
+            CHECK (depth &gt;= 0);
+        </sql>
+        
+        <!-- Ensure content length -->
+        <sql>
+            ALTER TABLE comments 
+            ADD CONSTRAINT chk_nested_comment_content_length 
+            CHECK (CHAR_LENGTH(content) &gt;= 1 AND CHAR_LENGTH(content) &lt;= 2000);
+        </sql>
+        
+        <!-- Ensure lft and rgt are positive -->
+        <sql>
+            ALTER TABLE comments 
+            ADD CONSTRAINT chk_nested_comment_lft_positive 
+            CHECK (lft &gt; 0);
+        </sql>
+        
+        <sql>
+            ALTER TABLE comments 
+            ADD CONSTRAINT chk_nested_comment_rgt_positive 
+            CHECK (rgt &gt; 0);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

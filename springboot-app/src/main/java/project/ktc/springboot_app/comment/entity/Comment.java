@@ -15,9 +15,11 @@ import java.util.List;
 
 @Entity
 @Table(name = "comments", indexes = {
-        @Index(name = "idx_comment_lesson_created", columnList = "lesson_id,created_at"),
-        @Index(name = "idx_comment_parent", columnList = "parent_id"),
-        @Index(name = "idx_comment_user_deleted", columnList = "user_id,is_deleted")
+        @Index(name = "idx_nested_comment_lesson_lft", columnList = "lesson_id,lft"),
+        @Index(name = "idx_nested_comment_lft_rgt", columnList = "lft,rgt"),
+        @Index(name = "idx_nested_comment_parent_lft", columnList = "parent_id,lft"),
+        @Index(name = "idx_nested_comment_user_deleted", columnList = "user_id,is_deleted"),
+        @Index(name = "idx_nested_comment_lesson_deleted_lft", columnList = "lesson_id,is_deleted,lft")
 })
 @Getter
 @Setter
@@ -45,6 +47,13 @@ public class Comment extends BaseEntity {
     @Column(nullable = false, length = 2000)
     private String content;
 
+    // Nested Set Model fields
+    @Column(name = "lft", nullable = false)
+    private Integer lft;
+
+    @Column(name = "rgt", nullable = false)
+    private Integer rgt;
+
     @Column(nullable = false)
     @Builder.Default
     private Integer depth = 0;
@@ -69,8 +78,16 @@ public class Comment extends BaseEntity {
         return parent == null;
     }
 
-    public boolean canAddReply() {
-        return depth < 2; // Max 3 levels (0, 1, 2)
+    public boolean isLeaf() {
+        return rgt - lft == 1;
+    }
+
+    public boolean hasChildren() {
+        return rgt - lft > 1;
+    }
+
+    public int getChildrenCount() {
+        return (rgt - lft - 1) / 2;
     }
 
     public void markAsDeleted() {
@@ -87,5 +104,52 @@ public class Comment extends BaseEntity {
 
     public boolean isOwnedBy(String userId) {
         return this.user.getId().equals(userId);
+    }
+
+    // Nested Set Model helper methods
+    public boolean isAncestorOf(Comment other) {
+        return this.lft < other.lft && this.rgt > other.rgt;
+    }
+
+    public boolean isDescendantOf(Comment other) {
+        return other.isAncestorOf(this);
+    }
+
+    public boolean isSibling(Comment other) {
+        if (this.parent == null && other.parent == null) {
+            return true; // Both are root comments
+        }
+        if (this.parent == null || other.parent == null) {
+            return false;
+        }
+        return this.parent.getId().equals(other.parent.getId());
+    }
+
+    /**
+     * Calculate the relative depth from a given ancestor
+     */
+    public int getRelativeDepth(Comment ancestor) {
+        if (!this.isDescendantOf(ancestor)) {
+            throw new IllegalArgumentException("This comment is not a descendant of the given ancestor");
+        }
+        return this.depth - ancestor.depth;
+    }
+
+    /**
+     * Validate nested set model invariants
+     */
+    public void validateNestedSetInvariants() {
+        if (lft == null || rgt == null) {
+            throw new IllegalStateException("Left and right values cannot be null");
+        }
+        if (lft >= rgt) {
+            throw new IllegalStateException("Left value must be less than right value");
+        }
+        if (lft <= 0 || rgt <= 0) {
+            throw new IllegalStateException("Left and right values must be positive");
+        }
+        if (depth < 0) {
+            throw new IllegalStateException("Depth cannot be negative");
+        }
     }
 }

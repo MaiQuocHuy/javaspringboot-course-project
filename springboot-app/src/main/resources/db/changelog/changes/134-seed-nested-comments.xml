@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed nested set comments with exact 3-level structure -->
+    <changeSet id="134-seed-nested-comments" author="ktc">
+        
+        <!-- 
+        Tree Structure for lesson-001:
+        Root Comment 1 (lft=1, rgt=8, depth=0)
+        ├── Reply 1.1 (lft=2, rgt=5, depth=1)
+        │   └── Reply 1.1.1 (lft=3, rgt=4, depth=2)
+        └── Reply 1.2 (lft=6, rgt=7, depth=1)
+        
+        Root Comment 2 (lft=9, rgt=14, depth=0)
+        └── Reply 2.1 (lft=10, rgt=13, depth=1)
+            └── Reply 2.1.1 (lft=11, rgt=12, depth=2)
+        
+        Root Comment 3 (lft=15, rgt=16, depth=0) - no replies
+        -->
+        
+        <!-- Root Comment 1 -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-001"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-002"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="content" value="This lesson is fantastic! I learned so much about the fundamentals. The nested set model explanation is very clear."/>
+            <column name="lft" value="1"/>
+            <column name="rgt" value="8"/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-10T10:30:00"/>
+            <column name="updated_at" value="2025-08-10T10:30:00"/>
+        </insert>
+
+        <!-- Reply 1.1 to Root Comment 1 -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-002"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-003"/>
+            <column name="parent_id" value="nested-comment-001"/>
+            <column name="content" value="Thank you for the positive feedback! I'm glad you found it helpful. The nested set model really shines for hierarchical data."/>
+            <column name="lft" value="2"/>
+            <column name="rgt" value="5"/>
+            <column name="depth" value="1"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-10T11:00:00"/>
+            <column name="updated_at" value="2025-08-10T11:00:00"/>
+        </insert>
+
+        <!-- Reply 1.1.1 to Reply 1.1 (Level 2) -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-003"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-005"/>
+            <column name="parent_id" value="nested-comment-002"/>
+            <column name="content" value="Absolutely! The performance benefits are impressive. Can you share more about the locking strategies?"/>
+            <column name="lft" value="3"/>
+            <column name="rgt" value="4"/>
+            <column name="depth" value="2"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-10T11:15:00"/>
+            <column name="updated_at" value="2025-08-10T11:15:00"/>
+        </insert>
+
+        <!-- Reply 1.2 to Root Comment 1 -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-004"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-007"/>
+            <column name="parent_id" value="nested-comment-001"/>
+            <column name="content" value="Great examples! I'm implementing this in my project right now."/>
+            <column name="lft" value="6"/>
+            <column name="rgt" value="7"/>
+            <column name="depth" value="1"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-10T12:00:00"/>
+            <column name="updated_at" value="2025-08-10T12:00:00"/>
+        </insert>
+
+        <!-- Root Comment 2 -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-005"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-009"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="content" value="I have a question about concurrency handling. How do you prevent race conditions during insertions?"/>
+            <column name="lft" value="9"/>
+            <column name="rgt" value="14"/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-11T09:30:00"/>
+            <column name="updated_at" value="2025-08-11T09:30:00"/>
+        </insert>
+
+        <!-- Reply 2.1 to Root Comment 2 -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-006"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-004"/>
+            <column name="parent_id" value="nested-comment-005"/>
+            <column name="content" value="Excellent question! We use SELECT FOR UPDATE to lock the right edge of the parent node during insertions. This prevents race conditions."/>
+            <column name="lft" value="10"/>
+            <column name="rgt" value="13"/>
+            <column name="depth" value="1"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="true"/>
+            <column name="version" value="1"/>
+            <column name="created_at" value="2025-08-11T10:00:00"/>
+            <column name="updated_at" value="2025-08-11T10:30:00"/>
+        </insert>
+
+        <!-- Reply 2.1.1 to Reply 2.1 (Level 2) -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-007"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-011"/>
+            <column name="parent_id" value="nested-comment-006"/>
+            <column name="content" value="That makes perfect sense! The locking strategy ensures consistency. Thank you for the detailed explanation."/>
+            <column name="lft" value="11"/>
+            <column name="rgt" value="12"/>
+            <column name="depth" value="2"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-11T10:45:00"/>
+            <column name="updated_at" value="2025-08-11T10:45:00"/>
+        </insert>
+
+        <!-- Root Comment 3 (no replies) -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-008"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-012"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="content" value="Bookmarking this for future reference. The code examples are top-notch!"/>
+            <column name="lft" value="15"/>
+            <column name="rgt" value="16"/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-11T15:00:00"/>
+            <column name="updated_at" value="2025-08-11T15:00:00"/>
+        </insert>
+
+        <!-- Comments for lesson-002 with different tree structure -->
+        
+        <!-- Root Comment for lesson-002 -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-009"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="user_id" value="user-008"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="content" value="The practical examples in this lesson are excellent. Very helpful for real-world applications."/>
+            <column name="lft" value="1"/>
+            <column name="rgt" value="6"/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-12T11:20:00"/>
+            <column name="updated_at" value="2025-08-12T11:20:00"/>
+        </insert>
+
+        <!-- Reply to lesson-002 root comment -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-010"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="user_id" value="user-006"/>
+            <column name="parent_id" value="nested-comment-009"/>
+            <column name="content" value="I completely agree! The step-by-step approach makes complex concepts easy to understand."/>
+            <column name="lft" value="2"/>
+            <column name="rgt" value="5"/>
+            <column name="depth" value="1"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-12T12:00:00"/>
+            <column name="updated_at" value="2025-08-12T12:00:00"/>
+        </insert>
+
+        <!-- Level 2 reply in lesson-002 -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-011"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="user_id" value="user-010"/>
+            <column name="parent_id" value="nested-comment-010"/>
+            <column name="content" value="Yes! The visual diagrams really help to understand the nested set operations."/>
+            <column name="lft" value="3"/>
+            <column name="rgt" value="4"/>
+            <column name="depth" value="2"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-12T12:30:00"/>
+            <column name="updated_at" value="2025-08-12T12:30:00"/>
+        </insert>
+
+        <!-- Deleted comment example -->
+        <insert tableName="comments">
+            <column name="id" value="nested-comment-012"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="user_id" value="user-011"/>
+            <column name="parent_id" valueComputed="NULL"/>
+            <column name="content" value="[Deleted]"/>
+            <column name="lft" value="7"/>
+            <column name="rgt" value="8"/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="true"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-12T13:00:00"/>
+            <column name="updated_at" value="2025-08-12T14:00:00"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>
