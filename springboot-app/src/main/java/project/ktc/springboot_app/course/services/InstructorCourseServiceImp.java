@@ -539,7 +539,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             // Get current status
             String currentStatus = course.getIsPublished() ? "PUBLISHED" : "UNPUBLISHED";
             String newStatus = updateStatusDto.getStatus();
-
+            log.info("Current status: {}, New status: {}", currentStatus, newStatus);
             // No change check
             if (currentStatus.equals(newStatus)) {
                 log.info("Course {} status is already {}", courseId, newStatus);
@@ -577,6 +577,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 // Update to unpublished
                 course.setIsPublished(false);
                 course.setIsApproved(false);
+                handleCourseReviewStatusUnPublished(course);
             }
 
             // Save changes
@@ -810,7 +811,8 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     /**
      * Handle course review status when publishing a course.
      * - First time publish: Create PENDING status
-     * - Subsequent publishes: Create RESUBMITTED status and update current status
+     * - Subsequent publishes (when record exists, even with null status): Set to
+     * RESUBMITTED
      */
     private void handleCourseReviewStatus(Course course) {
         try {
@@ -820,34 +822,22 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             Optional<CourseReviewStatus> existingReviewStatus = courseReviewStatusRepository
                     .findByCourseId(course.getId());
 
-            // Check if there's any history for this course
-            List<CourseReviewStatusHistory> histories = courseReviewStatusHistoryRepository
-                    .findByCourseIdOrderByCreatedAtDesc(course.getId());
-            boolean hasHistory = !histories.isEmpty();
-
             CourseReviewStatus reviewStatus;
             CourseReviewStatus.ReviewStatus newStatus;
             String action;
 
-            if (hasHistory) {
-                // Subsequent publish - RESUBMITTED
+            if (existingReviewStatus.isPresent()) {
+                // Existing record found (including unpublished with null status) - RESUBMITTED
+                reviewStatus = existingReviewStatus.get();
                 newStatus = CourseReviewStatus.ReviewStatus.RESUBMITTED;
                 action = "RESUBMITTED";
-                log.info("Course {} has existing history, setting status to RESUBMITTED", course.getId());
+                reviewStatus.setStatus(newStatus);
+                reviewStatus.setUpdatedAt(LocalDateTime.now());
+                log.info("Course {} has existing review record, setting status to RESUBMITTED", course.getId());
             } else {
                 // First time publish - PENDING
                 newStatus = CourseReviewStatus.ReviewStatus.PENDING;
                 action = "PENDING";
-                log.info("Course {} has no history, setting status to PENDING", course.getId());
-            }
-
-            // Create or update the course review status
-            if (existingReviewStatus.isPresent()) {
-                reviewStatus = existingReviewStatus.get();
-                reviewStatus.setStatus(newStatus);
-                reviewStatus.setUpdatedAt(LocalDateTime.now());
-                log.info("Updating existing course review status for course: {}", course.getId());
-            } else {
                 reviewStatus = CourseReviewStatus.builder()
                         .id(UUID.randomUUID().toString())
                         .course(course)
@@ -855,7 +845,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                         .createdAt(LocalDateTime.now())
                         .updatedAt(LocalDateTime.now())
                         .build();
-                log.info("Creating new course review status for course: {}", course.getId());
+                log.info("Course {} has no history, setting status to PENDING", course.getId());
             }
 
             // Save the review status
@@ -883,6 +873,53 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     }
 
     /**
+     * Handle course review status when unpublishing a course.
+     * When unpublishing, we remove/set the review status to null since
+     * only published courses should have review status.
+     */
+    private void handleCourseReviewStatusUnPublished(Course course) {
+        try {
+            log.info("Handling course review status for unpublished course: {}", course.getId());
+
+            // Find existing review status record for this course
+            Optional<CourseReviewStatus> existingReviewStatus = courseReviewStatusRepository
+                    .findByCourseId(course.getId());
+
+            if (existingReviewStatus.isPresent()) {
+                CourseReviewStatus reviewStatus = existingReviewStatus.get();
+
+                // Set status to null (instead of deleting) to maintain record for resubmission
+                // detection
+                // This preserves the record so next publish will be detected as RESUBMITTED
+                reviewStatus.setStatus(null);
+                reviewStatus.setUpdatedAt(LocalDateTime.now());
+
+                courseReviewStatusRepository.save(reviewStatus);
+
+                CourseReviewStatusHistory reviewStatusHistory = CourseReviewStatusHistory.builder()
+                        .id(UUID.randomUUID().toString())
+                        .courseReview(reviewStatus)
+                        .action("UNPUBLISHED")
+                        .reason("Course unpublished")
+                        .reviewer(course.getInstructor())
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+
+                courseReviewStatusHistoryRepository.save(reviewStatusHistory);
+                log.info("Set course review status to null for unpublished course: {}", course.getId());
+            } else {
+                log.info("No existing review status found for course: {}", course.getId());
+            }
+
+        } catch (Exception e) {
+            log.error("Error handling unpublish course review status for course {}: {}", course.getId(), e.getMessage(),
+                    e);
+            // Don't throw exception to avoid breaking the unpublish flow
+        }
+    }
+
+    /**
      * Helper method to get review status and reason from
      * course_review_status_history
      * Returns a ReviewStatusInfo object with statusReview and reason
@@ -895,6 +932,9 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
 
                     if ("DENIED".equals(statusReview)) {
                         reason = history.getReason() != null ? history.getReason() : "";
+                    }
+                    if ("UNPUBLISHED".equals(statusReview)) {
+                        statusReview = null;
                     }
 
                     return new ReviewStatusInfo(statusReview, reason);

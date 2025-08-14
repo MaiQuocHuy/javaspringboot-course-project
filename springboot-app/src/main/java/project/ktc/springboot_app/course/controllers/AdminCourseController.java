@@ -209,10 +209,10 @@ public class AdminCourseController {
 
         @PatchMapping("/review-course/{id}")
         @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Update course review status", description = "Updates the review status of a specific course by its ID. Only Admin role is allowed. If status is REJECTED, a reason must be provided.")
+        @Operation(summary = "Update course review status", description = "Updates the review status of a specific course by its ID. Only Admin role is allowed. If status is DENIED, a reason must be provided.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Course review status updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-                        @ApiResponse(responseCode = "400", description = "Bad Request - Invalid status value or missing reason for REJECTED status", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "400", description = "Bad Request - Invalid status value or missing reason for DENIED status", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
                         @ApiResponse(responseCode = "404", description = "Course not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authentication token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
                         @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class)))
