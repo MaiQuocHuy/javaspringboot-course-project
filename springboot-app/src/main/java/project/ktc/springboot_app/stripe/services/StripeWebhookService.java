@@ -8,10 +8,17 @@ import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
+
+import project.ktc.springboot_app.email.interfaces.EmailService;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 import project.ktc.springboot_app.payment.service.PaymentServiceImp;
 import project.ktc.springboot_app.stripe.config.StripeConfig;
+import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.course.entity.Course;
+import project.ktc.springboot_app.user.repositories.UserRepository;
+import project.ktc.springboot_app.course.repositories.CourseRepository;
 
 /**
  * Service to handle Stripe webhook events
@@ -24,6 +31,9 @@ public class StripeWebhookService {
     private final StripeConfig stripeConfig;
     private final PaymentServiceImp paymentService;
     private final EnrollmentServiceImp enrollmentService;
+    private final EmailService emailService;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
 
     /**
      * Processes incoming webhook events from Stripe
@@ -216,13 +226,151 @@ public class StripeWebhookService {
             enrollmentService.createEnrollmentFromWebhook(userId, courseId, session.getId());
             log.info("✅ Enrollment created for user {} in course {}", userId, courseId);
 
-            // Send confirmation email (if you have email service)
-            // emailService.sendCourseEnrollmentConfirmation(session.getCustomerEmail(),
-            // courseId);
+            // Send payment confirmation email asynchronously
+            sendPaymentConfirmationEmail(session, courseId, userId);
 
         } catch (Exception e) {
             log.error("Error processing checkout session completion: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to process checkout session completion", e);
+        }
+    }
+
+    /**
+     * Sends payment confirmation email with course details
+     */
+    private void sendPaymentConfirmationEmail(Session session, String courseId, String userId) {
+        try {
+            log.info("📧 Sending payment confirmation email for session: {}", session.getId());
+
+            // Get user details
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                log.error("User not found with ID: {}", userId);
+                return;
+            }
+
+            // Get course details with instructor
+            Course course = courseRepository.findPublishedCourseByIdWithDetails(courseId).orElse(null);
+            if (course == null) {
+                log.error("Course not found with ID: {}", courseId);
+                return;
+            }
+
+            // Format amount (Stripe amounts are in cents)
+            String formattedAmount = String.format("$%.2f", session.getAmountTotal() / 100.0);
+
+            // Get payment method info
+            String paymentMethod = getPaymentMethodFromSession(session);
+
+            // Build course URL
+            String courseUrl = String.format("https://ktc-learning.com/courses/%s", course.getId());
+
+            // Calculate course duration and lesson count
+            String courseDuration = calculateCourseDuration(course);
+            String lessonCount = String.valueOf(countCourseLessons(course));
+
+            // Send async email
+            emailService.sendPaymentConfirmationEmailAsync(
+                    user.getEmail(),
+                    user.getName(),
+                    course.getTitle(),
+                    courseUrl,
+                    course.getInstructor() != null ? course.getInstructor().getName() : "KTC Learning",
+                    course.getLevel() != null ? course.getLevel().toString() : "Beginner",
+                    courseDuration,
+                    lessonCount,
+                    formattedAmount,
+                    session.getPaymentIntent(),
+                    paymentMethod,
+                    java.time.LocalDateTime.now());
+
+            log.info("✅ Payment confirmation email sent successfully to: {}", user.getEmail());
+
+        } catch (Exception e) {
+            log.error("Failed to send payment confirmation email: {}", e.getMessage(), e);
+            // Don't throw exception to avoid disrupting the main payment flow
+        }
+    }
+
+    /**
+     * Extracts payment method from Stripe session
+     */
+    private String getPaymentMethodFromSession(Session session) {
+        try {
+            if (session.getPaymentMethodTypes() != null && !session.getPaymentMethodTypes().isEmpty()) {
+                String paymentType = session.getPaymentMethodTypes().get(0);
+                return formatPaymentMethodName(paymentType);
+            }
+            return "Card";
+        } catch (Exception e) {
+            log.warn("Could not extract payment method from session: {}", e.getMessage());
+            return "Card";
+        }
+    }
+
+    /**
+     * Formats payment method name for display
+     */
+    private String formatPaymentMethodName(String paymentType) {
+        switch (paymentType.toLowerCase()) {
+            case "card":
+                return "Credit/Debit Card";
+            case "paypal":
+                return "PayPal";
+            case "bank_transfer":
+                return "Bank Transfer";
+            case "ideal":
+                return "iDEAL";
+            default:
+                return paymentType.substring(0, 1).toUpperCase() + paymentType.substring(1);
+        }
+    }
+
+    /**
+     * Calculates total course duration from all video lessons
+     */
+    private String calculateCourseDuration(Course course) {
+        try {
+            if (course.getSections() == null || course.getSections().isEmpty()) {
+                return "0 minutes";
+            }
+
+            int totalDurationMinutes = course.getSections().stream()
+                    .flatMap(section -> section.getLessons().stream())
+                    .filter(lesson -> lesson.getContent() != null)
+                    .mapToInt(
+                            lesson -> lesson.getContent().getDuration() != null ? lesson.getContent().getDuration() / 60
+                                    : 0)
+                    .sum();
+
+            if (totalDurationMinutes < 60) {
+                return totalDurationMinutes + " minutes";
+            } else {
+                int hours = totalDurationMinutes / 60;
+                int minutes = totalDurationMinutes % 60;
+                return String.format("%d hours %d minutes", hours, minutes);
+            }
+        } catch (Exception e) {
+            log.warn("Could not calculate course duration: {}", e.getMessage());
+            return "Not specified";
+        }
+    }
+
+    /**
+     * Counts total number of lessons in a course
+     */
+    private int countCourseLessons(Course course) {
+        try {
+            if (course.getSections() == null || course.getSections().isEmpty()) {
+                return 0;
+            }
+
+            return course.getSections().stream()
+                    .mapToInt(section -> section.getLessons() != null ? section.getLessons().size() : 0)
+                    .sum();
+        } catch (Exception e) {
+            log.warn("Could not count course lessons: {}", e.getMessage());
+            return 0;
         }
     }
 

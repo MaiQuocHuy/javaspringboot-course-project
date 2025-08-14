@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KTC Learning Platform Notification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+      }
+      .logo {
+        font-size: 28px;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 10px;
+      }
+      .content {
+        font-size: 16px;
+        margin-bottom: 20px;
+        white-space: pre-line;
+      }
+      .button {
+        display: inline-block;
+        background-color: #007bff;
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+        font-weight: bold;
+      }
+      .footer {
+        margin-top: 30px;
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+      .highlight {
+        background-color: #e3f2fd;
+        padding: 15px;
+        border-left: 4px solid #007bff;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">KTC Learning Platform</div>
+        <div th:text="${emailTitle ?: 'Notification'}">Notification</div>
+      </div>
+
+      <div>
+        <h2>
+          Hello <span th:text="${userName ?: 'Valued User'}">Valued User</span>,
+        </h2>
+
+        <div
+          class="content"
+          th:text="${emailContent ?: 'Thank you for using KTC Learning Platform.'}"
+        >
+          Thank you for using KTC Learning Platform.
+        </div>
+
+        <!-- Optional Action Button -->
+        <div
+          th:if="${actionUrl and actionText}"
+          style="text-align: center; margin: 30px 0"
+        >
+          <a th:href="${actionUrl}" class="button" th:text="${actionText}">
+            Take Action
+          </a>
+        </div>
+
+        <!-- Optional Highlight Box -->
+        <div
+          th:if="${highlightText}"
+          class="highlight"
+          th:text="${highlightText}"
+        >
+          Important information will appear here.
+        </div>
+
+        <!-- Additional Information -->
+        <div th:if="${additionalInfo}">
+          <h3>Additional Information:</h3>
+          <div th:text="${additionalInfo}">
+            Additional details will appear here.
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>© 2025 KTC Learning Platform. All rights reserved.</p>
+        <p>
+          If you have any questions, please contact us at
+          <a href="mailto:support@ktc-learning.com">support@ktc-learning.com</a>
+        </p>
+        <p>This is an automated message from KTC Learning Platform.</p>
+      </div>
+    </div>
+  </body>
+</html>

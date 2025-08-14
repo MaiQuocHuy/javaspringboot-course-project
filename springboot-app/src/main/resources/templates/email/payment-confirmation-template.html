@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Confirmation - KTC Learning Platform</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .container {
+        background-color: white;
+        padding: 0;
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        text-align: center;
+        padding: 30px;
+      }
+      .logo {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .header-subtitle {
+        font-size: 16px;
+        opacity: 0.9;
+        margin: 0;
+      }
+      .content {
+        padding: 30px;
+      }
+      .success-badge {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 50px;
+        margin: 20px auto;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+      }
+      .payment-summary {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 1px solid #dee2e6;
+        padding: 25px;
+        border-radius: 10px;
+        margin: 25px 0;
+        position: relative;
+      }
+      .payment-summary::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border-radius: 10px 10px 0 0;
+      }
+      .payment-summary h3 {
+        color: #495057;
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+      }
+      .payment-summary h3::before {
+        content: "💳";
+        margin-right: 10px;
+        font-size: 24px;
+      }
+      .course-details {
+        background: white;
+        border: 2px solid #e3f2fd;
+        padding: 25px;
+        border-radius: 12px;
+        margin: 25px 0;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      .course-details::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #2196f3 0%, #21cbf3 100%);
+        border-radius: 12px 12px 0 0;
+      }
+      .course-title {
+        color: #1976d2;
+        font-size: 22px;
+        font-weight: bold;
+        margin: 0 0 15px 0;
+        display: flex;
+        align-items: center;
+      }
+      .course-title::before {
+        content: "🎓";
+        margin-right: 10px;
+        font-size: 26px;
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #e9ecef;
+      }
+      .info-row:last-child {
+        border-bottom: none;
+        font-weight: bold;
+        font-size: 18px;
+        color: #28a745;
+      }
+      .info-label {
+        color: #6c757d;
+        font-weight: 500;
+      }
+      .info-value {
+        color: #495057;
+        font-weight: 600;
+      }
+      .next-steps {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border: 1px solid #ffeaa7;
+        padding: 25px;
+        border-radius: 10px;
+        margin: 25px 0;
+      }
+      .next-steps h3 {
+        color: #856404;
+        margin-top: 0;
+        display: flex;
+        align-items: center;
+      }
+      .next-steps h3::before {
+        content: "🚀";
+        margin-right: 10px;
+        font-size: 22px;
+      }
+      .step {
+        background: white;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .cta-section {
+        text-align: center;
+        margin: 30px 0;
+      }
+      .cta-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 15px 30px;
+        text-decoration: none;
+        border-radius: 25px;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      }
+      .cta-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+      }
+      .footer {
+        background-color: #f8f9fa;
+        padding: 25px;
+        text-align: center;
+        border-top: 1px solid #dee2e6;
+        color: #6c757d;
+      }
+      .footer p {
+        margin: 8px 0;
+        font-size: 14px;
+      }
+      .social-links {
+        margin: 15px 0;
+      }
+      .social-links a {
+        display: inline-block;
+        margin: 0 10px;
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 20px;
+        transition: color 0.3s ease;
+      }
+      .social-links a:hover {
+        color: #007bff;
+      }
+      .highlight {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+      .transaction-id {
+        background: #e9ecef;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        color: #495057;
+        border: 1px solid #ced4da;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">KTC Learning Platform</div>
+        <p class="header-subtitle">Your Gateway to Professional Excellence</p>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <!-- Success Message -->
+        <div style="text-align: center">
+          <div class="success-badge">✅ Payment Successful!</div>
+        </div>
+
+        <h2 style="text-align: center; color: #28a745; margin: 20px 0">
+          Chúc mừng! Thanh toán của bạn đã được xử lý thành công
+        </h2>
+
+        <!-- Payment Summary -->
+        <div class="payment-summary">
+          <h3>Chi tiết thanh toán</h3>
+          <div class="info-row">
+            <span class="info-label">Mã giao dịch:</span>
+            <span class="transaction-id" th:text="${transactionId}"
+              >TXN123456789</span
+            >
+          </div>
+          <div class="info-row">
+            <span class="info-label">Ngày thanh toán:</span>
+            <span class="info-value" th:text="${paymentDateFormatted}"
+              >25/01/2025 14:30</span
+            >
+          </div>
+          <div class="info-row">
+            <span class="info-label">Phương thức thanh toán:</span>
+            <span class="info-value" th:text="${paymentMethod}">Stripe</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Tổng số tiền:</span>
+            <span class="info-value highlight" th:text="${amount}">$99.99</span>
+          </div>
+        </div>
+
+        <!-- Course Details -->
+        <div class="course-details">
+          <h3 class="course-title" th:text="${courseTitle}">
+            Advanced Spring Boot Development
+          </h3>
+
+          <div class="info-row">
+            <span class="info-label">👨‍🏫 Giảng viên:</span>
+            <span class="info-value" th:text="${instructorName}">John Doe</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">📊 Cấp độ:</span>
+            <span class="info-value" th:text="${courseLevel}"
+              >Intermediate</span
+            >
+          </div>
+          <div class="info-row">
+            <span class="info-label">⏱️ Thời lượng:</span>
+            <span class="info-value" th:text="${courseDuration}">12 giờ</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">📚 Số bài học:</span>
+            <span class="info-value" th:text="${lessonCount}">45 bài học</span>
+          </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="next-steps">
+          <h3>Bước tiếp theo</h3>
+          <div class="step">
+            <strong>1. Bắt đầu học ngay:</strong> Khóa học đã có sẵn trong tài
+            khoản của bạn. Hãy đăng nhập và bắt đầu hành trình học tập!
+          </div>
+          <div class="step">
+            <strong>2. Tham gia cộng đồng:</strong> Kết nối với các học viên
+            khác và chia sẻ kinh nghiệm học tập.
+          </div>
+          <div class="step">
+            <strong>3. Theo dõi tiến độ:</strong> Sử dụng dashboard để theo dõi
+            tiến độ học tập của bạn.
+          </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+          <p style="font-size: 18px; color: #495057; margin-bottom: 20px">
+            Sẵn sàng bắt đầu hành trình học tập?
+          </p>
+          <a href="#" class="cta-button" th:href="${courseUrl}">
+            🎯 Bắt đầu học ngay
+          </a>
+        </div>
+
+        <!-- Support Info -->
+        <div
+          style="
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            text-align: center;
+          "
+        >
+          <p style="margin: 0; color: #6c757d">
+            <strong>Cần hỗ trợ?</strong><br />
+            📧 Email: support@ktc-learning.com<br />
+            📞 Hotline: (+84) 123-456-789<br />
+            💬 Live Chat: Có sẵn 24/7 trên website
+          </p>
+        </div>
+
+        <!-- Thank You Message -->
+        <div
+          style="
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 10px;
+            margin: 20px 0;
+          "
+        >
+          <h3 style="color: #1976d2; margin: 0 0 10px 0">
+            🙏 Cảm ơn bạn đã tin tượng KTC Learning Platform!
+          </h3>
+          <p style="color: #424242; margin: 0; font-size: 16px">
+            Chúng tôi cam kết mang đến cho bạn trải nghiệm học tập tốt nhất.
+            Chúc bạn học tập hiệu quả!
+          </p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <p><strong>KTC Learning Platform</strong></p>
+        <p>🌐 Website: www.ktc-learning.com</p>
+
+        <div class="social-links">
+          <a href="#" title="Facebook">📘</a>
+          <a href="#" title="Twitter">🐦</a>
+          <a href="#" title="LinkedIn">💼</a>
+          <a href="#" title="YouTube">📺</a>
+        </div>
+
+        <p style="font-size: 12px; margin-top: 15px">
+          © 2025 KTC Learning Platform. All rights reserved.<br />
+          Bạn nhận được email này vì đã thực hiện giao dịch trên hệ thống của
+          chúng tôi.
+        </p>
+
+        <p style="font-size: 11px; color: #adb5bd; margin-top: 10px">
+          Email này được gửi tự động, vui lòng không phản hồi trực tiếp.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

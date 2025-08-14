@@ -22,7 +22,10 @@ public class CourseReviewFilterDto {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime dateTo;
 
+    @Builder.Default
     private int page = 0;
+    @Builder.Default
     private int size = 10;
+    @Builder.Default
     private String sort = "createdAt,desc";
 }
