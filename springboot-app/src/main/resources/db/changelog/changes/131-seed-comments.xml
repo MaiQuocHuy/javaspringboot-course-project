@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Seed sample comments for testing -->
+    <changeSet id="131-seed-comments" author="ktc">
+        
+        <!-- Root comments for first lesson -->
+        <insert tableName="comments">
+            <column name="id" value="comment-001"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-002"/>
+            <column name="content" value="This lesson is fantastic! I learned so much about the fundamentals. Thank you for the clear explanations."/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-10T10:30:00"/>
+            <column name="updated_at" value="2025-08-10T10:30:00"/>
+        </insert>
+
+        <insert tableName="comments">
+            <column name="id" value="comment-002"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-005"/>
+            <column name="content" value="I have a question about the implementation details. Could you elaborate on the best practices mentioned?"/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-11T14:15:00"/>
+            <column name="updated_at" value="2025-08-11T14:15:00"/>
+        </insert>
+
+        <!-- Reply to first comment -->
+        <insert tableName="comments">
+            <column name="id" value="comment-003"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-003"/>
+            <column name="parent_id" value="comment-001"/>
+            <column name="content" value="Thank you for the positive feedback! I'm glad you found the lesson helpful. Keep up the great work!"/>
+            <column name="depth" value="1"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-11T09:00:00"/>
+            <column name="updated_at" value="2025-08-11T09:00:00"/>
+        </insert>
+
+        <!-- Reply to second comment -->
+        <insert tableName="comments">
+            <column name="id" value="comment-004"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-004"/>
+            <column name="parent_id" value="comment-002"/>
+            <column name="content" value="Great question! The best practices include following SOLID principles, writing clean code, and proper error handling. I'll create a separate lesson covering this in detail."/>
+            <column name="depth" value="1"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="true"/>
+            <column name="version" value="1"/>
+            <column name="created_at" value="2025-08-11T15:00:00"/>
+            <column name="updated_at" value="2025-08-11T16:30:00"/>
+        </insert>
+
+        <!-- Reply to a reply (level 2) -->
+        <insert tableName="comments">
+            <column name="id" value="comment-005"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-007"/>
+            <column name="parent_id" value="comment-004"/>
+            <column name="content" value="That would be amazing! Looking forward to the detailed lesson on best practices."/>
+            <column name="depth" value="2"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-11T16:45:00"/>
+            <column name="updated_at" value="2025-08-11T16:45:00"/>
+        </insert>
+
+        <!-- Comments for second lesson -->
+        <insert tableName="comments">
+            <column name="id" value="comment-006"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="user_id" value="user-009"/>
+            <column name="content" value="The examples in this lesson are very practical. I'm already applying them in my project!"/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-12T11:20:00"/>
+            <column name="updated_at" value="2025-08-12T11:20:00"/>
+        </insert>
+
+        <!-- Deleted comment example -->
+        <insert tableName="comments">
+            <column name="id" value="comment-007"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="user_id" value="user-011"/>
+            <column name="content" value="[Deleted]"/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="true"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-12T13:00:00"/>
+            <column name="updated_at" value="2025-08-12T14:00:00"/>
+        </insert>
+
+        <!-- Reply to deleted comment (should still be visible) -->
+        <insert tableName="comments">
+            <column name="id" value="comment-008"/>
+            <column name="lesson_id" value="lesson-002"/>
+            <column name="user_id" value="user-012"/>
+            <column name="parent_id" value="comment-007"/>
+            <column name="content" value="I agree with the points mentioned above, even though the original comment was removed."/>
+            <column name="depth" value="1"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-12T13:30:00"/>
+            <column name="updated_at" value="2025-08-12T13:30:00"/>
+        </insert>
+
+        <!-- Additional root comment for third lesson -->
+        <insert tableName="comments">
+            <column name="id" value="comment-009"/>
+            <column name="lesson_id" value="lesson-003"/>
+            <column name="user_id" value="user-005"/>
+            <column name="content" value="This advanced topic is challenging but well explained. The step-by-step approach really helps!"/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-13T16:00:00"/>
+            <column name="updated_at" value="2025-08-13T16:00:00"/>
+        </insert>
+
+        <!-- More diverse comments for testing pagination -->
+        <insert tableName="comments">
+            <column name="id" value="comment-010"/>
+            <column name="lesson_id" value="lesson-001"/>
+            <column name="user_id" value="user-011"/>
+            <column name="content" value="Could you provide more examples for this concept? I'd like to practice more."/>
+            <column name="depth" value="0"/>
+            <column name="is_deleted" valueBoolean="false"/>
+            <column name="is_edited" valueBoolean="false"/>
+            <column name="version" value="0"/>
+            <column name="created_at" value="2025-08-12T09:30:00"/>
+            <column name="updated_at" value="2025-08-12T09:30:00"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>
