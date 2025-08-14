@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Create comments table with nested structure support -->
+    <changeSet id="130-create-comments-table" author="ktc">
+        <createTable tableName="comments">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="lesson_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_id" type="VARCHAR(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="content" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="depth" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_edited" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Add foreign key constraints -->
+    <changeSet id="130-add-comments-foreign-keys" author="ktc">
+        <!-- Foreign key to lessons table -->
+        <addForeignKeyConstraint 
+            baseTableName="comments" 
+            baseColumnNames="lesson_id"
+            referencedTableName="lessons" 
+            referencedColumnNames="id"
+            onDelete="CASCADE" 
+            constraintName="fk_comments_lesson"/>
+        
+        <!-- Foreign key to users table -->
+        <addForeignKeyConstraint 
+            baseTableName="comments" 
+            baseColumnNames="user_id"
+            referencedTableName="users" 
+            referencedColumnNames="id"
+            onDelete="CASCADE" 
+            constraintName="fk_comments_user"/>
+        
+        <!-- Self-referencing foreign key for parent-child relationships -->
+        <addForeignKeyConstraint 
+            baseTableName="comments" 
+            baseColumnNames="parent_id"
+            referencedTableName="comments" 
+            referencedColumnNames="id"
+            onDelete="CASCADE" 
+            constraintName="fk_comments_parent"/>
+    </changeSet>
+
+    <!-- Add indexes for optimal query performance -->
+    <changeSet id="130-add-comments-indexes" author="ktc">
+        <!-- Index for fetching comments by lesson with creation time ordering -->
+        <createIndex indexName="idx_comment_lesson_created" tableName="comments">
+            <column name="lesson_id"/>
+            <column name="created_at"/>
+        </createIndex>
+        
+        <!-- Index for fetching replies by parent -->
+        <createIndex indexName="idx_comment_parent" tableName="comments">
+            <column name="parent_id"/>
+        </createIndex>
+        
+        <!-- Index for user's comments with deletion status -->
+        <createIndex indexName="idx_comment_user_deleted" tableName="comments">
+            <column name="user_id"/>
+            <column name="is_deleted"/>
+        </createIndex>
+
+        <!-- Index for depth-based queries -->
+        <createIndex indexName="idx_comment_depth" tableName="comments">
+            <column name="depth"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Add check constraint for depth limit -->
+    <changeSet id="130-add-comments-constraints" author="ktc">
+        <sql>
+            ALTER TABLE comments 
+            ADD CONSTRAINT chk_comment_depth 
+            CHECK (depth &gt;= 0 AND depth &lt;= 2);
+        </sql>
+        
+        <sql>
+            ALTER TABLE comments 
+            ADD CONSTRAINT chk_comment_content_length 
+            CHECK (CHAR_LENGTH(content) &gt;= 1 AND CHAR_LENGTH(content) &lt;= 2000);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -34,7 +34,8 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
                         "JOIN FETCH r.user u " +
                         "WHERE r.course.id = :courseId " +
                         "ORDER BY r.reviewedAt DESC")
-        Page<Review> findByCourseIdWithUser(@Param("courseId") String courseId, Pageable pageable);
+        Page<Review> findByCourseIdWithUser(@Param("courseId") String courseId,
+                        Pageable pageable);
 
         /**
          * Find all reviews by a specific user
