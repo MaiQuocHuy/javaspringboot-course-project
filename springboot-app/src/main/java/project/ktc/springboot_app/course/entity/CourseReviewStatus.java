@@ -38,7 +38,7 @@ public class CourseReviewStatus {
     private Course course;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "status", nullable = true, length = 20)
     private ReviewStatus status;
 
     @Column(name = "created_at")

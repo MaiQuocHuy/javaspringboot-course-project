@@ -61,4 +61,12 @@
     <include file="db/changelog/changes/127-add-course-review-status-table.xml"/>
     <include file="db/changelog/changes/128-seed-course-review-status.xml"/>
     <include file="db/changelog/changes/129-add-password-reset-tokens-table.xml"/>
+
+    <!-- Comments System -->
+    <include file="db/changelog/changes/130-create-comments-table.xml"/>
+    <!-- TODO: Enable when sample data is available -->
+    <include file="db/changelog/changes/131-seed-comments.xml"/>
+
+    <!-- Allow nullable course review status for unpublish functionality -->
+    <include file="db/changelog/changes/132-allow-nullable-course-review-status.xml"/>
 </databaseChangeLog>
