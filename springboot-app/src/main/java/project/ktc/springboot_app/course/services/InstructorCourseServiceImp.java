@@ -197,6 +197,12 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 return ApiResponseUtil.notFound("Instructor not found");
             }
 
+            // Check slug title if it's duplicate
+            if (courseRepository.existsBySlug(createCourseDto.getSlug())) {
+                log.warn("Duplicate slug found: {}", createCourseDto.getSlug());
+                return ApiResponseUtil.conflict("Slug is already in use");
+            }
+
             // Validate categories exist
             List<Category> categories = new ArrayList<>();
             for (String categoryId : createCourseDto.getCategoryIds()) {
