@@ -35,6 +35,7 @@ import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.utils.StringUtil;
+import project.ktc.springboot_app.utils.MathUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -312,7 +313,7 @@ public class CourseServiceImp implements CourseService {
                 Long totalReviews = courseRepository.countReviewsByCourseId(courseId);
 
                 return CourseDetailResponseDto.RatingSummary.builder()
-                                .average(averageRating)
+                                .average(MathUtil.roundToTwoDecimals(averageRating)) // Consistent rounding
                                 .totalReviews(totalReviews)
                                 .build();
         }
@@ -320,6 +321,8 @@ public class CourseServiceImp implements CourseService {
         /**
          * Get instructor overview statistics including average rating and total courses
          * count
+         * Both queries now use consistent filtering for published, approved, and
+         * non-deleted courses
          * 
          * @param instructorId the instructor ID
          * @return OverViewInstructorSummary containing average rating and total courses
@@ -335,8 +338,8 @@ public class CourseServiceImp implements CourseService {
                         Long totalCourses = courseRepository.countCoursesByInstructorId(instructorId);
 
                         return CourseDetailResponseDto.OverViewInstructorSummary.builder()
-                                        .average(averageRating != null ? Math.round(averageRating * 100.0) / 100.0
-                                                        : 0.0) // Round to 2 decimal places
+                                        .average(MathUtil.roundToTwoDecimals(averageRating)) // Consistent rounding
+                                                                                             // using utility
                                         .totalCoursesByInstructor(totalCourses != null ? totalCourses : 0L)
                                         .build();
                 } catch (Exception e) {
@@ -549,6 +552,7 @@ public class CourseServiceImp implements CourseService {
 
                 // Average rating
                 Double averageRating = courseRepository.findAverageRatingByCourseId(course.getId()).orElse(0.0);
+                averageRating = MathUtil.roundToTwoDecimals(averageRating); // Consistent rounding
                 // Section Count
                 Long sectionCount = sectionRepository.countSectionsByCourseId(course.getId());
                 return CoursePublicResponseDto.builder()
@@ -596,6 +600,7 @@ public class CourseServiceImp implements CourseService {
 
                 // Average rating and rating count
                 Double averageRating = courseRepository.findAverageRatingByCourseId(course.getId()).orElse(0.0);
+                averageRating = MathUtil.roundToTwoDecimals(averageRating); // Consistent rounding
                 Long ratingCount = courseRepository.countReviewsByCourseId(course.getId());
 
                 // Section Count

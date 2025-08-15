@@ -83,7 +83,8 @@ public class CourseDetailResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OverViewInstructorSummary {
-        private Double average; // Average rating across all instructor's courses (from all reviews)
+        private Double average; // Average rating across instructor's published and approved courses only
+                                // (consistent with course count)
         private Long totalCoursesByInstructor; // Total number of published and approved courses by this instructor
     }
 
