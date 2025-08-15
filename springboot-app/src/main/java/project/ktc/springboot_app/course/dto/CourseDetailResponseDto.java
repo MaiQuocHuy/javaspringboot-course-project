@@ -30,6 +30,8 @@ public class CourseDetailResponseDto {
     private RatingSummary rating;
     private Boolean isEnrolled;
     private InstructorSummary instructor;
+    private OverViewInstructorSummary overViewInstructorSummary; // Overall instructor statistics (average rating across
+                                                                 // all courses and total course count)
     private List<SectionSummary> sections;
 
     @Data
@@ -48,6 +50,8 @@ public class CourseDetailResponseDto {
     public static class InstructorSummary {
         private String id;
         private String name;
+        private String bio;
+        private String thumbnailUrl;
     }
 
     @Data
@@ -72,6 +76,15 @@ public class CourseDetailResponseDto {
         private String title;
         private String type;
         private Integer duration; // Lesson duration in seconds (only for VIDEO type)
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OverViewInstructorSummary {
+        private Double average; // Average rating across all instructor's courses (from all reviews)
+        private Long totalCoursesByInstructor; // Total number of published and approved courses by this instructor
     }
 
 }

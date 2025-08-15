@@ -317,6 +317,37 @@ public class CourseServiceImp implements CourseService {
                                 .build();
         }
 
+        /**
+         * Get instructor overview statistics including average rating and total courses
+         * count
+         * 
+         * @param instructorId the instructor ID
+         * @return OverViewInstructorSummary containing average rating and total courses
+         */
+        private CourseDetailResponseDto.OverViewInstructorSummary getOverViewInstructorSummary(String instructorId) {
+                if (instructorId == null || instructorId.trim().isEmpty()) {
+                        return null;
+                }
+
+                try {
+                        Double averageRating = courseRepository.findAverageRatingByInstructorId(instructorId)
+                                        .orElse(0.0);
+                        Long totalCourses = courseRepository.countCoursesByInstructorId(instructorId);
+
+                        return CourseDetailResponseDto.OverViewInstructorSummary.builder()
+                                        .average(averageRating != null ? Math.round(averageRating * 100.0) / 100.0
+                                                        : 0.0) // Round to 2 decimal places
+                                        .totalCoursesByInstructor(totalCourses != null ? totalCourses : 0L)
+                                        .build();
+                } catch (Exception e) {
+                        log.warn("Error getting instructor overview summary for instructorId: {}", instructorId, e);
+                        return CourseDetailResponseDto.OverViewInstructorSummary.builder()
+                                        .average(0.0)
+                                        .totalCoursesByInstructor(0L)
+                                        .build();
+                }
+        }
+
         private Boolean getCurrentUserEnrollmentStatus(String courseId) {
                 try {
                         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -362,11 +393,17 @@ public class CourseServiceImp implements CourseService {
 
                 // Map instructor
                 CourseDetailResponseDto.InstructorSummary instructorSummary = null;
+                CourseDetailResponseDto.OverViewInstructorSummary overViewInstructorSummary = null;
                 if (course.getInstructor() != null) {
                         instructorSummary = CourseDetailResponseDto.InstructorSummary.builder()
                                         .id(course.getInstructor().getId())
                                         .name(course.getInstructor().getName())
+                                        .bio(course.getInstructor().getBio())
+                                        .thumbnailUrl(course.getInstructor().getThumbnailUrl())
                                         .build();
+
+                        // Get instructor overview statistics
+                        overViewInstructorSummary = getOverViewInstructorSummary(course.getInstructor().getId());
                 }
 
                 // Map sections and lessons
@@ -409,6 +446,7 @@ public class CourseServiceImp implements CourseService {
                                 .rating(ratingSummary)
                                 .isEnrolled(isEnrolled)
                                 .instructor(instructorSummary)
+                                .overViewInstructorSummary(overViewInstructorSummary)
                                 .sections(sectionSummaries)
                                 .build();
         }
