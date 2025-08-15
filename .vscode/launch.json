@@ -10,7 +10,7 @@
       "args": "",
       "envFile": "${workspaceFolder}/.env",
       "env": {
-        "DB_URL": "jdbc:mysql://localhost:3306/ktc_learning",
+        "DB_URL": "jdbc:mysql://localhost:3306/course_platform_db",
         "DB_USERNAME": "root",
         "DB_PASSWORD": "123456789",
         "PORT": "8080",
