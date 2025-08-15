@@ -150,4 +150,31 @@ public interface CourseRepository extends JpaRepository<Course, String> {
 
         boolean existsBySlug(String courseSlug);
 
+        /**
+         * Get average rating for instructor's published and approved courses only
+         * This ensures consistency with course count query by only including
+         * courses that are currently available to students
+         */
+        @Query("SELECT AVG(r.rating) FROM Review r " +
+                        "WHERE r.course.instructor.id = :instructorId " +
+                        "AND r.course.isPublished = true AND r.course.isApproved = true AND r.course.isDeleted = false")
+        Optional<Double> findAverageRatingByInstructorId(@Param("instructorId") String instructorId);
+
+        /**
+         * Get total published and approved course count by instructor
+         * Only counts courses that are currently published, approved and not deleted
+         */
+        @Query("SELECT COUNT(c) FROM Course c " +
+                        "WHERE c.instructor.id = :instructorId " +
+                        "AND c.isPublished = true AND c.isApproved = true AND c.isDeleted = false")
+        Long countCoursesByInstructorId(@Param("instructorId") String instructorId);
+
+        /**
+         * Check if a slug exists (case-insensitive)
+         * Used to prevent duplicate slugs with normalization
+         */
+        @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Course c " +
+                        "WHERE LOWER(c.slug) = LOWER(:slug)")
+        boolean existsBySlugIgnoreCase(@Param("slug") String slug);
+
 }

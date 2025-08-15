@@ -48,6 +48,8 @@ import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.services.FileValidationService;
 import project.ktc.springboot_app.user.repositories.UserRepository;
+import project.ktc.springboot_app.utils.StringUtil;
+import project.ktc.springboot_app.utils.MathUtil;
 import project.ktc.springboot_app.log.services.SystemLogHelper;
 import project.ktc.springboot_app.log.dto.CourseLogDto;
 import project.ktc.springboot_app.log.utils.CourseLogMapper;
@@ -109,6 +111,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
 
         // Get average rating
         Double averageRating = courseRepository.findAverageRatingByCourseId(course.getId()).orElse(0.0);
+        averageRating = MathUtil.roundToTwoDecimals(averageRating); // Consistent rounding
 
         // Get section count
         Long sectionCount = sectionRepository.countSectionsByCourseId(course.getId());
@@ -197,6 +200,13 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 return ApiResponseUtil.notFound("Instructor not found");
             }
 
+            // Check slug for uniqueness with normalization and case-insensitive comparison
+            String normalizedSlug = StringUtil.normalizeSlugForComparison(createCourseDto.getSlug());
+            if (courseRepository.existsBySlugIgnoreCase(normalizedSlug)) {
+                log.warn("Duplicate slug found (case-insensitive): {}", createCourseDto.getSlug());
+                return ApiResponseUtil.conflict("Slug is already in use (duplicate found)");
+            }
+
             // Validate categories exist
             List<Category> categories = new ArrayList<>();
             for (String categoryId : createCourseDto.getCategoryIds()) {
@@ -216,7 +226,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             course.setLevel(createCourseDto.getLevel());
             course.setInstructor(instructor);
             course.setCategories(categories);
-            course.setSlug(createCourseDto.getSlug());
+            course.setSlug(normalizedSlug); // Use normalized slug for consistency
 
             // Set default values for new course
             course.setIsPublished(false);
@@ -676,6 +686,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
         // Step 4: Get course statistics
         Long enrollmentCount = courseRepository.countUserEnrolledInCourse(courseId);
         Double averageRating = courseRepository.findAverageRatingByCourseId(courseId).orElse(0.0);
+        averageRating = MathUtil.roundToTwoDecimals(averageRating); // Consistent rounding
         Long ratingCount = courseRepository.countReviewsByCourseId(courseId);
         Long sectionCountLong = sectionRepository.countSectionsByCourseId(courseId);
         Integer sectionCount = sectionCountLong != null ? sectionCountLong.intValue() : 0;
