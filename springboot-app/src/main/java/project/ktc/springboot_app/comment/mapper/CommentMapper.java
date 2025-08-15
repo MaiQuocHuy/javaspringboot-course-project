@@ -2,16 +2,9 @@ package project.ktc.springboot_app.comment.mapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import com.cloudinary.http45.api.Response;
-
 import project.ktc.springboot_app.comment.dto.CommentResponse;
 import project.ktc.springboot_app.comment.entity.Comment;
-import project.ktc.springboot_app.common.dto.ApiResponse;
-import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +33,8 @@ public class CommentMapper {
                 .isEdited(comment.getIsEdited())
                 .isDeleted(comment.getIsDeleted())
                 .replyCount(comment.getReplies() != null ? comment.getReplies().size() : 0)
-                .author(toUserSummary(comment))
-                .replies(new ArrayList<>()) // Will be populated separately
+                .user(toUserSummary(comment))
+                .children(new ArrayList<>()) // Will be populated separately
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .build();
@@ -61,7 +54,7 @@ public class CommentMapper {
             List<CommentResponse> replyResponses = comment.getReplies().stream()
                     .map(reply -> toCommentResponseWithReplies(reply, true)) // Recursively include replies
                     .collect(Collectors.toList());
-            response.setReplies(replyResponses);
+            response.setChildren(replyResponses);
         }
 
         return response;
@@ -116,7 +109,7 @@ public class CommentMapper {
                     .map(this::toCommentResponse)
                     .collect(Collectors.toList());
 
-            rootResponse.setReplies(commentReplies);
+            rootResponse.setChildren(commentReplies);
             rootResponse.setReplyCount(commentReplies.size());
         }
 
