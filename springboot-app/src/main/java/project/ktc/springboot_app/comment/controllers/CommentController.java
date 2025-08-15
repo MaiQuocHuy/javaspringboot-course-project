@@ -29,7 +29,7 @@ import project.ktc.springboot_app.utils.SecurityUtil;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v2/lessons/{lessonId}/comments")
+@RequestMapping("/api/lessons/{lessonId}/comments")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Nested Set Comments", description = "Production-ready threaded comment system using Nested Set Model")
