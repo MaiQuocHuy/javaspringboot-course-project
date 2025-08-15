@@ -34,5 +34,7 @@ build/
 
 .env
 
+.env.local
+
 .github/instructions/
 .github/prompts/
