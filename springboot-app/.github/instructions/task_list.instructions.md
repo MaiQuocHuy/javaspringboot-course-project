@@ -3692,3 +3692,140 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
 
 ### 6.1 `GET api/admin/payments`
 
+### 7. Permission
+
+## 7.1 `GET /api/permissions`
+
+- **Description:** Retrieves a list of all permissions in the system, including related resource and action metadata.
+  Only ADMIN role is allowed to call this API.
+- **Request:**
+  - **Method:** `GET`
+  - **Path:** `/api/permissions`
+  - **Headers:** `Authorization: Bearer <accessToken>`
+- **Response:**
+  - **Success (200 OK):**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Permissions retrieved successfully",
+      "data": [
+        {
+          "key": "course:create",
+          "description": "Create a new course",
+          "resource": {
+            "key": "course",
+            "name": "Course Management",
+            "isActive": true
+          },
+          "action": {
+            "key": "create",
+            "name": "Create",
+            "isActive": true
+          },
+          "isActive": true,
+          "createdAt": "2025-08-17T12:00:00",
+          "updatedAt": "2025-08-17T12:30:00"
+        },
+        {
+          "key": "course:delete",
+          "description": "Delete an existing course",
+          "resource": {
+            "key": "course",
+            "name": "Course Management",
+            "isActive": true
+          },
+          "action": {
+            "key": "delete",
+            "name": "Delete",
+            "isActive": true
+          },
+          "isActive": true,
+          "createdAt": "2025-08-17T12:05:00",
+          "updatedAt": "2025-08-17T12:35:00"
+        }
+      ]
+    }
+    ```
+  - **Error (403 Forbidden):**
+    ```json
+    {
+      "statusCode": 403,
+      "message": "Forbidden - Admin role required",
+      "data": null
+    }
+    ```
+- **Business Rules**:
+  - Only Admin users can access this endpoint.
+  - If Permission.isActive = false → the permission is still returned but considered disabled for usage.
+  - Nếu Resource.isActive = false hoặc Action.isActive = false → the permission is considered system-disabled.
+- **Controller**:
+  - `AdminPermissionController` handles all admin permission-related requests.
+  - Validate request headers (Authorization).
+  - Pass to service for processing.
+- **AdminPermissionController**:
+  - Validate JWT (Authorization header).
+  - Ensure user has role ADMIN.
+  - Pass to PermissionService for fetching data.
+  - Return mapped DTO response (PermissionResponseDto).
+
+## 7.2 `GET /api/roles/{roleId}/permissions`
+
+- **Description**: Retrieves all permissions assigned to a specific role, including related resource and action metadata. Only ADMIN role is allowed.
+
+- **Request**
+  - **Method:** `GET`
+  - **Path:** `/api/roles/{roleId}/permissions`
+  - **Headers:**
+    - `Authorization: Bearer <accessToken>`
+  - **Path Params:**
+    - `roleId`: The ID of the role to retrieve permissions for
+
+### Response
+#### ✅ Success (200 OK)
+```json
+{
+  "statusCode": 200,
+  "message": "Permissions retrieved successfully",
+  "data": [
+    {
+      "key": "course:create",
+      "description": "Create a new course",
+      "resource": {
+        "key": "course",
+        "name": "Course Management",
+        "isActive": true
+      },
+      "action": {
+        "key": "create",
+        "name": "Create",
+        "isActive": true
+      },
+      "roleActive": true,             // from role_permission.is_active
+      "permissionActive": true,       // from permission.is_active
+      "createdAt": "2025-08-17T12:00:00",
+      "updatedAt": "2025-08-17T12:30:00"
+    }
+  ]
+}
+### Error (403 Forbidden)
+  ```json
+  {
+    "statusCode": 403,
+    "message": "Forbidden - Admin role required",
+    "data": null
+  }
+```
+- **Business Rules**
+  - Only Admin users can call this API.
+  - role_permission.is_active = false → role does not have the permission (disabled for this role).
+  - permission.is_active = false → permission disabled at system level.
+  - resource.is_active = false or action.is_active = false → permission considered system-disabled.
+  - API returns all permissions assigned to the role (enabled and disabled).
+  - Pagination may be supported in future (?page=&size=&activeOnly=).
+- **Controller**:
+- Class: AdminPermissionController
+- Responsibilities:
+  - Validate JWT from Authorization header.
+  - Ensure caller has ADMIN role.
+  - Delegate to PermissionService.getPermissionsByRole(roleId).
+  - Return mapped PermissionResponseDto

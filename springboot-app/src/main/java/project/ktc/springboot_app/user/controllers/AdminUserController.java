@@ -3,6 +3,7 @@ package project.ktc.springboot_app.user.controllers;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,9 +32,11 @@ public class AdminUserController {
         private final UserServiceImp userService;
 
         @GetMapping
+        @PreAuthorize("hasPermission(null, 'user:read') or hasRole('ADMIN')")
         @Operation(summary = "Get all users", description = "Retrieve a list of all users")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Successfully retrieved list"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - user:read permission required"),
                         @ApiResponse(responseCode = "500", description = "Internal server error")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<UserResponseDto>>> getAllUsers() {
@@ -41,9 +44,11 @@ public class AdminUserController {
         }
 
         @GetMapping("/{id}")
+        @PreAuthorize("hasPermission(#id, 'User', 'user:read') or hasRole('ADMIN')")
         @Operation(summary = "Get user by ID", description = "Retrieve a user by their ID")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "User found"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - user:read permission required"),
                         @ApiResponse(responseCode = "404", description = "User not found")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> getUserById(
@@ -52,9 +57,11 @@ public class AdminUserController {
         }
 
         @PutMapping("/{id}/role")
+        @PreAuthorize("hasPermission(#id, 'User', 'user:edit') or hasRole('ADMIN')")
         @Operation(summary = "Update user role", description = "Update the role of a user by their ID")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "User role updated successfully"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - user:edit permission required"),
                         @ApiResponse(responseCode = "404", description = "User not found"),
                         @ApiResponse(responseCode = "400", description = "Invalid role or user ID")
         })
@@ -64,9 +71,11 @@ public class AdminUserController {
         }
 
         @PutMapping("/{id}/status")
+        @PreAuthorize("hasPermission(#id, 'User', 'user:edit') or hasRole('ADMIN')")
         @Operation(summary = "Update user status", description = "Update the status of a user by their ID")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "User status updated successfully"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - user:edit permission required"),
                         @ApiResponse(responseCode = "404", description = "User not found"),
                         @ApiResponse(responseCode = "400", description = "Invalid status or user ID")
         })
@@ -77,9 +86,11 @@ public class AdminUserController {
         }
 
         @PostMapping
+        @PreAuthorize("hasPermission(null, 'user:create') or hasRole('ADMIN')")
         @Operation(summary = "Create a new user", description = "Create a new user in the system")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "201", description = "User created"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - user:create permission required"),
                         @ApiResponse(responseCode = "400", description = "Invalid input")
         })
         public ResponseEntity<String> createUser(@RequestBody String user) {

@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,19 +16,25 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.authentication.AuthenticationProvider;
+
+import project.ktc.springboot_app.security.CustomPermissionEvaluator;
 import project.ktc.springboot_app.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) // Enable @PreAuthorize and @PostAuthorize
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
         private final AuthenticationProvider authenticationProvider;
+        private final CustomPermissionEvaluator customPermissionEvaluator;
 
         public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                        AuthenticationProvider authenticationProvider) {
+                        AuthenticationProvider authenticationProvider,
+                        CustomPermissionEvaluator customPermissionEvaluator) {
                 this.jwtAuthenticationFilter = jwtAuthenticationFilter;
                 this.authenticationProvider = authenticationProvider;
+                this.customPermissionEvaluator = customPermissionEvaluator;
         }
 
         @Bean
@@ -71,6 +80,16 @@ public class SecurityConfig {
                                 .authenticationProvider(authenticationProvider)
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                                 .build();
+        }
+
+        /**
+         * Configure method security expression handler with custom permission evaluator
+         */
+        @Bean
+        public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+                DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+                expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+                return expressionHandler;
         }
 
         @Bean
