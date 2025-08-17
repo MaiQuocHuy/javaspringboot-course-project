@@ -55,13 +55,13 @@ public class AdminCourseController {
         private final AdminCourseServiceImp adminCourseService;
 
         @GetMapping
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasPermission(null, 'course:read') or hasRole('ADMIN')")
         @Operation(summary = "Get all courses for admin", description = "Retrieves a paginated list of all courses with filtering and sorting options. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaginatedResponse.class))),
                         @ApiResponse(responseCode = "400", description = "Invalid request parameters", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authentication token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class)))
+                        @ApiResponse(responseCode = "403", description = "Forbidden - course:read permission required", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class)))
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CourseAdminResponseDto>>> findCoursesForAdmin(
                         @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") @Min(0) int page,
@@ -101,13 +101,13 @@ public class AdminCourseController {
         }
 
         @PatchMapping("/{id}/approve")
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasPermission(#id, 'Course', 'course:approve') or hasRole('ADMIN')")
         @Operation(summary = "Approve a pending course", description = "Approves a course that is currently in pending status. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Course approved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CourseApprovalResponseDto.class))),
                         @ApiResponse(responseCode = "400", description = "Bad Request - Course already approved or deleted", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authentication token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - course:approve permission required", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
                         @ApiResponse(responseCode = "404", description = "Course not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class)))
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseApprovalResponseDto>> approveCourse(
@@ -117,12 +117,12 @@ public class AdminCourseController {
         }
 
         @GetMapping("/{id}")
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasPermission(#id, 'Course', 'course:read') or hasRole('ADMIN')")
         @Operation(summary = "Get course details for admin review", description = "Retrieves complete course details including sections and lessons for admin review. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Course details retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authentication token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - course:read permission required", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
                         @ApiResponse(responseCode = "404", description = "Course not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class)))
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<SectionWithLessonsDto>>> getCourseDetailsForAdmin(
@@ -145,7 +145,7 @@ public class AdminCourseController {
          * @return Paginated list of courses for review
          */
         @GetMapping("/review-course")
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasPermission(null, 'course:review') or hasRole('ADMIN')")
         @Operation(summary = "Get courses for review", description = "Retrieves a paginated list of courses filtered by review status (defaults to PENDING and RESUBMITTED), creator, and creation date range. Admins only.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Pending review courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),

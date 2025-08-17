@@ -59,7 +59,7 @@ public class InstructorCourseController {
         private final InstructorCourseServiceImp instructorCourseService;
 
         @GetMapping
-        @PreAuthorize("hasRole('INSTRUCTOR')")
+        @PreAuthorize("hasPermission(null, 'course:read') or hasRole('INSTRUCTOR')")
         @Operation(summary = "Get instructor's courses", description = "Retrieve paginated list of courses created by the instructor with filtering options", security = @SecurityRequirement(name = "bearerAuth"))
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> getInstructorCourses(
                         @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
@@ -93,7 +93,7 @@ public class InstructorCourseController {
         }
 
         @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        @PreAuthorize("hasRole('INSTRUCTOR')")
+        @PreAuthorize("hasPermission(null, 'course:create') or hasRole('INSTRUCTOR')")
         @Operation(summary = "Create a new course", description = """
                         Create a new course with thumbnail upload for instructors.
 
@@ -164,7 +164,7 @@ public class InstructorCourseController {
         }
 
         @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        @PreAuthorize("hasRole('INSTRUCTOR')")
+        @PreAuthorize("hasPermission(#id, 'Course', 'course:edit') or hasRole('INSTRUCTOR')")
         @Operation(summary = "Update an existing course", description = """
                         Update an existing course with  thumbnail upload for instructors.
 
@@ -249,7 +249,7 @@ public class InstructorCourseController {
         }
 
         @DeleteMapping("/{id}")
-        @PreAuthorize("hasRole('INSTRUCTOR')")
+        @PreAuthorize("hasPermission(#id, 'Course', 'course:delete') or hasRole('INSTRUCTOR')")
         @Operation(summary = "Delete a course", description = """
                         Delete a course created by the instructor.
 
@@ -282,7 +282,7 @@ public class InstructorCourseController {
         }
 
         @PatchMapping("/{id}/status")
-        @PreAuthorize("hasRole('INSTRUCTOR')")
+        @PreAuthorize("hasPermission(#id, 'Course', 'course:edit') or hasRole('INSTRUCTOR')")
         @Operation(summary = "Update course status", description = """
                         Update the visibility status of a course between PUBLISHED and UNPUBLISHED.
 
@@ -321,7 +321,7 @@ public class InstructorCourseController {
         }
 
         @GetMapping("/{id}")
-        @PreAuthorize("hasRole('INSTRUCTOR')")
+        @PreAuthorize("hasPermission(#id, 'Course', 'course:read') or hasRole('INSTRUCTOR')")
         @Operation(summary = "Get course details", description = """
                         Retrieve detailed information about a specific course owned by the instructor.
 
