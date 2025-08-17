@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -82,7 +83,7 @@ public class CourseReviewDetailResponseDto {
     public static class QuestionDetailDto {
         private String id;
         private String questionText;
-        private List<String> options;
+        private Map<String, String> options;
         private String correctAnswer;
         private String explanation;
     }

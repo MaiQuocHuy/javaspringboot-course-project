@@ -37,10 +37,14 @@ import project.ktc.springboot_app.auth.entitiy.User;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.jsonwebtoken.lang.Collections;
+
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -260,7 +264,7 @@ public class AdminCourseServiceImp implements AdminCourseService {
             List<QuizQuestion> questions = quizQuestionRepository.findQuestionsByLessonId(lesson.getId());
             List<CourseReviewDetailResponseDto.QuestionDetailDto> questionDtos = questions.stream()
                     .map(question -> {
-                        List<String> options = parseOptionsFromJson(question.getOptions());
+                        Map<String, String> options = parseOptionsFromJson(question.getOptions());
                         return CourseReviewDetailResponseDto.QuestionDetailDto.builder()
                                 .id(question.getId())
                                 .questionText(question.getQuestionText())
@@ -285,13 +289,13 @@ public class AdminCourseServiceImp implements AdminCourseService {
                 .build();
     }
 
-    private List<String> parseOptionsFromJson(String optionsJson) {
+    private Map<String, String> parseOptionsFromJson(String optionsJson) {
         try {
-            return objectMapper.readValue(optionsJson, new TypeReference<List<String>>() {
+            return objectMapper.readValue(optionsJson, new TypeReference<Map<String, String>>() {
             });
         } catch (Exception e) {
             log.warn("Failed to parse options JSON: {}", optionsJson, e);
-            return new ArrayList<>();
+            return Collections.emptyMap();
         }
     }
 

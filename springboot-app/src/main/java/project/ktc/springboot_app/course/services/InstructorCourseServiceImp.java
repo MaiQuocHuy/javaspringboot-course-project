@@ -312,7 +312,15 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             String instructorId) {
         try {
             log.info("Updating course {} for instructor: {}", courseId, instructorId);
-
+            // Check if title course is duplicate
+            if (updateCourseDto.getTitle() != null && !updateCourseDto.getTitle().trim().isEmpty()) {
+                String slugTitle = StringUtil.generateSlug(updateCourseDto.getTitle());
+                if (courseRepository.existsBySlug(slugTitle)) {
+                    log.warn("Duplicate course title detected: {}", updateCourseDto.getTitle());
+                    return ApiResponseUtil
+                            .conflict("Course with title '" + updateCourseDto.getTitle() + "' already exists");
+                }
+            }
             // Find the course and validate ownership
             Course existingCourse = courseRepository.findById(courseId).orElse(null);
             if (existingCourse == null) {

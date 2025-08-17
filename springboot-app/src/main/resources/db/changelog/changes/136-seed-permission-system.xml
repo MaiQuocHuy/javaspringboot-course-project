@@ -1,0 +1,1118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Seed Resources Data -->
+    <changeSet id="136-1" author="system">
+        
+        <!-- Insert base resources -->
+        <insert tableName="resources">
+            <column name="id" value="res-course-001"/>
+            <column name="name" value="course"/>
+            <column name="description" value="Course management and access"/>
+            <column name="resource_path" value="/courses"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="resources">
+            <column name="id" value="res-lesson-001"/>
+            <column name="name" value="lesson"/>
+            <column name="description" value="Lesson content and management"/>
+            <column name="resource_path" value="/lessons"/>
+            <column name="parent_resource_id" value="res-course-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="resources">
+            <column name="id" value="res-review-001"/>
+            <column name="name" value="review"/>
+            <column name="description" value="Course reviews and ratings"/>
+            <column name="resource_path" value="/reviews"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="resources">
+            <column name="id" value="res-payment-001"/>
+            <column name="name" value="payment"/>
+            <column name="description" value="Payment processing and management"/>
+            <column name="resource_path" value="/payments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="resources">
+            <column name="id" value="res-user-001"/>
+            <column name="name" value="user"/>
+            <column name="description" value="User account management"/>
+            <column name="resource_path" value="/users"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="resources">
+            <column name="id" value="res-enrollment-001"/>
+            <column name="name" value="enrollment"/>
+            <column name="description" value="Course enrollment management"/>
+            <column name="resource_path" value="/enrollments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Section Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-section-001"/>
+            <column name="name" value="section"/>
+            <column name="description" value="Course section management"/>
+            <column name="resource_path" value="/sections"/>
+            <column name="parent_resource_id" value="res-course-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Category Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-category-001"/>
+            <column name="name" value="category"/>
+            <column name="description" value="Course category management"/>
+            <column name="resource_path" value="/categories"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Comment Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-comment-001"/>
+            <column name="name" value="comment"/>
+            <column name="description" value="Lesson comments and discussions"/>
+            <column name="resource_path" value="/comments"/>
+            <column name="parent_resource_id" value="res-lesson-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor Application Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-instructor-application-001"/>
+            <column name="name" value="instructor_application"/>
+            <column name="description" value="Instructor application management"/>
+            <column name="resource_path" value="/instructor-applications"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor Earning Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-earning-001"/>
+            <column name="name" value="instructor_earning"/>
+            <column name="description" value="Instructor earnings management"/>
+            <column name="resource_path" value="/earnings"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Refund Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-refund-001"/>
+            <column name="name" value="refund"/>
+            <column name="description" value="Payment refund management"/>
+            <column name="resource_path" value="/refunds"/>
+            <column name="parent_resource_id" value="res-payment-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Content Management Resources -->
+        
+        <!-- Video Content Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-video-content-001"/>
+            <column name="name" value="video_content"/>
+            <column name="description" value="Video content management"/>
+            <column name="resource_path" value="/video-contents"/>
+            <column name="parent_resource_id" value="res-lesson-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Lesson Type Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-lesson-type-001"/>
+            <column name="name" value="lesson_type"/>
+            <column name="description" value="Lesson type management"/>
+            <column name="resource_path" value="/lesson-types"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Learning Progress Resources -->
+        
+        <!-- Lesson Completion Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-lesson-completion-001"/>
+            <column name="name" value="lesson_completion"/>
+            <column name="description" value="Student lesson completion tracking"/>
+            <column name="resource_path" value="/lesson-completions"/>
+            <column name="parent_resource_id" value="res-lesson-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Quiz Question Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-quiz-question-001"/>
+            <column name="name" value="quiz_question"/>
+            <column name="description" value="Quiz questions management"/>
+            <column name="resource_path" value="/quiz-questions"/>
+            <column name="parent_resource_id" value="res-lesson-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Quiz Result Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-quiz-result-001"/>
+            <column name="name" value="quiz_result"/>
+            <column name="description" value="Student quiz results"/>
+            <column name="resource_path" value="/quiz-results"/>
+            <column name="parent_resource_id" value="res-quiz-question-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Security & Authentication Resources -->
+        
+        <!-- Refresh Token Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-refresh-token-001"/>
+            <column name="name" value="refresh_token"/>
+            <column name="description" value="Authentication refresh token management"/>
+            <column name="resource_path" value="/auth/refresh-tokens"/>
+            <column name="parent_resource_id" value="res-user-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Password Reset Token Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-password-reset-token-001"/>
+            <column name="name" value="password_reset_token"/>
+            <column name="description" value="Password reset token management"/>
+            <column name="resource_path" value="/auth/password-reset-tokens"/>
+            <column name="parent_resource_id" value="res-user-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- System Management Resources -->
+        
+        <!-- System Log Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-system-log-001"/>
+            <column name="name" value="system_log"/>
+            <column name="description" value="System logging and monitoring"/>
+            <column name="resource_path" value="/system-logs"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Course Review Status Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-course-review-status-001"/>
+            <column name="name" value="course_review_status"/>
+            <column name="description" value="Course review status management"/>
+            <column name="resource_path" value="/course-review-statuses"/>
+            <column name="parent_resource_id" value="res-course-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Course Review Status History Resource -->
+        <insert tableName="resources">
+            <column name="id" value="res-course-review-status-history-001"/>
+            <column name="name" value="course_review_status_history"/>
+            <column name="description" value="Course review status change history"/>
+            <column name="resource_path" value="/course-review-status-history"/>
+            <column name="parent_resource_id" value="res-course-review-status-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Permission System Resources (Meta) -->
+        
+        <!-- Resource Resource (Meta) -->
+        <insert tableName="resources">
+            <column name="id" value="res-resource-001"/>
+            <column name="name" value="resource"/>
+            <column name="description" value="Permission system resources management"/>
+            <column name="resource_path" value="/resources"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Action Resource (Meta) -->
+        <insert tableName="resources">
+            <column name="id" value="res-action-001"/>
+            <column name="name" value="action"/>
+            <column name="description" value="Permission system actions management"/>
+            <column name="resource_path" value="/actions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Permission Resource (Meta) -->
+        <insert tableName="resources">
+            <column name="id" value="res-permission-001"/>
+            <column name="name" value="permission"/>
+            <column name="description" value="Permission system permissions management"/>
+            <column name="resource_path" value="/permissions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Role Permission Resource (Meta) -->
+        <insert tableName="resources">
+            <column name="id" value="res-role-permission-001"/>
+            <column name="name" value="role_permission"/>
+            <column name="description" value="Role-permission mappings management"/>
+            <column name="resource_path" value="/role-permissions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- User Role Resource (Meta) -->
+        <insert tableName="resources">
+            <column name="id" value="res-user-role-001"/>
+            <column name="name" value="user_role"/>
+            <column name="description" value="User role management"/>
+            <column name="resource_path" value="/user-roles"/>
+            <column name="parent_resource_id" value="res-user-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+
+    </changeSet>
+
+    <!-- Seed Actions Data -->
+    <changeSet id="136-2" author="system">
+        
+        <!-- CRUD Actions -->
+        <insert tableName="actions">
+            <column name="id" value="act-create-001"/>
+            <column name="name" value="CREATE"/>
+            <column name="description" value="Create new records"/>
+            <column name="action_type" value="CRUD"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="actions">
+            <column name="id" value="act-read-001"/>
+            <column name="name" value="READ"/>
+            <column name="description" value="Read and view records"/>
+            <column name="action_type" value="CRUD"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="actions">
+            <column name="id" value="act-update-001"/>
+            <column name="name" value="UPDATE"/>
+            <column name="description" value="Update existing records"/>
+            <column name="action_type" value="CRUD"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="actions">
+            <column name="id" value="act-delete-001"/>
+            <column name="name" value="DELETE"/>
+            <column name="description" value="Delete records"/>
+            <column name="action_type" value="CRUD"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Business Actions -->
+        <insert tableName="actions">
+            <column name="id" value="act-approve-001"/>
+            <column name="name" value="APPROVE"/>
+            <column name="description" value="Approve content or applications"/>
+            <column name="action_type" value="BUSINESS"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="actions">
+            <column name="id" value="act-publish-001"/>
+            <column name="name" value="PUBLISH"/>
+            <column name="description" value="Publish courses or content"/>
+            <column name="action_type" value="BUSINESS"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="actions">
+            <column name="id" value="act-enroll-001"/>
+            <column name="name" value="ENROLL"/>
+            <column name="description" value="Enroll in courses"/>
+            <column name="action_type" value="BUSINESS"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="actions">
+            <column name="id" value="act-grade-001"/>
+            <column name="name" value="GRADE"/>
+            <column name="description" value="Grade student work"/>
+            <column name="action_type" value="BUSINESS"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+    <!-- Seed Permissions Data -->
+    <changeSet id="136-3" author="system">
+        
+        <!-- Course Permissions -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-course-create-001"/>
+            <column name="resource_id" value="res-course-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="course:CREATE"/>
+            <column name="description" value="Permission to create new courses"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-course-read-001"/>
+            <column name="resource_id" value="res-course-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="course:READ"/>
+            <column name="description" value="Permission to view courses"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-course-update-001"/>
+            <column name="resource_id" value="res-course-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="course:UPDATE"/>
+            <column name="description" value="Permission to update courses"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-course-delete-001"/>
+            <column name="resource_id" value="res-course-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="course:DELETE"/>
+            <column name="description" value="Permission to delete courses"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-course-publish-001"/>
+            <column name="resource_id" value="res-course-001"/>
+            <column name="action_id" value="act-publish-001"/>
+            <column name="permission_key" value="course:PUBLISH"/>
+            <column name="description" value="Permission to publish courses"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Lesson Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-create-001"/>
+            <column name="resource_id" value="res-lesson-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="lesson:CREATE"/>
+            <column name="description" value="Permission to create lessons"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-read-001"/>
+            <column name="resource_id" value="res-lesson-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="lesson:READ"/>
+            <column name="description" value="Permission to view lessons"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-update-001"/>
+            <column name="resource_id" value="res-lesson-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="lesson:UPDATE"/>
+            <column name="description" value="Permission to update lessons"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-delete-001"/>
+            <column name="resource_id" value="res-lesson-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="lesson:DELETE"/>
+            <column name="description" value="Permission to delete lessons"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Review Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-review-create-001"/>
+            <column name="resource_id" value="res-review-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="review:CREATE"/>
+            <column name="description" value="Permission to create reviews"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-review-read-001"/>
+            <column name="resource_id" value="res-review-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="review:READ"/>
+            <column name="description" value="Permission to view reviews"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-review-update-001"/>
+            <column name="resource_id" value="res-review-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="review:UPDATE"/>
+            <column name="description" value="Permission to update reviews"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-review-delete-001"/>
+            <column name="resource_id" value="res-review-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="review:DELETE"/>
+            <column name="description" value="Permission to delete reviews"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Payment Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-payment-create-001"/>
+            <column name="resource_id" value="res-payment-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="payment:CREATE"/>
+            <column name="description" value="Permission to create payments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-payment-read-001"/>
+            <column name="resource_id" value="res-payment-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="payment:READ"/>
+            <column name="description" value="Permission to view payments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-payment-update-001"/>
+            <column name="resource_id" value="res-payment-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="payment:UPDATE"/>
+            <column name="description" value="Permission to update payments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-payment-delete-001"/>
+            <column name="resource_id" value="res-payment-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="payment:DELETE"/>
+            <column name="description" value="Permission to delete payments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Enrollment Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-enrollment-create-001"/>
+            <column name="resource_id" value="res-enrollment-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="enrollment:CREATE"/>
+            <column name="description" value="Permission to create enrollments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-enrollment-read-001"/>
+            <column name="resource_id" value="res-enrollment-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="enrollment:READ"/>
+            <column name="description" value="Permission to view enrollments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-enrollment-update-001"/>
+            <column name="resource_id" value="res-enrollment-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="enrollment:UPDATE"/>
+            <column name="description" value="Permission to update enrollments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-enrollment-delete-001"/>
+            <column name="resource_id" value="res-enrollment-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="enrollment:DELETE"/>
+            <column name="description" value="Permission to delete enrollments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-enrollment-enroll-001"/>
+            <column name="resource_id" value="res-enrollment-001"/>
+            <column name="action_id" value="act-enroll-001"/>
+            <column name="permission_key" value="enrollment:ENROLL"/>
+            <column name="description" value="Permission to enroll in courses"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- User Management Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-user-create-001"/>
+            <column name="resource_id" value="res-user-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="user:CREATE"/>
+            <column name="description" value="Permission to create users"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-user-read-001"/>
+            <column name="resource_id" value="res-user-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="user:READ"/>
+            <column name="description" value="Permission to view users"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-user-update-001"/>
+            <column name="resource_id" value="res-user-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="user:UPDATE"/>
+            <column name="description" value="Permission to update users"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-user-delete-001"/>
+            <column name="resource_id" value="res-user-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="user:DELETE"/>
+            <column name="description" value="Permission to delete users"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+    <!-- Additional Resources CRUD Permissions -->
+    <changeSet id="136-4" author="system">
+        
+        <!-- Section Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-section-create-001"/>
+            <column name="resource_id" value="res-section-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="section:CREATE"/>
+            <column name="description" value="Permission to create sections"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-section-read-001"/>
+            <column name="resource_id" value="res-section-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="section:READ"/>
+            <column name="description" value="Permission to view sections"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-section-update-001"/>
+            <column name="resource_id" value="res-section-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="section:UPDATE"/>
+            <column name="description" value="Permission to update sections"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-section-delete-001"/>
+            <column name="resource_id" value="res-section-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="section:DELETE"/>
+            <column name="description" value="Permission to delete sections"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Category Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-category-create-001"/>
+            <column name="resource_id" value="res-category-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="category:CREATE"/>
+            <column name="description" value="Permission to create categories"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-category-read-001"/>
+            <column name="resource_id" value="res-category-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="category:READ"/>
+            <column name="description" value="Permission to view categories"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-category-update-001"/>
+            <column name="resource_id" value="res-category-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="category:UPDATE"/>
+            <column name="description" value="Permission to update categories"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-category-delete-001"/>
+            <column name="resource_id" value="res-category-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="category:DELETE"/>
+            <column name="description" value="Permission to delete categories"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Comment Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-comment-create-001"/>
+            <column name="resource_id" value="res-comment-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="comment:CREATE"/>
+            <column name="description" value="Permission to create comments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-comment-read-001"/>
+            <column name="resource_id" value="res-comment-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="comment:READ"/>
+            <column name="description" value="Permission to view comments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-comment-update-001"/>
+            <column name="resource_id" value="res-comment-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="comment:UPDATE"/>
+            <column name="description" value="Permission to update comments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-comment-delete-001"/>
+            <column name="resource_id" value="res-comment-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="comment:DELETE"/>
+            <column name="description" value="Permission to delete comments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor Application Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-instructor-app-create-001"/>
+            <column name="resource_id" value="res-instructor-application-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="instructor_application:CREATE"/>
+            <column name="description" value="Permission to create instructor applications"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-instructor-app-read-001"/>
+            <column name="resource_id" value="res-instructor-application-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="instructor_application:READ"/>
+            <column name="description" value="Permission to view instructor applications"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-instructor-app-update-001"/>
+            <column name="resource_id" value="res-instructor-application-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="instructor_application:UPDATE"/>
+            <column name="description" value="Permission to update instructor applications"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-instructor-app-delete-001"/>
+            <column name="resource_id" value="res-instructor-application-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="instructor_application:DELETE"/>
+            <column name="description" value="Permission to delete instructor applications"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-instructor-app-approve-001"/>
+            <column name="resource_id" value="res-instructor-application-001"/>
+            <column name="action_id" value="act-approve-001"/>
+            <column name="permission_key" value="instructor_application:APPROVE"/>
+            <column name="description" value="Permission to approve instructor applications"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor Earning Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-earn-create-001"/>
+            <column name="resource_id" value="res-earning-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="instructor_earning:CREATE"/>
+            <column name="description" value="Permission to create instructor earnings"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-earn-read-001"/>
+            <column name="resource_id" value="res-earning-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="instructor_earning:READ"/>
+            <column name="description" value="Permission to view instructor earnings"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-earn-update-001"/>
+            <column name="resource_id" value="res-earning-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="instructor_earning:UPDATE"/>
+            <column name="description" value="Permission to update instructor earnings"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-earn-delete-001"/>
+            <column name="resource_id" value="res-earning-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="instructor_earning:DELETE"/>
+            <column name="description" value="Permission to delete instructor earnings"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Refund Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-refund-create-001"/>
+            <column name="resource_id" value="res-refund-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="refund:CREATE"/>
+            <column name="description" value="Permission to create refunds"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-refund-read-001"/>
+            <column name="resource_id" value="res-refund-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="refund:READ"/>
+            <column name="description" value="Permission to view refunds"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-refund-update-001"/>
+            <column name="resource_id" value="res-refund-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="refund:UPDATE"/>
+            <column name="description" value="Permission to update refunds"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-refund-delete-001"/>
+            <column name="resource_id" value="res-refund-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="refund:DELETE"/>
+            <column name="description" value="Permission to delete refunds"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+    <!-- Video Content and Learning Resources -->
+    <changeSet id="136-5" author="system">
+
+        <!-- Video Content Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-video-content-create-001"/>
+            <column name="resource_id" value="res-video-content-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="video_content:CREATE"/>
+            <column name="description" value="Permission to create video content"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-video-content-read-001"/>
+            <column name="resource_id" value="res-video-content-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="video_content:READ"/>
+            <column name="description" value="Permission to view video content"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-video-content-update-001"/>
+            <column name="resource_id" value="res-video-content-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="video_content:UPDATE"/>
+            <column name="description" value="Permission to update video content"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-video-content-delete-001"/>
+            <column name="resource_id" value="res-video-content-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="video_content:DELETE"/>
+            <column name="description" value="Permission to delete video content"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Lesson Type Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-type-create-001"/>
+            <column name="resource_id" value="res-lesson-type-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="lesson_type:CREATE"/>
+            <column name="description" value="Permission to create lesson types"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-type-read-001"/>
+            <column name="resource_id" value="res-lesson-type-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="lesson_type:READ"/>
+            <column name="description" value="Permission to view lesson types"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-type-update-001"/>
+            <column name="resource_id" value="res-lesson-type-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="lesson_type:UPDATE"/>
+            <column name="description" value="Permission to update lesson types"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-type-delete-001"/>
+            <column name="resource_id" value="res-lesson-type-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="lesson_type:DELETE"/>
+            <column name="description" value="Permission to delete lesson types"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Quiz Question Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-quiz-question-create-001"/>
+            <column name="resource_id" value="res-quiz-question-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="quiz_question:CREATE"/>
+            <column name="description" value="Permission to create quiz questions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-quiz-question-read-001"/>
+            <column name="resource_id" value="res-quiz-question-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="quiz_question:READ"/>
+            <column name="description" value="Permission to view quiz questions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-quiz-question-update-001"/>
+            <column name="resource_id" value="res-quiz-question-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="quiz_question:UPDATE"/>
+            <column name="description" value="Permission to update quiz questions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-quiz-question-delete-001"/>
+            <column name="resource_id" value="res-quiz-question-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="quiz_question:DELETE"/>
+            <column name="description" value="Permission to delete quiz questions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Quiz Result Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-quiz-result-create-001"/>
+            <column name="resource_id" value="res-quiz-result-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="quiz_result:CREATE"/>
+            <column name="description" value="Permission to create quiz results"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-quiz-result-read-001"/>
+            <column name="resource_id" value="res-quiz-result-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="quiz_result:READ"/>
+            <column name="description" value="Permission to view quiz results"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-quiz-result-update-001"/>
+            <column name="resource_id" value="res-quiz-result-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="quiz_result:UPDATE"/>
+            <column name="description" value="Permission to update quiz results"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-quiz-result-delete-001"/>
+            <column name="resource_id" value="res-quiz-result-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="quiz_result:DELETE"/>
+            <column name="description" value="Permission to delete quiz results"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Lesson Completion Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-completion-create-001"/>
+            <column name="resource_id" value="res-lesson-completion-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="lesson_completion:CREATE"/>
+            <column name="description" value="Permission to create lesson completions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-completion-read-001"/>
+            <column name="resource_id" value="res-lesson-completion-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="lesson_completion:READ"/>
+            <column name="description" value="Permission to view lesson completions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-completion-update-001"/>
+            <column name="resource_id" value="res-lesson-completion-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="lesson_completion:UPDATE"/>
+            <column name="description" value="Permission to update lesson completions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-lesson-completion-delete-001"/>
+            <column name="resource_id" value="res-lesson-completion-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="lesson_completion:DELETE"/>
+            <column name="description" value="Permission to delete lesson completions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+    <!-- System Management Resources -->
+    <changeSet id="136-6" author="system">
+
+        <!-- System Log Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-system-log-create-001"/>
+            <column name="resource_id" value="res-system-log-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="system_log:CREATE"/>
+            <column name="description" value="Permission to create system logs"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-system-log-read-001"/>
+            <column name="resource_id" value="res-system-log-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="system_log:READ"/>
+            <column name="description" value="Permission to view system logs"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Refresh Token Permissions - Complete CRUD -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-refresh-token-create-001"/>
+            <column name="resource_id" value="res-refresh-token-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="refresh_token:CREATE"/>
+            <column name="description" value="Permission to create refresh tokens"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-refresh-token-read-001"/>
+            <column name="resource_id" value="res-refresh-token-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="refresh_token:READ"/>
+            <column name="description" value="Permission to view refresh tokens"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-refresh-token-delete-001"/>
+            <column name="resource_id" value="res-refresh-token-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="refresh_token:DELETE"/>
+            <column name="description" value="Permission to delete refresh tokens"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        
+        <insert tableName="permissions">
+            <column name="id" value="perm-refresh-token-update-001"/>
+            <column name="resource_id" value="res-refresh-token-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="refresh_token:UPDATE"/>
+            <column name="description" value="Permission to update refresh tokens"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Permission System Meta Permissions -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-permission-create-001"/>
+            <column name="resource_id" value="res-permission-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="permission_key" value="permission:CREATE"/>
+            <column name="description" value="Permission to create permissions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-permission-read-001"/>
+            <column name="resource_id" value="res-permission-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="permission_key" value="permission:READ"/>
+            <column name="description" value="Permission to view permissions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-permission-update-001"/>
+            <column name="resource_id" value="res-permission-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="permission_key" value="permission:UPDATE"/>
+            <column name="description" value="Permission to update permissions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="permissions">
+            <column name="id" value="perm-permission-delete-001"/>
+            <column name="resource_id" value="res-permission-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="permission_key" value="permission:DELETE"/>
+            <column name="description" value="Permission to delete permissions"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+    <!-- Need to wait for UserRole data to exist first -->
+    <!-- Role Permissions will be added after UserRole table is properly seeded -->
+    
+</databaseChangeLog>

@@ -117,6 +117,7 @@ public class InstructorLessonServiceImp implements LessonService {
         return SectionWithLessonsDto.builder()
                 .id(section.getId())
                 .title(section.getTitle())
+                .description(section.getDescription())
                 .orderIndex(section.getOrderIndex())
                 .lessonCount(lessonDtos.size())
                 .lessons(lessonDtos)
@@ -192,10 +193,10 @@ public class InstructorLessonServiceImp implements LessonService {
 
     private QuizQuestionDto convertToQuizQuestionDto(QuizQuestion question) {
         // Parse options from JSON string
-        List<String> options = new ArrayList<>();
+        Map<String, String> options = new HashMap<>();
         try {
             if (question.getOptions() != null && !question.getOptions().isEmpty()) {
-                options = objectMapper.readValue(question.getOptions(), new TypeReference<List<String>>() {
+                options = objectMapper.readValue(question.getOptions(), new TypeReference<Map<String, String>>() {
                 });
             }
         } catch (Exception e) {

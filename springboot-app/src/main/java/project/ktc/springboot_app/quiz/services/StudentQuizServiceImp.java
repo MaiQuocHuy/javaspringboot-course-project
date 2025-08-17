@@ -31,6 +31,7 @@ import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -153,7 +154,7 @@ public class StudentQuizServiceImp implements StudentQuizService {
         private QuizScoreDetailResponseDto.QuestionDetail mapToQuestionDetail(QuizQuestion question,
                         Map<String, String> studentAnswers) {
                 // Parse options from JSON
-                List<String> options = parseQuestionOptions(question.getOptions());
+                Map<String, String> options = parseQuestionOptionsAsMap(question.getOptions());
 
                 // Get student answer for this question
                 String studentAnswer = studentAnswers.get(question.getId());
@@ -178,30 +179,14 @@ public class StudentQuizServiceImp implements StudentQuizService {
                                 .build();
         }
 
-        private List<String> parseQuestionOptions(String optionsJson) {
+        private Map<String, String> parseQuestionOptionsAsMap(String optionsJson) {
                 try {
-                        // First try to parse as array (current data format)
-                        try {
-                                List<String> optionsList = objectMapper.readValue(optionsJson,
-                                                new TypeReference<List<String>>() {
-                                                });
-                                return optionsList;
-                        } catch (JsonProcessingException arrayException) {
-                                // If array parsing fails, try as Map<String, String> (expected format)
-                                Map<String, String> optionsMap = objectMapper.readValue(optionsJson,
-                                                new TypeReference<Map<String, String>>() {
-                                                });
-
-                                // Convert to List<String> in format "A. option text"
-                                return optionsMap.entrySet().stream()
-                                                .sorted(Map.Entry.comparingByKey()) // Sort by key (A, B, C, D)
-                                                .map(entry -> entry.getKey() + ". " + entry.getValue())
-                                                .collect(Collectors.toList());
-                        }
-
+                        // Try to parse as Map<String, String> (current format)
+                        return objectMapper.readValue(optionsJson, new TypeReference<Map<String, String>>() {
+                        });
                 } catch (JsonProcessingException e) {
-                        log.warn("Failed to parse question options: {}", optionsJson, e);
-                        return new ArrayList<>();
+                        log.warn("Failed to parse question options as Map: {}", optionsJson, e);
+                        return new HashMap<>();
                 }
         }
 

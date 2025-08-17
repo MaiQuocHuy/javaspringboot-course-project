@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -12,7 +12,7 @@
             <column name="id" value="question-011-001"/>
             <column name="lesson_id" value="lesson-020"/>
             <column name="question_text" value="What is React primarily used for?"/>
-            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="options" value='{"A": "Database management", "B": "Building user interfaces", "C": "Server-side development", "D": "Machine learning"}'/>
             <column name="correct_answer" value="B"/>
             <column name="explanation" value="React is a JavaScript library primarily used for building user interfaces, especially for web applications."/>
             <column name="created_at" valueComputed="NOW()"/>
@@ -23,7 +23,7 @@
             <column name="id" value="question-011-002"/>
             <column name="lesson_id" value="lesson-020"/>
             <column name="question_text" value="What is JavaScript primarily used for?"/>
-            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="options" value='{"A": "Database management", "B": "Building user interfaces", "C": "Server-side development", "D": "Machine learning"}'/>
             <column name="correct_answer" value="B"/>
             <column name="explanation" value="JavaScript is a versatile programming language primarily used for building interactive web applications."/>
             <column name="created_at" valueComputed="NOW()"/>
@@ -34,7 +34,7 @@
             <column name="id" value="question-011-003"/>
             <column name="lesson_id" value="lesson-020"/>
             <column name="question_text" value="What is Oracle primarily used for?"/>
-            <column name="options" value='["A. Database management", "B. Building user interfaces", "C. Server-side development", "D. Machine learning"]'/>
+            <column name="options" value='{"A": "Database management", "B": "Building user interfaces", "C": "Server-side development", "D": "Machine learning"}'/>
             <column name="correct_answer" value="A"/>
             <column name="explanation" value="Oracle is primarily used for database management and enterprise applications."/>
             <column name="created_at" valueComputed="NOW()"/>
@@ -55,3 +55,4 @@
         </insert>
     </changeSet>
 </databaseChangeLog>
+

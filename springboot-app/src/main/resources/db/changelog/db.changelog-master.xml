@@ -72,4 +72,12 @@
     <!-- Nested Set Model Comments System (production-ready) -->
     <include file="db/changelog/changes/133-create-nested-comments-table.xml"/>
     <include file="db/changelog/changes/134-seed-nested-comments.xml"/>
+
+    <!-- Permission System for Role-Based Access Control -->
+    <include file="db/changelog/changes/135-add-permission-system.xml"/>
+    <include file="db/changelog/changes/136-seed-permission-system.xml"/>
+    <include file="db/changelog/changes/137-seed-role-permissions.xml"/>
+    <!-- <include file="db/changelog/changes/139-fix-role-permissions-id-length.xml"/>
+    <include file="db/changelog/changes/138-clear-role-permissions.xml"/> -->
+    <!-- <include file="db/changelog/changes/138-update-all-resources.xml"/> -->
 </databaseChangeLog>
