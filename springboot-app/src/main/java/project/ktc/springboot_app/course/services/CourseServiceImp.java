@@ -749,12 +749,12 @@ public class CourseServiceImp implements CourseService {
 
         private QuizQuestionDto mapToQuizQuestionDto(QuizQuestion question) {
                 // Parse options from JSON string
-                List<String> options = null;
+                Map<String, String> options = null;
                 try {
                         if (question.getOptions() != null) {
                                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                                 options = mapper.readValue(question.getOptions(),
-                                                new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {
+                                                new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {
                                                 });
                         }
                 } catch (Exception e) {

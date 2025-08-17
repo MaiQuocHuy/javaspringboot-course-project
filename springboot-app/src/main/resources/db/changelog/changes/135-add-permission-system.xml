@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Resources Table -->
+    <changeSet id="135-1" author="ktc">
+        <createTable tableName="resources">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="resource_path" type="VARCHAR(255)"/>
+            <column name="parent_resource_id" type="VARCHAR(36)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add foreign key for parent resource -->
+        <addForeignKeyConstraint
+                baseTableName="resources"
+                baseColumnNames="parent_resource_id"
+                constraintName="fk_resources_parent"
+                referencedTableName="resources"
+                referencedColumnNames="id"/>
+
+        <!-- Add index for resource path -->
+        <createIndex tableName="resources" indexName="idx_resources_path">
+            <column name="resource_path"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Actions Table -->
+    <changeSet id="135-2" author="system">
+        <createTable tableName="actions">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="action_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add index for action type -->
+        <createIndex tableName="actions" indexName="idx_actions_type">
+            <column name="action_type"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Permissions Table -->
+    <changeSet id="135-3" author="system">
+        <createTable tableName="permissions">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="resource_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permission_key" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add foreign keys -->
+        <addForeignKeyConstraint
+                baseTableName="permissions"
+                baseColumnNames="resource_id"
+                constraintName="fk_permissions_resource"
+                referencedTableName="resources"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="permissions"
+                baseColumnNames="action_id"
+                constraintName="fk_permissions_action"
+                referencedTableName="actions"
+                referencedColumnNames="id"/>
+
+        <!-- Add unique constraint for resource-action combination -->
+        <addUniqueConstraint
+                tableName="permissions"
+                columnNames="resource_id,action_id"
+                constraintName="unique_resource_action"/>
+
+        <!-- Add index for permission key -->
+        <createIndex tableName="permissions" indexName="idx_permissions_key">
+            <column name="permission_key"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Role Permissions Table -->
+    <changeSet id="135-4" author="system">
+        <createTable tableName="role_permissions">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="role_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permission_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="granted_by" type="VARCHAR(36)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add foreign keys -->
+        <addForeignKeyConstraint
+                baseTableName="role_permissions"
+                baseColumnNames="role_id"
+                constraintName="fk_role_permissions_role"
+                referencedTableName="user_roles"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="role_permissions"
+                baseColumnNames="permission_id"
+                constraintName="fk_role_permissions_permission"
+                referencedTableName="permissions"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="role_permissions"
+                baseColumnNames="granted_by"
+                constraintName="fk_role_permissions_granter"
+                referencedTableName="users"
+                referencedColumnNames="id"/>
+
+        <!-- Add unique constraint for role-permission combination -->
+        <addUniqueConstraint
+                tableName="role_permissions"
+                columnNames="role_id,permission_id"
+                constraintName="unique_role_permission"/>
+
+        <!-- Add indexes for better performance -->
+        <createIndex tableName="role_permissions" indexName="idx_role_permissions_role">
+            <column name="role_id"/>
+        </createIndex>
+
+        <createIndex tableName="role_permissions" indexName="idx_role_permissions_permission">
+            <column name="permission_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

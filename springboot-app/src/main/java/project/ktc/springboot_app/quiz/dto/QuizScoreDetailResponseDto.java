@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -59,7 +60,7 @@ public class QuizScoreDetailResponseDto {
     public static class QuestionDetail {
         private String id;
         private String questionText;
-        private List<String> options;
+        private Map<String, String> options;
         private String studentAnswer;
         private String correctAnswer;
         private Boolean isCorrect;

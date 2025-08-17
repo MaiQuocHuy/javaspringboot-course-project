@@ -1,0 +1,1078 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- First, get UserRole IDs by checking existing data -->
+    <!-- We need to create role-permission mappings for STUDENT, INSTRUCTOR, and ADMIN roles -->
+
+    <changeSet id="137-1-v2" author="system">
+        
+        <!-- STUDENT Role Permissions -->
+        <!-- Students can read courses, lessons, enroll, create reviews, complete lessons, take quizzes -->
+        
+        <!-- Get STUDENT role ID first -->
+        <sql>
+            SET @student_role_id = (SELECT id FROM user_roles WHERE role = 'STUDENT' LIMIT 1);
+        </sql>
+
+        <!-- Student: Read courses -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-course-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-course-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read lessons -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-lesson-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-lesson-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Enroll in courses -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-enrollment-create-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-enrollment-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read own enrollments -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-enrollment-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-enrollment-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Use enrollment functionality -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-enrollment-enroll-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-enrollment-enroll-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Create reviews -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-review-create-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-review-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read reviews -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-review-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-review-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Update own reviews -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-review-update-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-review-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Delete own reviews -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-review-delete-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-review-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Make payments -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-payment-create-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-payment-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read own payments -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-payment-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-payment-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Update own profile -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-user-update-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-user-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read own profile -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-user-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-user-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read sections -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-section-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-section-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read categories -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-category-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-category-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Create lesson completion -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-lesson-completion-create-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-lesson-completion-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read lesson completion -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-lesson-completion-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-lesson-completion-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Update lesson completion -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-lesson-completion-update-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-lesson-completion-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read quiz questions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-quiz-question-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-quiz-question-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Create quiz results -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-quiz-result-create-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-quiz-result-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read quiz results -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-quiz-result-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-quiz-result-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Update quiz results -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-quiz-result-update-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-quiz-result-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read video content -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-video-content-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-video-content-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Create instructor applications -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-instructor-app-create-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-instructor-app-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read own instructor applications -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-instructor-app-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-instructor-app-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Update own instructor applications -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-instructor-app-update-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-instructor-app-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Create refund requests -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-refund-create-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-refund-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Student: Read own refund requests -->
+        <insert tableName="role_permissions">
+            <column name="id" value="student-refund-read-001"/>
+            <column name="role_id" valueComputed="@student_role_id"/>
+            <column name="permission_id" value="perm-refund-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+    <changeSet id="137-2-v2" author="system">
+        
+        <!-- INSTRUCTOR Role Permissions -->
+        <!-- Instructors can manage their own courses, lessons, sections, view 
+        ings, applications -->
+        
+        <!-- Get INSTRUCTOR role ID -->
+        <sql>
+            SET @instructor_role_id = (SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1);
+        </sql>
+
+        <!-- Instructor: Full course management -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-course-create-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-course-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-course-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-course-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-course-update-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-course-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-course-delete-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-course-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-course-publish-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-course-publish-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Full lesson management -->
+        <insert tableName="role_permissions">
+            <column name="id" value="lesson-create-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-lesson-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="lesson-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-lesson-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="lesson-update-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-lesson-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="lesson-delete-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-lesson-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Full section management -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-section-create-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-section-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-section-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-section-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-section-update-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-section-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-section-delete-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-section-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Read enrollments for their courses -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-enrollment-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-enrollment-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Read reviews for their courses -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-review-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-review-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Read their own payments/earnings -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-payment-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-payment-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Manage instructor earnings -->
+        <insert tableName="role_permissions">
+            <column name="id" value="earn-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-earn-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="earn-update-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-earn-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Update own profile -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-user-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-user-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-user-update-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-user-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Read categories -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-category-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-category-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Manage video content -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-video-content-create-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-video-content-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-video-content-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-video-content-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-video-content-update-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-video-content-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-video-content-delete-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-video-content-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Manage quiz questions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-quiz-question-create-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-quiz-question-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-quiz-question-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-quiz-question-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-quiz-question-update-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-quiz-question-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-quiz-question-delete-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-quiz-question-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Read quiz results for their courses -->
+        <insert tableName="role_permissions">
+            <column name="id" value="instructor-quiz-result-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-quiz-result-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Read lesson completion for their courses -->
+        <insert tableName="role_permissions">
+            <column name="id" value="lesson-completion-read-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-lesson-completion-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Instructor: Mark their own lessons as complete -->
+        <insert tableName="role_permissions">
+            <column name="id" value="lesson-completion-create-001"/>
+            <column name="role_id" valueComputed="@instructor_role_id"/>
+            <column name="permission_id" value="perm-lesson-completion-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+    <changeSet id="137-3-v2" author="system">
+        
+        <!-- ADMIN Role Permissions -->
+        <!-- Admins have full access to all resources and system management -->
+        
+        <!-- Get ADMIN role ID -->
+        <sql>
+            SET @admin_role_id = (SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1);
+        </sql>
+
+        <!-- Admin: Full course permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-course-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-course-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-course-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-course-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-course-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-course-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-course-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-course-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-course-publish-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-course-publish-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full lesson permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full enrollment permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-enrollment-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-enrollment-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-enrollment-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-enrollment-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-enrollment-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-enrollment-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-enrollment-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-enrollment-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-enrollment-enroll-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-enrollment-enroll-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full user management permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-user-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-user-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-user-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-user-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-user-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-user-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-user-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-user-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full section permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-section-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-section-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-section-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-section-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-section-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-section-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-section-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-section-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full category permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-category-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-category-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-category-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-category-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-category-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-category-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-category-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-category-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full review permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-review-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-review-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-review-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-review-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-review-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-review-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-review-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-review-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full payment permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-payment-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-payment-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-payment-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-payment-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-payment-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-payment-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-payment-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-payment-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full instructor application permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-instructor-app-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-instructor-app-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-instructor-app-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-instructor-app-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-instructor-app-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-instructor-app-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-instructor-app-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-instructor-app-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-instructor-app-approve-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-instructor-app-approve-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full instructor earning permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-earn-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-earn-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-earn-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-earn-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-earn-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-earn-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-earn-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-earn-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full refund permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-refund-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-refund-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-refund-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-refund-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-refund-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-refund-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-refund-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-refund-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+    <!-- Additional changesets for more admin permissions -->
+    <changeSet id="137-4" author="system">
+        
+        <!-- Get ADMIN role ID -->
+        <sql>
+            SET @admin_role_id = (SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1);
+        </sql>
+
+        <!-- Admin: Full video content permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-video-content-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-video-content-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-video-content-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-video-content-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-video-content-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-video-content-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-video-content-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-video-content-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full lesson type permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-type-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-type-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-type-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-type-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-type-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-type-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-type-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-type-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full quiz question permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-quiz-question-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-quiz-question-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-quiz-question-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-quiz-question-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-quiz-question-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-quiz-question-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-quiz-question-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-quiz-question-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full quiz result permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-quiz-result-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-quiz-result-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-quiz-result-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-quiz-result-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-quiz-result-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-quiz-result-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-quiz-result-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-quiz-result-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Full lesson completion permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-completion-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-completion-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-completion-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-completion-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-completion-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-completion-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-lesson-completion-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-lesson-completion-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: System management permissions -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-system-log-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-system-log-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-system-log-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-system-log-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Refresh token management -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-refresh-token-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-refresh-token-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-refresh-token-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-refresh-token-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-refresh-token-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-refresh-token-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-refresh-token-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-refresh-token-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Admin: Permission system management -->
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-permission-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-permission-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-permission-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-permission-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-permission-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-permission-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_permissions">
+            <column name="id" value="admin-permission-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-permission-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

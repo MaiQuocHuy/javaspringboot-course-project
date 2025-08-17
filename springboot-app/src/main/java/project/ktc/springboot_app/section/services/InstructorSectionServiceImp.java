@@ -1,6 +1,7 @@
 package project.ktc.springboot_app.section.services;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +115,7 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
         return SectionWithLessonsDto.builder()
                 .id(section.getId())
                 .title(section.getTitle())
+                .description(section.getDescription())
                 .orderIndex(section.getOrderIndex())
                 .lessonCount(lessons.size())
                 .lessons(lessonDtos)
@@ -183,10 +185,10 @@ public class InstructorSectionServiceImp implements InstructorSectionService {
 
     private QuizQuestionDto convertToQuizQuestionDto(QuizQuestion question) {
         // Parse options from JSON string
-        List<String> options = new ArrayList<>();
+        Map<String, String> options = new HashMap<>();
         try {
             if (question.getOptions() != null) {
-                options = objectMapper.readValue(question.getOptions(), new TypeReference<List<String>>() {
+                options = objectMapper.readValue(question.getOptions(), new TypeReference<Map<String, String>>() {
                 });
             }
         } catch (Exception e) {

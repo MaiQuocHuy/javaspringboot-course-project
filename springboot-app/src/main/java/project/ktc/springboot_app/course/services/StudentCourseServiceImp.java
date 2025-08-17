@@ -179,10 +179,10 @@ public class StudentCourseServiceImp implements StudentCourseService {
     }
 
     private QuizQuestionDto mapToQuizQuestionDto(QuizQuestion question) {
-        // Parse JSON options string to List<String>
-        List<String> optionsList = Collections.emptyList();
+        // Parse JSON options string to Map<String, String>
+        Map<String, String> optionsMap = Collections.emptyMap();
         try {
-            optionsList = objectMapper.readValue(question.getOptions(), new TypeReference<List<String>>() {
+            optionsMap = objectMapper.readValue(question.getOptions(), new TypeReference<Map<String, String>>() {
             });
         } catch (Exception e) {
             log.warn("Failed to parse options JSON for question {}: {}", question.getId(), e.getMessage());
@@ -191,7 +191,7 @@ public class StudentCourseServiceImp implements StudentCourseService {
         return QuizQuestionDto.builder()
                 .id(question.getId())
                 .questionText(question.getQuestionText())
-                .options(optionsList)
+                .options(optionsMap)
                 .correctAnswer(question.getCorrectAnswer())
                 .explanation(question.getExplanation())
                 .build();
