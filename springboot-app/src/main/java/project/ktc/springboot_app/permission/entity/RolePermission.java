@@ -1,10 +1,12 @@
-package project.ktc.springboot_app.entity;
+package project.ktc.springboot_app.permission.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.entity.BaseEntity;
+import project.ktc.springboot_app.entity.UserRole;
 
 import java.time.LocalDateTime;
 
@@ -77,7 +79,7 @@ public class RolePermission extends BaseEntity {
      * Convenience method to check if this role-permission matches the given role
      * and permission
      */
-    public boolean matches(UserRole.RoleType roleType, String permissionKey) {
+    public boolean matches(String roleType, String permissionKey) {
         return role != null && permission != null &&
                 role.getRole().equals(roleType) &&
                 permission.getPermissionKey().equals(permissionKey) &&
@@ -87,7 +89,7 @@ public class RolePermission extends BaseEntity {
     /**
      * Convenience method to get role type
      */
-    public UserRole.RoleType getRoleType() {
+    public String getRoleType() {
         return role != null ? role.getRole() : null;
     }
 

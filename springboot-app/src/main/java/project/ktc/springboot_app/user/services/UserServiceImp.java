@@ -264,41 +264,27 @@ public class UserServiceImp implements UserService {
                 return ApiResponseUtil.notFound("User not found");
             }
 
-            // Validate the new role
-            UserRoleEnum roleEnum;
-            try {
-                roleEnum = UserRoleEnum.valueOf(role.getRole().toUpperCase());
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid role provided: {}", role.getRole());
-                return ApiResponseUtil.badRequest("Invalid role. Valid roles are: STUDENT, INSTRUCTOR, ADMIN");
-            }
-
             // Find or create the new role
-            UserRole.RoleType newRoleType = UserRole.RoleType.valueOf(roleEnum.name());
-            Optional<UserRole> newRoleOpt = userRoleRepository.findByRole(newRoleType);
-            UserRole newRole;
+            Optional<UserRole> newRoleOpt = userRoleRepository.findByRole(role.getRole().toUpperCase().trim());
+            UserRole newRole = null;
 
             if (newRoleOpt.isPresent()) {
                 newRole = newRoleOpt.get();
             } else {
-                newRole = UserRole.builder()
-                        .role(newRoleType)
-                        .build();
-                newRole = userRoleRepository.save(newRole);
+                return ApiResponseUtil.badRequest("Invalid role.");
+            }
+            // Update user's role reference
+            UserRole oldRole = user.getRole();
+            if (!oldRole.getId().equals(newRole.getId())) {
+                user.setRole(newRole);
+                userRepository.save(user);
+                log.info("User role updated: {} -> {} for user {}", oldRole.getRole(), newRole.getRole(), user.getId());
+            } else {
+                log.info("User role unchanged for user {}", user.getId());
             }
 
-            // Update user's role reference
-            // String oldRoleId = user.getRoleId();
-            // user.setRoleId(newRole.getId());
-            UserRole oldRole = user.getRole();
-            user.setRole(newRole);
-            User updatedUser = userRepository.save(user);
-
-            log.info("User role updated successfully from role ID {} to {} for user ID: {}",
-                    oldRole.getId(), newRole.getRole().name(), user.getId());
-
             // Prepare response
-            UserResponseDto userResponseDto = new UserResponseDto(updatedUser);
+            UserResponseDto userResponseDto = new UserResponseDto(user);
 
             return ApiResponseUtil.success(userResponseDto, "User role updated successfully");
         } catch (Exception e) {

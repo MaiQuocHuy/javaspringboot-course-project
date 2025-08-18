@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import project.ktc.springboot_app.entity.RolePermission;
 import project.ktc.springboot_app.entity.UserRole;
+import project.ktc.springboot_app.permission.entity.RolePermission;
 
 /**
  * Repository interface for RolePermission entity
@@ -40,7 +40,7 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
                         "WHERE role.role = :roleType " +
                         "AND rp.isActive = true " +
                         "AND p.isActive = true")
-        Set<String> findPermissionKeysByRoleType(@Param("roleType") UserRole.RoleType roleType);
+        Set<String> findPermissionKeysByRoleType(@Param("roleType") String roleType);
 
         /**
          * Find all role permissions for multiple roles
@@ -66,7 +66,7 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
                         "AND p.permissionKey = :permissionKey " +
                         "AND rp.isActive = true " +
                         "AND p.isActive = true")
-        boolean hasPermission(@Param("roleType") UserRole.RoleType roleType,
+        boolean hasPermission(@Param("roleType") String roleType,
                         @Param("permissionKey") String permissionKey);
 
         /**
@@ -78,7 +78,7 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
                         "WHERE role.role IN :roleTypes " +
                         "AND rp.isActive = true " +
                         "AND p.isActive = true")
-        Set<String> findPermissionKeysByRoleTypes(@Param("roleTypes") Set<UserRole.RoleType> roleTypes);
+        Set<String> findPermissionKeysByRoleTypes(@Param("roleTypes") Set<String> roleTypes);
 
         /**
          * Count active permissions for a role
@@ -99,4 +99,16 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
                         "WHERE rp.role = :role " +
                         "ORDER BY r.name, a.name")
         List<RolePermission> findAllByRole(@Param("role") UserRole role);
+
+        /**
+         * Find a specific role-permission combination by role and permission key
+         */
+        @Query("SELECT rp FROM RolePermission rp " +
+                        "JOIN FETCH rp.permission p " +
+                        "JOIN FETCH p.resource r " +
+                        "JOIN FETCH p.action a " +
+                        "WHERE rp.role = :role " +
+                        "AND p.permissionKey = :permissionKey")
+        java.util.Optional<RolePermission> findByRoleAndPermissionKey(@Param("role") UserRole role,
+                        @Param("permissionKey") String permissionKey);
 }

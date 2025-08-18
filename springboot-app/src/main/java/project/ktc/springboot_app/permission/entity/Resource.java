@@ -1,7 +1,9 @@
-package project.ktc.springboot_app.entity;
+package project.ktc.springboot_app.permission.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import project.ktc.springboot_app.entity.BaseEntity;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
