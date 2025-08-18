@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Set;
 
 import project.ktc.springboot_app.auth.entitiy.User;
-import project.ktc.springboot_app.entity.Permission;
-import project.ktc.springboot_app.entity.RolePermission;
 import project.ktc.springboot_app.entity.UserRole;
+import project.ktc.springboot_app.permission.entity.Permission;
+import project.ktc.springboot_app.permission.entity.RolePermission;
 
 /**
  * Service interface for managing permissions and authorization
@@ -28,7 +28,7 @@ public interface PermissionService {
      * @param roleType the user's role type
      * @return set of permission keys
      */
-    Set<String> loadUserPermissions(String userId, UserRole.RoleType roleType);
+    Set<String> loadUserPermissions(String userId, String roleType);
 
     /**
      * Check if a user has a specific permission
@@ -64,7 +64,7 @@ public interface PermissionService {
      * @param roleType the role type
      * @return set of permission keys
      */
-    Set<String> getPermissionsForRole(UserRole.RoleType roleType);
+    Set<String> getPermissionsForRole(String roleType);
 
     /**
      * Validate if a permission exists and is properly formatted
@@ -112,7 +112,7 @@ public interface PermissionService {
      * @param roleType the role type
      * @return set of permission keys for the role
      */
-    Set<String> getRolePermissions(UserRole.RoleType roleType);
+    Set<String> getRolePermissions(String roleType);
 
     /**
      * Check if role has specific permission
@@ -121,7 +121,7 @@ public interface PermissionService {
      * @param permissionKey the permission key
      * @return true if role has permission
      */
-    boolean hasRolePermission(UserRole.RoleType roleType, String permissionKey);
+    boolean hasRolePermission(String roleType, String permissionKey);
 
     /**
      * Get all permissions with resource and action details (for admin purposes)
@@ -139,4 +139,27 @@ public interface PermissionService {
      * @return list of permissions with role-specific details
      */
     List<RolePermission> getPermissionsByRole(String roleId);
+
+    /**
+     * Update permissions for a specific role (for admin purposes)
+     * This allows enabling/disabling permissions at the role_permission level
+     * 
+     * @param roleId  the role ID
+     * @param request the permission update request
+     * @return list of updated permissions
+     */
+    List<RolePermission> updatePermissionsForRole(String roleId,
+            project.ktc.springboot_app.permission.dto.PermissionUpdateRequest request);
+
+    /**
+     * Get hierarchical resource tree with permission assignments for a specific
+     * role
+     * This builds a tree structure showing which resources the role has permissions
+     * for
+     * (both directly assigned and inherited from parent resources)
+     * 
+     * @param roleId the role ID
+     * @return list of root resources with hierarchical structure
+     */
+    List<project.ktc.springboot_app.permission.dto.ResourceDto> getResourceTreeForRole(String roleId);
 }

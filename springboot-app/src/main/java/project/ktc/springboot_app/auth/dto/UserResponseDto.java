@@ -18,7 +18,7 @@ public class UserResponseDto {
     private String id;
     private String email;
     private String name;
-    private UserRoleEnum role; // Single role instead of list
+    private String role; // Single role instead of list
     private String thumbnailUrl; // URL to user profile picture
     private String thumbnailId; // ID of the thumbnail image
     private String bio; // Short biography or description
@@ -33,7 +33,7 @@ public class UserResponseDto {
         this.bio = user.getBio();
         this.isActive = user.getIsActive();
         if (user.getRole() != null && user.getRole().getRole() != null) {
-            this.role = UserRoleEnum.valueOf(user.getRole().getRole().name());
+            this.role = user.getRole().getRole().toUpperCase().trim();
         }
     }
 }

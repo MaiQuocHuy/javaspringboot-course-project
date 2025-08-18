@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import project.ktc.springboot_app.auth.entitiy.User;
-import project.ktc.springboot_app.permission.interfaces.PermissionService;
+import project.ktc.springboot_app.permission.services.PermissionServiceImp;
 
 /**
  * Custom permission evaluator for Spring Security
@@ -22,9 +22,9 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomPermissionEvaluator.class);
 
-    private final PermissionService permissionService;
+    private final PermissionServiceImp permissionService;
 
-    public CustomPermissionEvaluator(PermissionService permissionService) {
+    public CustomPermissionEvaluator(PermissionServiceImp permissionService) {
         this.permissionService = permissionService;
     }
 

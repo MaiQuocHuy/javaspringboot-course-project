@@ -17,14 +17,7 @@
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
-        <insert tableName="resources">
-            <column name="id" value="res-lesson-001"/>
-            <column name="name" value="lesson"/>
-            <column name="description" value="Lesson content and management"/>
-            <column name="resource_path" value="/lessons"/>
-            <column name="parent_resource_id" value="res-course-001"/>
-            <column name="is_active" valueBoolean="true"/>
-        </insert>
+       
 
         <insert tableName="resources">
             <column name="id" value="res-review-001"/>
@@ -65,6 +58,15 @@
             <column name="description" value="Course section management"/>
             <column name="resource_path" value="/sections"/>
             <column name="parent_resource_id" value="res-course-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+         <insert tableName="resources">
+            <column name="id" value="res-lesson-001"/>
+            <column name="name" value="lesson"/>
+            <column name="description" value="Lesson content and management"/>
+            <column name="resource_path" value="/lessons"/>
+            <column name="parent_resource_id" value="res-section-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 

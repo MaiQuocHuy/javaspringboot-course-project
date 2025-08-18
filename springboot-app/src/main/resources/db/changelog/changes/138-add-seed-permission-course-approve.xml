@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+        <changeSet id="138-1-v2" author="ktc">
+        <sql>
+            SET @admin_role_id = (SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1);
+        </sql>
+            <insert tableName="permissions">
+                <column name="id" value="perm-course-approve-001"/>
+                <column name="resource_id" value="res-course-review-status-001"/>
+                <column name="action_id" value="act-approve-001"/>
+                <column name="permission_key" value="course:APPROVE"/>
+                <column name="description" value="Permission to approve course reviews"/>
+                <column name="is_active" valueBoolean="true"/>
+            </insert>
+            <insert tableName="role_permissions">
+                <column name="id" value="admin-permission-approve-001"/>
+                <column name="role_id" valueComputed="@admin_role_id"/>
+                <column name="permission_id" value="perm-course-approve-001"/>
+                <column name="is_active" valueBoolean="true"/>
+            </insert>
+        </changeSet>
+</databaseChangeLog>

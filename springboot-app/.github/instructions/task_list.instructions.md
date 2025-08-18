@@ -3781,8 +3781,10 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
     - `roleId`: The ID of the role to retrieve permissions for
 
 ### Response
+
 #### ✅ Success (200 OK)
-```json
+
+````json
 {
   "statusCode": 200,
   "message": "Permissions retrieved successfully",
@@ -3814,7 +3816,8 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
     "message": "Forbidden - Admin role required",
     "data": null
   }
-```
+````
+
 - **Business Rules**
   - Only Admin users can call this API.
   - role_permission.is_active = false → role does not have the permission (disabled for this role).
@@ -3829,3 +3832,181 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - Ensure caller has ADMIN role.
   - Delegate to PermissionService.getPermissionsByRole(roleId).
   - Return mapped PermissionResponseDto
+
+### 7.3 `PATCH /api/roles/{roleId}/permissions`
+
+- **Description**: Updates the permissions assigned to a specific role. Only ADMIN users can perform this action.
+  This endpoint allows enabling or disabling permissions for a role at the role_permission level.
+- **Request**
+  - **Method:** `PATCH`
+  - **Path:** `/api/roles/{roleId}/permissions`
+  - **Headers:**
+    - `Authorization: Bearer <accessToken>`
+  - **Path Params:**
+    - `roleId`: The ID of the role to update permissions for
+  - **Body:**
+    ```json
+    {
+      "permissions": [
+        {
+          "key": "course:CREATE",
+          "isActive": true
+        },
+        {
+          "key": "course:DELETE",
+          "isActive": false
+        }
+      ]
+    }
+    ```
+- **Response**
+  - **Status Code:** `200 OK`
+  - **Body:**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Permissions updated successfully",
+      "data": {
+        "roleId": "123",
+        "updatedPermissions": [
+          { "key": "course:CREATE", "isActive": true },
+          { "key": "course:DELETE", "isActive": false }
+        ]
+      }
+    }
+    ```
+- **Error (403 Forbidden)**
+  ```json
+  {
+    "statusCode": 403,
+    "message": "Forbidden - Admin role required",
+    "data": null
+  }
+  ```
+- **Business Rules**
+- Only users with the ADMIN role can call this API.
+- role_permission.is_active = false → role does not currently have the permission.
+- permission.is_active = false → permission is disabled at system level (cannot be assigned to any role).
+- resource.is_active = false or action.is_active = false → permission is considered disabled globally.
+- The API must still return all role-permission mappings (both enabled and disabled).
+- Future enhancement: support query params ?page=&size=&activeOnly= for pagination and filtering.
+- **Controller**:
+  - Class: AdminPermissionController
+  - Responsibilities:
+    - Validate JWT from the Authorization header.
+    - Ensure caller has ADMIN role.
+    - Parse and validate the request body.
+    - Delegate to PermissionService.updatePermissionsForRole(roleId, request).
+    - Return a standardized PermissionResponseDto.
+- **Service**:
+  - Method: PermissionService.updatePermissionsForRole(Long roleId, PermissionUpdateRequest request)
+  - Responsibilities:
+    - Validate that the role exists.
+    - Validate that all provided permission keys exist and are system-active.
+    - Update role_permission entries (set is_active according to request).
+    - Return the updated list of permissions assigned to the role.
+
+### 7.4 `GET /api/roles/${roleId}/resources`
+
+- **Description**: Retrieves a hierarchical tree of resources with permissions for a specific role. Each node indicates whether the role has the permission directly (assigned) or inherits it from a parent resource (inherited). Only ADMIN users can call this API.
+- **Request**:
+  - Method: GET
+  - Path: /api/roles/{roleId}/resources
+  - Headers:
+    - Authorization: Bearer <accessToken>
+  - Path Params:
+    - roleId – ID of the role to retrieve resource-permission tree for
+- **Response**:
+  ```json
+  {
+    "statusCode": 200,
+    "message": "Resource tree retrieved successfully",
+    "data": [
+      {
+        "id": "course",
+        "key": "course",
+        "name": "Course",
+        "assigned": true,
+        "inherited": false,
+        "children": [
+          {
+            "id": "section",
+            "key": "section",
+            "name": "Section",
+            "assigned": false,
+            "inherited": true,
+            "children": [
+              {
+                "id": "lesson",
+                "key": "lesson",
+                "name": "Lesson",
+                "assigned": false,
+                "inherited": true,
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "timestamps": "2023-10-05T12:34:56Z"
+  }
+  ```
+  - assigned – Role has this permission directly assigned.
+  - inherited – Role inherits this permission from parent resource.
+  - children – List of child resources, recursively.
+- **Business Rules**:
+  - Only ADMIN users can access this endpoint.
+  - inherited permissions are not stored in DB; they are calculated dynamically.
+  - Only active resources (is_active = true) are included.
+  - If a parent resource is inactive, all children are considered disabled.
+  - Frontend uses assigned + inherited to display checkboxes and prevent duplicates.
+- **Controller Responsibilities**:
+  - Validate JWT and ADMIN role.
+  - Call ResourceService.getResourceTreeForRole(roleId) (or equivalent service).
+  - Map entities to ResourceDto with assigned and inherited.
+  - Return response JSON as above.
+
+## 7.4 POST /api/roles
+
+- **Description**: Creates a new role. Only ADMIN users can call this API.
+- **Request**:
+  - Method: POST
+  - Path: /api/roles
+  - Headers:
+    - Authorization: Bearer <accessToken>
+  - Body:
+    ```json
+    {
+      "name": "New Role"
+    }
+    ```
+- **Response**:
+  - Status Code: 201 Created
+  - Body:
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Role created successfully",
+      "data": {
+        "id": "new-role-id",
+        "name": "New Role"
+      }
+    }
+    ```
+- **Errors**:
+  - 400 Bad Request: invalid input
+  - 403 Forbidden: caller is not ADMIN
+  - 409 Conflict: role name already exists
+- **Controller Responsibilities**:
+  - Validate JWT and ADMIN role
+  - Parse and validate request body
+  - Delegate to RoleService.createRole(request)
+  - Return standardized RoleResponseDto
+- **Service Responsibilities**:
+  - Validate that role name is unique
+  - Create new role in DB
+  - Return created Role entity
+- **Business Rules**:
+  - Role names must be unique
+  - Only ADMIN users can create roles

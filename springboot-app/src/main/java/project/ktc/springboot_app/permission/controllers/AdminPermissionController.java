@@ -15,8 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
-import project.ktc.springboot_app.entity.Permission;
 import project.ktc.springboot_app.permission.dto.PermissionResponseDto;
+import project.ktc.springboot_app.permission.entity.Permission;
 import project.ktc.springboot_app.permission.mapper.PermissionMapper;
 import project.ktc.springboot_app.permission.services.PermissionServiceImp;
 
