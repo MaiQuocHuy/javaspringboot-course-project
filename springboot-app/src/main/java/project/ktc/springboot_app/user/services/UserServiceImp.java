@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,9 +19,11 @@ import project.ktc.springboot_app.entity.UserRole;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.services.FileValidationService;
+import project.ktc.springboot_app.user.dto.CreateUserDto;
 import project.ktc.springboot_app.user.dto.UpdateUserDto;
 import project.ktc.springboot_app.user.dto.UpdateUserRoleDto;
 import project.ktc.springboot_app.user.dto.UpdateUserStatusDto;
+import project.ktc.springboot_app.user.dto.AdminUserPageResponseDto;
 import project.ktc.springboot_app.user.interfaces.UserService;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.user_role.repositories.UserRoleRepository;
@@ -29,6 +32,10 @@ import java.util.Optional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Service
 @Slf4j
@@ -39,6 +46,7 @@ public class UserServiceImp implements UserService {
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
     private final UserRoleRepository userRoleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public ResponseEntity<ApiResponse<UserResponseDto>> getProfile() {
@@ -313,7 +321,7 @@ public class UserServiceImp implements UserService {
             }
 
             // Update user status
-            user.setIsActive(status.getStatus().toLowerCase().equals("active"));
+            user.setIsActive(status.getIsActive());
             User updatedUser = userRepository.save(user);
 
             // Create response DTO
@@ -325,6 +333,190 @@ public class UserServiceImp implements UserService {
         } catch (Exception e) {
             log.error("Error updating user status: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to update user status. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<UserResponseDto>> createUser(CreateUserDto createUserDto) {
+        try {
+            // Check if email already exists
+            Optional<User> existingUser = userRepository.findByEmail(createUserDto.getEmail());
+            if (existingUser.isPresent()) {
+                log.warn("Attempt to create user with existing email: {}", createUserDto.getEmail());
+                return ApiResponseUtil.badRequest("Email already exists");
+            }
+
+            // Set default role to STUDENT if not provided
+            UserRoleEnum roleEnum = createUserDto.getRole() != null ? createUserDto.getRole() : UserRoleEnum.STUDENT;
+
+            // Find the role entity
+            UserRole userRole = userRoleRepository.findByRole(roleEnum.name())
+                    .orElseThrow(() -> new RuntimeException("Role not found: " + roleEnum.name()));
+
+            // Create new user
+            User newUser = User.builder()
+                    .name(createUserDto.getName())
+                    .email(createUserDto.getEmail())
+                    .password(passwordEncoder.encode(createUserDto.getPassword()))
+                    .bio(createUserDto.getBio() != null ? createUserDto.getBio() : "")
+                    .isActive(createUserDto.getIsActive() != null ? createUserDto.getIsActive() : true)
+                    .thumbnailUrl("")
+                    .thumbnailId("")
+                    .role(userRole)
+                    .build();
+
+            // Save the user
+            User savedUser = userRepository.save(newUser);
+
+            // Create response DTO
+            UserResponseDto userResponseDto = new UserResponseDto(savedUser);
+
+            log.info("User created successfully with ID: {} and email: {}", savedUser.getId(), savedUser.getEmail());
+            return ApiResponseUtil.created(userResponseDto, "User created successfully");
+
+        } catch (Exception e) {
+            log.error("Error creating user: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to create user. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<UserResponseDto>> updateUserProfile(String id, UpdateUserDto updateUserDto) {
+        try {
+            // Find the user by ID
+            User user = userRepository.findById(id).orElse(null);
+
+            if (user == null) {
+                log.warn("User not found with ID: {}", id);
+                return ApiResponseUtil.notFound("User not found");
+            }
+
+            // Validate input
+            if (updateUserDto.getName() == null || updateUserDto.getName().trim().isEmpty()) {
+                return ApiResponseUtil.badRequest("Name cannot be null or empty");
+            }
+
+            if (updateUserDto.getBio() != null && updateUserDto.getBio().length() > 500) {
+                return ApiResponseUtil.badRequest("Bio cannot exceed 500 characters");
+            }
+
+            // Update user details
+            user.setName(updateUserDto.getName().trim());
+            if (updateUserDto.getBio() != null) {
+                user.setBio(updateUserDto.getBio().trim());
+            }
+
+            // Save updated user
+            User updatedUser = userRepository.save(user);
+
+            // Create response DTO
+            UserResponseDto userResponseDto = new UserResponseDto(updatedUser);
+
+            log.info("User profile updated successfully for ID: {}", id);
+            return ApiResponseUtil.success(userResponseDto, "User profile updated successfully");
+
+        } catch (Exception e) {
+            log.error("Error updating user profile: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to update user profile. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<AdminUserPageResponseDto>> getUsersWithPagination(
+            String search, String role, Boolean isActive,
+            int page, int size, String sort) {
+        try {
+            // Create pageable object with sorting
+            Sort sortObj = Sort.by(Sort.Direction.ASC, "name"); // default sort
+            if (sort != null && !sort.isEmpty()) {
+                String[] sortParams = sort.split(",");
+                if (sortParams.length == 2) {
+                    Sort.Direction direction = sortParams[1].equalsIgnoreCase("desc")
+                            ? Sort.Direction.DESC
+                            : Sort.Direction.ASC;
+                    sortObj = Sort.by(direction, sortParams[0]);
+                }
+            }
+
+            Pageable pageable = PageRequest.of(page, size, sortObj);
+
+            // Get users with filters (you'll need to implement this in repository)
+            Page<User> usersPage;
+
+            if ((search == null || search.trim().isEmpty()) &&
+                    (role == null || role.trim().isEmpty()) &&
+                    isActive == null) {
+                // No filters - get all users
+                usersPage = userRepository.findAll(pageable);
+            } else {
+                // Apply filters - you'll need to create this method in UserRepository
+                usersPage = userRepository.findUsersWithFilters(search, role, isActive, pageable);
+            }
+
+            // Convert to DTOs
+            List<UserResponseDto> userResponseDtos = usersPage.getContent().stream()
+                    .map(UserResponseDto::new)
+                    .collect(Collectors.toList());
+
+            // Create page response
+            AdminUserPageResponseDto pageResponse = AdminUserPageResponseDto.builder()
+                    .users(userResponseDtos)
+                    .totalElements(usersPage.getTotalElements())
+                    .totalPages(usersPage.getTotalPages())
+                    .currentPage(usersPage.getNumber())
+                    .pageSize(usersPage.getSize())
+                    .hasNext(usersPage.hasNext())
+                    .hasPrevious(usersPage.hasPrevious())
+                    .build();
+
+            log.info("Users retrieved with pagination. Page: {}, Size: {}, Total: {}",
+                    page, size, usersPage.getTotalElements());
+            return ApiResponseUtil.success(pageResponse, "Users retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving users with pagination: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve users. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Void>> deleteUser(String id) {
+        try {
+            // Find the user by ID
+            User user = userRepository.findById(id).orElse(null);
+
+            if (user == null) {
+                log.warn("User not found with ID: {}", id);
+                return ApiResponseUtil.notFound("User not found");
+            }
+
+            // Get current user to prevent self-deletion
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            if (currentUserId != null && currentUserId.equals(id)) {
+                log.warn("User attempting to delete themselves: {}", id);
+                return ApiResponseUtil.badRequest("Cannot delete your own account");
+            }
+
+            // Delete thumbnail from Cloudinary if exists
+            if (user.getThumbnailId() != null && !user.getThumbnailId().isEmpty()) {
+                try {
+                    cloudinaryService.deleteImage(user.getThumbnailId());
+                    log.info("Thumbnail deleted for user: {}", id);
+                } catch (Exception e) {
+                    log.warn("Failed to delete thumbnail for user {}: {}", id, e.getMessage());
+                    // Continue with user deletion even if thumbnail deletion fails
+                }
+            }
+
+            // Delete the user
+            userRepository.delete(user);
+
+            log.info("User deleted successfully with ID: {}", id);
+            return ApiResponseUtil.success(null, "User deleted successfully");
+
+        } catch (Exception e) {
+            log.error("Error deleting user: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to delete user. Please try again later.");
         }
     }
 
