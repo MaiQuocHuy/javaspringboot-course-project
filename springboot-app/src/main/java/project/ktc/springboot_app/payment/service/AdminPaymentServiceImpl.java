@@ -1,0 +1,342 @@
+package project.ktc.springboot_app.payment.service;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.stripe.model.checkout.Session;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
+import project.ktc.springboot_app.log.mapper.PaymentLogMapper;
+import project.ktc.springboot_app.log.services.SystemLogHelper;
+import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
+import project.ktc.springboot_app.payment.entity.Payment;
+import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
+import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
+import project.ktc.springboot_app.payment.repositories.AdminPaymentRepository;
+import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
+import project.ktc.springboot_app.stripe.services.StripeWebhookService;
+import project.ktc.springboot_app.utils.SecurityUtil;
+
+/**
+ * Implementation of AdminPaymentService for admin payment operations
+ */
+@Service
+@Slf4j
+@RequiredArgsConstructor
+@Transactional
+public class AdminPaymentServiceImpl implements AdminPaymentService {
+
+    private final AdminPaymentRepository adminPaymentRepository;
+    private final StripePaymentDetailsService stripePaymentDetailsService;
+    private final SystemLogHelper systemLogHelper;
+    private final EnrollmentServiceImp enrollmentService;
+    private final StripeWebhookService stripeWebhookService;
+
+    @Override
+    public ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(Pageable pageable) {
+        try {
+            log.info("Admin retrieving all payments with pagination: page={}, size={}",
+                    pageable.getPageNumber(), pageable.getPageSize());
+
+            Page<Payment> payments = adminPaymentRepository.findAllPayments(pageable);
+
+            List<AdminPaymentResponseDto> paymentDtos = payments.getContent().stream()
+                    .map(AdminPaymentResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            PaginatedResponse<AdminPaymentResponseDto> paginatedResponse = PaginatedResponse
+                    .<AdminPaymentResponseDto>builder()
+                    .content(paymentDtos)
+                    .page(PaginatedResponse.PageInfo.builder()
+                            .number(payments.getNumber())
+                            .size(payments.getSize())
+                            .totalElements(payments.getTotalElements())
+                            .totalPages(payments.getTotalPages())
+                            .first(payments.isFirst())
+                            .last(payments.isLast())
+                            .build())
+                    .build();
+
+            log.info("Retrieved {} payments for admin (page {} of {})",
+                    paymentDtos.size(),
+                    payments.getNumber() + 1,
+                    payments.getTotalPages());
+
+            return ApiResponseUtil.success(paginatedResponse, "Payments retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving all payments for admin: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve payments. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<AdminPaymentResponseDto>>> getAllPayments() {
+        try {
+            log.info("Admin retrieving all payments without pagination");
+
+            List<Payment> payments = adminPaymentRepository.findAllPayments();
+
+            List<AdminPaymentResponseDto> paymentDtos = payments.stream()
+                    .map(AdminPaymentResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            log.info("Retrieved {} payments for admin", paymentDtos.size());
+
+            return ApiResponseUtil.success(paymentDtos, "Payments retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving all payments for admin: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve payments. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<AdminPaymentDetailResponseDto>> getPaymentDetail(String paymentId) {
+        try {
+            log.info("Admin retrieving payment detail for payment: {}", paymentId);
+
+            Optional<Payment> paymentOpt = adminPaymentRepository.findPaymentByIdWithDetails(paymentId);
+            if (paymentOpt.isEmpty()) {
+                log.warn("Payment not found: {}", paymentId);
+                return ApiResponseUtil.notFound("Payment not found");
+            }
+
+            Payment payment = paymentOpt.get();
+            AdminPaymentDetailResponseDto paymentDetail;
+
+            // Check if this is a Stripe payment and fetch additional details
+            if (stripePaymentDetailsService.isStripePayment(payment.getPaymentMethod()) &&
+                    payment.getSessionId() != null) {
+
+                log.info("Fetching Stripe payment details for payment: {} with session: {}",
+                        paymentId, payment.getSessionId());
+
+                try {
+                    // Fetch Stripe payment details
+                    var stripeData = stripePaymentDetailsService.fetchPaymentDetails(payment.getSessionId());
+
+                    // Convert to admin stripe data format
+                    AdminPaymentDetailResponseDto.StripePaymentData adminStripeData = null;
+                    if (stripeData != null) {
+                        adminStripeData = AdminPaymentDetailResponseDto.StripePaymentData.builder()
+                                .transactionId(stripeData.getTransactionId())
+                                .receiptUrl(stripeData.getReceiptUrl())
+                                .cardBrand(stripeData.getCardBrand())
+                                .cardLast4(stripeData.getCardLast4())
+                                .cardExpMonth(stripeData.getCardExpMonth())
+                                .cardExpYear(stripeData.getCardExpYear())
+                                .build();
+                    }
+
+                    // Create DTO with Stripe data
+                    paymentDetail = AdminPaymentDetailResponseDto.fromEntityWithStripeData(payment, adminStripeData);
+
+                    log.info("Successfully fetched Stripe payment details for payment: {}", paymentId);
+                } catch (Exception stripeError) {
+                    log.warn("Failed to fetch Stripe details for payment {}: {}. Using basic payment info.",
+                            paymentId, stripeError.getMessage());
+                    // Fallback to basic payment info if Stripe fetch fails
+                    paymentDetail = AdminPaymentDetailResponseDto.fromEntity(payment);
+                }
+            } else {
+                // Create basic DTO without Stripe data
+                paymentDetail = AdminPaymentDetailResponseDto.fromEntity(payment);
+                log.info("Created basic payment detail for non-Stripe payment: {}", paymentId);
+            }
+
+            log.info("Retrieved payment detail for payment: {}", paymentId);
+            return ApiResponseUtil.success(paymentDetail, "Payment detail retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving payment detail for payment {}: {}", paymentId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve payment detail. Please try again later.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<AdminPaymentResponseDto>> updatePaymentStatus(String paymentId,
+            String newStatus) {
+        try {
+            log.info("Admin updating payment status for payment: {} to status: {}", paymentId, newStatus);
+
+            // Validate that the new status is allowed
+            if (!Arrays.asList("COMPLETED", "FAILED").contains(newStatus)) {
+                log.warn("Invalid status update attempt: {} for payment: {}", newStatus, paymentId);
+                return ApiResponseUtil.badRequest("Invalid status. Only COMPLETED or FAILED are allowed.");
+            }
+
+            Optional<Payment> paymentOpt = adminPaymentRepository.findPaymentByIdWithDetails(paymentId);
+            if (paymentOpt.isEmpty()) {
+                log.warn("Payment not found for status update: {}", paymentId);
+                return ApiResponseUtil.notFound("Payment not found");
+            }
+
+            Payment payment = paymentOpt.get();
+
+            // Check if payment is currently PENDING
+            if (payment.getStatus() != PaymentStatus.PENDING) {
+                log.warn("Cannot update payment status. Current status is: {} for payment: {}",
+                        payment.getStatus(), paymentId);
+                return ApiResponseUtil.badRequest(
+                        String.format("Cannot update payment status. Payment is currently %s", payment.getStatus()));
+            }
+
+            // Store old status for logging
+            PaymentStatus oldStatus = payment.getStatus();
+
+            // Update payment status
+            PaymentStatus paymentStatus = PaymentStatus.valueOf(newStatus);
+            payment.setStatus(paymentStatus);
+
+            // Set paidAt timestamp if status is COMPLETED
+            if (paymentStatus == PaymentStatus.COMPLETED) {
+                payment.setPaidAt(LocalDateTime.now());
+
+                // Create enrollment for user when payment is completed
+                try {
+                    enrollmentService.createEnrollmentFromWebhook(
+                            payment.getUser().getId(),
+                            payment.getCourse().getId(),
+                            payment.getSessionId());
+                    log.info("Enrollment created successfully for user {} in course {} from payment {}",
+                            payment.getUser().getId(), payment.getCourse().getId(), paymentId);
+                    Session session = stripeWebhookService.getSessionById(payment.getSessionId());
+                    log.info("Session retrieved for payment {}: {}", paymentId, session);
+                    stripeWebhookService.sendPaymentConfirmationEmail(session,
+                            payment.getCourse().getId(),
+                            payment.getUser().getId());
+                } catch (Exception e) {
+                    log.error("Failed to create enrollment for user {} in course {} from payment {}: {}",
+                            payment.getUser().getId(), payment.getCourse().getId(), paymentId, e.getMessage());
+                    // Continue with payment update even if enrollment creation fails
+                }
+            }
+
+            Payment updatedPayment = adminPaymentRepository.save(payment);
+
+            // Log the status update
+            try {
+                User currentUser = SecurityUtil.getCurrentUser();
+                var oldPaymentLog = PaymentLogMapper.toLogDto(payment); // Use original payment data as "old" values
+                var newPaymentLog = PaymentLogMapper.toLogDto(updatedPayment);
+                systemLogHelper.logUpdate(currentUser, "PAYMENT", paymentId, oldPaymentLog, newPaymentLog);
+                log.info("Payment status update logged for payment {} from {} to {}",
+                        paymentId, oldStatus, newStatus);
+            } catch (Exception logError) {
+                log.error("Failed to log payment status update: {}", logError.getMessage());
+                // Continue execution even if logging fails
+            }
+
+            AdminPaymentResponseDto responseDto = AdminPaymentResponseDto.fromEntity(updatedPayment);
+
+            log.info("Successfully updated payment status for payment: {} from {} to {}",
+                    paymentId, oldStatus, newStatus);
+
+            return ApiResponseUtil.success(responseDto,
+                    String.format("Payment status updated successfully from %s to %s", oldStatus, newStatus));
+
+        } catch (Exception e) {
+            log.error("Error updating payment status for payment {}: {}", paymentId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to update payment status. Please try again later.");
+        }
+
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> getPaymentsByUserId(String userId,
+            Pageable pageable) {
+        try {
+            log.info("Admin retrieving payments for user: {} with pagination: page={}, size={}",
+                    userId, pageable.getPageNumber(), pageable.getPageSize());
+
+            Page<Payment> payments = adminPaymentRepository.findPaymentsByUserIdForAdmin(userId, pageable);
+
+            Page<AdminPaymentResponseDto> paymentDtos = payments.map(AdminPaymentResponseDto::fromEntity);
+
+            log.info("Retrieved {} payments for user {} (page {} of {})",
+                    paymentDtos.getNumberOfElements(), userId,
+                    paymentDtos.getNumber() + 1,
+                    paymentDtos.getTotalPages());
+
+            return ApiResponseUtil.success(paymentDtos,
+                    String.format("Payments for user %s retrieved successfully", userId));
+
+        } catch (Exception e) {
+            log.error("Error retrieving payments for user {} by admin: {}", userId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve payments. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> getPaymentsByCourseId(String courseId,
+            Pageable pageable) {
+        try {
+            log.info("Admin retrieving payments for course: {} with pagination: page={}, size={}",
+                    courseId, pageable.getPageNumber(), pageable.getPageSize());
+
+            Page<Payment> payments = adminPaymentRepository.findPaymentsByCourseIdForAdmin(courseId, pageable);
+
+            Page<AdminPaymentResponseDto> paymentDtos = payments.map(AdminPaymentResponseDto::fromEntity);
+
+            log.info("Retrieved {} payments for course {} (page {} of {})",
+                    paymentDtos.getNumberOfElements(), courseId,
+                    paymentDtos.getNumber() + 1,
+                    paymentDtos.getTotalPages());
+
+            return ApiResponseUtil.success(paymentDtos,
+                    String.format("Payments for course %s retrieved successfully", courseId));
+
+        } catch (Exception e) {
+            log.error("Error retrieving payments for course {} by admin: {}", courseId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve payments. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> searchPayments(String searchTerm,
+            Pageable pageable) {
+        try {
+            log.info("Admin searching payments with term: '{}' with pagination: page={}, size={}",
+                    searchTerm, pageable.getPageNumber(), pageable.getPageSize());
+
+            if (searchTerm == null || searchTerm.trim().isEmpty()) {
+                log.warn("Empty search term provided for payment search");
+                return ApiResponseUtil.badRequest("Search term cannot be empty");
+            }
+
+            Page<Payment> payments = adminPaymentRepository.searchPayments(searchTerm.trim(), pageable);
+
+            Page<AdminPaymentResponseDto> paymentDtos = payments.map(AdminPaymentResponseDto::fromEntity);
+
+            log.info("Found {} payments matching search term '{}' (page {} of {})",
+                    paymentDtos.getNumberOfElements(), searchTerm,
+                    paymentDtos.getNumber() + 1,
+                    paymentDtos.getTotalPages());
+
+            return ApiResponseUtil.success(paymentDtos,
+                    String.format("Search results for '%s' retrieved successfully", searchTerm));
+
+        } catch (Exception e) {
+            log.error("Error searching payments with term '{}' by admin: {}", searchTerm, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to search payments. Please try again later.");
+        }
+    }
+}

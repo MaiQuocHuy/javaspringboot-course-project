@@ -1,0 +1,80 @@
+package project.ktc.springboot_app.payment.interfaces;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+
+import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
+import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
+
+/**
+ * Interface for admin payment operations
+ */
+public interface AdminPaymentService {
+
+        /**
+         * Get all payments with pagination for admin
+         * 
+         * @param pageable Pagination information
+         * @return ResponseEntity containing paginated list of payments
+         */
+        ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(Pageable pageable);
+
+        /**
+         * Get all payments without pagination for admin
+         * 
+         * @return ResponseEntity containing list of all payments
+         */
+        ResponseEntity<ApiResponse<List<AdminPaymentResponseDto>>> getAllPayments();
+
+        /**
+         * Get payment details by ID for admin
+         * 
+         * @param paymentId The payment ID to retrieve
+         * @return ResponseEntity containing detailed payment information
+         */
+        ResponseEntity<ApiResponse<AdminPaymentDetailResponseDto>> getPaymentDetail(String paymentId);
+
+        /**
+         * Update payment status from PENDING to COMPLETED or FAILED
+         * 
+         * @param paymentId The payment ID to update
+         * @param newStatus The new status (COMPLETED or FAILED)
+         * @return ResponseEntity containing the updated payment information
+         */
+        ResponseEntity<ApiResponse<AdminPaymentResponseDto>> updatePaymentStatus(String paymentId, String newStatus);
+
+        /**
+         * Get payments for a specific user (admin view)
+         * 
+         * @param userId   The user ID
+         * @param pageable Pagination information
+         * @return ResponseEntity containing user's payments
+         */
+        ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> getPaymentsByUserId(String userId,
+                        Pageable pageable);
+
+        /**
+         * Get payments for a specific course (admin view)
+         * 
+         * @param courseId The course ID
+         * @param pageable Pagination information
+         * @return ResponseEntity containing course's payments
+         */
+        ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> getPaymentsByCourseId(String courseId,
+                        Pageable pageable);
+
+        /**
+         * Search payments by user email or course title
+         * 
+         * @param searchTerm The search term
+         * @param pageable   Pagination information
+         * @return ResponseEntity containing search results
+         */
+        ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> searchPayments(String searchTerm, Pageable pageable);
+}

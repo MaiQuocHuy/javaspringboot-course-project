@@ -11,7 +11,11 @@ import project.ktc.springboot_app.refund.entity.Refund;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 @Entity
 @Table(name = "payments", indexes = {

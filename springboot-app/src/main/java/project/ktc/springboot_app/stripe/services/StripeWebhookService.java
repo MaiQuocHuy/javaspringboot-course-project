@@ -238,7 +238,7 @@ public class StripeWebhookService {
     /**
      * Sends payment confirmation email with course details
      */
-    private void sendPaymentConfirmationEmail(Session session, String courseId, String userId) {
+    public void sendPaymentConfirmationEmail(Session session, String courseId, String userId) {
         try {
             log.info("📧 Sending payment confirmation email for session: {}", session.getId());
 
@@ -504,5 +504,38 @@ public class StripeWebhookService {
 
         log.error("Could not extract session ID from event using any method");
         return null;
+    }
+
+    /**
+     * Retrieves a Stripe checkout session by session ID
+     * 
+     * @param sessionId The Stripe session ID
+     * @return The Stripe Session object, or null if not found or error occurs
+     */
+    public Session getSessionById(String sessionId) {
+        try {
+            log.info("🔍 Retrieving Stripe session with ID: {}", sessionId);
+
+            if (sessionId == null || sessionId.trim().isEmpty()) {
+                log.error("❌ Session ID cannot be null or empty");
+                return null;
+            }
+
+            Session session = Session.retrieve(sessionId);
+
+            if (session != null) {
+                log.info("✅ Successfully retrieved session: {}", sessionId);
+                log.debug("📋 Session details - Status: {}, Payment Status: {}, Amount: {} cents",
+                        session.getStatus(), session.getPaymentStatus(), session.getAmountTotal());
+            } else {
+                log.warn("⚠️ Session not found: {}", sessionId);
+            }
+
+            return session;
+
+        } catch (Exception e) {
+            log.error("❌ Error retrieving session {}: {}", sessionId, e.getMessage(), e);
+            return null;
+        }
     }
 }
