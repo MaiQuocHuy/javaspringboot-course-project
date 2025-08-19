@@ -537,8 +537,6 @@
             <column name="created_at" value="2025-01-11 14:46:00"/>
             <column name="updated_at" value="2025-01-11 14:46:00"/>
         </insert>
-
     </changeSet>
-
 </databaseChangeLog>
 
