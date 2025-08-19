@@ -32,7 +32,6 @@ import project.ktc.springboot_app.course.dto.CourseReviewResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewStatusUpdateResponseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseReviewStatusDto;
 import project.ktc.springboot_app.course.enums.CourseLevel;
-import project.ktc.springboot_app.course.interfaces.AdminCourseService;
 import project.ktc.springboot_app.course.services.AdminCourseServiceImp;
 import project.ktc.springboot_app.course.services.CourseServiceImp;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
@@ -55,7 +54,8 @@ public class AdminCourseController {
         private final AdminCourseServiceImp adminCourseService;
 
         @GetMapping
-        @PreAuthorize("hasPermission(null, 'course:read') or hasRole('ADMIN')")
+        // @PreAuthorize("hasPermission(null, 'course:read') or hasRole('ADMIN')")
+        @PreAuthorize("hasPermission(null, 'Course', 'course:read')")
         @Operation(summary = "Get all courses for admin", description = "Retrieves a paginated list of all courses with filtering and sorting options. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaginatedResponse.class))),

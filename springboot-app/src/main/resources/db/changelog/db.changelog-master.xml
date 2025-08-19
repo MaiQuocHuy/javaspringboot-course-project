@@ -79,6 +79,16 @@
     <include file="db/changelog/changes/137-seed-role-permissions.xml"/>
     <include file="db/changelog/changes/138-add-seed-permission-course-approve.xml"/>
 
+    <!-- Role Filter Rules System for Scope-Based Permission Filtering -->
+    <include file="db/changelog/changes/139-create-role-filter-rule-table.xml"/>
+    
+    <!-- Comprehensive Role Filter Rules Seed Data -->
+    <include file="db/changelog/changes/140-seed-role-filter-rules-core.xml"/>
+    <include file="db/changelog/changes/141-seed-role-filter-rules-content.xml"/>
+    <include file="db/changelog/changes/142-seed-role-filter-rules-transactional.xml"/>
+    <include file="db/changelog/changes/143-seed-role-filter-rules-system.xml"/>
+    <include file="db/changelog/changes/144-seed-role-filter-rules-auth.xml"/>
+
     <!-- <include file="db/changelog/changes/139-fix-role-permissions-id-length.xml"/>
     <include file="db/changelog/changes/138-clear-role-permissions.xml"/> -->
     <!-- <include file="db/changelog/changes/138-update-all-resources.xml"/> -->
