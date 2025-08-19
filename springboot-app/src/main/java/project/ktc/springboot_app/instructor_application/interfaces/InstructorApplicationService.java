@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
-import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationAdminResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 
 /**
  * Service interface for instructor application operations
@@ -28,5 +28,5 @@ public interface InstructorApplicationService {
             MultipartFile cv,
             MultipartFile other);
 
-    ResponseEntity<ApiResponse<List<InstructorApplicationAdminResponseDto>>> getAllApplicationAdmin();
+    ResponseEntity<ApiResponse<List<AdminInstructorApplicationResponseDto>>> getAllApplicationAdmin();
 }

@@ -14,7 +14,7 @@ import project.ktc.springboot_app.instructor_application.entity.InstructorApplic
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class InstructorApplicationAdminResponseDto {
+public class AdminInstructorApplicationResponseDto {
 
     private String id;
     private UserBasicDto applicant;

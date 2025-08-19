@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
 
-import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationAdminResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.services.InstructorApplicationServiceImp;
 
 @RestController
@@ -27,7 +27,7 @@ public class AdminInstructorApplicationController {
     private final InstructorApplicationServiceImp instructorApplicationService;
 
     @GetMapping("/instructor-applications")
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<InstructorApplicationAdminResponseDto>>> getAllApplicationAdmin() {
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<AdminInstructorApplicationResponseDto>>> getAllApplicationAdmin() {
         return instructorApplicationService.getAllApplicationAdmin();
     }
 }

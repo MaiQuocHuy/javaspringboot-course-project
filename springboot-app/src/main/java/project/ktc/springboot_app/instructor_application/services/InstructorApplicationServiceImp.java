@@ -14,7 +14,7 @@ import project.ktc.springboot_app.common.exception.DocumentUploadException;
 import project.ktc.springboot_app.common.exception.IneligibleApplicationException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
-import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationAdminResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
 import project.ktc.springboot_app.instructor_application.interfaces.InstructorApplicationService;
 import project.ktc.springboot_app.instructor_application.mapper.InstructorApplicationsMapper;
@@ -258,10 +258,10 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
 
     @Override
     @Transactional
-    public ResponseEntity<ApiResponse<List<InstructorApplicationAdminResponseDto>>> getAllApplicationAdmin() {
+    public ResponseEntity<ApiResponse<List<AdminInstructorApplicationResponseDto>>> getAllApplicationAdmin() {
         List<InstructorApplication> applications = applicationRepository.findAll();
 
-        List<InstructorApplicationAdminResponseDto> responseList = instructorApplicationMapper
+        List<AdminInstructorApplicationResponseDto> responseList = instructorApplicationMapper
                 .toAdminResponseDtoList(applications);
 
         if (responseList.isEmpty()) {
