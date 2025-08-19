@@ -1,7 +1,7 @@
-package project.ktc.springboot_app.service;
+package project.ktc.springboot_app.filter_rule.interfaces;
 
-import project.ktc.springboot_app.entity.RoleFilterRule;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.filter_rule.entity.RoleFilterRule;
 
 import java.util.List;
 import java.util.Set;
@@ -69,14 +69,13 @@ public interface RoleFilterRuleService {
     Set<String> getPermissionsWithFilterRules(User user);
 
     /**
-     * Create a new filter rule
+     * Create a new filter rule (normalized design)
      * 
-     * @param roleId        The role ID
-     * @param permissionKey The permission key
-     * @param filterType    The filter type
+     * @param rolePermissionId The role permission ID (foreign key)
+     * @param filterType       The filter type
      * @return Created filter rule
      */
-    RoleFilterRule createFilterRule(String roleId, String permissionKey, RoleFilterRule.FilterType filterType);
+    RoleFilterRule createFilterRule(String rolePermissionId, RoleFilterRule.FilterType filterType);
 
     /**
      * Update filter rule active status

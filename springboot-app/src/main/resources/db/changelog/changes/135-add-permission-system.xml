@@ -188,4 +188,62 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="135-5" author="system">
+
+        <createTable tableName="role_filter_rules">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="role_permission_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="filter_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="DATETIME" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="DATETIME" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add CHECK constraint for filter_type enum -->
+        <sql>
+            ALTER TABLE role_filter_rules 
+            ADD CONSTRAINT chk_filter_rule_type 
+            CHECK (filter_type IN ('ALL', 'OWN', 'PUBLISHED_ONLY'))
+        </sql>
+
+        <!-- Add foreign key constraint to role_permission table -->
+        <addForeignKeyConstraint 
+            baseTableName="role_filter_rules"
+            baseColumnNames="role_permission_id"
+            referencedTableName="role_permissions"
+            referencedColumnNames="id"
+            constraintName="fk_role_filter_rules_permission"
+            onDelete="CASCADE"/>
+
+        <!-- Add indexes for performance -->
+        <createIndex tableName="role_filter_rules" indexName="idx_role_filter_rules_permission">
+            <column name="role_permission_id"/>
+        </createIndex>
+
+        <createIndex tableName="role_filter_rules" indexName="idx_role_filter_rules_type">
+            <column name="filter_type"/>
+        </createIndex>
+
+        <createIndex tableName="role_filter_rules" indexName="idx_role_filter_rules_active">
+            <column name="is_active"/>
+        </createIndex>
+
+
+        <rollback>
+            <dropTable tableName="role_filter_rules"/>
+        </rollback>
+    </changeSet>
+
 </databaseChangeLog>

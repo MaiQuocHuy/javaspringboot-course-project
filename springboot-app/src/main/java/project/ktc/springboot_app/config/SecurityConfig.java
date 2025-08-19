@@ -2,8 +2,10 @@ package project.ktc.springboot_app.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -17,7 +19,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 
-import project.ktc.springboot_app.security.CustomPermissionEvaluator;
 import project.ktc.springboot_app.security.JwtAuthenticationFilter;
 
 @Configuration
@@ -27,14 +28,14 @@ public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
         private final AuthenticationProvider authenticationProvider;
-        private final CustomPermissionEvaluator customPermissionEvaluator;
+        private final PermissionEvaluator rbacPermissionEvaluator;
 
         public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                         AuthenticationProvider authenticationProvider,
-                        CustomPermissionEvaluator customPermissionEvaluator) {
+                        @Qualifier("rbacPermissionEvaluator") PermissionEvaluator rbacPermissionEvaluator) {
                 this.jwtAuthenticationFilter = jwtAuthenticationFilter;
                 this.authenticationProvider = authenticationProvider;
-                this.customPermissionEvaluator = customPermissionEvaluator;
+                this.rbacPermissionEvaluator = rbacPermissionEvaluator;
         }
 
         @Bean
@@ -88,7 +89,7 @@ public class SecurityConfig {
         @Bean
         public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
                 DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
-                expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+                expressionHandler.setPermissionEvaluator(rbacPermissionEvaluator);
                 return expressionHandler;
         }
 

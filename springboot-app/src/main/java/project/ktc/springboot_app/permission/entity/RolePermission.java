@@ -2,13 +2,9 @@ package project.ktc.springboot_app.permission.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.entity.BaseEntity;
 import project.ktc.springboot_app.entity.UserRole;
-
-import java.time.LocalDateTime;
 
 /**
  * Role Permission Entity for Role-Based Access Control
@@ -52,20 +48,6 @@ public class RolePermission extends BaseEntity {
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
-
-    /**
-     * Permission grant timestamp
-     */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /**
-     * Last modification timestamp
-     */
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
     /**
      * Convenience method to check if role-permission is active
@@ -118,7 +100,7 @@ public class RolePermission extends BaseEntity {
                 ", permissionId='" + (permission != null ? permission.getId() : null) + '\'' +
                 ", grantedById='" + (grantedBy != null ? grantedBy.getId() : null) + '\'' +
                 ", isActive=" + isActive +
-                ", createdAt=" + createdAt +
+                ", createdAt=" + getCreatedAt() +
                 '}';
     }
 }

@@ -1,17 +1,16 @@
-package project.ktc.springboot_app.service.impl;
+package project.ktc.springboot_app.filter_rule.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.ktc.springboot_app.auth.entitiy.User;
-import project.ktc.springboot_app.entity.RoleFilterRule;
-import project.ktc.springboot_app.repository.RoleFilterRuleRepository;
-import project.ktc.springboot_app.service.RoleFilterRuleService;
+import project.ktc.springboot_app.filter_rule.entity.RoleFilterRule;
+import project.ktc.springboot_app.filter_rule.interfaces.RoleFilterRuleService;
+import project.ktc.springboot_app.filter_rule.repositories.RoleFilterRuleRepository;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -92,28 +91,25 @@ public class RoleFilterRuleServiceImpl implements RoleFilterRuleService {
         List<RoleFilterRule> rules = roleFilterRuleRepository.findActiveRulesByRoles(roleIds);
 
         return rules.stream()
-                .map(RoleFilterRule::getPermissionKey)
+                .map(rule -> rule.getRolePermission().getPermissionKey())
                 .collect(Collectors.toSet());
     }
 
     @Override
     @Transactional
-    public RoleFilterRule createFilterRule(String roleId, String permissionKey, RoleFilterRule.FilterType filterType) {
-        log.info("Creating filter rule - roleId: {}, permission: {}, filterType: {}", roleId, permissionKey,
-                filterType);
+    public RoleFilterRule createFilterRule(String rolePermissionId, RoleFilterRule.FilterType filterType) {
+        log.info("Creating filter rule - rolePermissionId: {}, filterType: {}", rolePermissionId, filterType);
 
-        // Check if rule already exists
-        boolean exists = roleFilterRuleRepository.existsActiveRule(roleId, permissionKey, filterType);
+        // Check if rule already exists for this role permission
+        boolean exists = roleFilterRuleRepository.existsActiveRule(rolePermissionId, filterType);
         if (exists) {
             throw new IllegalArgumentException(
-                    String.format("Filter rule already exists for role: %s, permission: %s, filterType: %s",
-                            roleId, permissionKey, filterType));
+                    String.format("Filter rule already exists for rolePermissionId: %s",
+                            rolePermissionId));
         }
 
         RoleFilterRule rule = RoleFilterRule.builder()
-                .id(UUID.randomUUID().toString())
-                .roleId(roleId)
-                .permissionKey(permissionKey)
+                .rolePermissionId(rolePermissionId)
                 .filterType(filterType)
                 .isActive(true)
                 .build();
