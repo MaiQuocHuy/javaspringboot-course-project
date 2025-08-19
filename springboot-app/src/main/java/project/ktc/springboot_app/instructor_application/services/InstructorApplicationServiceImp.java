@@ -14,8 +14,10 @@ import project.ktc.springboot_app.common.exception.DocumentUploadException;
 import project.ktc.springboot_app.common.exception.IneligibleApplicationException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationAdminResponseDto;
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
 import project.ktc.springboot_app.instructor_application.interfaces.InstructorApplicationService;
+import project.ktc.springboot_app.instructor_application.mapper.InstructorApplicationsMapper;
 import project.ktc.springboot_app.instructor_application.repositories.InstructorApplicationRepository;
 import project.ktc.springboot_app.upload.exception.InvalidDocumentFormatException;
 import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
@@ -26,6 +28,7 @@ import project.ktc.springboot_app.utils.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -42,6 +45,7 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
     private final ObjectMapper objectMapper;
+    private final InstructorApplicationsMapper instructorApplicationMapper;
 
     // Constants for business rules
     private static final int RESUBMISSION_DAYS_LIMIT = 3;
@@ -250,5 +254,21 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             log.error("Failed to serialize documents to JSON: {}", e.getMessage(), e);
             throw new DocumentUploadException("Failed to process document information", e);
         }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<List<InstructorApplicationAdminResponseDto>>> getAllApplicationAdmin() {
+        List<InstructorApplication> applications = applicationRepository.findAll();
+
+        List<InstructorApplicationAdminResponseDto> responseList = instructorApplicationMapper
+                .toAdminResponseDtoList(applications);
+
+        if (responseList.isEmpty()) {
+            log.warn("No instructor applications found");
+            return ApiResponseUtil.success(responseList, "No instructor applications found");
+        }
+
+        return ApiResponseUtil.success(responseList, "Fetched all instructor applications successfully");
     }
 }

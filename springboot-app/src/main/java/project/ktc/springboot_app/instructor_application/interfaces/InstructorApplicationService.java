@@ -1,9 +1,12 @@
 package project.ktc.springboot_app.instructor_application.interfaces;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationAdminResponseDto;
 
 /**
  * Service interface for instructor application operations
@@ -24,4 +27,6 @@ public interface InstructorApplicationService {
             String portfolio,
             MultipartFile cv,
             MultipartFile other);
+
+    ResponseEntity<ApiResponse<List<InstructorApplicationAdminResponseDto>>> getAllApplicationAdmin();
 }
