@@ -1,0 +1,164 @@
+package project.ktc.springboot_app.payment.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import project.ktc.springboot_app.course.enums.CourseLevel;
+import project.ktc.springboot_app.payment.entity.Payment;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+/**
+ * DTO for detailed Payment response containing payment information with
+ * external gateway data
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class PaymentDetailAdminResponseDto {
+
+    private String id;
+
+    private UserInfoDto user;
+
+    private BigDecimal amount;
+
+    private String currency;
+
+    private String status;
+
+    private String paymentMethod;
+
+    // @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private LocalDateTime createdAt;
+
+    private String transactionId;
+
+    private String stripeSessionId;
+
+    private String receiptUrl;
+
+    private CardInfoDto card;
+
+    private CourseInfoDto course;
+
+    /**
+     * Nested DTO for card information
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CardInfoDto {
+        private String brand;
+        private String last4;
+        private Integer expMonth;
+        private Integer expYear;
+    }
+
+    /**
+     * Nested DTO for user information in payment response
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserInfoDto {
+        private String id;
+        private String name;
+        private String email;
+        private String thumbnailUrl;
+    }
+
+    /**
+     * Nested DTO for course information in payment response
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CourseInfoDto {
+        private String id;
+        private String title;
+        private String thumbnailUrl;
+        private UserInfoDto instructor; // Added instructor information
+        private CourseLevel level;
+        private BigDecimal price;
+    }
+
+    /**
+     * Factory method to create PaymentDetailAdminResponseDto from Payment entity
+     */
+    public static PaymentDetailAdminResponseDto fromEntity(Payment payment) {
+        UserInfoDto userInfoDto = UserInfoDto.builder()
+                .id(payment.getUser().getId())
+                .name(payment.getUser().getName())
+                .email(payment.getUser().getEmail())
+                .thumbnailUrl(payment.getUser().getThumbnailUrl())
+                .build();
+
+        CourseInfoDto courseInfo = CourseInfoDto.builder()
+                .id(payment.getCourse().getId())
+                .title(payment.getCourse().getTitle())
+                .thumbnailUrl(payment.getCourse().getThumbnailUrl())
+                .instructor(userInfoDto)
+                .level(payment.getCourse().getLevel())
+                .price(payment.getCourse().getPrice())
+                .build();
+
+        return PaymentDetailAdminResponseDto.builder()
+                .id(payment.getId())
+                .user(userInfoDto)
+                .amount(payment.getAmount())
+                .currency("USD") // Default currency as specified in requirements
+                .status(payment.getStatus().name())
+                .paymentMethod(payment.getPaymentMethod())
+                .createdAt(payment.getCreatedAt())
+                .stripeSessionId(payment.getSessionId())
+                .course(courseInfo)
+                .build();
+    }
+
+    /**
+     * Factory method to create PaymentDetailAdminResponseDto with Stripe data
+     */
+    public static PaymentDetailAdminResponseDto fromEntityWithStripeData(Payment payment,
+            StripePaymentData stripeData) {
+        PaymentDetailAdminResponseDto dto = fromEntity(payment);
+
+        if (stripeData != null) {
+            dto.setTransactionId(stripeData.getTransactionId());
+            dto.setReceiptUrl(stripeData.getReceiptUrl());
+
+            if (stripeData.getCardBrand() != null) {
+                dto.setCard(CardInfoDto.builder()
+                        .brand(stripeData.getCardBrand())
+                        .last4(stripeData.getCardLast4())
+                        .expMonth(stripeData.getCardExpMonth())
+                        .expYear(stripeData.getCardExpYear())
+                        .build());
+            }
+        }
+
+        return dto;
+    }
+
+    /**
+     * Data class for Stripe payment information
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StripePaymentData {
+        private String transactionId;
+        private String receiptUrl;
+        private String cardBrand;
+        private String cardLast4;
+        private Integer cardExpMonth;
+        private Integer cardExpYear;
+    }
+}
