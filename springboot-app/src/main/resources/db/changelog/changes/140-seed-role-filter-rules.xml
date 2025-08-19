@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="140-seed-role-filter-rules" author="system">
+        <comment>Seed role filter rules based on Decision Table specifications</comment>
+
+        <!-- ADMIN Role Filter Rules - Full access with ALL filter -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-001"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="course:READ"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-002"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="course:CREATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-003"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="course:UPDATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-004"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="course:DELETE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- INSTRUCTOR Role Filter Rules -->
+        <!-- INSTRUCTOR can READ both OWN and PUBLISHED_ONLY courses -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-005"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1)"/>
+            <column name="permission_key" value="course:READ"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-006"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1)"/>
+            <column name="permission_key" value="course:READ"/>
+            <column name="filter_type" value="PUBLISHED_ONLY"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- INSTRUCTOR can CREATE courses without restriction -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-007"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1)"/>
+            <column name="permission_key" value="course:CREATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- INSTRUCTOR can UPDATE only OWN courses -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-008"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1)"/>
+            <column name="permission_key" value="course:UPDATE"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- INSTRUCTOR can DELETE only OWN courses -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-009"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1)"/>
+            <column name="permission_key" value="course:DELETE"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- STUDENT Role Filter Rules -->
+        <!-- STUDENT can READ only PUBLISHED_ONLY courses -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-010"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'STUDENT' LIMIT 1)"/>
+            <column name="permission_key" value="course:READ"/>
+            <column name="filter_type" value="PUBLISHED_ONLY"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Note: STUDENT does not have CREATE/UPDATE/DELETE permissions -->
+        <!-- This is enforced at the static permission level (role_permissions table) -->
+        <!-- Missing filter rules for these permissions will result in DENY by default -->
+
+        <rollback>
+            <delete tableName="role_filter_rules">
+                <where>id IN ('rfr-001', 'rfr-002', 'rfr-003', 'rfr-004', 'rfr-005', 'rfr-006', 'rfr-007', 'rfr-008', 'rfr-009', 'rfr-010')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

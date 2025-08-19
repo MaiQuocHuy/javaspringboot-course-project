@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="139-create-role-filter-rule-table" author="system">
+        <comment>Create ROLE_FILTER_RULE table for scope-based permission filtering</comment>
+
+        <createTable tableName="role_filter_rules">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="role_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permission_key" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="filter_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="DATETIME" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="DATETIME" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="role_filter_rules"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="139-add-constraints-role-filter-rule-table" author="system">
+        <comment>Add constraints and indexes to ROLE_FILTER_RULE table</comment>
+
+        <!-- Add CHECK constraint for filter_type enum -->
+        <sql>
+            ALTER TABLE role_filter_rules 
+            ADD CONSTRAINT chk_filter_type 
+            CHECK (filter_type IN ('ALL', 'OWN', 'PUBLISHED_ONLY'))
+        </sql>
+
+        <!-- Add unique constraint for role + permission + filter_type combination -->
+        <addUniqueConstraint 
+            tableName="role_filter_rules"
+            columnNames="role_id, permission_key, filter_type"
+            constraintName="uk_role_permission_filter"/>
+
+        <!-- Add foreign key constraint to user_roles table -->
+        <addForeignKeyConstraint 
+            baseTableName="role_filter_rules"
+            baseColumnNames="role_id"
+            referencedTableName="user_roles"
+            referencedColumnNames="id"
+            constraintName="fk_role_filter_rules_role_id"
+            onDelete="CASCADE"/>
+
+        <!-- Add indexes for performance -->
+        <createIndex tableName="role_filter_rules" indexName="idx_role_filter_rules_role_id">
+            <column name="role_id"/>
+        </createIndex>
+
+        <createIndex tableName="role_filter_rules" indexName="idx_role_filter_rules_permission">
+            <column name="permission_key"/>
+        </createIndex>
+
+        <createIndex tableName="role_filter_rules" indexName="idx_role_filter_rules_active">
+            <column name="is_active"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex tableName="role_filter_rules" indexName="idx_role_filter_rules_active"/>
+            <dropIndex tableName="role_filter_rules" indexName="idx_role_filter_rules_permission"/>
+            <dropIndex tableName="role_filter_rules" indexName="idx_role_filter_rules_role_id"/>
+            <dropForeignKeyConstraint baseTableName="role_filter_rules" constraintName="fk_role_filter_rules_role_id"/>
+            <dropUniqueConstraint tableName="role_filter_rules" constraintName="uk_role_permission_filter"/>
+            <sql>ALTER TABLE role_filter_rules DROP CONSTRAINT chk_filter_type</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
