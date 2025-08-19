@@ -12,12 +12,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.stripe.model.checkout.Session;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 import project.ktc.springboot_app.log.mapper.PaymentLogMapper;
 import project.ktc.springboot_app.log.services.SystemLogHelper;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
@@ -27,6 +30,7 @@ import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
 import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
 import project.ktc.springboot_app.payment.repositories.AdminPaymentRepository;
 import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
+import project.ktc.springboot_app.stripe.services.StripeWebhookService;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
 /**
@@ -41,6 +45,8 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     private final AdminPaymentRepository adminPaymentRepository;
     private final StripePaymentDetailsService stripePaymentDetailsService;
     private final SystemLogHelper systemLogHelper;
+    private final EnrollmentServiceImp enrollmentService;
+    private final StripeWebhookService stripeWebhookService;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(Pageable pageable) {
@@ -203,6 +209,25 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
             // Set paidAt timestamp if status is COMPLETED
             if (paymentStatus == PaymentStatus.COMPLETED) {
                 payment.setPaidAt(LocalDateTime.now());
+
+                // Create enrollment for user when payment is completed
+                try {
+                    enrollmentService.createEnrollmentFromWebhook(
+                            payment.getUser().getId(),
+                            payment.getCourse().getId(),
+                            payment.getSessionId());
+                    log.info("Enrollment created successfully for user {} in course {} from payment {}",
+                            payment.getUser().getId(), payment.getCourse().getId(), paymentId);
+                    Session session = stripeWebhookService.getSessionById(payment.getSessionId());
+                    log.info("Session retrieved for payment {}: {}", paymentId, session);
+                    stripeWebhookService.sendPaymentConfirmationEmail(session,
+                            payment.getCourse().getId(),
+                            payment.getUser().getId());
+                } catch (Exception e) {
+                    log.error("Failed to create enrollment for user {} in course {} from payment {}: {}",
+                            payment.getUser().getId(), payment.getCourse().getId(), paymentId, e.getMessage());
+                    // Continue with payment update even if enrollment creation fails
+                }
             }
 
             Payment updatedPayment = adminPaymentRepository.save(payment);
@@ -232,31 +257,7 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
             log.error("Error updating payment status for payment {}: {}", paymentId, e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to update payment status. Please try again later.");
         }
-    }
 
-    @Override
-    public ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> getPaymentsByStatus(PaymentStatus status,
-            Pageable pageable) {
-        try {
-            log.info("Admin retrieving payments by status: {} with pagination: page={}, size={}",
-                    status, pageable.getPageNumber(), pageable.getPageSize());
-
-            Page<Payment> payments = adminPaymentRepository.findPaymentsByStatus(status, pageable);
-
-            Page<AdminPaymentResponseDto> paymentDtos = payments.map(AdminPaymentResponseDto::fromEntity);
-
-            log.info("Retrieved {} payments with status {} for admin (page {} of {})",
-                    paymentDtos.getNumberOfElements(), status,
-                    paymentDtos.getNumber() + 1,
-                    paymentDtos.getTotalPages());
-
-            return ApiResponseUtil.success(paymentDtos,
-                    String.format("Payments with status %s retrieved successfully", status));
-
-        } catch (Exception e) {
-            log.error("Error retrieving payments by status {} for admin: {}", status, e.getMessage(), e);
-            return ApiResponseUtil.internalServerError("Failed to retrieve payments. Please try again later.");
-        }
     }
 
     @Override

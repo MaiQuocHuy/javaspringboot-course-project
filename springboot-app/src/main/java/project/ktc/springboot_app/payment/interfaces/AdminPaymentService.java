@@ -50,16 +50,6 @@ public interface AdminPaymentService {
         ResponseEntity<ApiResponse<AdminPaymentResponseDto>> updatePaymentStatus(String paymentId, String newStatus);
 
         /**
-         * Get payments filtered by status with pagination
-         * 
-         * @param status   The payment status to filter by
-         * @param pageable Pagination information
-         * @return ResponseEntity containing filtered payments
-         */
-        ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> getPaymentsByStatus(PaymentStatus status,
-                        Pageable pageable);
-
-        /**
          * Get payments for a specific user (admin view)
          * 
          * @param userId   The user ID
