@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentDetailAdminResponseDto {
+public class AdminPaymentDetailResponseDto {
 
     private String id;
 
@@ -92,7 +92,7 @@ public class PaymentDetailAdminResponseDto {
     /**
      * Factory method to create PaymentDetailAdminResponseDto from Payment entity
      */
-    public static PaymentDetailAdminResponseDto fromEntity(Payment payment) {
+    public static AdminPaymentDetailResponseDto fromEntity(Payment payment) {
         UserInfoDto userInfoDto = UserInfoDto.builder()
                 .id(payment.getUser().getId())
                 .name(payment.getUser().getName())
@@ -109,7 +109,7 @@ public class PaymentDetailAdminResponseDto {
                 .price(payment.getCourse().getPrice())
                 .build();
 
-        return PaymentDetailAdminResponseDto.builder()
+        return AdminPaymentDetailResponseDto.builder()
                 .id(payment.getId())
                 .user(userInfoDto)
                 .amount(payment.getAmount())
@@ -125,9 +125,9 @@ public class PaymentDetailAdminResponseDto {
     /**
      * Factory method to create PaymentDetailAdminResponseDto with Stripe data
      */
-    public static PaymentDetailAdminResponseDto fromEntityWithStripeData(Payment payment,
+    public static AdminPaymentDetailResponseDto fromEntityWithStripeData(Payment payment,
             StripePaymentData stripeData) {
-        PaymentDetailAdminResponseDto dto = fromEntity(payment);
+        AdminPaymentDetailResponseDto dto = fromEntity(payment);
 
         if (stripeData != null) {
             dto.setTransactionId(stripeData.getTransactionId());

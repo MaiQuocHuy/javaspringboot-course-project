@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentAdminResponseDto {
+public class AdminPaymentResponseDto {
     private String id;
 
     private UserInfoDto user;
@@ -66,7 +66,7 @@ public class PaymentAdminResponseDto {
     /**
      * Factory method to create PaymentAdminResponseDto from Payment entity
      */
-    public static PaymentAdminResponseDto fromEntity(Payment payment) {
+    public static AdminPaymentResponseDto fromEntity(Payment payment) {
         UserInfoDto userInfoDto = UserInfoDto.builder()
                 .id(payment.getUser().getId())
                 .name(payment.getUser().getName())
@@ -80,7 +80,7 @@ public class PaymentAdminResponseDto {
                 .thumbnailUrl(payment.getCourse().getThumbnailUrl())
                 .build();
 
-        return PaymentAdminResponseDto.builder()
+        return AdminPaymentResponseDto.builder()
                 .id(payment.getId())
                 .user(userInfoDto)
                 .amount(payment.getAmount())
