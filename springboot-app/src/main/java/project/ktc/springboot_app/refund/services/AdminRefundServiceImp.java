@@ -152,6 +152,13 @@ public class AdminRefundServiceImp implements AdminRefundService {
 
             // 4. Update refund status
             Refund.RefundStatus newStatus = Refund.RefundStatus.valueOf(updateDto.getStatus());
+            if (Refund.RefundStatus.FAILED.equals(newStatus)) {
+                if (updateDto.getReason() == null || updateDto.getReason().isBlank()) {
+                    log.warn("Failed refund requires a reason");
+                    return ApiResponseUtil.badRequest("Failed refund must have a reason");
+                }
+                refund.setReason(updateDto.getReason());
+            }
             refund.setStatus(newStatus);
             refund.setProcessedAt(LocalDateTime.now());
 
