@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
+// import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -135,19 +135,27 @@ public class AdminUserController {
                 return userService.createUser(createUserDto);
         }
 
-        @DeleteMapping("/{id}")
-        @PreAuthorize("hasPermission(#id, 'User', 'user:delete') or hasRole('ADMIN')")
-        @Operation(summary = "Delete a user", description = "Permanently delete a user from the system")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "User deleted successfully"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - user:delete permission required"),
-                        @ApiResponse(responseCode = "404", description = "User not found"),
-                        @ApiResponse(responseCode = "400", description = "Cannot delete user - has active dependencies")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> deleteUser(
-                        @Parameter(description = "User ID", required = true, example = "7200a420-2ff3-4f18-9933-1b86d05f1a78") @PathVariable String id) {
-                return userService.deleteUser(id);
-        }
+        // @DeleteMapping("/{id}")
+        // @PreAuthorize("hasPermission(#id, 'User', 'user:delete') or
+        // hasRole('ADMIN')")
+        // @Operation(summary = "Delete a user", description = "Permanently delete a
+        // user from the system")
+        // @ApiResponses(value = {
+        // @ApiResponse(responseCode = "200", description = "User deleted
+        // successfully"),
+        // @ApiResponse(responseCode = "403", description = "Forbidden - user:delete
+        // permission required"),
+        // @ApiResponse(responseCode = "404", description = "User not found"),
+        // @ApiResponse(responseCode = "400", description = "Cannot delete user - has
+        // active dependencies")
+        // })
+        // public
+        // ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>>
+        // deleteUser(
+        // @Parameter(description = "User ID", required = true, example =
+        // "7200a420-2ff3-4f18-9933-1b86d05f1a78") @PathVariable String id) {
+        // return userService.deleteUser(id);
+        // }
 
         @PutMapping("/{id}")
         @PreAuthorize("hasPermission(#id, 'User', 'user:edit') or hasRole('ADMIN')")
