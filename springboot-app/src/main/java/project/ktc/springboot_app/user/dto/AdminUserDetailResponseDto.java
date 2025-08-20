@@ -1,6 +1,9 @@
 package project.ktc.springboot_app.user.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.dto.UserResponseDto;
 import project.ktc.springboot_app.auth.entitiy.User;
@@ -10,17 +13,20 @@ import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+
 public class AdminUserDetailResponseDto extends UserResponseDto {
     private List<EnrolledCourseDto> enrolledCourses;
     private BigDecimal totalPayments;
-    private Long totalStudyTimeMinutes;
-
-    public AdminUserDetailResponseDto(User user) {
-        super(user);
-    }
+    private Long totalStudyTimeSeconds; // Total study time in seconds
 
     @Getter
     @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class EnrolledCourseDto {
         private String courseId;
         private String courseTitle;
@@ -28,27 +34,7 @@ public class AdminUserDetailResponseDto extends UserResponseDto {
         private String enrolledAt;
         private String completionStatus;
         private BigDecimal paidAmount;
-        private Long totalTimeStudying; // in minutes
+        private Long totalTimeStudying; // in seconds
 
-        public EnrolledCourseDto(String courseId, String courseTitle, String instructorName,
-                String enrolledAt, String completionStatus, BigDecimal paidAmount) {
-            this.courseId = courseId;
-            this.courseTitle = courseTitle;
-            this.instructorName = instructorName;
-            this.enrolledAt = enrolledAt;
-            this.completionStatus = completionStatus;
-            this.paidAmount = paidAmount;
-        }
-
-        public EnrolledCourseDto(String courseId, String courseTitle, String instructorName,
-                String enrolledAt, String completionStatus, BigDecimal paidAmount, Long totalTimeStudying) {
-            this.courseId = courseId;
-            this.courseTitle = courseTitle;
-            this.instructorName = instructorName;
-            this.enrolledAt = enrolledAt;
-            this.completionStatus = completionStatus;
-            this.paidAmount = paidAmount;
-            this.totalTimeStudying = totalTimeStudying;
-        }
     }
 }

@@ -273,34 +273,46 @@ public class UserServiceImp implements UserService {
             }
 
             // Create admin response DTO with additional info
-            project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto adminUserDetailDto = new project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto(
-                    user);
+            project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto adminUserDetailDto = project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto
+                    .builder()
+                    .build();
+
+            // Copy basic user information from UserResponseDto
+            UserResponseDto baseUser = new UserResponseDto(user);
+            adminUserDetailDto.setId(baseUser.getId());
+            adminUserDetailDto.setEmail(baseUser.getEmail());
+            adminUserDetailDto.setName(baseUser.getName());
+            adminUserDetailDto.setRole(baseUser.getRole());
+            adminUserDetailDto.setThumbnailUrl(baseUser.getThumbnailUrl());
+            adminUserDetailDto.setBio(baseUser.getBio());
+            adminUserDetailDto.setIsActive(baseUser.getIsActive());
 
             // Get enrolled courses with payment info and study time
             List<Object[]> enrolledCoursesData = userRepository.findEnrolledCoursesWithPaymentByUserId(id);
             List<project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto.EnrolledCourseDto> enrolledCourses = enrolledCoursesData
                     .stream()
-                    .map(data -> new project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto.EnrolledCourseDto(
-                            (String) data[0], // courseId
-                            (String) data[1], // courseTitle
-                            (String) data[2], // instructorName
-                            data[3] != null ? data[3].toString() : "", // enrolledAt
-                            data[4] != null ? data[4].toString() : "IN_PROGRESS", // completionStatus
-                            (java.math.BigDecimal) data[5], // paidAmount
-                            data[6] != null ? ((Number) data[6]).longValue() : 0L // totalTimeStudying in minutes
-                    ))
+                    .map(data -> project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto.EnrolledCourseDto
+                            .builder()
+                            .courseId((String) data[0])
+                            .courseTitle((String) data[1])
+                            .instructorName((String) data[2])
+                            .enrolledAt(data[3] != null ? data[3].toString() : "")
+                            .completionStatus(data[4] != null ? data[4].toString() : "IN_PROGRESS")
+                            .paidAmount((java.math.BigDecimal) data[5])
+                            .totalTimeStudying(data[6] != null ? ((Number) data[6]).longValue() : 0L) // in seconds
+                            .build())
                     .collect(Collectors.toList());
 
             // Get total payments
             java.math.BigDecimal totalPayments = userRepository.getTotalPaymentsByUserId(id);
 
-            // Get total study time (in minutes)
-            Long totalStudyTimeMinutes = userRepository.getTotalStudyTimeByUserId(id);
+            // Get total study time (in seconds)
+            Long totalStudyTimeSeconds = userRepository.getTotalStudyTimeByUserId(id);
 
             // Set additional data
             adminUserDetailDto.setEnrolledCourses(enrolledCourses);
             adminUserDetailDto.setTotalPayments(totalPayments);
-            adminUserDetailDto.setTotalStudyTimeMinutes(totalStudyTimeMinutes);
+            adminUserDetailDto.setTotalStudyTimeSeconds(totalStudyTimeSeconds);
 
             log.info("Admin user detail retrieved for ID: {}", id);
             return ApiResponseUtil.success(adminUserDetailDto, "Admin user detail retrieved successfully");
