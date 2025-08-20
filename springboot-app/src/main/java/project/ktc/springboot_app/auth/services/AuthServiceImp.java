@@ -321,7 +321,8 @@ public class AuthServiceImp implements AuthService {
                 return ApiResponseUtil.unauthorized("User account is inactive");
             }
 
-            if (foundUser.getRole() == null || !foundUser.getRole().getRole().equals(UserRole.RoleType.ADMIN)) {
+            if (foundUser.getRole() == null
+                    || !foundUser.getRole().getRole().equals(UserRoleEnum.ADMIN.name().toUpperCase().trim())) {
                 return ApiResponseUtil.unauthorized("You do not have permission to access this resource");
             }
 
