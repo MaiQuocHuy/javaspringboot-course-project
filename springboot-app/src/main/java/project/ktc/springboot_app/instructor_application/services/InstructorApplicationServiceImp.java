@@ -18,7 +18,9 @@ import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.AdminReviewApplicationRequestDto;
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
+import project.ktc.springboot_app.instructor_application.entity.InstructorApplication.ApplicationStatus;
 import project.ktc.springboot_app.instructor_application.interfaces.InstructorApplicationService;
 import project.ktc.springboot_app.instructor_application.mapper.InstructorApplicationsMapper;
 import project.ktc.springboot_app.instructor_application.repositories.InstructorApplicationRepository;
@@ -309,4 +311,77 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
                     .internalServerError("Failed to retrieve application detail. Try again later.");
         }
     }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> reviewApplication(String applicationId,
+            AdminReviewApplicationRequestDto request) {
+        try {
+            // Check authentication
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("No authenticated user found in security context");
+                return ApiResponseUtil.unauthorized("User not authenticated");
+            }
+
+            // Get current user ID
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            if (currentUserId == null) {
+                log.warn("Current user ID is null");
+                return ApiResponseUtil.internalServerError("Cannot retrieve current user ID");
+            }
+
+            // Find application
+            InstructorApplication application = applicationRepository.findById(applicationId)
+                    .orElseThrow(() -> new RuntimeException("Application not found"));
+
+            // Check if already reviewed
+            if (!application.getStatus().equals(InstructorApplication.ApplicationStatus.PENDING)) {
+                log.warn("Application {} already reviewed with status: {}", applicationId, application.getStatus());
+                return ApiResponseUtil
+                        .badRequest("Application already reviewed with status: " + application.getStatus());
+            }
+
+            // Validate rejection reason if rejecting
+            if (request.getAction() == ApplicationStatus.REJECTED &&
+                    (request.getRejectionReason() == null || request.getRejectionReason().trim().isEmpty())) {
+                return ApiResponseUtil.badRequest("Rejection reason is required when rejecting application");
+            }
+
+            // Update application
+
+            application.setStatus(request.getAction());
+            application.setReviewedAt(LocalDateTime.now());
+
+            User reviewer = userRepository.findById(currentUserId).orElse(null);
+            application.setReviewedBy(reviewer);
+
+            if (request.getAction() == ApplicationStatus.REJECTED) {
+                application.setRejectionReason(request.getRejectionReason());
+            } else {
+                application.setRejectionReason(null); // Clear rejection reason if approving
+            }
+
+            applicationRepository.save(application);
+
+            String message = request.getAction() == ApplicationStatus.APPROVED
+                    ? "Application approved"
+                    : "Application rejected";
+
+            log.info("Application {} {} by user {}", applicationId, request.getAction().name().toLowerCase(),
+                    currentUserId);
+
+            return ApiResponseUtil.success(message);
+
+        } catch (RuntimeException e) {
+            log.error("Application not found: {}", e.getMessage());
+            return ApiResponseUtil.notFound("Cannot find application with ID: " + applicationId);
+
+        } catch (Exception e) {
+            log.error("Error reviewing application: {}", e.getMessage(), e);
+            return ApiResponseUtil
+                    .internalServerError("An error occurred while processing the application. Please try again later.");
+        }
+    }
+
 }

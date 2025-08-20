@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,5 +36,12 @@ public class AdminInstructorApplicationController {
     public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminApplicationDetailDto>> getApplicationByIdAdmin(
             @PathVariable String id) {
         return instructorApplicationService.getApplicationByIdAdmin(id);
+    }
+
+    @PatchMapping("/applications/{id}/review")
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> reviewApplication(
+            @PathVariable String id,
+            @RequestBody @Valid project.ktc.springboot_app.instructor_application.dto.AdminReviewApplicationRequestDto request) {
+        return instructorApplicationService.reviewApplication(id, request);
     }
 }
