@@ -2,7 +2,6 @@ package project.ktc.springboot_app.payment.controllers;
 
 import java.util.List;
 
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties.Admin;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;

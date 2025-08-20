@@ -108,7 +108,14 @@ public class AdminPaymentDetailResponseDto {
                 .id(payment.getCourse().getId())
                 .title(payment.getCourse().getTitle())
                 .thumbnailUrl(payment.getCourse().getThumbnailUrl())
-                .instructor(userInfoDto)
+                .instructor(payment.getCourse().getInstructor() != null
+                        ? UserInfoDto.builder()
+                                .id(payment.getCourse().getInstructor().getId())
+                                .name(payment.getCourse().getInstructor().getName())
+                                .email(payment.getCourse().getInstructor().getEmail())
+                                .thumbnailUrl(payment.getCourse().getInstructor().getThumbnailUrl())
+                                .build()
+                        : null)
                 .level(payment.getCourse().getLevel())
                 .price(payment.getCourse().getPrice())
                 .build();
