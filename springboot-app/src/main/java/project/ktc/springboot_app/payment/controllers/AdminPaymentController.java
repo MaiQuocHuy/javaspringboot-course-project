@@ -2,6 +2,7 @@ package project.ktc.springboot_app.payment.controllers;
 
 import java.util.List;
 
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties.Admin;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusDto;
+import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
 
@@ -197,7 +199,7 @@ public class AdminPaymentController {
                         @ApiResponse(responseCode = "404", description = "Payment not found"),
                         @ApiResponse(responseCode = "500", description = "Internal server error")
         })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminPaymentResponseDto>> updatePaymentStatus(
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminUpdatePaymentStatusResponseDto>> updatePaymentStatus(
                         @Parameter(description = "Payment ID", required = true) @PathVariable String paymentId,
                         @Valid @RequestBody AdminUpdatePaymentStatusDto newStatusDto) {
                 log.info("Admin updating payment status for payment: {} to status: {}", paymentId,

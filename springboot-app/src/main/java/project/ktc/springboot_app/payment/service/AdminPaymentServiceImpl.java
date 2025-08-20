@@ -24,6 +24,7 @@ import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 import project.ktc.springboot_app.log.mapper.PaymentLogMapper;
 import project.ktc.springboot_app.log.services.SystemLogHelper;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
@@ -172,7 +173,7 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
 
     @Override
     @Transactional
-    public ResponseEntity<ApiResponse<AdminPaymentResponseDto>> updatePaymentStatus(String paymentId,
+    public ResponseEntity<ApiResponse<AdminUpdatePaymentStatusResponseDto>> updatePaymentStatus(String paymentId,
             String newStatus) {
         try {
             log.info("Admin updating payment status for payment: {} to status: {}", paymentId, newStatus);
@@ -245,7 +246,12 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
                 // Continue execution even if logging fails
             }
 
-            AdminPaymentResponseDto responseDto = AdminPaymentResponseDto.fromEntity(updatedPayment);
+            AdminUpdatePaymentStatusResponseDto responseDto = AdminUpdatePaymentStatusResponseDto.builder()
+                    .id(updatedPayment.getId())
+                    .paymentMethod(updatedPayment.getPaymentMethod())
+                    .status(updatedPayment.getStatus().name())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
 
             log.info("Successfully updated payment status for payment: {} from {} to {}",
                     paymentId, oldStatus, newStatus);

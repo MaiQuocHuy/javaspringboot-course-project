@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
 
@@ -47,7 +48,8 @@ public interface AdminPaymentService {
          * @param newStatus The new status (COMPLETED or FAILED)
          * @return ResponseEntity containing the updated payment information
          */
-        ResponseEntity<ApiResponse<AdminPaymentResponseDto>> updatePaymentStatus(String paymentId, String newStatus);
+        ResponseEntity<ApiResponse<AdminUpdatePaymentStatusResponseDto>> updatePaymentStatus(String paymentId,
+                        String newStatus);
 
         /**
          * Get payments for a specific user (admin view)
