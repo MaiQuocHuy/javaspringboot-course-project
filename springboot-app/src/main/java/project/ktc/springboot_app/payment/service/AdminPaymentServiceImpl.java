@@ -393,14 +393,19 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
                         String.format("Payment must wait 3 days before paid out. %d hours remaining", hoursRemaining));
             }
 
-            // 5. Check refund status - no pending refunds allowed
+            // 5. Check refund status - failed refunds allowed
             if (payment.getRefunds() != null && !payment.getRefunds().isEmpty()) {
                 boolean hasPendingRefund = payment.getRefunds().stream()
                         .anyMatch(refund -> refund.getStatus() == Refund.RefundStatus.PENDING);
-
+                boolean hasCompletedRefund = payment.getRefunds().stream()
+                        .anyMatch(refund -> refund.getStatus() == Refund.RefundStatus.COMPLETED);
                 if (hasPendingRefund) {
                     log.warn("Payment {} has pending refund(s). Cannot paid out", paymentId);
                     return ApiResponseUtil.badRequest("Cannot paid out payment with pending refunds");
+                }
+                if (hasCompletedRefund) {
+                    log.warn("Payment {} has completed refund(s). Cannot paid out", paymentId);
+                    return ApiResponseUtil.badRequest("Cannot paid out payment with completed refunds");
                 }
             }
 
