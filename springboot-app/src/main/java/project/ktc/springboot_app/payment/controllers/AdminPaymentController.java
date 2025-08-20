@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.payment.dto.AdminPaidOutResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
@@ -204,6 +206,46 @@ public class AdminPaymentController {
                 log.info("Admin updating payment status for payment: {} to status: {}", paymentId,
                                 newStatusDto.getStatus());
                 return adminPaymentService.updatePaymentStatus(paymentId, newStatusDto.getStatus().name());
+        }
+
+        /**
+         * Paid out payment to instructor
+         * 
+         * @param paymentId The payment ID to paid out
+         * @return ResponseEntity containing paid out operation result
+         */
+        @PostMapping("/{paymentId}/paid-out")
+        @Operation(summary = "Paid out payment to instructor", description = """
+                        **Purpose:**
+                        Pays out the payment to the course instructor by creating an instructor earning record.
+
+                        **Business Rules:**
+                        - Payment must be in COMPLETED status
+                        - Must wait 3 days after payment completion
+                        - No pending refunds allowed
+                        - Cannot paid out twice
+
+                        **Actions:**
+                        - Creates instructor earning record (70% of payment amount)
+                        - Sets payment.paidOutAt timestamp
+                        - Creates audit logs for compliance
+
+                        **Admin Only:**
+                        - This endpoint requires ADMIN role
+                        - Used for instructor payment processing
+                        """)
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Payment paid out successfully"),
+                        @ApiResponse(responseCode = "400", description = "Payment cannot be paid out (validation failed)"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+                        @ApiResponse(responseCode = "404", description = "Payment not found"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminPaidOutResponseDto>> paidOutPayment(
+                        @Parameter(description = "Payment ID", required = true) @PathVariable String paymentId) {
+                log.info("Admin attempting to paid out payment: {}", paymentId);
+                return adminPaymentService.paidOutPayment(paymentId);
         }
 
 }

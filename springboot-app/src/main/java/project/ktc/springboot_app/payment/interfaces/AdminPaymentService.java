@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminPaidOutResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
@@ -79,4 +80,14 @@ public interface AdminPaymentService {
          * @return ResponseEntity containing search results
          */
         ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> searchPayments(String searchTerm, Pageable pageable);
+
+        /**
+         * Paid out payment to instructor
+         * This action creates an instructor earning record and marks payment as paid
+         * out
+         * 
+         * @param paymentId The payment ID to paid out
+         * @return ResponseEntity containing the paid out operation result
+         */
+        ResponseEntity<ApiResponse<AdminPaidOutResponseDto>> paidOutPayment(String paymentId);
 }

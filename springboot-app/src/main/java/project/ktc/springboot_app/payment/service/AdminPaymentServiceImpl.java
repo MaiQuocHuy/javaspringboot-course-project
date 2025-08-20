@@ -20,19 +20,26 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.earning.entity.InstructorEarning;
+import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 import project.ktc.springboot_app.log.mapper.PaymentLogMapper;
 import project.ktc.springboot_app.log.services.SystemLogHelper;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminPaidOutResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
 import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
 import project.ktc.springboot_app.payment.repositories.AdminPaymentRepository;
+import project.ktc.springboot_app.refund.entity.Refund;
 import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
 import project.ktc.springboot_app.stripe.services.StripeWebhookService;
 import project.ktc.springboot_app.utils.SecurityUtil;
+
+import java.math.BigDecimal;
+import java.time.Duration;
 
 /**
  * Implementation of AdminPaymentService for admin payment operations
@@ -48,6 +55,7 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     private final SystemLogHelper systemLogHelper;
     private final EnrollmentServiceImp enrollmentService;
     private final StripeWebhookService stripeWebhookService;
+    private final InstructorEarningRepository instructorEarningRepository;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(Pageable pageable) {
@@ -343,6 +351,109 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
         } catch (Exception e) {
             log.error("Error searching payments with term '{}' by admin: {}", searchTerm, e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to search payments. Please try again later.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<AdminPaidOutResponseDto>> paidOutPayment(String paymentId) {
+        try {
+            log.info("Admin attempting to paid out payment: {}", paymentId);
+
+            // 1. Find payment by ID
+            Optional<Payment> paymentOpt = adminPaymentRepository.findPaymentByIdWithDetails(paymentId);
+            if (paymentOpt.isEmpty()) {
+                log.warn("Payment not found with ID: {}", paymentId);
+                return ApiResponseUtil.notFound("Payment not found");
+            }
+
+            Payment payment = paymentOpt.get();
+
+            // 2. Check if payment status is COMPLETED
+            if (payment.getStatus() != PaymentStatus.COMPLETED) {
+                log.warn("Payment {} is not in COMPLETED status. Current status: {}", paymentId, payment.getStatus());
+                return ApiResponseUtil.badRequest("Payment must be in COMPLETED status to be paid out");
+            }
+
+            // 3. Check if payment is already paid out
+            if (payment.getPaidOutAt() != null) {
+                log.warn("Payment {} has already been paid out at {}", paymentId, payment.getPaidOutAt());
+                return ApiResponseUtil.badRequest("Payment has already been paid out");
+            }
+
+            // 4. Check if 3-day waiting period has passed since payment completion
+            LocalDateTime paymentCompletedAt = payment.getUpdatedAt(); // When status changed to COMPLETED
+            LocalDateTime now = LocalDateTime.now();
+            Duration timeSinceCompletion = Duration.between(paymentCompletedAt, now);
+
+            if (timeSinceCompletion.toDays() < 3) {
+                long hoursRemaining = 72 - timeSinceCompletion.toHours();
+                log.warn("Payment {} is within 3-day waiting period. {} hours remaining", paymentId, hoursRemaining);
+                return ApiResponseUtil.badRequest(
+                        String.format("Payment must wait 3 days before paid out. %d hours remaining", hoursRemaining));
+            }
+
+            // 5. Check refund status - no pending refunds allowed
+            if (payment.getRefunds() != null && !payment.getRefunds().isEmpty()) {
+                boolean hasPendingRefund = payment.getRefunds().stream()
+                        .anyMatch(refund -> refund.getStatus() == Refund.RefundStatus.PENDING);
+
+                if (hasPendingRefund) {
+                    log.warn("Payment {} has pending refund(s). Cannot paid out", paymentId);
+                    return ApiResponseUtil.badRequest("Cannot paid out payment with pending refunds");
+                }
+            }
+
+            // 6. Check if instructor earning already exists
+            Optional<InstructorEarning> existingEarning = instructorEarningRepository.findByPaymentId(paymentId);
+            if (existingEarning.isPresent()) {
+                log.warn("Instructor earning already exists for payment {}: {}", paymentId,
+                        existingEarning.get().getId());
+                return ApiResponseUtil.badRequest("Instructor earning already exists for this payment");
+            }
+
+            // 7. Calculate instructor earning (assuming 70% goes to instructor, 30%
+            // platform fee)
+            BigDecimal platformFeeRate = new BigDecimal("0.30"); // 30% platform fee
+            BigDecimal instructorRate = BigDecimal.ONE.subtract(platformFeeRate); // 70% to instructor
+            BigDecimal instructorEarningAmount = payment.getAmount().multiply(instructorRate);
+
+            // 8. Create instructor earning record
+            InstructorEarning instructorEarning = new InstructorEarning();
+            instructorEarning.setInstructor(payment.getCourse().getInstructor());
+            instructorEarning.setPayment(payment);
+            instructorEarning.setCourse(payment.getCourse());
+            instructorEarning.setAmount(instructorEarningAmount);
+            instructorEarning.setStatus(InstructorEarning.EarningStatus.AVAILABLE);
+            instructorEarning.setPaidAt(null); // Will be set when actually paid to instructor
+
+            InstructorEarning savedEarning = instructorEarningRepository.save(instructorEarning);
+
+            // 9. Update payment paid out timestamp
+            payment.setPaidOutAt(now);
+            Payment updatedPayment = adminPaymentRepository.save(payment);
+
+            // 10. Build response
+            AdminPaidOutResponseDto response = AdminPaidOutResponseDto.builder()
+                    .paymentId(updatedPayment.getId())
+                    .courseId(updatedPayment.getCourse().getId())
+                    .courseTitle(updatedPayment.getCourse().getTitle())
+                    .instructorId(updatedPayment.getCourse().getInstructor().getId())
+                    .instructorName(updatedPayment.getCourse().getInstructor().getName())
+                    .amount(updatedPayment.getAmount())
+                    .instructorEarning(instructorEarningAmount)
+                    .paidOutAt(updatedPayment.getPaidOutAt())
+                    .earningId(savedEarning.getId())
+                    .message("Payment successfully paid out to instructor")
+                    .build();
+
+            log.info("Payment {} successfully paid out. Instructor earning created: {}", paymentId,
+                    savedEarning.getId());
+            return ApiResponseUtil.success(response, "Payment paid out successfully");
+
+        } catch (Exception e) {
+            log.error("Error processing paid out for payment {}: {}", paymentId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to process paid out. Please try again later.");
         }
     }
 }

@@ -51,6 +51,9 @@ public class Payment extends BaseEntity {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    @Column(name = "paid_out_at")
+    private LocalDateTime paidOutAt;
+
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Refund> refunds;
 
