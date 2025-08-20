@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.dto.GoogleLoginDto;
@@ -294,7 +296,8 @@ public class AuthServiceImp implements AuthService {
 
     @Override
     @Transactional
-    public ResponseEntity<ApiResponse<Map<String, Object>>> loginAdmin(LoginAdminDto dto) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> loginAdmin(LoginAdminDto dto,
+            HttpServletResponse response) {
         // Validation checks
         if (dto == null) {
             return ApiResponseUtil.badRequest("Login data cannot be null");
@@ -340,11 +343,19 @@ public class AuthServiceImp implements AuthService {
                     .build();
             refreshTokenRepository.save(refreshToken);
 
+            // Set refreshToken vào httpOnly cookie
+            String cookieValue = String.format(
+                    "refreshToken=%s; Max-Age=%d; Path=/; HttpOnly; SameSite=Strict", // them secure
+                    refreshTokenStr,
+                    30 * 24 * 60 * 60 // 30 days
+            );
+            response.addHeader("Set-Cookie", cookieValue);
+
             UserResponseDto userResponseDto = new UserResponseDto(foundUser);
             userResponseDto.setRole(null);
             Map<String, Object> loginResponse = Map.of(
                     "accessToken", accessToken,
-                    "refreshToken", refreshTokenStr,
+                    // "refreshToken", refreshTokenStr,
                     "user", userResponseDto);
 
             log.info("User logged in successfully: {}", foundUser.getEmail());
