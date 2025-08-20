@@ -37,6 +37,8 @@ public class AdminPaymentDetailResponseDto {
 
     private LocalDateTime paidAt;
 
+    private LocalDateTime paidoutAt;
+
     private LocalDateTime updatedAt;
 
     private String transactionId;
@@ -128,6 +130,8 @@ public class AdminPaymentDetailResponseDto {
                 .status(payment.getStatus().name())
                 .paymentMethod(payment.getPaymentMethod())
                 .createdAt(payment.getCreatedAt())
+                .paidAt(payment.getPaidAt())
+                .updatedAt(payment.getUpdatedAt())
                 .stripeSessionId(payment.getSessionId())
                 .course(courseInfo)
                 .build();

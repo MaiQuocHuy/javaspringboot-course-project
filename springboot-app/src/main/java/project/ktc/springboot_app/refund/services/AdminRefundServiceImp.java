@@ -16,6 +16,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
+import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.refund.dto.AdminRefundDetailsResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundResponseDto;
@@ -25,6 +26,7 @@ import project.ktc.springboot_app.refund.entity.Refund;
 import project.ktc.springboot_app.refund.interfaces.AdminRefundService;
 import project.ktc.springboot_app.refund.repositories.AdminRefundRepository;
 import project.ktc.springboot_app.refund.repositories.RefundRepository;
+import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,6 +41,7 @@ public class AdminRefundServiceImp implements AdminRefundService {
     private final AdminRefundRepository adminRefundRepository;
     private final RefundRepository refundRepository;
     private final InstructorEarningRepository instructorEarningRepository;
+    private final StripePaymentDetailsService stripePaymentDetailsService;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<AdminRefundResponseDto>>> getAllRefunds(Pageable pageable) {
@@ -106,8 +109,36 @@ public class AdminRefundServiceImp implements AdminRefundService {
                 return ApiResponseUtil.notFound("Refund not found");
             }
             Refund refund = refundOpt.get();
-            AdminRefundDetailsResponseDto responseDto = AdminRefundDetailsResponseDto.fromEntity(refund);
-            return ApiResponseUtil.success(responseDto, "Refund details retrieved successfully!");
+            AdminRefundDetailsResponseDto refundDetail;
+            // Check if this is a Stripe payment and fetch additional details
+            if (stripePaymentDetailsService.isStripePayment(refund.getPayment().getPaymentMethod())
+                    && refund.getPayment().getSessionId() != null) {
+                try {
+                    var stripeData = stripePaymentDetailsService
+                            .fetchPaymentDetails(refund.getPayment().getSessionId());
+                    AdminRefundDetailsResponseDto.StripePaymentData adminStripeData = null;
+                    if (stripeData != null) {
+                        adminStripeData = AdminRefundDetailsResponseDto.StripePaymentData.builder()
+                                .transactionId(stripeData.getTransactionId())
+                                .receiptUrl(stripeData.getReceiptUrl())
+                                .cardBrand(stripeData.getCardBrand())
+                                .cardLast4(stripeData.getCardLast4())
+                                .cardExpMonth(stripeData.getCardExpMonth())
+                                .cardExpYear(stripeData.getCardExpYear())
+                                .build();
+                    }
+                    refundDetail = AdminRefundDetailsResponseDto.fromEntityWithStripeData(refund, adminStripeData);
+
+                } catch (Exception e) {
+                    log.error("Error fetching Stripe payment details for refund: {}", refundId);
+                    refundDetail = AdminRefundDetailsResponseDto.fromEntity(refund);
+                }
+            } else {
+                refundDetail = AdminRefundDetailsResponseDto.fromEntity(refund);
+                log.info("Refund {} is not a Stripe payment or has no session ID, using basic details", refundId);
+            }
+            log.info("Refund details retrieved successfully for refund ID: {}", refundId);
+            return ApiResponseUtil.success(refundDetail, "Refund details retrieved successfully!");
         } catch (Exception e) {
             log.error("Error retrieving refund details for admin: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Error retrieving refund details for admin");
