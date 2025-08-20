@@ -2,31 +2,148 @@ package project.ktc.springboot_app.refund.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cloudinary.Api;
+
 import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
+import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.entity.Payment;
+import project.ktc.springboot_app.refund.dto.AdminRefundDetailsResponseDto;
+import project.ktc.springboot_app.refund.dto.AdminRefundResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundStatusUpdateResponseDto;
 import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
 import project.ktc.springboot_app.refund.entity.Refund;
 import project.ktc.springboot_app.refund.interfaces.AdminRefundService;
+import project.ktc.springboot_app.refund.repositories.AdminRefundRepository;
 import project.ktc.springboot_app.refund.repositories.RefundRepository;
+import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AdminRefundServiceImp implements AdminRefundService {
 
+    private final AdminRefundRepository adminRefundRepository;
     private final RefundRepository refundRepository;
     private final InstructorEarningRepository instructorEarningRepository;
+    private final StripePaymentDetailsService stripePaymentDetailsService;
+
+    @Override
+    public ResponseEntity<ApiResponse<PaginatedResponse<AdminRefundResponseDto>>> getAllRefunds(Pageable pageable) {
+        try {
+            log.info("Admin retrieving all refunds with pagination: page={}, size={}", pageable.getPageNumber(),
+                    pageable.getPageSize());
+            Page<Refund> refunds = adminRefundRepository.findAllRefunds(pageable);
+
+            List<AdminRefundResponseDto> refundDtos = refunds.getContent().stream()
+                    .map(AdminRefundResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            PaginatedResponse<AdminRefundResponseDto> paginatedResponse = PaginatedResponse
+                    .<AdminRefundResponseDto>builder()
+                    .content(refundDtos)
+                    .page(PaginatedResponse.PageInfo.builder()
+                            .number(refunds.getNumber())
+                            .size(refunds.getSize())
+                            .totalElements(refunds.getTotalElements())
+                            .totalPages(refunds.getTotalPages())
+                            .first(refunds.isFirst())
+                            .last(refunds.isLast())
+                            .build())
+                    .build();
+
+            log.info("Retrieved {} refunds for admin (page {} of {})", refundDtos.size(), refunds.getNumber(),
+                    refunds.getTotalPages());
+
+            return ApiResponseUtil.success(paginatedResponse, "Refunds retrieved successfully!");
+
+        } catch (Exception e) {
+            log.error("Error retrieving all refunds for admin: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Error retrieving all refunds for admin");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<AdminRefundResponseDto>>> getAllRefunds() {
+        try {
+            log.info("Admin retrieving all refunds without pagination");
+
+            List<Refund> refunds = adminRefundRepository.findAllRefunds();
+
+            List<AdminRefundResponseDto> refundDtos = refunds.stream()
+                    .map(AdminRefundResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            log.info("Retrieved {} refunds for admin", refundDtos.size());
+
+            return ApiResponseUtil.success(refundDtos, "Refunds retrieved successfully!");
+
+        } catch (Exception e) {
+            log.error("Error retrieving all refunds for admin: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Error retrieving all refunds for admin");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<AdminRefundDetailsResponseDto>> getRefundDetail(String refundId) {
+        try {
+            log.info("Admin retrieving refund details for refund: {}", refundId);
+            Optional<Refund> refundOpt = adminRefundRepository.findRefundByIdWithDetails(refundId);
+            if (refundOpt.isEmpty()) {
+                log.warn("Refund not found with ID: {}", refundId);
+                return ApiResponseUtil.notFound("Refund not found");
+            }
+            Refund refund = refundOpt.get();
+            AdminRefundDetailsResponseDto refundDetail;
+            // Check if this is a Stripe payment and fetch additional details
+            if (stripePaymentDetailsService.isStripePayment(refund.getPayment().getPaymentMethod())
+                    && refund.getPayment().getSessionId() != null) {
+                try {
+                    var stripeData = stripePaymentDetailsService
+                            .fetchPaymentDetails(refund.getPayment().getSessionId());
+                    AdminRefundDetailsResponseDto.StripePaymentData adminStripeData = null;
+                    if (stripeData != null) {
+                        adminStripeData = AdminRefundDetailsResponseDto.StripePaymentData.builder()
+                                .transactionId(stripeData.getTransactionId())
+                                .receiptUrl(stripeData.getReceiptUrl())
+                                .cardBrand(stripeData.getCardBrand())
+                                .cardLast4(stripeData.getCardLast4())
+                                .cardExpMonth(stripeData.getCardExpMonth())
+                                .cardExpYear(stripeData.getCardExpYear())
+                                .build();
+                    }
+                    refundDetail = AdminRefundDetailsResponseDto.fromEntityWithStripeData(refund, adminStripeData);
+
+                } catch (Exception e) {
+                    log.error("Error fetching Stripe payment details for refund: {}", refundId);
+                    refundDetail = AdminRefundDetailsResponseDto.fromEntity(refund);
+                }
+            } else {
+                refundDetail = AdminRefundDetailsResponseDto.fromEntity(refund);
+                log.info("Refund {} is not a Stripe payment or has no session ID, using basic details", refundId);
+            }
+            log.info("Refund details retrieved successfully for refund ID: {}", refundId);
+            return ApiResponseUtil.success(refundDetail, "Refund details retrieved successfully!");
+        } catch (Exception e) {
+            log.error("Error retrieving refund details for admin: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Error retrieving refund details for admin");
+        }
+    }
 
     @Override
     @Transactional
@@ -66,6 +183,13 @@ public class AdminRefundServiceImp implements AdminRefundService {
 
             // 4. Update refund status
             Refund.RefundStatus newStatus = Refund.RefundStatus.valueOf(updateDto.getStatus());
+            if (Refund.RefundStatus.FAILED.equals(newStatus)) {
+                if (updateDto.getReason() == null || updateDto.getReason().isBlank()) {
+                    log.warn("Failed refund requires a reason");
+                    return ApiResponseUtil.badRequest("Failed refund must have a reason");
+                }
+                refund.setReason(updateDto.getReason());
+            }
             refund.setStatus(newStatus);
             refund.setProcessedAt(LocalDateTime.now());
 

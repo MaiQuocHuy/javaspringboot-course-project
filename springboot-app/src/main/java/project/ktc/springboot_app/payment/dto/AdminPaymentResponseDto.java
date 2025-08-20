@@ -34,6 +34,8 @@ public class AdminPaymentResponseDto {
 
     private LocalDateTime paidAt;
 
+    private LocalDateTime paidOutAt;
+
     private CourseInfoDto course;
 
     /**
@@ -89,6 +91,7 @@ public class AdminPaymentResponseDto {
                 .paymentMethod(payment.getPaymentMethod())
                 .createdAt(payment.getCreatedAt())
                 .paidAt(payment.getPaidAt())
+                .paidOutAt(payment.getPaidOutAt())
                 .course(courseInfo)
                 .build();
     }
