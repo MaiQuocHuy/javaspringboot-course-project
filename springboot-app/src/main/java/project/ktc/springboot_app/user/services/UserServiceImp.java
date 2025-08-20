@@ -253,6 +253,64 @@ public class UserServiceImp implements UserService {
         }
     }
 
+    public ResponseEntity<ApiResponse<project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto>> getAdminUserById(
+            String id) {
+        try {
+            // Get the current authenticated user from security context
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("No authenticated user found in security context");
+                return ApiResponseUtil.unauthorized("User not authenticated");
+            }
+
+            // Find the user by ID
+            User user = userRepository.findById(id).orElse(null);
+
+            if (user == null) {
+                log.warn("User not found with ID: {}", id);
+                return ApiResponseUtil.notFound("User not found");
+            }
+
+            // Create admin response DTO with additional info
+            project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto adminUserDetailDto = new project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto(
+                    user);
+
+            // Get enrolled courses with payment info and study time
+            List<Object[]> enrolledCoursesData = userRepository.findEnrolledCoursesWithPaymentByUserId(id);
+            List<project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto.EnrolledCourseDto> enrolledCourses = enrolledCoursesData
+                    .stream()
+                    .map(data -> new project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto.EnrolledCourseDto(
+                            (String) data[0], // courseId
+                            (String) data[1], // courseTitle
+                            (String) data[2], // instructorName
+                            data[3] != null ? data[3].toString() : "", // enrolledAt
+                            data[4] != null ? data[4].toString() : "IN_PROGRESS", // completionStatus
+                            (java.math.BigDecimal) data[5], // paidAmount
+                            data[6] != null ? ((Number) data[6]).longValue() : 0L // totalTimeStudying in minutes
+                    ))
+                    .collect(Collectors.toList());
+
+            // Get total payments
+            java.math.BigDecimal totalPayments = userRepository.getTotalPaymentsByUserId(id);
+
+            // Get total study time (in minutes)
+            Long totalStudyTimeMinutes = userRepository.getTotalStudyTimeByUserId(id);
+
+            // Set additional data
+            adminUserDetailDto.setEnrolledCourses(enrolledCourses);
+            adminUserDetailDto.setTotalPayments(totalPayments);
+            adminUserDetailDto.setTotalStudyTimeMinutes(totalStudyTimeMinutes);
+
+            log.info("Admin user detail retrieved for ID: {}", id);
+            return ApiResponseUtil.success(adminUserDetailDto, "Admin user detail retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving admin user detail by ID: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve admin user detail. Please try again later.");
+        }
+    }
+
     @Override
     public ResponseEntity<ApiResponse<UserResponseDto>> updateUserRole(String id, UpdateUserRoleDto role) {
         try {
