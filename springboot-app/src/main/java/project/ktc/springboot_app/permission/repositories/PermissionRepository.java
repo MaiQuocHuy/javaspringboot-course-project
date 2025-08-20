@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import project.ktc.springboot_app.entity.Permission;
+import project.ktc.springboot_app.permission.entity.Permission;
 
 /**
  * Repository interface for Permission entity
@@ -64,7 +64,7 @@ public interface PermissionRepository extends JpaRepository<Permission, String> 
                         "AND a.isActive = true " +
                         "AND rp.isActive = true")
         List<Permission> findPermissionsByRoleType(
-                        @Param("roleType") project.ktc.springboot_app.entity.UserRole.RoleType roleType);
+                        @Param("roleType") String roleType);
 
         /**
          * Find permission keys for a specific role
@@ -76,7 +76,7 @@ public interface PermissionRepository extends JpaRepository<Permission, String> 
                         "AND p.isActive = true " +
                         "AND rp.isActive = true")
         Set<String> findPermissionKeysByRoleType(
-                        @Param("roleType") project.ktc.springboot_app.entity.UserRole.RoleType roleType);
+                        @Param("roleType") String roleType);
 
         /**
          * Check if a permission exists and is active

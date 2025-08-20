@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="142-seed-role-filter-rules-transactional" author="system">
+        <comment>Seed role filter rules for transactional resources: payment, enrollment, instructor_application, instructor_earning</comment>
+
+        <!-- ============= PAYMENT PERMISSIONS ============= -->
+        <!-- ADMIN: Full access to all payments -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-083"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="payment:CREATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-084"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="payment:READ"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-085"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="payment:UPDATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-086"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="payment:DELETE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- INSTRUCTOR: Read own payments (earnings related) -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-087"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1)"/>
+            <column name="permission_key" value="payment:READ"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- STUDENT: Create payments (course purchase), read own payments -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-088"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'STUDENT' LIMIT 1)"/>
+            <column name="permission_key" value="payment:CREATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-089"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'STUDENT' LIMIT 1)"/>
+            <column name="permission_key" value="payment:READ"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- ============= ENROLLMENT PERMISSIONS ============= -->
+        <!-- ADMIN: Full access to all enrollments -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-090"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="enrollment:CREATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-091"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="enrollment:READ"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-092"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="enrollment:UPDATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-093"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="enrollment:DELETE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- INSTRUCTOR: Read enrollments for own courses -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-094"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1)"/>
+            <column name="permission_key" value="enrollment:READ"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- STUDENT: Create enrollments, read own enrollments -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-095"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'STUDENT' LIMIT 1)"/>
+            <column name="permission_key" value="enrollment:CREATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-096"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'STUDENT' LIMIT 1)"/>
+            <column name="permission_key" value="enrollment:READ"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- ============= INSTRUCTOR_APPLICATION PERMISSIONS ============= -->
+        <!-- ADMIN: Full access to all instructor applications -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-097"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_application:CREATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-098"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_application:READ"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-099"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_application:UPDATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-100"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_application:DELETE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- INSTRUCTOR: Read own applications only -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-101"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_application:READ"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- STUDENT: Create applications, read own applications -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-102"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'STUDENT' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_application:CREATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-103"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'STUDENT' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_application:READ"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- ============= INSTRUCTOR_EARNING PERMISSIONS ============= -->
+        <!-- ADMIN: Full access to all instructor earnings -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-104"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_earning:CREATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-105"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_earning:READ"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-106"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_earning:UPDATE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-107"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_earning:DELETE"/>
+            <column name="filter_type" value="ALL"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- INSTRUCTOR: Read and update own earnings only -->
+        <insert tableName="role_filter_rules">
+            <column name="id" value="rfr-108"/>
+            <column name="role_id" valueComputed="(SELECT id FROM user_roles WHERE role = 'INSTRUCTOR' LIMIT 1)"/>
+            <column name="permission_key" value="instructor_earning:READ"/>
+            <column name="filter_type" value="OWN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="role_filter_rules">
+                <where>id IN ('rfr-083', 'rfr-084', 'rfr-085', 'rfr-086', 'rfr-087', 'rfr-088', 'rfr-089', 'rfr-090', 'rfr-091', 'rfr-092', 'rfr-093', 'rfr-094', 'rfr-095', 'rfr-096', 'rfr-097', 'rfr-098', 'rfr-099', 'rfr-100', 'rfr-101', 'rfr-102', 'rfr-103', 'rfr-104', 'rfr-105', 'rfr-106', 'rfr-107', 'rfr-108')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

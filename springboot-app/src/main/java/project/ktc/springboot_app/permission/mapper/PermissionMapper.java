@@ -1,13 +1,17 @@
 package project.ktc.springboot_app.permission.mapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import project.ktc.springboot_app.entity.Permission;
-import project.ktc.springboot_app.entity.RolePermission;
 import project.ktc.springboot_app.permission.dto.PermissionResponseDto;
+import project.ktc.springboot_app.permission.dto.PermissionUpdateResponse;
+import project.ktc.springboot_app.permission.dto.ResourceDto;
+import project.ktc.springboot_app.permission.dto.ResourceTreeResponse;
+import project.ktc.springboot_app.permission.entity.Permission;
+import project.ktc.springboot_app.permission.entity.RolePermission;
 
 /**
  * Mapper utility for converting Permission entities to DTOs
@@ -134,5 +138,110 @@ public class PermissionMapper {
         return rolePermissions.stream()
                 .map(this::toRolePermissionResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Convert list of RolePermission entities to PermissionUpdateResponse
+     * 
+     * @param roleId          the role ID
+     * @param rolePermissions list of role permission entities that were updated
+     * @return permission update response DTO
+     */
+    public PermissionUpdateResponse toPermissionUpdateResponse(String roleId, List<RolePermission> rolePermissions) {
+        if (rolePermissions == null || rolePermissions.isEmpty()) {
+            return PermissionUpdateResponse.builder()
+                    .roleId(roleId)
+                    .updatedPermissions(List.of())
+                    .build();
+        }
+
+        List<PermissionUpdateResponse.UpdatedPermissionDto> updatedPermissions = rolePermissions.stream()
+                .map(rp -> PermissionUpdateResponse.UpdatedPermissionDto.builder()
+                        .key(rp.getPermission().getPermissionKey())
+                        .isActive(rp.getIsActive())
+                        .build())
+                .collect(Collectors.toList());
+
+        return PermissionUpdateResponse.builder()
+                .roleId(roleId)
+                .updatedPermissions(updatedPermissions)
+                .build();
+    }
+
+    /**
+     * Convert list of ResourceDto to ResourceTreeResponse with statistics
+     * 
+     * @param roleId    the role ID
+     * @param roleName  the role name
+     * @param resources list of resource DTOs
+     * @return resource tree response with statistics
+     */
+    public ResourceTreeResponse toResourceTreeResponse(String roleId, String roleName, List<ResourceDto> resources) {
+        if (resources == null) {
+            resources = List.of();
+        }
+
+        // Calculate statistics
+        int totalResources = calculateTotalResources(resources);
+        int assignedResources = countResourcesWithStatus(resources, true, false);
+        int inheritedResources = countResourcesWithStatus(resources, false, true);
+
+        ResourceTreeResponse.TreeStatistics statistics = ResourceTreeResponse.TreeStatistics.builder()
+                .rootResourceCount(resources.size())
+                .maxDepth(calculateMaxDepth(resources))
+                .directAssignments(assignedResources)
+                .inheritedAssignments(inheritedResources)
+                .coveragePercentage(totalResources > 0
+                        ? ((double) (assignedResources + inheritedResources) / totalResources) * 100.0
+                        : 0.0)
+                .build();
+
+        return ResourceTreeResponse.builder()
+                .roleId(roleId)
+                .roleName(roleName)
+                .resources(resources)
+                .timestamp(LocalDateTime.now())
+                .totalResources(totalResources)
+                .assignedResources(assignedResources)
+                .inheritedResources(inheritedResources)
+                .statistics(statistics)
+                .build();
+    }
+
+    /**
+     * Calculate total number of resources recursively
+     */
+    private int calculateTotalResources(List<ResourceDto> resources) {
+        int count = resources.size();
+        for (ResourceDto resource : resources) {
+            count += calculateTotalResources(resource.getChildren());
+        }
+        return count;
+    }
+
+    /**
+     * Count resources with specific status (assigned or inherited)
+     */
+    private int countResourcesWithStatus(List<ResourceDto> resources, boolean assigned, boolean inherited) {
+        int count = 0;
+        for (ResourceDto resource : resources) {
+            if ((assigned && resource.isAssigned()) || (inherited && resource.isInherited())) {
+                count++;
+            }
+            count += countResourcesWithStatus(resource.getChildren(), assigned, inherited);
+        }
+        return count;
+    }
+
+    /**
+     * Calculate maximum depth of resource tree
+     */
+    private int calculateMaxDepth(List<ResourceDto> resources) {
+        int maxDepth = 0;
+        for (ResourceDto resource : resources) {
+            int childDepth = calculateMaxDepth(resource.getChildren());
+            maxDepth = Math.max(maxDepth, childDepth + 1);
+        }
+        return maxDepth;
     }
 }

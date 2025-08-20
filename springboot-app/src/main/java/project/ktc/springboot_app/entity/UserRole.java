@@ -20,11 +20,7 @@ public class UserRole {
     @Builder.Default
     private String id = java.util.UUID.randomUUID().toString();
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private RoleType role;
+    @Column(length = 36, nullable = false)
+    private String role;
 
-    public enum RoleType {
-        STUDENT, INSTRUCTOR, ADMIN
-    }
 }

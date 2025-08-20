@@ -95,7 +95,7 @@ public class User extends BaseEntity implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         try {
             if (role != null && role.getRole() != null) {
-                String roleName = "ROLE_" + role.getRole().name();
+                String roleName = "ROLE_" + role.getRole();
                 log.info(" - Loading user authorities for role: {}", roleName);
                 return List.of(new SimpleGrantedAuthority(roleName));
             }

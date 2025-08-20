@@ -89,7 +89,7 @@ public class AuthServiceImp implements AuthService {
 
         try {
             // First, find or create the role
-            UserRole.RoleType roleType = UserRole.RoleType.valueOf(registerUserDto.getRole().name());
+            String roleType = registerUserDto.getRole().name().toUpperCase().trim();
             Optional<UserRole> existingRoleOpt = userRoleRepository.findByRole(roleType);
             UserRole userRole;
 
@@ -178,7 +178,7 @@ public class AuthServiceImp implements AuthService {
 
         try {
             // First, find or create the role
-            UserRole.RoleType roleType = UserRole.RoleType.valueOf(registerApplicationDto.getRole().name());
+            String roleType = registerApplicationDto.getRole().name().toUpperCase().trim();
             Optional<UserRole> existingRoleOpt = userRoleRepository.findByRole(roleType);
             UserRole userRole;
 
@@ -396,7 +396,7 @@ public class AuthServiceImp implements AuthService {
                 log.info("Creating new user for Google login: {}", dto.getEmail());
 
                 // Tìm hoặc tạo role STUDENT
-                UserRole.RoleType roleType = UserRole.RoleType.valueOf(UserRoleEnum.STUDENT.name());
+                String roleType = UserRoleEnum.STUDENT.name().toUpperCase().trim();
                 Optional<UserRole> existingRoleOpt = userRoleRepository.findByRole(roleType);
                 UserRole userRole;
 
