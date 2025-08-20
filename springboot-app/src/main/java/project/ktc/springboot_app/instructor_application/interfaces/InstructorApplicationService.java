@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 
 /**
@@ -29,4 +30,7 @@ public interface InstructorApplicationService {
             MultipartFile other);
 
     ResponseEntity<ApiResponse<List<AdminInstructorApplicationResponseDto>>> getAllApplicationAdmin();
+
+    ResponseEntity<ApiResponse<AdminApplicationDetailDto>> getApplicationByIdAdmin(
+            String applicationId);
 }

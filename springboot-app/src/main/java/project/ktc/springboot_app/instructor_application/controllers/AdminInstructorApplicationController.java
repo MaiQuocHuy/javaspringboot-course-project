@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
 
+import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.services.InstructorApplicationServiceImp;
 
@@ -26,8 +26,14 @@ import project.ktc.springboot_app.instructor_application.services.InstructorAppl
 public class AdminInstructorApplicationController {
     private final InstructorApplicationServiceImp instructorApplicationService;
 
-    @GetMapping("/instructor-applications")
+    @GetMapping("/applications")
     public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<AdminInstructorApplicationResponseDto>>> getAllApplicationAdmin() {
         return instructorApplicationService.getAllApplicationAdmin();
+    }
+
+    @GetMapping("/applications/{id}")
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminApplicationDetailDto>> getApplicationByIdAdmin(
+            @PathVariable String id) {
+        return instructorApplicationService.getApplicationByIdAdmin(id);
     }
 }

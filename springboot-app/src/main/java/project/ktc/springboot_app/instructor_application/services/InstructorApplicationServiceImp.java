@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +16,7 @@ import project.ktc.springboot_app.common.exception.DocumentUploadException;
 import project.ktc.springboot_app.common.exception.IneligibleApplicationException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
 import project.ktc.springboot_app.instructor_application.interfaces.InstructorApplicationService;
@@ -270,5 +273,40 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
         }
 
         return ApiResponseUtil.success(responseList, "Fetched all instructor applications successfully");
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<AdminApplicationDetailDto>> getApplicationByIdAdmin(String applicationId) {
+        try {
+            // Check authentication
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("No authenticated user found in security context");
+                return ApiResponseUtil.unauthorized("User not authenticated");
+            }
+
+            // Check if application exists
+            InstructorApplication application = applicationRepository.findById(applicationId)
+                    .orElseThrow(() -> new RuntimeException("Application not found with id: " + applicationId));
+
+            log.debug("Found application with ID: {}, Status: {}", application.getId(), application.getStatus());
+
+            // Map to DTO
+            AdminApplicationDetailDto responseDto = instructorApplicationMapper.toAdminDetailResponseDto(application);
+
+            return ApiResponseUtil.success(responseDto,
+                    "Fetched application detail successfully with id: " + applicationId);
+
+        } catch (RuntimeException e) {
+            log.error("Application not found: {}", e.getMessage());
+            return ApiResponseUtil.notFound("Application not found with ID: " + applicationId);
+
+        } catch (Exception e) {
+            log.error("Error retrieving application detail: {}", e.getMessage(), e);
+            return ApiResponseUtil
+                    .internalServerError("Failed to retrieve application detail. Try again later.");
+        }
     }
 }
