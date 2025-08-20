@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminPaidOutResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
 
@@ -47,7 +49,8 @@ public interface AdminPaymentService {
          * @param newStatus The new status (COMPLETED or FAILED)
          * @return ResponseEntity containing the updated payment information
          */
-        ResponseEntity<ApiResponse<AdminPaymentResponseDto>> updatePaymentStatus(String paymentId, String newStatus);
+        ResponseEntity<ApiResponse<AdminUpdatePaymentStatusResponseDto>> updatePaymentStatus(String paymentId,
+                        String newStatus);
 
         /**
          * Get payments for a specific user (admin view)
@@ -77,4 +80,14 @@ public interface AdminPaymentService {
          * @return ResponseEntity containing search results
          */
         ResponseEntity<ApiResponse<Page<AdminPaymentResponseDto>>> searchPayments(String searchTerm, Pageable pageable);
+
+        /**
+         * Paid out payment to instructor
+         * This action creates an instructor earning record and marks payment as paid
+         * out
+         * 
+         * @param paymentId The payment ID to paid out
+         * @return ResponseEntity containing the paid out operation result
+         */
+        ResponseEntity<ApiResponse<AdminPaidOutResponseDto>> paidOutPayment(String paymentId);
 }
