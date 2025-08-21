@@ -16,12 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.entity.UserRole;
+import project.ktc.springboot_app.permission.dto.AvailablePermissionDto;
 import project.ktc.springboot_app.permission.dto.PermissionUpdateRequest;
 import project.ktc.springboot_app.permission.dto.ResourceDto;
+import project.ktc.springboot_app.permission.entity.FilterType;
 import project.ktc.springboot_app.permission.entity.Permission;
 import project.ktc.springboot_app.permission.entity.Resource;
 import project.ktc.springboot_app.permission.entity.RolePermission;
 import project.ktc.springboot_app.permission.interfaces.PermissionService;
+import project.ktc.springboot_app.permission.interfaces.PermissionRoleAssignRuleService;
+import project.ktc.springboot_app.permission.repositories.PermissionRoleAssignRuleRepository;
 import project.ktc.springboot_app.permission.repositories.PermissionRepository;
 import project.ktc.springboot_app.permission.repositories.ResourceRepository;
 import project.ktc.springboot_app.permission.repositories.RolePermissionRepository;
@@ -32,6 +36,7 @@ import project.ktc.springboot_app.user_role.repositories.UserRoleRepository;
  */
 @Service
 @Transactional(readOnly = true)
+
 public class PermissionServiceImp implements PermissionService {
 
     private static final Logger logger = LoggerFactory.getLogger(PermissionServiceImp.class);
@@ -40,16 +45,25 @@ public class PermissionServiceImp implements PermissionService {
     private final RolePermissionRepository rolePermissionRepository;
     private final UserRoleRepository userRoleRepository;
     private final ResourceRepository resourceRepository;
+    private final PermissionRoleAssignRuleRepository permissionRoleAssignRuleRepository;
+    private final PermissionRoleAssignRuleService permissionRoleAssignRuleService;
+    private final project.ktc.springboot_app.permission.repositories.FilterTypeRepository filterTypeRepository;
 
     public PermissionServiceImp(
             PermissionRepository permissionRepository,
             RolePermissionRepository rolePermissionRepository,
             UserRoleRepository userRoleRepository,
-            ResourceRepository resourceRepository) {
+            ResourceRepository resourceRepository,
+            PermissionRoleAssignRuleRepository permissionRoleAssignRuleRepository,
+            PermissionRoleAssignRuleService permissionRoleAssignRuleService,
+            project.ktc.springboot_app.permission.repositories.FilterTypeRepository filterTypeRepository) {
         this.permissionRepository = permissionRepository;
         this.rolePermissionRepository = rolePermissionRepository;
         this.userRoleRepository = userRoleRepository;
         this.resourceRepository = resourceRepository;
+        this.permissionRoleAssignRuleRepository = permissionRoleAssignRuleRepository;
+        this.permissionRoleAssignRuleService = permissionRoleAssignRuleService;
+        this.filterTypeRepository = filterTypeRepository;
     }
 
     @Override
@@ -232,9 +246,10 @@ public class PermissionServiceImp implements PermissionService {
         // Process each permission update
         for (PermissionUpdateRequest.PermissionUpdateItemDto permissionUpdate : request.getPermissions()) {
             String permissionKey = permissionUpdate.getKey();
-            Boolean isActive = permissionUpdate.getIsActive();
+            String filterTypeId = permissionUpdate.getFilterType(); // New field
 
-            logger.debug("Processing permission update: {} -> {}", permissionKey, isActive);
+            logger.debug("Processing permission update: {} -> {} with filterType: {}", permissionKey,
+                    filterTypeId);
 
             // Validate permission exists and is active at system level
             Optional<Permission> permissionOpt = permissionRepository.findByPermissionKey(permissionKey);
@@ -247,29 +262,35 @@ public class PermissionServiceImp implements PermissionService {
                 throw new RuntimeException("Permission " + permissionKey + " is disabled at system level");
             }
 
+            // Validate filterType if provided
+            FilterType filterType = null;
+            if (filterTypeId != null && !filterTypeId.trim().isEmpty()) {
+                filterType = filterTypeRepository.findById(filterTypeId)
+                        .orElseThrow(() -> new RuntimeException("FilterType not found with ID: " + filterTypeId));
+                logger.debug("Found filterType: {} ({})", filterType.getName(), filterType.getDescription());
+            }
+
             // Check if role-permission combination already exists
-            java.util.Optional<RolePermission> existingRolePermission = rolePermissionRepository
+            Optional<RolePermission> existingRolePermission = rolePermissionRepository
                     .findByRoleAndPermissionKey(role, permissionKey);
 
             if (existingRolePermission.isPresent()) {
                 // Update existing role-permission
                 RolePermission rolePermission = existingRolePermission.get();
-                rolePermission.setIsActive(isActive);
+                rolePermission.setFilterType(filterType); // Set filterType
                 rolePermissionRepository.save(rolePermission);
-                logger.debug("Updated existing role-permission: {} -> {}", permissionKey, isActive);
+                logger.debug("Updated existing role-permission: {} -> {} with filterType: {}",
+                        permissionKey, filterType != null ? filterType.getName() : "null");
             } else {
                 // Create new role-permission if it doesn't exist and is being activated
-                if (isActive) {
-                    RolePermission newRolePermission = RolePermission.builder()
-                            .role(role)
-                            .permission(permission)
-                            .isActive(true)
-                            .build();
-                    rolePermissionRepository.save(newRolePermission);
-                    logger.debug("Created new role-permission: {} -> {}", permissionKey, isActive);
-                } else {
-                    logger.debug("Skipping creation of inactive role-permission: {}", permissionKey);
-                }
+                RolePermission newRolePermission = RolePermission.builder()
+                        .role(role)
+                        .permission(permission)
+                        .filterType(filterType) // Set filterType
+                        .build();
+                rolePermissionRepository.save(newRolePermission);
+                logger.debug("Created new role-permission: {} -> {} with filterType: {}",
+                        permissionKey, filterType != null ? filterType.getName() : "null");
             }
         }
 
@@ -369,5 +390,143 @@ public class PermissionServiceImp implements PermissionService {
                 .children(children)
                 .parent(parent)
                 .build();
+    }
+
+    @Override
+    public List<AvailablePermissionDto> getAllAvailablePermissions(String roleId) {
+        logger.debug("Getting all available permissions for role ID: {}", roleId);
+
+        // Validate role exists
+        userRoleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
+
+        // Get all permissions from the database
+        List<Permission> allPermissions = permissionRepository.findAllPermissionsWithDetails();
+        logger.debug("Found {} permissions in the system", allPermissions.size());
+
+        // Convert to AvailablePermissionDto list with assignment logic
+        List<AvailablePermissionDto> availablePermissions = allPermissions.stream()
+                .map(permission -> {
+                    // Check if this permission has any assignment rules (restricted)
+                    boolean isRestricted = permissionRoleAssignRuleRepository.hasAssignmentRules(permission.getId());
+
+                    // Get allowed roles for this permission
+                    List<String> allowedRoles = permissionRoleAssignRuleRepository
+                            .findAllowedRoleNamesByPermissionId(permission.getId());
+
+                    // Determine if this role can assign this permission
+                    boolean canAssignToRole;
+                    if (!isRestricted) {
+                        // No rules → assignable by all roles
+                        canAssignToRole = true;
+                    } else {
+                        // Has rules → only listed roles with is_active = true can assign
+                        canAssignToRole = allowedRoles.contains(
+                                userRoleRepository.findById(roleId).get().getRole());
+                    }
+
+                    return AvailablePermissionDto.builder()
+                            .id(permission.getId())
+                            .permissionKey(permission.getPermissionKey())
+                            .description(permission.getDescription())
+                            .resource(permission.getResourceName())
+                            .action(permission.getActionName())
+                            .canAssignToRole(canAssignToRole)
+                            .isRestricted(isRestricted)
+                            .allowedRoles(allowedRoles)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        logger.debug(
+                "Converted {} permissions to AvailablePermissionDto with assignment flags, restrictions, and allowed roles",
+                availablePermissions.size());
+
+        return availablePermissions;
+    }
+
+    @Override
+    public project.ktc.springboot_app.permission.dto.RolePermissionGroupedDto getPermissionsGroupedByResourceForRole(
+            String roleId) {
+        logger.debug("Getting permissions grouped by resource for role ID: {}", roleId);
+
+        // Validate role exists
+        UserRole role = userRoleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
+
+        // Define restricted resources that new roles cannot have permissions for
+        Set<String> restrictedResources = Set.of("enrollment", "refresh_token", "permission", "system_log",
+                "video_content", "lesson_completion");
+
+        // Get all permissions from the database
+        List<Permission> allPermissions = permissionRepository.findAllPermissionsWithDetails();
+        logger.debug("Found {} permissions in the system", allPermissions.size());
+
+        // Get current role permissions to check what's assigned and get filter types
+        List<RolePermission> currentRolePermissions = rolePermissionRepository.findAllByRole(role);
+        Set<String> assignedPermissionKeys = currentRolePermissions.stream()
+                .filter(rp -> rp.getIsActive())
+                .map(rp -> rp.getPermission().getPermissionKey())
+                .collect(Collectors.toSet());
+
+        // Create map of permission key to filter type for assigned permissions
+        Map<String, String> permissionFilterTypeMap = currentRolePermissions.stream()
+                .filter(rp -> rp.getIsActive() && rp.getFilterType() != null)
+                .collect(Collectors.toMap(
+                        rp -> rp.getPermission().getPermissionKey(),
+                        rp -> rp.getFilterType().getName(),
+                        (existing, replacement) -> existing // handle duplicate keys by keeping existing
+                ));
+
+        logger.debug("Role {} has {} assigned permissions", roleId, assignedPermissionKeys.size());
+
+        // Convert to RolePermissionDetailDto and group by resource
+        Map<String, List<project.ktc.springboot_app.permission.dto.RolePermissionDetailDto>> resourceGroups = allPermissions
+                .stream()
+                .filter(permission -> !restrictedResources.contains(permission.getResourceName())) // Filter out
+                                                                                                   // restricted
+                                                                                                   // resources
+                .map(permission -> {
+                    // Check if this permission has any assignment rules (restricted)
+                    boolean isRestricted = permissionRoleAssignRuleRepository.hasAssignmentRules(permission.getId());
+
+                    // Get allowed roles for this permission
+                    List<String> allowedRoles = permissionRoleAssignRuleRepository
+                            .findAllowedRoleNamesByPermissionId(permission.getId());
+
+                    // Determine if this role can assign this permission
+                    boolean canAssignToRole;
+                    if (!isRestricted) {
+                        // No rules → assignable by all roles
+                        canAssignToRole = true;
+                    } else {
+                        // Has rules → only listed roles with is_active = true can assign
+                        canAssignToRole = allowedRoles.contains(role.getRole());
+                    }
+
+                    // Check if currently assigned
+                    boolean isAssigned = assignedPermissionKeys.contains(permission.getPermissionKey());
+
+                    // Get current filter type for this permission
+                    String currentFilterType = permissionFilterTypeMap.get(permission.getPermissionKey());
+
+                    return new project.ktc.springboot_app.permission.dto.RolePermissionDetailDto(
+                            permission.getPermissionKey(),
+                            permission.getDescription(),
+                            permission.getResourceName(),
+                            permission.getActionName(),
+                            currentFilterType,
+                            isAssigned,
+                            canAssignToRole,
+                            isRestricted,
+                            allowedRoles);
+                })
+                .collect(Collectors
+                        .groupingBy(project.ktc.springboot_app.permission.dto.RolePermissionDetailDto::getResource));
+
+        logger.debug("Grouped permissions into {} resource categories (filtered out restricted resources)",
+                resourceGroups.size());
+
+        return new project.ktc.springboot_app.permission.dto.RolePermissionGroupedDto(resourceGroups);
     }
 }

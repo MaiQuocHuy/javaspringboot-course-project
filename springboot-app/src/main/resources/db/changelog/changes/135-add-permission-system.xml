@@ -7,6 +7,22 @@
 
     <!-- Resources Table -->
     <changeSet id="135-1" author="ktc">
+        <createTable tableName="filter_types">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
         <createTable tableName="resources">
             <column name="id" type="VARCHAR(36)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -99,6 +115,24 @@
             </column>
         </createTable>
 
+        <!-- <createTable tableName="permission_constraints">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="permission_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable> -->
+
         <!-- Add foreign keys -->
         <addForeignKeyConstraint
                 baseTableName="permissions"
@@ -114,16 +148,46 @@
                 referencedTableName="actions"
                 referencedColumnNames="id"/>
 
+        <!-- Add foreign keys for permission_constraints table -->
+        <!-- <addForeignKeyConstraint
+                baseTableName="permission_constraints"
+                baseColumnNames="permission_id"
+                constraintName="fk_permission_constraints_permission"
+                referencedTableName="permissions"
+                referencedColumnNames="id"/> -->
+
+        <!-- <addForeignKeyConstraint
+                baseTableName="permission_constraints"
+                baseColumnNames="role_id"
+                constraintName="fk_permission_constraints_role"
+                referencedTableName="user_roles"
+                referencedColumnNames="id"/> -->
+
         <!-- Add unique constraint for resource-action combination -->
         <addUniqueConstraint
                 tableName="permissions"
                 columnNames="resource_id,action_id"
                 constraintName="unique_resource_action"/>
 
+        <!-- Add unique constraint for permission_constraints -->
+        <!-- <addUniqueConstraint
+                tableName="permission_constraints"
+                columnNames="permission_id,role_id"
+                constraintName="unique_permission_constraint"/> -->
+
         <!-- Add index for permission key -->
         <createIndex tableName="permissions" indexName="idx_permissions_key">
             <column name="permission_key"/>
         </createIndex>
+
+        <!-- Add indexes for permission_constraints -->
+        <!-- <createIndex tableName="permission_constraints" indexName="idx_permission_constraints_permission">
+            <column name="permission_id"/>
+        </createIndex>
+
+        <createIndex tableName="permission_constraints" indexName="idx_permission_constraints_role">
+            <column name="role_id"/>
+        </createIndex> -->
     </changeSet>
 
     <!-- Role Permissions Table -->
@@ -136,6 +200,9 @@
                 <constraints nullable="false"/>
             </column>
             <column name="permission_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="filter_type_id" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
             <column name="granted_by" type="VARCHAR(36)"/>
@@ -171,6 +238,16 @@
                 constraintName="fk_role_permissions_granter"
                 referencedTableName="users"
                 referencedColumnNames="id"/>
+
+        <!-- Add foreign key for filter_type if using it as reference -->
+        <!-- Note: Uncomment this if filter_type should reference filter_types.name -->
+        <addForeignKeyConstraint
+                baseTableName="role_permissions"
+                baseColumnNames="filter_type_id"
+                constraintName="fk_role_permissions_filter_type"
+                referencedTableName="filter_types"
+                referencedColumnNames="id"/>
+       
 
         <!-- Add unique constraint for role-permission combination -->
         <addUniqueConstraint

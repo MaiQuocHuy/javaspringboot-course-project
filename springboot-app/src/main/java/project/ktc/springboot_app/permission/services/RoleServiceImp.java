@@ -1,8 +1,13 @@
 package project.ktc.springboot_app.permission.services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,7 +15,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.entity.UserRole;
 import project.ktc.springboot_app.permission.dto.CreateRoleRequest;
+import project.ktc.springboot_app.permission.dto.RoleWithPermissionsDto;
+import project.ktc.springboot_app.permission.entity.RolePermission;
 import project.ktc.springboot_app.permission.interfaces.RoleService;
+import project.ktc.springboot_app.permission.repositories.RolePermissionRepository;
 import project.ktc.springboot_app.user_role.repositories.UserRoleRepository;
 
 /**
@@ -23,6 +31,7 @@ import project.ktc.springboot_app.user_role.repositories.UserRoleRepository;
 public class RoleServiceImp implements RoleService {
 
     private final UserRoleRepository userRoleRepository;
+    private final RolePermissionRepository rolePermissionRepository;
 
     @Override
     @Transactional
@@ -99,5 +108,83 @@ public class RoleServiceImp implements RoleService {
         List<UserRole> roles = userRoleRepository.findAll();
         log.debug("Found {} roles", roles.size());
         return roles;
+    }
+
+    @Override
+    public Page<RoleWithPermissionsDto> getAllRolesWithPermissions(int page, int size) {
+        log.info("Retrieving all roles with permissions - page: {}, size: {}", page, size);
+
+        // Validate pagination parameters
+        if (page < 0) {
+            throw new IllegalArgumentException("Page number cannot be negative");
+        }
+        if (size <= 0 || size > 100) {
+            throw new IllegalArgumentException("Page size must be between 1 and 100");
+        }
+
+        // Create pageable
+        Pageable pageable = PageRequest.of(page, size);
+
+        try {
+            // Get paginated roles
+            Page<UserRole> rolesPage = userRoleRepository.findAll(pageable);
+            log.debug("Found {} roles in page {} of {}", rolesPage.getContent().size(), page,
+                    rolesPage.getTotalPages());
+
+            // Convert to DTOs with permissions
+            List<RoleWithPermissionsDto> roleWithPermissionsDtos = rolesPage.getContent().stream()
+                    .map(this::convertToRoleWithPermissionsDto)
+                    .collect(Collectors.toList());
+
+            log.debug("Converted {} roles to DTOs with permissions", roleWithPermissionsDtos.size());
+
+            // Return paginated result
+            return new PageImpl<>(roleWithPermissionsDtos, pageable, rolesPage.getTotalElements());
+
+        } catch (Exception e) {
+            log.error("Error retrieving roles with permissions for page: {}, size: {}", page, size, e);
+            throw new RuntimeException("Failed to retrieve roles with permissions", e);
+        }
+    }
+
+    /**
+     * Convert UserRole entity to RoleWithPermissionsDto
+     */
+    private RoleWithPermissionsDto convertToRoleWithPermissionsDto(UserRole role) {
+        log.debug("Converting role {} to DTO with permissions", role.getId());
+
+        try {
+            // Get all permissions for this role
+            List<RolePermission> rolePermissions = rolePermissionRepository.findActiveByRoleId(role.getId());
+            log.debug("Found {} active permissions for role {}", rolePermissions.size(), role.getId());
+
+            // Convert permissions to summary DTOs
+            List<RoleWithPermissionsDto.PermissionSummaryDto> permissionSummaries = rolePermissions.stream()
+                    .map(rp -> RoleWithPermissionsDto.PermissionSummaryDto.builder()
+                            .id(rp.getPermission().getId())
+                            .name(rp.getPermission().getPermissionKey())
+                            .filterType(rp.getFilterType().getName())
+                            .build())
+                    .collect(Collectors.toList());
+
+            // Build role with permissions DTO
+            return RoleWithPermissionsDto.builder()
+                    .id(role.getId())
+                    .name(role.getRole())
+                    .totalPermission(permissionSummaries.size())
+                    .permissions(permissionSummaries)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error converting role {} to DTO with permissions", role.getId(), e);
+
+            // Return role with empty permissions in case of error
+            return RoleWithPermissionsDto.builder()
+                    .id(role.getId())
+                    .name(role.getRole())
+                    .totalPermission(0)
+                    .permissions(List.of())
+                    .build();
+        }
     }
 }

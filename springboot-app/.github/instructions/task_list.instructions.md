@@ -4010,3 +4010,243 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
 - **Business Rules**:
   - Role names must be unique
   - Only ADMIN users can create roles
+
+### 7.5 `GET /api/permissions/roles`
+
+-**Description**: Retrieves a list of all roles with their associated permissions.
+Only ADMIN users can call this API. -**Request**:
+
+- Method: GET
+- Path: /api/permissions/roles
+- Headers: - Authorization: Bearer <accessToken>
+- Params: - page: Page number (default: 0) - size: Page size (default: 10)
+- **Response**:
+- **Success (200 OK)**:
+
+```json
+{
+  "statusCode": 200,
+  "message": "Roles retrieved successfully",
+  "data": {
+    "content": [
+      {
+        "id": "role-id",
+        "name": "Role Name",
+        "totalPermission": 12,
+        "permissions": [
+          {
+            "id": "permission-id",
+            "name": "Permission Name"
+          }
+        ]
+      }
+    ],
+    "page": {
+      "number": 0,
+      "size": 10,
+      "totalPages": 1,
+      "totalElements": 1,
+      "first": true,
+      "last": true
+    }
+  },
+  "timestamps": "2023-10-05T12:34:56Z"
+}
+```
+
+- **Controller Responsibilities**:
+  - Validate JWT and ADMIN role
+  - Call RoleService.getAllRolesWithPermissions()
+  - Return response JSON as above.
+- **Service Responsibilities**:
+  - Retrieve all roles from the database
+  - For each role, retrieve its associated permissions
+  - Return a list of RoleDto with permissions
+- **Business Rules**:
+  - Only ADMIN users can access this endpoint
+  - Roles and permissions are cached for performance
+  - If a role has no permissions, it should still be included in the response
+- **Controller Responsibilities**:
+  - Validate JWT and ADMIN role
+  - Call RoleService.getAllRolesWithPermissions()
+  - Return response JSON as above.
+  - Validate query parameters (page, limit) for positive integers; enforce limit ≤ 100.
+  - Call RoleService.getAllRolesWithPermissions(page, limit).
+    Construct and return the response JSON, including pagination metadata.
+    Log successful ADMIN access for auditing (e.g., user ID, timestamp).
+    Service Responsibilities
+  - Validate JWT and ADMIN role
+  - Call RoleService.getAllRolesWithPermissions(page, limit)
+  - Return response JSON as above.
+  - Validate query parameters (page, limit) for positive integers; enforce limit ≤ 100.
+    Retrieve roles from the database with pagination (e.g., using SIZE).
+    Fetch associated permissions for each role.
+    Return a list of RoleDto objects, including roles with no permissions.
+    Handle database errors and propagate to the controller for 500 responses.
+    Business Rules
+  - Only users with the ADMIN role (verified via JWT role claim) can access this endpoint.
+  - Roles with no permissions are included in the response with an empty permissions array.
+  - Empty role list returns data: [] with pagination metadata.
+
+### 7.6 `GET /api/permissions/available`
+
+- **Description**: Retrieves all permissions in the system and determines whether a given role can assign each permission.
+  - Rules logic:
+    - If a permission has constraint rules (permission_role_assign_rule), only the roles listed there (is_active = true) can assign it.
+    - If a permission has no constraint rules, it is freely assignable by all roles. Only ADMIN users can call this API.
+- **Request**:
+  - Method: GET
+  - Path: /api/permissions/available
+  - Headers:
+    - Authorization: Bearer <accessToken>
+  - Query Parameters:
+    - role_id (required, integer) → The ID of the role to check available permissions with constraints.
+- **Response**:
+
+  - Status Code: 200 OK
+  - Body:
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Available permissions retrieved successfully",
+      "data": [
+        {
+          "id": 1,
+          "permissionKey": "COURSE_READ",
+          "description": "Can read courses",
+          "resource": "Course",
+          "action": "READ",
+          "canAssignToRole": true,
+          "isRestricted": true,
+          "allowedRoles": ["ADMIN"]
+        },
+        {
+          "id": 2,
+          "permissionKey": "COURSE_CREATE",
+          "description": "Can create courses",
+          "resource": "Course",
+          "action": "CREATE",
+          "canAssignToRole": false,
+          "isRestricted": true,
+          "allowedRoles": ["ADMIN", "MANAGER"]
+        },
+        {
+          "id": 3,
+          "permissionKey": "PAYMENT_CREATE",
+          "description": "Can create payments",
+          "resource": "Payment",
+          "action": "CREATE",
+          "canAssignToRole": true,
+          "isRestricted": false,
+          "allowedRoles": []
+        }
+      ]
+    }
+    ```
+
+- **Errors**:
+  - 400 Bad Request: missing or invalid role_id
+  - 401 Unauthorized: missing or invalid JWT
+  - 403 Forbidden: caller is not ADMIN
+- **Controller Responsibilities**:
+  - Validate JWT and verify the caller has the ADMIN role.
+  - Parse and validate role_id (required).
+  - Call PermissionService.getAllAvailablePermissions(roleId).
+  - Return JSON response in the specified format.
+- **Service Responsibilities**:
+  - Retrieve all permissions from the database.
+  - For each permission:
+    - Get all rules (permission_role_assign_rule) for that permission.
+    - Determine isRestricted: true if there are any rules, false otherwise.
+    - Determine allowedRoles: list of role IDs/names where is_active = true.
+    - Determine canAssignToRole for the given role_id:
+      - If isRestricted = false → true
+      - If isRestricted = true → true only if role_id is in allowedRoles, otherwise false.
+  - Return a list of PermissionDto objects with canAssignToRole, isRestricted, allowedRoles.
+- **Business Rules**:
+  - Only ADMIN users can call this API.
+  - role_id is mandatory.
+  - Each permission must appear only once in the result set.
+  - Permission assignment logic:
+    - No rules → assignable by all roles.
+    - Has rules → only listed roles with is_active = true can assign; others cannot.
+
+### 7.7 `GET /api/permissions/<role_id>`
+
+- **Description**:  
+  Retrieves all permissions for a specific role, including assignability rules, so that admin can update permissions.
+
+- **Request**:
+
+  - **Method:** GET
+  - **Path:** /api/permissions/<role_id>
+  - **Headers**:
+    - Authorization: Bearer <accessToken>
+  - **Query Parameters:** none
+  - **Body:** None
+
+- **Response**:
+
+  - **Status Code:** 200 OK
+  - **Body:**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Permissions retrieved successfully",
+      "data": {
+        "resources": {
+          "Course": [
+            {
+              "permissionKey": "COURSE_READ",
+              "description": "Can read courses",
+              "resource": "Course",
+              "action": "READ",
+              "isAssigned": true,
+              "canAssignToRole": true,
+              "isRestricted": true,
+              "allowedRoles": ["ADMIN"]
+            },
+            {
+              "permissionKey": "COURSE_CREATE",
+              "description": "Can create courses",
+              "resource": "Course",
+              "action": "CREATE",
+              "isAssigned": false,
+              "canAssignToRole": false,
+              "isRestricted": true,
+              "allowedRoles": ["ADMIN", "MANAGER"]
+            }
+          ]
+        }
+      }
+    }
+    ```
+
+- **Errors**:
+
+  - 400 Bad Request: invalid role_id
+  - 401 Unauthorized: missing or invalid JWT
+  - 403 Forbidden: caller is not ADMIN
+
+- **Controller Responsibilities**:
+
+  - Validate JWT and ADMIN role.
+  - Parse `role_id` from path.
+  - Call `PermissionService.getPermissionsByRole(roleId)`.
+  - Return JSON response in the structure above.
+
+- **Service Responsibilities**:
+
+  - Retrieve all permissions.
+  - For each permission:
+    1. Check if role currently has permission → `isAssigned`.
+    2. Check assignability via `permission_role_assign_rule` → `canAssignToRole`.
+    3. Determine `isRestricted` and `allowedRoles`.
+  - Group permissions by `resource` for frontend convenience.
+
+- **Business Rules**:
+  - Only ADMIN can access this API.
+  - Permissions with no restriction → `canAssignToRole = true` for all roles.
+  - Permissions with restriction → only roles in `allowedRoles` can assign.
+  - Even if role currently does not have a permission, admin can assign it if `canAssignToRole = true`.

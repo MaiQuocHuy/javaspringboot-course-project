@@ -2,13 +2,9 @@ package project.ktc.springboot_app.permission.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.entity.BaseEntity;
 import project.ktc.springboot_app.entity.UserRole;
-
-import java.time.LocalDateTime;
 
 /**
  * Role Permission Entity for Role-Based Access Control
@@ -40,6 +36,13 @@ public class RolePermission extends BaseEntity {
     private Permission permission;
 
     /**
+     * Reference to the filter type (new schema support)
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "filter_type_id", nullable = false, foreignKey = @ForeignKey(name = "fk_role_permissions_filter_type"))
+    private FilterType filterType;
+
+    /**
      * User who granted this permission (audit trail)
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,20 +55,6 @@ public class RolePermission extends BaseEntity {
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
-
-    /**
-     * Permission grant timestamp
-     */
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    /**
-     * Last modification timestamp
-     */
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
     /**
      * Convenience method to check if role-permission is active
@@ -108,6 +97,27 @@ public class RolePermission extends BaseEntity {
     }
 
     /**
+     * Check if this role permission has ALL access (filter-type-001)
+     */
+    public boolean hasAllAccess() {
+        return filterType != null && filterType.isAllAccess();
+    }
+
+    /**
+     * Check if this role permission has OWN access (filter-type-002)
+     */
+    public boolean hasOwnAccess() {
+        return filterType != null && filterType.isOwnAccess();
+    }
+
+    /**
+     * Get effective filter type from the associated filter type
+     */
+    public FilterType.EffectiveFilterType getEffectiveFilterType() {
+        return filterType != null ? filterType.toEffectiveFilterType() : FilterType.EffectiveFilterType.DENIED;
+    }
+
+    /**
      * Override toString to prevent recursive calls
      */
     @Override
@@ -116,9 +126,10 @@ public class RolePermission extends BaseEntity {
                 "id='" + getId() + '\'' +
                 ", roleId='" + (role != null ? role.getId() : null) + '\'' +
                 ", permissionId='" + (permission != null ? permission.getId() : null) + '\'' +
+                ", filterTypeId='" + (filterType != null ? filterType.getId() : null) + '\'' +
                 ", grantedById='" + (grantedBy != null ? grantedBy.getId() : null) + '\'' +
                 ", isActive=" + isActive +
-                ", createdAt=" + createdAt +
+                ", createdAt=" + getCreatedAt() +
                 '}';
     }
 }

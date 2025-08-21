@@ -76,18 +76,20 @@
     <!-- Permission System for Role-Based Access Control -->
     <include file="db/changelog/changes/135-add-permission-system.xml"/>
     <include file="db/changelog/changes/136-seed-permission-system.xml"/>
+    
+    <!-- Fix for permission system issues -->
     <include file="db/changelog/changes/137-seed-role-permissions.xml"/>
     <include file="db/changelog/changes/138-add-seed-permission-course-approve.xml"/>
-
+    <include file="db/changelog/changes/139-add-permission-role.xml"/>
     <!-- Role Filter Rules System for Scope-Based Permission Filtering -->
-    <include file="db/changelog/changes/139-create-role-filter-rule-table.xml"/>
+    <!-- <include file="db/changelog/changes/139-create-role-filter-rule-table.xml"/> -->
     
     <!-- Comprehensive Role Filter Rules Seed Data -->
-    <include file="db/changelog/changes/140-seed-role-filter-rules-core.xml"/>
+    <!-- <include file="db/changelog/changes/140-seed-role-filter-rules-core.xml"/>
     <include file="db/changelog/changes/141-seed-role-filter-rules-content.xml"/>
     <include file="db/changelog/changes/142-seed-role-filter-rules-transactional.xml"/>
     <include file="db/changelog/changes/143-seed-role-filter-rules-system.xml"/>
-    <include file="db/changelog/changes/144-seed-role-filter-rules-auth.xml"/>
+    <include file="db/changelog/changes/144-seed-role-filter-rules-auth.xml"/> -->
 
     <!-- Payment System Enhancements -->
     <include file="db/changelog/changes/145-add-paid-out-at-to-payments.xml"/>
@@ -95,7 +97,4 @@
     <!-- Refunds System Enhancements -->
     <include file="db/changelog/changes/146-add-rejected-reason-to-refunds.xml"/>
 
-    <!-- <include file="db/changelog/changes/139-fix-role-permissions-id-length.xml"/>
-    <include file="db/changelog/changes/138-clear-role-permissions.xml"/> -->
-    <!-- <include file="db/changelog/changes/138-update-all-resources.xml"/> -->
 </databaseChangeLog>
