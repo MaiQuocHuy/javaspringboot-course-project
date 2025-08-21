@@ -281,7 +281,7 @@ public class AuthServiceImp implements AuthService {
 
         } catch (DisabledException e) {
             log.warn("Account is blocked: {}", dto.getEmail());
-            return ApiResponseUtil.unauthorized("Your account has been blocked. Please contact the administrator.");
+            return ApiResponseUtil.unauthorized("Email or password is incorrect.");
         } catch (BadCredentialsException e) {
             log.warn("Invalid email or password: {}", dto.getEmail());
             return ApiResponseUtil.unauthorized("Email or password is incorrect.");
