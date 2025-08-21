@@ -184,11 +184,11 @@ public class AdminRefundServiceImp implements AdminRefundService {
             // 4. Update refund status
             Refund.RefundStatus newStatus = Refund.RefundStatus.valueOf(updateDto.getStatus());
             if (Refund.RefundStatus.FAILED.equals(newStatus)) {
-                if (updateDto.getReason() == null || updateDto.getReason().isBlank()) {
-                    log.warn("Failed refund requires a reason");
-                    return ApiResponseUtil.badRequest("Failed refund must have a reason");
+                if (updateDto.getRejectedReason() == null || updateDto.getRejectedReason().isBlank()) {
+                    log.warn("Failed! Rejected refund requires a reason");
+                    return ApiResponseUtil.badRequest("Failed! Rejected refund must have a reason");
                 }
-                refund.setReason(updateDto.getReason());
+                refund.setRejectedReason(updateDto.getRejectedReason());
             }
             refund.setStatus(newStatus);
             refund.setProcessedAt(LocalDateTime.now());
@@ -212,6 +212,8 @@ public class AdminRefundServiceImp implements AdminRefundService {
                     .paymentId(savedRefund.getPayment().getId())
                     .amount(savedRefund.getAmount())
                     .status(savedRefund.getStatus().name())
+                    .reason(savedRefund.getReason())
+                    .rejectedReason(savedRefund.getRejectedReason())
                     .build();
 
             log.info("Refund status updated successfully for refund ID: {} to status: {}", refundId, newStatus);

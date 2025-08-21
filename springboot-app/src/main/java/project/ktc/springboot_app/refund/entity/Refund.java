@@ -39,6 +39,9 @@ public class Refund {
     @Column(columnDefinition = "TEXT")
     private String reason;
 
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String rejectedReason;
+
     @CreationTimestamp
     @Column(name = "requested_at", updatable = false)
     private LocalDateTime requestedAt;
