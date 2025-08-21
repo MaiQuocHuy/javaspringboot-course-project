@@ -55,7 +55,8 @@ public class AdminCourseController {
 
         @GetMapping
         // @PreAuthorize("hasPermission(null, 'course:read') or hasRole('ADMIN')")
-        @PreAuthorize("hasPermission(null, 'Course', 'course:read')")
+        @PreAuthorize("hasRole('ADMIN')")
+        // @PreAuthorize("hasPermission(null, 'Course', 'course:read')")
         @Operation(summary = "Get all courses for admin", description = "Retrieves a paginated list of all courses with filtering and sorting options. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaginatedResponse.class))),
@@ -101,7 +102,9 @@ public class AdminCourseController {
         }
 
         @PatchMapping("/{id}/approve")
-        @PreAuthorize("hasPermission(#id, 'Course', 'course:approve') or hasRole('ADMIN')")
+        // @PreAuthorize("hasPermission(#id, 'Course', 'course:approve') or
+        // hasRole('ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         @Operation(summary = "Approve a pending course", description = "Approves a course that is currently in pending status. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Course approved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CourseApprovalResponseDto.class))),
@@ -117,7 +120,10 @@ public class AdminCourseController {
         }
 
         @GetMapping("/{id}")
-        @PreAuthorize("hasPermission(#id, 'Course', 'course:read') or hasRole('ADMIN')")
+        // @PreAuthorize("hasPermission(#id, 'Course', 'course:read') or
+        // hasRole('ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
+
         @Operation(summary = "Get course details for admin review", description = "Retrieves complete course details including sections and lessons for admin review. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Course details retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
@@ -145,7 +151,8 @@ public class AdminCourseController {
          * @return Paginated list of courses for review
          */
         @GetMapping("/review-course")
-        @PreAuthorize("hasPermission(null, 'course:review') or hasRole('ADMIN')")
+        // @PreAuthorize("hasPermission(null, 'course:review') or hasRole('ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         @Operation(summary = "Get courses for review", description = "Retrieves a paginated list of courses filtered by review status (defaults to PENDING and RESUBMITTED), creator, and creation date range. Admins only.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Pending review courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
