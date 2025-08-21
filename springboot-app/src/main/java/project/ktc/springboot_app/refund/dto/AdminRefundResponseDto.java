@@ -17,6 +17,7 @@ public class AdminRefundResponseDto {
     private String id;
     private PaymentInfo payment;
     private String reason;
+    private String rejectedReason;
     private BigDecimal amount;
     private String status;
     private LocalDateTime requestedAt;
@@ -43,6 +44,7 @@ public class AdminRefundResponseDto {
                         .createdAt(refund.getPayment().getCreatedAt())
                         .build())
                 .reason(refund.getReason())
+                .rejectedReason(refund.getRejectedReason())
                 .amount(refund.getAmount())
                 .status(refund.getStatus().name())
                 .requestedAt(refund.getRequestedAt())

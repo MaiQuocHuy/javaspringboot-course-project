@@ -20,6 +20,7 @@ public class AdminRefundDetailsResponseDto {
     private String id;
     private AdminPaymentDetailResponseDto payment;
     private String reason;
+    private String rejectedReason;
     private BigDecimal amount;
     private String status;
     private LocalDateTime requestedAt;
@@ -30,6 +31,7 @@ public class AdminRefundDetailsResponseDto {
                 .id(refund.getId())
                 .payment(AdminPaymentDetailResponseDto.fromEntity(refund.getPayment()))
                 .reason(refund.getReason())
+                .rejectedReason(refund.getRejectedReason())
                 .amount(refund.getAmount())
                 .status(refund.getStatus().name())
                 .requestedAt(refund.getRequestedAt())

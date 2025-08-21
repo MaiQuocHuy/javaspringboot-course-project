@@ -17,5 +17,5 @@ public class UpdateRefundStatusDto {
     @Pattern(regexp = "^(COMPLETED|FAILED)$", message = "Status must be either 'COMPLETED' or 'FAILED'")
     private String status;
 
-    private String reason;
+    private String rejectedReason;
 }
