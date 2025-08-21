@@ -17,4 +17,6 @@ public class AdminRefundStatusUpdateResponseDto {
     private String paymentId;
     private BigDecimal amount;
     private String status;
+    private String reason;
+    private String rejectedReason;
 }
