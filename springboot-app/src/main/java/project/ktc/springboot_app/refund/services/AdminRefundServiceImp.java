@@ -16,6 +16,8 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
+import project.ktc.springboot_app.enrollment.entity.Enrollment;
+import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.refund.dto.AdminRefundDetailsResponseDto;
@@ -42,6 +44,7 @@ public class AdminRefundServiceImp implements AdminRefundService {
     private final RefundRepository refundRepository;
     private final InstructorEarningRepository instructorEarningRepository;
     private final StripePaymentDetailsService stripePaymentDetailsService;
+    private final EnrollmentRepository enrollmentRepository;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<AdminRefundResponseDto>>> getAllRefunds(Pageable pageable) {
@@ -193,14 +196,38 @@ public class AdminRefundServiceImp implements AdminRefundService {
             refund.setStatus(newStatus);
             refund.setProcessedAt(LocalDateTime.now());
 
-            // 5. If status is COMPLETED, block instructor payout by updating earning status
-            if (Refund.RefundStatus.COMPLETED.equals(newStatus) && earningOpt.isPresent()) {
-                InstructorEarning earning = earningOpt.get();
-                // Block the earning by setting it to a blocked status (we can use PENDING to
-                // prevent payout)
-                earning.setStatus(InstructorEarning.EarningStatus.PENDING);
-                instructorEarningRepository.save(earning);
-                log.info("Blocked instructor earning {} due to refund completion", earning.getId());
+            // 5. If status is COMPLETED, block instructor payout and remove enrollment
+            if (Refund.RefundStatus.COMPLETED.equals(newStatus)) {
+                // Block instructor earning if exists
+                if (earningOpt.isPresent()) {
+                    InstructorEarning earning = earningOpt.get();
+                    // Block the earning by setting it to a blocked status (we can use PENDING to
+                    // prevent payout)
+                    earning.setStatus(InstructorEarning.EarningStatus.PENDING);
+                    instructorEarningRepository.save(earning);
+                    log.info("Blocked instructor earning {} due to refund completion", earning.getId());
+                }
+
+                // Remove enrollment for the refunded course
+                try {
+                    String userId = payment.getUser().getId();
+                    String courseId = payment.getCourse().getId();
+
+                    Optional<Enrollment> enrollmentOpt = enrollmentRepository
+                            .findByUserIdAndCourseId(userId, courseId);
+
+                    if (enrollmentOpt.isPresent()) {
+                        enrollmentRepository.delete(enrollmentOpt.get());
+                        log.info("Removed enrollment for user {} from course {} due to refund completion",
+                                userId, courseId);
+                    } else {
+                        log.warn("No enrollment found for user {} in course {} to remove",
+                                userId, courseId);
+                    }
+                } catch (Exception e) {
+                    log.error("Error removing enrollment for refund {}: {}", refundId, e.getMessage(), e);
+                    // Continue with refund processing even if enrollment removal fails
+                }
             }
 
             // 6. Save the updated refund
