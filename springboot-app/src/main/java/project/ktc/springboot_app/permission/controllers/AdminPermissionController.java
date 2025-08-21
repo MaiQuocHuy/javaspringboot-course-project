@@ -253,7 +253,7 @@ public class AdminPermissionController {
      *                filter types
      * @return success response with updated permissions
      */
-    @PatchMapping("/{role_id}")
+    @PatchMapping("/{roleId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update role permissions with filter types", description = "Updates permissions for a role including filter type assignments (ALL/OWN access)")
     @ApiResponses(value = {
@@ -263,7 +263,7 @@ public class AdminPermissionController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<?> updateRolePermissions(
-            @Parameter(description = "Role ID to update permissions for", required = true) @PathVariable("role_id") String roleId,
+            @Parameter(description = "Role ID to update permissions for", required = true) @PathVariable("roleId") String roleId,
             @Parameter(description = "Permission update request with filter types", required = true) @RequestBody PermissionUpdateRequest request) {
 
         try {

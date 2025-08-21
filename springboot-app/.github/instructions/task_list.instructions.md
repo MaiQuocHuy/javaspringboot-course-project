@@ -4250,3 +4250,65 @@ Only ADMIN users can call this API. -**Request**:
   - Permissions with no restriction → `canAssignToRole = true` for all roles.
   - Permissions with restriction → only roles in `allowedRoles` can assign.
   - Even if role currently does not have a permission, admin can assign it if `canAssignToRole = true`.
+
+### 7.8 `POST /api/admin/users`
+
+- **Description**: Creates a user with a role in the system. Only ADMIN users can call this API.
+
+- **Request**:
+
+  - **Method:** POST
+  - **Path:** /api/admin/users
+  - **Headers**:
+    - Authorization: Bearer <accessToken>
+  - **Body:**
+    ```json
+    {
+      "username": "newuser",
+      "email": "newuser@example.com",
+      "password": "password",
+      "role": "MANAGER"
+    }
+    ```
+
+- **Response**:
+
+  - **Status Code:** 201 Created
+  - **Body:**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "User created successfully",
+      "data": {
+        "id": "user_id",
+        "username": "newuser",
+        "email": "newuser@example.com",
+        "role": "MANAGER"
+      }
+    }
+    ```
+
+- **Errors**:
+
+  - 400 Bad Request: invalid request body
+  - 401 Unauthorized: missing or invalid JWT
+  - 403 Forbidden: caller is not ADMIN
+
+- **Controller Responsibilities**:
+
+  - Validate JWT and ADMIN role.
+  - Parse request body and validate user data.
+  - Call UserService.createUser(userDto).
+  - Return JSON response in the structure above.
+
+- **Service Responsibilities**:
+
+  - Validate user data (e.g., email format, password strength).
+  - Check if user already exists.
+  - Hash password and save user to the database.
+  - Assign role to user.
+
+- **Business Rules**:
+  - Only ADMIN can access this API.
+  - All fields are mandatory.
+  - Email must be unique.
