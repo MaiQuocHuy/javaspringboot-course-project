@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
 
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.dto.CourseAdminResponseDto;
 import project.ktc.springboot_app.course.dto.CourseApprovalResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewDetailResponseDto;
@@ -34,6 +36,11 @@ import project.ktc.springboot_app.course.dto.UpdateCourseReviewStatusDto;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.services.AdminCourseServiceImp;
 import project.ktc.springboot_app.course.services.CourseServiceImp;
+import project.ktc.springboot_app.entity.UserRole;
+import project.ktc.springboot_app.permission.dto.CreateRoleRequest;
+import project.ktc.springboot_app.permission.dto.RoleResponseDto;
+import project.ktc.springboot_app.permission.mapper.RoleMapper;
+import project.ktc.springboot_app.permission.services.RoleServiceImp;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 
 import java.math.BigDecimal;
@@ -52,11 +59,13 @@ public class AdminCourseController {
 
         private final CourseServiceImp courseService;
         private final AdminCourseServiceImp adminCourseService;
+        private final RoleServiceImp roleService;
+        private final RoleMapper roleMapper;
 
         @GetMapping
         // @PreAuthorize("hasPermission(null, 'course:read') or hasRole('ADMIN')")
-        @PreAuthorize("hasRole('ADMIN')")
-        // @PreAuthorize("hasPermission(null, 'Course', 'course:read')")
+        // @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasPermission(null, 'Course', 'course:read')")
         @Operation(summary = "Get all courses for admin", description = "Retrieves a paginated list of all courses with filtering and sorting options. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaginatedResponse.class))),
@@ -231,6 +240,45 @@ public class AdminCourseController {
                 log.info("Admin request to update course review status - courseId: {}, status: {}, admin: {}",
                                 id, updateDto.getStatus(), principal.getName());
                 return adminCourseService.updateCourseReviewStatus(id, updateDto, principal.getName());
+        }
+
+        @PostMapping
+        @PreAuthorize("hasRole('ADMIN')")
+        @Operation(summary = "Create a new role", description = "Creates a new user with a specific role in the system. Only ADMIN users can call this API.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Role created successfully"),
+                        @ApiResponse(responseCode = "400", description = "Invalid input - validation error or role name format error"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+                        @ApiResponse(responseCode = "409", description = "Conflict - Role name already exists"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<RoleResponseDto>> createRole(
+                        @Valid @RequestBody CreateRoleRequest request) {
+                log.info("Admin requesting to create new role: {}", request.getName());
+
+                try {
+                        // Create the role
+                        UserRole createdRole = roleService.createRole(request);
+                        log.info("Role created successfully with ID: {} and name: {}", createdRole.getId(),
+                                        createdRole.getRole());
+
+                        // Convert to DTO
+                        RoleResponseDto responseDto = roleMapper.toResponseDto(createdRole);
+
+                        return ApiResponseUtil.created(responseDto, "Role created successfully");
+
+                } catch (IllegalArgumentException e) {
+                        log.warn("Role creation failed due to validation error: {}", e.getMessage());
+                        if (e.getMessage().contains("already exists")) {
+                                return ApiResponseUtil.conflict(e.getMessage());
+                        } else {
+                                return ApiResponseUtil.badRequest(e.getMessage());
+                        }
+                } catch (Exception e) {
+                        log.error("Error creating role: {}", request.getName(), e);
+                        return ApiResponseUtil.internalServerError("Internal server error while creating role");
+                }
         }
 
 }

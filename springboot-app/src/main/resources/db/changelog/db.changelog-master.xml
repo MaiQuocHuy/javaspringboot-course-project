@@ -79,7 +79,7 @@
     
     <!-- Fix for permission system issues -->
     <include file="db/changelog/changes/137-seed-role-permissions.xml"/>
-    <include file="db/changelog/changes/138-add-seed-permission-course-approve.xml"/>
+    <!-- <include file="db/changelog/changes/138-add-seed-permission-course-approve.xml"/> -->
     <include file="db/changelog/changes/139-add-permission-role.xml"/>
     <!-- Role Filter Rules System for Scope-Based Permission Filtering -->
     <!-- <include file="db/changelog/changes/139-create-role-filter-rule-table.xml"/> -->
