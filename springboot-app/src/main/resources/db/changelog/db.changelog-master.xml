@@ -89,6 +89,9 @@
     <include file="db/changelog/changes/143-seed-role-filter-rules-system.xml"/>
     <include file="db/changelog/changes/144-seed-role-filter-rules-auth.xml"/>
 
+    <!-- Payment System Enhancements -->
+    <include file="db/changelog/changes/145-add-paid-out-at-to-payments.xml"/>
+
     <!-- <include file="db/changelog/changes/139-fix-role-permissions-id-length.xml"/>
     <include file="db/changelog/changes/138-clear-role-permissions.xml"/> -->
     <!-- <include file="db/changelog/changes/138-update-all-resources.xml"/> -->

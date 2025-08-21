@@ -79,16 +79,16 @@ public class AdminUserController {
 
         @GetMapping("/{id}")
         @PreAuthorize("hasPermission(#id, 'User', 'user:read') or hasRole('ADMIN')")
-        @Operation(summary = "Get user by ID", description = "Retrieve a user by their ID")
+        @Operation(summary = "Get user by ID with admin details", description = "Retrieve a user by their ID with enrolled courses, total payments, and study time")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "User found"),
                         @ApiResponse(responseCode = "403", description = "Forbidden - user:read permission required"),
                         @ApiResponse(responseCode = "404", description = "User not found"),
                         @ApiResponse(responseCode = "400", description = "Invalid user ID format")
         })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> getUserById(
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto>> getUserById(
                         @Parameter(description = "User ID", required = true, example = "7200a420-2ff3-4f18-9933-1b86d05f1a78") @PathVariable String id) {
-                return userService.getUserById(id);
+                return userService.getAdminUserById(id);
         }
 
         @PutMapping("/{id}/role")

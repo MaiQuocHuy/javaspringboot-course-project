@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import project.ktc.springboot_app.auth.dto.GoogleLoginDto;
+import project.ktc.springboot_app.auth.dto.LoginAdminDto;
 import project.ktc.springboot_app.auth.dto.LoginUserDto;
 import project.ktc.springboot_app.auth.dto.RefreshTokenDto;
 import project.ktc.springboot_app.auth.dto.RegisterApplicationDto;
@@ -65,6 +66,21 @@ public class AuthController {
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, Object>>> login(
                         @Valid @RequestBody LoginUserDto dto) {
                 return authService.loginUser(dto);
+        }
+
+        @PostMapping("/login-admin")
+        @Operation(summary = "Login aas an admin", description = "Authenticates user and returns JWT access and refresh tokens. "
+                        +
+                        "Test accounts: Admin (alice@example.com/alice123), ")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Login successful"),
+                        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+                        @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+                        @ApiResponse(responseCode = "500", description = "Login failed due to server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, Object>>> loginAdmin(
+                        @Valid @RequestBody LoginAdminDto dto) {
+                return authService.loginAdmin(dto);
         }
 
         @PostMapping("/google")

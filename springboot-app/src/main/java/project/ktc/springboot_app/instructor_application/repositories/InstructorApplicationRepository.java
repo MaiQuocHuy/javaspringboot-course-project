@@ -3,10 +3,12 @@ package project.ktc.springboot_app.instructor_application.repositories;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -50,5 +52,12 @@ public interface InstructorApplicationRepository extends JpaRepository<Instructo
      */
     @Query("SELECT COUNT(ia) FROM InstructorApplication ia WHERE ia.user.id = :userId AND ia.status = 'PENDING'")
     long countPendingApplicationsByUserId(@Param("userId") String userId);
+
+    /**
+     * Find all instructor applications
+     */
+    @Query("SELECT ia FROM InstructorApplication ia JOIN FETCH ia.user ORDER BY ia.submittedAt DESC")
+    @NonNull
+    List<InstructorApplication> findAll();
 
 }

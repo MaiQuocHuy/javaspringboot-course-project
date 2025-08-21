@@ -35,6 +35,12 @@ public class AdminPaymentDetailResponseDto {
     // @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime createdAt;
 
+    private LocalDateTime paidAt;
+
+    private LocalDateTime paidoutAt;
+
+    private LocalDateTime updatedAt;
+
     private String transactionId;
 
     private String stripeSessionId;
@@ -104,7 +110,14 @@ public class AdminPaymentDetailResponseDto {
                 .id(payment.getCourse().getId())
                 .title(payment.getCourse().getTitle())
                 .thumbnailUrl(payment.getCourse().getThumbnailUrl())
-                .instructor(userInfoDto)
+                .instructor(payment.getCourse().getInstructor() != null
+                        ? UserInfoDto.builder()
+                                .id(payment.getCourse().getInstructor().getId())
+                                .name(payment.getCourse().getInstructor().getName())
+                                .email(payment.getCourse().getInstructor().getEmail())
+                                .thumbnailUrl(payment.getCourse().getInstructor().getThumbnailUrl())
+                                .build()
+                        : null)
                 .level(payment.getCourse().getLevel())
                 .price(payment.getCourse().getPrice())
                 .build();
@@ -117,6 +130,8 @@ public class AdminPaymentDetailResponseDto {
                 .status(payment.getStatus().name())
                 .paymentMethod(payment.getPaymentMethod())
                 .createdAt(payment.getCreatedAt())
+                .paidAt(payment.getPaidAt())
+                .updatedAt(payment.getUpdatedAt())
                 .stripeSessionId(payment.getSessionId())
                 .course(courseInfo)
                 .build();
