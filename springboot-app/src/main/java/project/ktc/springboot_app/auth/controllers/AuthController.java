@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import project.ktc.springboot_app.auth.dto.GoogleLoginDto;
@@ -79,8 +82,9 @@ public class AuthController {
                         @ApiResponse(responseCode = "500", description = "Login failed due to server error")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, Object>>> loginAdmin(
-                        @Valid @RequestBody LoginAdminDto dto) {
-                return authService.loginAdmin(dto);
+                        @Valid @RequestBody LoginAdminDto dto,
+                        HttpServletResponse response) {
+                return authService.loginAdmin(dto, response);
         }
 
         @PostMapping("/google")
@@ -99,8 +103,24 @@ public class AuthController {
                         @ApiResponse(responseCode = "500", description = "Token refresh failed due to server error")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Map<String, Object>>> refreshToken(
-                        @Valid @RequestBody RefreshTokenDto refreshTokenRequest) {
-                String refreshToken = refreshTokenRequest.getRefreshToken();
+                        @Valid @RequestBody(required = false) RefreshTokenDto refreshTokenRequest,
+                        HttpServletRequest request) {
+
+                String refreshToken = null;
+
+                if (request.getCookies() != null) {
+                        for (Cookie cookie : request.getCookies()) {
+                                if ("refreshToken".equals(cookie.getName())) {
+                                        refreshToken = cookie.getValue();
+                                        break;
+                                }
+                        }
+                }
+                // Nếu không có cookie, đọc từ request body (nextAuth)
+                if ((refreshToken == null || refreshToken.trim().isEmpty()) && refreshTokenRequest != null) {
+                        refreshToken = refreshTokenRequest.getRefreshToken();
+                }
+
                 if (refreshToken == null || refreshToken.isEmpty()) {
                         return ApiResponseUtil.badRequest("Refresh token is required");
                 }
@@ -129,11 +149,35 @@ public class AuthController {
                         @ApiResponse(responseCode = "500", description = "Logout failed due to server error")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> logout(
-                        @Valid @RequestBody RefreshTokenDto refreshTokenRequest) {
-                String refreshToken = refreshTokenRequest.getRefreshToken();
+                        @Valid @RequestBody(required = false) RefreshTokenDto refreshTokenRequest,
+                        HttpServletRequest request,
+                        HttpServletResponse response) {
+                String refreshToken = null;
+
+                // Read from cookie first
+                if (request.getCookies() != null) {
+                        for (Cookie cookie : request.getCookies()) {
+                                if ("refreshToken".equals(cookie.getName())) {
+                                        refreshToken = cookie.getValue();
+                                        break;
+                                }
+                        }
+                }
+
+                // If cookie null, check request body
+                if ((refreshToken == null || refreshToken.isEmpty()) &&
+                                refreshTokenRequest != null) {
+                        refreshToken = refreshTokenRequest.getRefreshToken();
+                }
+
+                // validation
                 if (refreshToken == null || refreshToken.isEmpty()) {
                         return ApiResponseUtil.badRequest("Refresh token is required");
                 }
+
+                // Clear cookie
+                String clearCookie = "refreshToken=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict";
+                response.addHeader("Set-Cookie", clearCookie);
 
                 return authService.logout(refreshToken);
         }
