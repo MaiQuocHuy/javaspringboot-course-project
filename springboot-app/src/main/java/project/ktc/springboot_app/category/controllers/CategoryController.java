@@ -51,7 +51,7 @@ public class CategoryController {
 
 // Admin endpoints for category management
 @RestController
-@RequestMapping("/api/admin/v1/categories")
+@RequestMapping("/api/admin/categories")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Admin Category Management", description = "APIs for managing course categories (Admin only)")
