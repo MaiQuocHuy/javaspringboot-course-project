@@ -11,6 +11,7 @@ import project.ktc.springboot_app.user.dto.CreateUserDto;
 import project.ktc.springboot_app.user.dto.UpdateUserDto;
 import project.ktc.springboot_app.user.dto.UpdateUserRoleDto;
 import project.ktc.springboot_app.user.dto.UpdateUserStatusDto;
+import project.ktc.springboot_app.user.dto.AdminCreateUserDto;
 import project.ktc.springboot_app.auth.dto.UserResponseDto;
 
 public interface UserService {
@@ -35,4 +36,6 @@ public interface UserService {
             int page, int size, String sort);
 
     ResponseEntity<ApiResponse<Void>> deleteUser(String id);
+
+    ResponseEntity<ApiResponse<UserResponseDto>> createAdminUser(AdminCreateUserDto createUserDto);
 }

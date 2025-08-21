@@ -4253,7 +4253,7 @@ Only ADMIN users can call this API. -**Request**:
 
 ### 7.8 `POST /api/admin/users`
 
-- **Description**: Creates a user with a role in the system. Only ADMIN users can call this API.
+- **Description**: Creates a new user with exactly one role in the system. Only ADMIN users can call this API. Performs detailed validation and returns precise error messages
 
 - **Request**:
 
@@ -4290,23 +4290,30 @@ Only ADMIN users can call this API. -**Request**:
 
 - **Errors**:
 
-  - 400 Bad Request: invalid request body
+  - 400 Bad Request: missing or invalid fields
   - 401 Unauthorized: missing or invalid JWT
   - 403 Forbidden: caller is not ADMIN
+  - 409 Conflict: email already exists
+  - 422 Unprocessable Entity: password too weak, invalid email, or role not recognized
 
 - **Controller Responsibilities**:
 
   - Validate JWT and ADMIN role.
-  - Parse request body and validate user data.
+  - Parse and validate request body.
   - Call UserService.createUser(userDto).
-  - Return JSON response in the structure above.
+  - Return response with proper HTTP status and JSON structure.
 
 - **Service Responsibilities**:
 
-  - Validate user data (e.g., email format, password strength).
-  - Check if user already exists.
-  - Hash password and save user to the database.
-  - Assign role to user.
+  - Validate each field:
+    - email format
+    - password strength (min 6 chars, contains uppercase, lowercase, number, special char)
+    - role must exist in system
+  - Check if user/email already exists.
+  - Hash password securely.
+  - Create user record in database.
+  - Assign only one role to user.
+  - Optionally log creation action for audit purposes.
 
 - **Business Rules**:
   - Only ADMIN can access this API.

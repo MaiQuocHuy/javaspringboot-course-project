@@ -60,7 +60,7 @@ public class SecurityConfig {
                                                                 "/error")
                                                 .permitAll()
                                                 // Admin
-                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                                // .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                                                 // Instructor
                                                 .requestMatchers("/api/instructor/**").hasAnyRole("INSTRUCTOR")

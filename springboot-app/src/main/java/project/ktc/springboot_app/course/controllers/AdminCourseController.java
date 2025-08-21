@@ -65,7 +65,7 @@ public class AdminCourseController {
         @GetMapping
         // @PreAuthorize("hasPermission(null, 'course:read') or hasRole('ADMIN')")
         // @PreAuthorize("hasRole('ADMIN')")
-        @PreAuthorize("hasPermission(null, 'Course', 'course:read')")
+        @PreAuthorize("hasPermission(null, 'Course', 'course:READ')")
         @Operation(summary = "Get all courses for admin", description = "Retrieves a paginated list of all courses with filtering and sorting options. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaginatedResponse.class))),
@@ -129,10 +129,8 @@ public class AdminCourseController {
         }
 
         @GetMapping("/{id}")
-        // @PreAuthorize("hasPermission(#id, 'Course', 'course:read') or
-        // hasRole('ADMIN')")
-        @PreAuthorize("hasRole('ADMIN')")
-
+        @PreAuthorize("hasPermission(#id, 'Course', 'course:READ') and !hasRole('STUDENT') and !hasRole('INSTRUCTOR')")
+        // @PreAuthorize("hasRole('ADMIN')")
         @Operation(summary = "Get course details for admin review", description = "Retrieves complete course details including sections and lessons for admin review. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Course details retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),

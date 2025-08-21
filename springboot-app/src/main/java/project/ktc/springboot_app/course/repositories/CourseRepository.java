@@ -178,4 +178,6 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "WHERE LOWER(c.slug) = LOWER(:slug)")
         boolean existsBySlugIgnoreCase(@Param("slug") String slug);
 
+        boolean existsByIdAndInstructorId(String courseId, String instructorId);
+
 }
