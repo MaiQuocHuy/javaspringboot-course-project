@@ -13,9 +13,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.dto.GoogleLoginDto;
+import project.ktc.springboot_app.auth.dto.LoginAdminDto;
 import project.ktc.springboot_app.auth.dto.LoginUserDto;
 import project.ktc.springboot_app.auth.dto.RegisterApplicationDto;
 import project.ktc.springboot_app.auth.dto.RegisterUserDto;
@@ -271,6 +274,88 @@ public class AuthServiceImp implements AuthService {
             Map<String, Object> loginResponse = Map.of(
                     "accessToken", accessToken,
                     "refreshToken", refreshTokenStr,
+                    "user", userResponseDto);
+
+            log.info("User logged in successfully: {}", foundUser.getEmail());
+            return ApiResponseUtil.success(loginResponse, "Login successful");
+
+        } catch (DisabledException e) {
+            log.warn("Account is blocked: {}", dto.getEmail());
+            return ApiResponseUtil.unauthorized("Email or password is incorrect.");
+        } catch (BadCredentialsException e) {
+            log.warn("Invalid email or password: {}", dto.getEmail());
+            return ApiResponseUtil.unauthorized("Email or password is incorrect.");
+        } catch (AuthenticationException e) {
+            log.warn("Unknown authentication error: {}", dto.getEmail(), e);
+            return ApiResponseUtil.unauthorized("Authentication failed.");
+        } catch (Exception e) {
+            log.error("System error occurred while logging in user: {}", dto.getEmail(), e);
+            return ApiResponseUtil.internalServerError("An error occurred. Please try again later.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Map<String, Object>>> loginAdmin(LoginAdminDto dto,
+            HttpServletResponse response) {
+        // Validation checks
+        if (dto == null) {
+            return ApiResponseUtil.badRequest("Login data cannot be null");
+        }
+        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+            return ApiResponseUtil.badRequest("Email cannot be null or empty");
+        }
+        if (dto.getPassword() == null || dto.getPassword().trim().isEmpty()) {
+            return ApiResponseUtil.badRequest("Password cannot be null or empty");
+        }
+
+        try {
+            // Authenticate user
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
+
+            Optional<User> user = userRepository.findByEmail(dto.getEmail());
+            if (user.isEmpty()) {
+                return ApiResponseUtil.unauthorized("Invalid email or password");
+            }
+            log.info("User found: {}", user.get().getEmail());
+            User foundUser = user.get();
+            if (!foundUser.getIsActive()) {
+                return ApiResponseUtil.unauthorized("User account is inactive");
+            }
+
+            if (foundUser.getRole() == null
+                    || !foundUser.getRole().getRole().equals(UserRoleEnum.ADMIN.name().toUpperCase().trim())) {
+                return ApiResponseUtil.unauthorized("You do not have permission to access this resource");
+            }
+
+            String accessToken = jwtTokenProvider.generateAccessToken(foundUser);
+
+            // Generate and save refresh token
+            String refreshTokenStr = UUID.randomUUID().toString();
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_MONTH, 30);
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .user(foundUser)
+                    .token(refreshTokenStr)
+                    .expiresAt(LocalDateTime.ofInstant(cal.getTime().toInstant(), ZoneId.systemDefault()))
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            refreshTokenRepository.save(refreshToken);
+
+            // Set refreshToken vào httpOnly cookie
+            String cookieValue = String.format(
+                    "refreshToken=%s; Max-Age=%d; Path=/; HttpOnly; SameSite=Strict", // them secure
+                    refreshTokenStr,
+                    30 * 24 * 60 * 60 // 30 days
+            );
+            response.addHeader("Set-Cookie", cookieValue);
+
+            UserResponseDto userResponseDto = new UserResponseDto(foundUser);
+            userResponseDto.setRole(null);
+            Map<String, Object> loginResponse = Map.of(
+                    "accessToken", accessToken,
+                    // "refreshToken", refreshTokenStr,
                     "user", userResponseDto);
 
             log.info("User logged in successfully: {}", foundUser.getEmail());
