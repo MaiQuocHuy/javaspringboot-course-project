@@ -162,4 +162,26 @@ public interface PermissionService {
      * @return list of root resources with hierarchical structure
      */
     List<project.ktc.springboot_app.permission.dto.ResourceDto> getResourceTreeForRole(String roleId);
+
+    /**
+     * Get all available permissions with constraint information for a specific role
+     * This shows all permissions in the system and indicates which ones are
+     * constrained
+     * for the given role
+     * 
+     * @param roleId the role ID to check constraints against
+     * @return list of available permissions with constraint flags
+     */
+    List<project.ktc.springboot_app.permission.dto.AvailablePermissionDto> getAllAvailablePermissions(String roleId);
+
+    /**
+     * Get all permissions for a specific role grouped by resource with
+     * assignability information
+     * This is used for admin interface to manage permissions for a role
+     * 
+     * @param roleId the role ID
+     * @return grouped permissions by resource with assignability details
+     */
+    project.ktc.springboot_app.permission.dto.RolePermissionGroupedDto getPermissionsGroupedByResourceForRole(
+            String roleId);
 }

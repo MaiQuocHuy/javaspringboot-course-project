@@ -23,6 +23,7 @@
             <column name="id" value="student-course-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-course-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -31,6 +32,7 @@
             <column name="id" value="student-lesson-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-lesson-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -39,6 +41,7 @@
             <column name="id" value="student-enrollment-create-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-enrollment-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -47,6 +50,7 @@
             <column name="id" value="student-enrollment-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-enrollment-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -55,6 +59,7 @@
             <column name="id" value="student-enrollment-enroll-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-enrollment-enroll-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -63,6 +68,7 @@
             <column name="id" value="student-review-create-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-review-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -71,6 +77,7 @@
             <column name="id" value="student-review-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-review-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -79,6 +86,7 @@
             <column name="id" value="student-review-update-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-review-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -87,6 +95,7 @@
             <column name="id" value="student-review-delete-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-review-delete-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -95,6 +104,7 @@
             <column name="id" value="student-payment-create-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-payment-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -103,6 +113,7 @@
             <column name="id" value="student-payment-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-payment-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -111,6 +122,7 @@
             <column name="id" value="student-user-update-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-user-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -119,6 +131,7 @@
             <column name="id" value="student-user-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-user-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -127,6 +140,7 @@
             <column name="id" value="student-section-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-section-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -135,6 +149,7 @@
             <column name="id" value="student-category-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-category-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -143,6 +158,7 @@
             <column name="id" value="student-lesson-completion-create-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-lesson-completion-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -151,6 +167,7 @@
             <column name="id" value="student-lesson-completion-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-lesson-completion-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -159,6 +176,7 @@
             <column name="id" value="student-lesson-completion-update-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-lesson-completion-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -167,6 +185,7 @@
             <column name="id" value="student-quiz-question-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-quiz-question-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -175,6 +194,7 @@
             <column name="id" value="student-quiz-result-create-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-quiz-result-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -183,6 +203,7 @@
             <column name="id" value="student-quiz-result-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-quiz-result-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -191,6 +212,7 @@
             <column name="id" value="student-quiz-result-update-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-quiz-result-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -199,6 +221,7 @@
             <column name="id" value="student-video-content-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-video-content-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -207,6 +230,7 @@
             <column name="id" value="student-instructor-app-create-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-instructor-app-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -215,6 +239,7 @@
             <column name="id" value="student-instructor-app-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-instructor-app-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -223,6 +248,7 @@
             <column name="id" value="student-instructor-app-update-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-instructor-app-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -231,6 +257,7 @@
             <column name="id" value="student-refund-create-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-refund-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -239,6 +266,7 @@
             <column name="id" value="student-refund-read-001"/>
             <column name="role_id" valueComputed="@student_role_id"/>
             <column name="permission_id" value="perm-refund-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -260,6 +288,7 @@
             <column name="id" value="instructor-course-create-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-course-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -267,6 +296,7 @@
             <column name="id" value="instructor-course-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-course-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -274,6 +304,7 @@
             <column name="id" value="instructor-course-update-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-course-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -281,6 +312,7 @@
             <column name="id" value="instructor-course-delete-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-course-delete-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -288,6 +320,7 @@
             <column name="id" value="instructor-course-publish-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-course-publish-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -296,6 +329,7 @@
             <column name="id" value="lesson-create-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-lesson-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -303,6 +337,7 @@
             <column name="id" value="lesson-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-lesson-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -310,6 +345,7 @@
             <column name="id" value="lesson-update-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-lesson-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -317,6 +353,7 @@
             <column name="id" value="lesson-delete-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-lesson-delete-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -325,6 +362,7 @@
             <column name="id" value="instructor-section-create-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-section-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -332,6 +370,7 @@
             <column name="id" value="instructor-section-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-section-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -339,6 +378,7 @@
             <column name="id" value="instructor-section-update-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-section-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -346,6 +386,7 @@
             <column name="id" value="instructor-section-delete-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-section-delete-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -354,6 +395,7 @@
             <column name="id" value="instructor-enrollment-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-enrollment-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -362,6 +404,7 @@
             <column name="id" value="instructor-review-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-review-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -370,6 +413,7 @@
             <column name="id" value="instructor-payment-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-payment-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -378,6 +422,7 @@
             <column name="id" value="earn-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-earn-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -385,6 +430,7 @@
             <column name="id" value="earn-update-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-earn-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -393,6 +439,7 @@
             <column name="id" value="instructor-user-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-user-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -400,6 +447,7 @@
             <column name="id" value="instructor-user-update-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-user-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -408,6 +456,7 @@
             <column name="id" value="instructor-category-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-category-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -416,6 +465,7 @@
             <column name="id" value="instructor-video-content-create-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-video-content-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -423,6 +473,7 @@
             <column name="id" value="instructor-video-content-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-video-content-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -430,6 +481,7 @@
             <column name="id" value="instructor-video-content-update-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-video-content-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -437,6 +489,7 @@
             <column name="id" value="instructor-video-content-delete-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-video-content-delete-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -445,6 +498,7 @@
             <column name="id" value="instructor-quiz-question-create-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-quiz-question-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -452,6 +506,7 @@
             <column name="id" value="instructor-quiz-question-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-quiz-question-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -459,6 +514,7 @@
             <column name="id" value="instructor-quiz-question-update-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-quiz-question-update-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -466,6 +522,7 @@
             <column name="id" value="instructor-quiz-question-delete-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-quiz-question-delete-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -474,6 +531,7 @@
             <column name="id" value="instructor-quiz-result-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-quiz-result-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -482,6 +540,7 @@
             <column name="id" value="lesson-completion-read-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-lesson-completion-read-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -490,6 +549,7 @@
             <column name="id" value="lesson-completion-create-001"/>
             <column name="role_id" valueComputed="@instructor_role_id"/>
             <column name="permission_id" value="perm-lesson-completion-create-001"/>
+            <column name="filter_type_id" value="filter-type-002"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -510,6 +570,8 @@
             <column name="id" value="admin-course-create-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-course-create-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -517,6 +579,8 @@
             <column name="id" value="admin-course-read-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-course-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -524,6 +588,8 @@
             <column name="id" value="admin-course-update-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-course-update-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -531,6 +597,8 @@
             <column name="id" value="admin-course-delete-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-course-delete-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -538,14 +606,18 @@
             <column name="id" value="admin-course-publish-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-course-publish-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
         <!-- Admin: Full lesson permissions -->
-        <insert tableName="role_permissions">
+        <!-- <insert tableName="role_permissions">
             <column name="id" value="admin-lesson-create-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-create-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -553,6 +625,8 @@
             <column name="id" value="admin-lesson-read-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -560,6 +634,8 @@
             <column name="id" value="admin-lesson-update-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-update-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -567,14 +643,18 @@
             <column name="id" value="admin-lesson-delete-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-delete-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
-        </insert>
+        </insert> -->
 
         <!-- Admin: Full enrollment permissions -->
         <insert tableName="role_permissions">
             <column name="id" value="admin-enrollment-create-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-enrollment-create-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -582,6 +662,8 @@
             <column name="id" value="admin-enrollment-read-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-enrollment-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -589,6 +671,8 @@
             <column name="id" value="admin-enrollment-update-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-enrollment-update-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -596,6 +680,8 @@
             <column name="id" value="admin-enrollment-delete-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-enrollment-delete-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -603,6 +689,8 @@
             <column name="id" value="admin-enrollment-enroll-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-enrollment-enroll-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
@@ -612,6 +700,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-user-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -619,6 +708,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-user-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -626,21 +716,24 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-user-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
-        <insert tableName="role_permissions">
+        <!-- <insert tableName="role_permissions">
             <column name="id" value="admin-user-delete-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-user-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
-        </insert>
+            <column name="filter_type_id" value="filter-type-001"/>
+        </insert> -->
 
         <!-- Admin: Full section permissions -->
-        <insert tableName="role_permissions">
+        <!-- <insert tableName="role_permissions">
             <column name="id" value="admin-section-create-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-section-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -648,6 +741,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-section-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -655,6 +749,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-section-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -662,7 +757,8 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-section-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
-        </insert>
+            <column name="filter_type_id" value="filter-type-001"/>
+        </insert> -->
 
         <!-- Admin: Full category permissions -->
         <insert tableName="role_permissions">
@@ -670,6 +766,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-category-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -677,6 +774,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-category-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -684,6 +782,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-category-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -691,6 +790,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-category-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Full review permissions -->
@@ -699,6 +799,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-review-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -706,6 +807,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-review-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -713,6 +815,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-review-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -720,21 +823,24 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-review-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Full payment permissions -->
-        <insert tableName="role_permissions">
+        <!-- <insert tableName="role_permissions">
             <column name="id" value="admin-payment-create-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-payment-create-001"/>
             <column name="is_active" valueBoolean="true"/>
-        </insert>
+            <column name="filter_type_id" value="filter-type-001"/>
+        </insert> -->
 
         <insert tableName="role_permissions">
             <column name="id" value="admin-payment-read-001"/>
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-payment-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -742,6 +848,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-payment-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -749,6 +856,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-payment-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Full instructor application permissions -->
@@ -757,6 +865,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-instructor-app-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -764,6 +873,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-instructor-app-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -771,6 +881,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-instructor-app-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -778,6 +889,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-instructor-app-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -785,6 +897,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-instructor-app-approve-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Full instructor earning permissions -->
@@ -793,6 +906,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-earn-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -800,6 +914,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-earn-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -807,6 +922,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-earn-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -814,6 +930,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-earn-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Full refund permissions -->
@@ -822,6 +939,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-refund-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -829,6 +947,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-refund-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -836,6 +955,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-refund-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -843,6 +963,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-refund-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
     </changeSet>
@@ -861,6 +982,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-video-content-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -868,6 +990,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-video-content-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -875,6 +998,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-video-content-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -882,6 +1006,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-video-content-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Full lesson type permissions -->
@@ -890,6 +1015,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-type-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -897,6 +1023,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-type-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -904,6 +1031,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-type-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -911,6 +1039,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-type-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Full quiz question permissions -->
@@ -919,6 +1048,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-quiz-question-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -926,6 +1056,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-quiz-question-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -933,6 +1064,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-quiz-question-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -940,6 +1072,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-quiz-question-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Full quiz result permissions -->
@@ -948,6 +1081,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-quiz-result-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -955,6 +1089,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-quiz-result-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -962,6 +1097,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-quiz-result-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -969,6 +1105,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-quiz-result-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Full lesson completion permissions -->
@@ -977,6 +1114,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-completion-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -984,6 +1122,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-completion-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -991,6 +1130,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-completion-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -998,6 +1138,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-lesson-completion-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: System management permissions -->
@@ -1006,6 +1147,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-system-log-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -1013,6 +1155,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-system-log-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Refresh token management -->
@@ -1021,6 +1164,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-refresh-token-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -1028,6 +1172,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-refresh-token-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -1035,6 +1180,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-refresh-token-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -1042,6 +1188,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-refresh-token-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <!-- Admin: Permission system management -->
@@ -1050,6 +1197,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-permission-create-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -1057,6 +1205,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-permission-read-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -1064,6 +1213,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-permission-update-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
         <insert tableName="role_permissions">
@@ -1071,6 +1221,7 @@
             <column name="role_id" valueComputed="@admin_role_id"/>
             <column name="permission_id" value="perm-permission-delete-001"/>
             <column name="is_active" valueBoolean="true"/>
+            <column name="filter_type_id" value="filter-type-001"/>
         </insert>
 
     </changeSet>

@@ -111,4 +111,28 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
                         "AND p.permissionKey = :permissionKey")
         java.util.Optional<RolePermission> findByRoleAndPermissionKey(@Param("role") UserRole role,
                         @Param("permissionKey") String permissionKey);
+
+        /**
+         * Find active role permissions by role ID and permission key (for new schema)
+         */
+        @Query("SELECT rp FROM RolePermission rp " +
+                        "JOIN FETCH rp.permission p " +
+                        "JOIN FETCH rp.filterType ft " +
+                        "WHERE rp.role.id = :roleId " +
+                        "AND p.permissionKey = :permissionKey " +
+                        "AND rp.isActive = true " +
+                        "AND p.isActive = true ")
+        List<RolePermission> findActiveByRoleAndPermission(@Param("roleId") String roleId,
+                        @Param("permissionKey") String permissionKey);
+
+        /**
+         * Find all active role permissions by role ID (for new schema)
+         */
+        @Query("SELECT rp FROM RolePermission rp " +
+                        "JOIN FETCH rp.permission p " +
+                        "JOIN FETCH rp.filterType ft " +
+                        "WHERE rp.role.id = :roleId " +
+                        "AND rp.isActive = true " +
+                        "AND p.isActive = true ")
+        List<RolePermission> findActiveByRoleId(@Param("roleId") String roleId);
 }

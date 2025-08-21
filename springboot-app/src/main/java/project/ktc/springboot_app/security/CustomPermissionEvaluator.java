@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+// import org.springframework.stereotype.Component; // DISABLED
 
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.permission.services.PermissionServiceImp;
@@ -16,8 +16,10 @@ import project.ktc.springboot_app.permission.services.PermissionServiceImp;
  * Custom permission evaluator for Spring Security
  * Implements fine-grained permission checking
  * using @PreAuthorize("hasPermission(...)")
+ * 
+ * DISABLED: Replaced by NewCustomPermissionEvaluator
  */
-@Component
+// @Component - DISABLED to avoid conflict with new implementation
 public class CustomPermissionEvaluator implements PermissionEvaluator {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomPermissionEvaluator.class);

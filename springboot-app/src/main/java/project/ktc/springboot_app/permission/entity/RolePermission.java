@@ -36,6 +36,13 @@ public class RolePermission extends BaseEntity {
     private Permission permission;
 
     /**
+     * Reference to the filter type (new schema support)
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "filter_type_id", nullable = false, foreignKey = @ForeignKey(name = "fk_role_permissions_filter_type"))
+    private FilterType filterType;
+
+    /**
      * User who granted this permission (audit trail)
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -90,6 +97,27 @@ public class RolePermission extends BaseEntity {
     }
 
     /**
+     * Check if this role permission has ALL access (filter-type-001)
+     */
+    public boolean hasAllAccess() {
+        return filterType != null && filterType.isAllAccess();
+    }
+
+    /**
+     * Check if this role permission has OWN access (filter-type-002)
+     */
+    public boolean hasOwnAccess() {
+        return filterType != null && filterType.isOwnAccess();
+    }
+
+    /**
+     * Get effective filter type from the associated filter type
+     */
+    public FilterType.EffectiveFilterType getEffectiveFilterType() {
+        return filterType != null ? filterType.toEffectiveFilterType() : FilterType.EffectiveFilterType.DENIED;
+    }
+
+    /**
      * Override toString to prevent recursive calls
      */
     @Override
@@ -98,6 +126,7 @@ public class RolePermission extends BaseEntity {
                 "id='" + getId() + '\'' +
                 ", roleId='" + (role != null ? role.getId() : null) + '\'' +
                 ", permissionId='" + (permission != null ? permission.getId() : null) + '\'' +
+                ", filterTypeId='" + (filterType != null ? filterType.getId() : null) + '\'' +
                 ", grantedById='" + (grantedBy != null ? grantedBy.getId() : null) + '\'' +
                 ", isActive=" + isActive +
                 ", createdAt=" + getCreatedAt() +

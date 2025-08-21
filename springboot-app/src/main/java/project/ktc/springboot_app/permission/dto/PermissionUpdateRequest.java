@@ -44,9 +44,10 @@ public class PermissionUpdateRequest {
         private String key;
 
         /**
-         * Whether this permission should be active for the role
+         * Filter type ID for this permission (e.g., "filter-type-001" for ALL,
+         * "filter-type-002" for OWN)
+         * If null, defaults to ALL access
          */
-        @NotNull(message = "isActive flag cannot be null")
-        private Boolean isActive;
+        private String filterType;
     }
 }

@@ -3,9 +3,7 @@ package project.ktc.springboot_app.course.controllers;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,11 +19,9 @@ import jakarta.validation.constraints.Max;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.course.dto.CourseDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
-import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.services.CourseServiceImp;
 import project.ktc.springboot_app.course.enums.CourseLevel;
-import project.ktc.springboot_app.filter_rule.specifications.EffectiveFilterSpecifications;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -119,24 +115,6 @@ public class CourseController {
                                 .findOnePublic(id);
 
                 return result;
-        }
-
-        @GetMapping("/test-filter-rule/course")
-        @PreAuthorize("hasPermission(null, 'Course', 'course:READ')")
-        @Operation(summary = "Test RBAC filter rules", description = "Demonstrates role-based access control with effective filter application")
-        public ResponseEntity<List<Course>> testFilterRule() {
-                // Apply effective filter using Specifications
-                Specification<Course> spec = EffectiveFilterSpecifications.applyCourseFilter();
-
-                // Additional business logic can be combined
-                Specification<Course> combinedSpec = EffectiveFilterSpecifications.and(
-                                spec,
-                                EffectiveFilterSpecifications.withAdditionalCriteria(
-                                                (root, query, cb) -> cb.equal(root.get("isDeleted"), false)));
-
-                List<Course> courses = courseRepository.findAll(combinedSpec);
-
-                return ResponseEntity.ok(courses);
         }
 
 }

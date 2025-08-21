@@ -7,6 +7,18 @@
 
     <!-- Seed Resources Data -->
     <changeSet id="136-1" author="system">
+
+        <insert tableName="filter_types">
+            <column name="id" value="filter-type-001"/>
+            <column name="name" value="ALL"/>
+            <column name="description" value="Access to all data"/>
+        </insert>
+
+         <insert tableName="filter_types">
+            <column name="id" value="filter-type-002"/>
+            <column name="name" value="OWN"/>
+            <column name="description" value="Access to own data only"/>
+        </insert>
         
         <!-- Insert base resources -->
         <insert tableName="resources">
@@ -16,7 +28,6 @@
             <column name="resource_path" value="/courses"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
-
        
 
         <insert tableName="resources">
@@ -579,14 +590,14 @@
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
-        <insert tableName="permissions">
+        <!-- <insert tableName="permissions">
             <column name="id" value="perm-user-delete-001"/>
             <column name="resource_id" value="res-user-001"/>
             <column name="action_id" value="act-delete-001"/>
             <column name="permission_key" value="user:DELETE"/>
             <column name="description" value="Permission to delete users"/>
             <column name="is_active" valueBoolean="true"/>
-        </insert>
+        </insert> -->
 
     </changeSet>
 
@@ -1112,6 +1123,27 @@
             <column name="is_active" valueBoolean="true"/>
         </insert>
 
+    </changeSet>
+
+      <changeSet id="138-1-v2" author="ktc">
+        <sql>
+            SET @admin_role_id = (SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1);
+        </sql>
+            <insert tableName="permissions">
+                <column name="id" value="perm-course-approve-001"/>
+                <column name="resource_id" value="res-course-review-status-001"/>
+                <column name="action_id" value="act-approve-001"/>
+                <column name="permission_key" value="course:APPROVE"/>
+                <column name="description" value="Permission to approve course reviews"/>
+                <column name="is_active" valueBoolean="true"/>
+            </insert>
+            <insert tableName="role_permissions">
+                <column name="id" value="admin-permission-approve-001"/>
+                <column name="role_id" valueComputed="@admin_role_id"/>
+                <column name="permission_id" value="perm-course-approve-001"/>
+                <column name="filter_type_id" value="filter-type-001"/>
+                <column name="is_active" valueBoolean="true"/>
+            </insert>
     </changeSet>
 
     <!-- Need to wait for UserRole data to exist first -->

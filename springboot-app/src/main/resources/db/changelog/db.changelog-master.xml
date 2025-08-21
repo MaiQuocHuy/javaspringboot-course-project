@@ -76,11 +76,9 @@
     <!-- Permission System for Role-Based Access Control -->
     <include file="db/changelog/changes/135-add-permission-system.xml"/>
     <include file="db/changelog/changes/136-seed-permission-system.xml"/>
-    <include file="db/changelog/changes/137-seed-role-permissions.xml"/>
-    <include file="db/changelog/changes/138-add-seed-permission-course-approve.xml"/>
-
-    <!-- Role Filter Rules System for Scope-Based Permission Filtering -->
-    <!-- Note: Replaced 139-add-seed-role-filter-rules.xml with normalized version -->
-    <include file="db/changelog/changes/139-seed-filter-rules.xml"/>
     
+    <!-- Fix for permission system issues -->
+    <include file="db/changelog/changes/137-seed-role-permissions.xml"/>
+    <!-- <include file="db/changelog/changes/138-seed-permission-constraints.xml"/> -->
+    <include file="db/changelog/changes/139-add-permission-role.xml"/>
 </databaseChangeLog>
