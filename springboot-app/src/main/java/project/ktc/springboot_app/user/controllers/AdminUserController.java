@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("/api/admin/v1/users")
+@RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
 @Tag(name = "Admin User API", description = "API for managing users")
 public class AdminUserController {
