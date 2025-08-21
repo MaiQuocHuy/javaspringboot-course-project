@@ -19,6 +19,9 @@ public class CategoryResponseDto {
     @Schema(description = "Category name", example = "Development")
     private String name;
 
+    @Schema(description = "Category description", example = "Programming courses including various languages and frameworks")
+    private String description;
+
     @Schema(description = "SEO-friendly slug", example = "development")
     private String slug;
 
