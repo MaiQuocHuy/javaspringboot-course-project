@@ -75,9 +75,9 @@ class AdminCategoryController {
 
             @Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") int size,
 
-            @Parameter(description = "Sort field", example = "name") @RequestParam(defaultValue = "name") String sortBy,
+            @Parameter(description = "Sort field", example = "createdAt") @RequestParam(defaultValue = "createdAt") String sortBy,
 
-            @Parameter(description = "Sort direction", example = "asc") @RequestParam(defaultValue = "asc") String sortDir) {
+            @Parameter(description = "Sort direction", example = "desc") @RequestParam(defaultValue = "desc") String sortDir) {
 
         log.info("Admin requesting categories - page: {}, size: {}, search: {}, sortBy: {}, sortDir: {}",
                 page, size, search, sortBy, sortDir);
