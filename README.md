@@ -1,3 +1,8 @@
+# Link Front-End:
+  1. https://github.com/MaiQuocHuy/nextjs-course-project
+  2. https://github.com/MaiQuocHuy/reactjs-course-project
+
+
 # KTC Course Platform - Backend API
 
 ## 📖 Tổng Quan
