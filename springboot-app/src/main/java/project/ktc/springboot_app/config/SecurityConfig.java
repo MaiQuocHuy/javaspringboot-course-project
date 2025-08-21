@@ -17,8 +17,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 
+import project.ktc.springboot_app.security.CustomPermissionEvaluator;
 import project.ktc.springboot_app.security.JwtAuthenticationFilter;
-import project.ktc.springboot_app.permission.security.CustomPermissionEvaluator;
 
 @Configuration
 @EnableWebSecurity

@@ -3,7 +3,7 @@ package project.ktc.springboot_app.permission.interceptors;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import project.ktc.springboot_app.permission.security.CustomPermissionEvaluator;
+import project.ktc.springboot_app.security.CustomPermissionEvaluator;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;

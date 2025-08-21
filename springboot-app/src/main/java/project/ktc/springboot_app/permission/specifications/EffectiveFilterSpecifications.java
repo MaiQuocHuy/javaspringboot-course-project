@@ -9,7 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.permission.entity.FilterType;
-import project.ktc.springboot_app.permission.security.CustomPermissionEvaluator;
+import project.ktc.springboot_app.security.CustomPermissionEvaluator;
 
 import java.util.ArrayList;
 import java.util.List;

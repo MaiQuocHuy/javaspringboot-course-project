@@ -1,184 +1,186 @@
 package project.ktc.springboot_app.security;
 
-import java.io.Serializable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-// import org.springframework.stereotype.Component; // DISABLED
-
+import org.springframework.stereotype.Component;
 import project.ktc.springboot_app.auth.entitiy.User;
-import project.ktc.springboot_app.permission.services.PermissionServiceImp;
+import project.ktc.springboot_app.permission.entity.FilterType;
+import project.ktc.springboot_app.permission.services.AuthorizationService;
+
+import java.io.Serializable;
 
 /**
- * Custom permission evaluator for Spring Security
- * Implements fine-grained permission checking
- * using @PreAuthorize("hasPermission(...)")
- * 
- * DISABLED: Replaced by NewCustomPermissionEvaluator
+ * Custom Permission Evaluator for Spring Security @PreAuthorize
+ * Uses the new database schema with filter_types table
  */
-// @Component - DISABLED to avoid conflict with new implementation
+@Component
+@Primary
+@RequiredArgsConstructor
+@Slf4j
 public class CustomPermissionEvaluator implements PermissionEvaluator {
 
-    private static final Logger logger = LoggerFactory.getLogger(CustomPermissionEvaluator.class);
-
-    private final PermissionServiceImp permissionService;
-
-    public CustomPermissionEvaluator(PermissionServiceImp permissionService) {
-        this.permissionService = permissionService;
-    }
+    private final AuthorizationService authorizationService;
 
     /**
-     * Evaluate permission for a target object
+     * Evaluate permission for domain object
      * 
      * @param authentication     the authentication object
-     * @param targetDomainObject the target object (can be null for global
-     *                           permissions)
-     * @param permission         the permission to check (e.g., "course:create",
-     *                           "course:edit")
-     * @return true if user has permission
+     * @param targetDomainObject the target object (can be null)
+     * @param permission         the permission string
+     * @return true if access is granted
      */
     @Override
     public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            logger.debug("Permission denied - not authenticated");
+            log.debug("Authentication is null or not authenticated");
+            return false;
+        }
+
+        User user = extractUser(authentication);
+        if (user == null) {
+            log.debug("User not found in authentication");
             return false;
         }
 
         String permissionKey = permission.toString();
-        logger.debug("Checking permission: {} for user: {}",
-                permissionKey, authentication.getName());
+
+        log.debug("Evaluating permission: {} for user: {} with target: {}",
+                permissionKey, user.getEmail(),
+                targetDomainObject != null ? targetDomainObject.getClass().getSimpleName() : "null");
 
         try {
-            // Get user from authentication
-            User user = extractUserFromAuthentication(authentication);
-            if (user == null) {
-                logger.warn("Could not extract user from authentication");
+            AuthorizationService.AuthorizationResult result = authorizationService.evaluatePermission(user,
+                    permissionKey);
+
+            if (!result.isAllowed()) {
+                log.debug("Permission denied: {} for user: {}, reason: {}",
+                        permissionKey, user.getEmail(), result.getReason());
                 return false;
             }
 
-            // Check permission using permission service
-            boolean hasPermission = permissionService.hasPermission(user, permissionKey);
-            logger.debug("Permission check result - User: {}, Permission: {}, Result: {}",
-                    user.getEmail(), permissionKey, hasPermission);
+            // Store the effective filter and user in thread-local context for later use
+            EffectiveFilterContext.setCurrentFilter(result.getEffectiveFilter());
+            EffectiveFilterContext.setCurrentUser(result.getUser());
 
-            return hasPermission;
+            log.debug("Permission granted: {} for user: {} with filter: {}",
+                    permissionKey, user.getEmail(), result.getEffectiveFilter());
+
+            return true;
 
         } catch (Exception e) {
-            logger.error("Error checking permission: {} for user: {}",
-                    permissionKey, authentication.getName(), e);
+            log.error("Error evaluating permission: {} for user: {}", permissionKey, user.getEmail(), e);
             return false;
         }
     }
 
     /**
-     * Evaluate permission for a target by ID
+     * Evaluate permission for target by ID
      * 
      * @param authentication the authentication object
      * @param targetId       the target ID
-     * @param targetType     the target type (e.g., "Course", "User")
-     * @param permission     the permission to check
-     * @return true if user has permission
+     * @param targetType     the target type
+     * @param permission     the permission string
+     * @return true if access is granted
      */
     @Override
     public boolean hasPermission(Authentication authentication, Serializable targetId, String targetType,
             Object permission) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            logger.debug("Permission denied - not authenticated");
+            log.debug("Authentication is null or not authenticated");
+            return false;
+        }
+
+        User user = extractUser(authentication);
+        if (user == null) {
+            log.debug("User not found in authentication");
             return false;
         }
 
         String permissionKey = permission.toString();
-        logger.debug("Checking permission: {} for targetType: {} with ID: {} for user: {}",
-                permissionKey, targetType, targetId, authentication.getName());
+
+        log.debug("Evaluating permission: {} for user: {} with targetId: {} and targetType: {}",
+                permissionKey, user.getEmail(), targetId, targetType);
 
         try {
-            // Get user from authentication
-            User user = extractUserFromAuthentication(authentication);
-            if (user == null) {
-                logger.warn("Could not extract user from authentication");
+            AuthorizationService.AuthorizationResult result = authorizationService.evaluatePermission(user,
+                    permissionKey);
+
+            if (!result.isAllowed()) {
+                log.debug("Permission denied: {} for user: {}, reason: {}",
+                        permissionKey, user.getEmail(), result.getReason());
                 return false;
             }
 
-            // For resource-specific permissions, you can implement additional logic here
-            // For now, we'll use the basic permission check
-            boolean hasPermission = permissionService.hasPermission(user, permissionKey);
+            // Store the effective filter and user in thread-local context for later use
+            EffectiveFilterContext.setCurrentFilter(result.getEffectiveFilter());
+            EffectiveFilterContext.setCurrentUser(result.getUser());
 
-            // You can extend this to check ownership or specific entity permissions
-            if (hasPermission && targetId != null) {
-                hasPermission = checkEntitySpecificPermission(user, targetType, targetId, permissionKey);
-            }
+            log.debug("Permission granted: {} for user: {} with filter: {} for targetId: {}",
+                    permissionKey, user.getEmail(), result.getEffectiveFilter(), targetId);
 
-            logger.debug("Permission check result - User: {}, Permission: {}, TargetType: {}, TargetId: {}, Result: {}",
-                    user.getEmail(), permissionKey, targetType, targetId, hasPermission);
-
-            return hasPermission;
+            return true;
 
         } catch (Exception e) {
-            logger.error("Error checking permission: {} for targetType: {} with ID: {} for user: {}",
-                    permissionKey, targetType, targetId, authentication.getName(), e);
+            log.error("Error evaluating permission: {} for user: {} with targetId: {}",
+                    permissionKey, user.getEmail(), targetId, e);
             return false;
         }
     }
 
     /**
-     * Extract User entity from Spring Security Authentication
+     * Extract User from Authentication object
      * 
      * @param authentication the authentication object
-     * @return User entity or null if not found
+     * @return User object or null if not found
      */
-    private User extractUserFromAuthentication(Authentication authentication) {
+    private User extractUser(Authentication authentication) {
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof User) {
             return (User) principal;
-        } else if (principal instanceof UserDetails) {
-            // If using Spring Security UserDetails, you might need to load the full User
-            // entity
-            String email = ((UserDetails) principal).getUsername();
-            logger.debug("Loading user by email: {}", email);
-            // You would need to inject UserService or UserRepository to load the full user
-            // For now, we'll return null and log a warning
-            logger.warn("Authentication principal is UserDetails but not User entity. Email: {}", email);
-            return null;
-        } else if (principal instanceof String) {
-            String email = (String) principal;
-            logger.debug("Loading user by email string: {}", email);
-            // You would need to inject UserService or UserRepository to load the full user
-            logger.warn("Authentication principal is String. Email: {}", email);
+        }
+
+        // If principal is UserDetails, try to get User from it
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            // This would require additional logic to get User from UserDetails
+            // For now, assume principal is always User
+            log.warn("Principal is UserDetails but not User: {}", principal.getClass());
             return null;
         }
 
-        logger.warn("Unknown authentication principal type: {}",
-                principal != null ? principal.getClass().getName() : "null");
+        log.warn("Unknown principal type: {}", principal.getClass());
         return null;
     }
 
     /**
-     * Check entity-specific permissions (e.g., ownership, team membership)
-     * This method can be extended to implement more complex permission logic
-     * 
-     * @param user          the user
-     * @param targetType    the target entity type
-     * @param targetId      the target entity ID
-     * @param permissionKey the permission key
-     * @return true if user has permission for the specific entity
+     * Thread-local context for storing effective filter information
      */
-    private boolean checkEntitySpecificPermission(User user, String targetType, Serializable targetId,
-            String permissionKey) {
-        // This is where you can implement entity-specific permission checks
-        // For example:
-        // - Check if user owns the resource
-        // - Check if user is part of the same team/organization
-        // - Check hierarchical permissions
+    public static class EffectiveFilterContext {
+        private static final ThreadLocal<FilterType.EffectiveFilterType> currentFilter = new ThreadLocal<>();
+        private static final ThreadLocal<User> currentUser = new ThreadLocal<>();
 
-        logger.debug("Checking entity-specific permission for user: {}, targetType: {}, targetId: {}, permission: {}",
-                user.getEmail(), targetType, targetId, permissionKey);
+        public static FilterType.EffectiveFilterType getCurrentFilter() {
+            return currentFilter.get();
+        }
 
-        // For now, return true (basic permission check already passed)
-        // You can extend this method based on your business requirements
-        return true;
+        public static void setCurrentFilter(FilterType.EffectiveFilterType filter) {
+            currentFilter.set(filter);
+        }
+
+        public static User getCurrentUser() {
+            return currentUser.get();
+        }
+
+        public static void setCurrentUser(User user) {
+            currentUser.set(user);
+        }
+
+        public static void clear() {
+            currentFilter.remove();
+            currentUser.remove();
+        }
     }
 }
