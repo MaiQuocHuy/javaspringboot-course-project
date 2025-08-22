@@ -106,6 +106,14 @@ public class ApiResponseUtil {
     }
 
     /**
+     * Create an unprocessable entity response (422)
+     */
+    public static <T> ResponseEntity<ApiResponse<T>> unprocessableEntity(String message) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.error(422, message));
+    }
+
+    /**
      * Create an internal server error response
      */
     public static <T> ResponseEntity<ApiResponse<T>> internalServerError(String message) {

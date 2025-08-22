@@ -20,6 +20,7 @@ import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.services.FileValidationService;
 import project.ktc.springboot_app.user.dto.CreateUserDto;
+import project.ktc.springboot_app.user.dto.AdminCreateUserDto;
 import project.ktc.springboot_app.user.dto.UpdateUserDto;
 import project.ktc.springboot_app.user.dto.UpdateUserRoleDto;
 import project.ktc.springboot_app.user.dto.UpdateUserStatusDto;
@@ -588,6 +589,102 @@ public class UserServiceImp implements UserService {
             log.error("Error deleting user: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to delete user. Please try again later.");
         }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<UserResponseDto>> createAdminUser(AdminCreateUserDto createUserDto) {
+        try {
+            // Validate email uniqueness
+            Optional<User> existingUser = userRepository.findByEmail(createUserDto.getEmail());
+            if (existingUser.isPresent()) {
+                log.warn("Attempt to create user with existing email: {}", createUserDto.getEmail());
+                return ApiResponseUtil.conflict("Email already exists");
+            }
+
+            // Validate username uniqueness (check by name field since we don't have a
+            // separate username field)
+            Optional<User> existingUserByName = userRepository.findByName(createUserDto.getUsername());
+            if (existingUserByName.isPresent()) {
+                log.warn("Attempt to create user with existing username: {}", createUserDto.getUsername());
+                return ApiResponseUtil.conflict("Username already exists");
+            }
+
+            // Validate role existence
+            UserRole userRole;
+            try {
+                userRole = userRoleRepository.findByRole(createUserDto.getRole())
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + createUserDto.getRole()));
+            } catch (Exception e) {
+                log.warn("Invalid role provided: {}", createUserDto.getRole());
+                return ApiResponseUtil.unprocessableEntity("Role not recognized: " + createUserDto.getRole());
+            }
+
+            // Validate password strength (additional validation beyond annotation)
+            if (!isPasswordStrong(createUserDto.getPassword())) {
+                return ApiResponseUtil.unprocessableEntity(
+                        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character");
+            }
+
+            // Validate email format (additional validation beyond annotation)
+            if (!isEmailValid(createUserDto.getEmail())) {
+                return ApiResponseUtil.unprocessableEntity("Invalid email format");
+            }
+
+            // Create new user
+            User newUser = User.builder()
+                    .name(createUserDto.getUsername()) // Using username as name
+                    .email(createUserDto.getEmail())
+                    .password(passwordEncoder.encode(createUserDto.getPassword()))
+                    .bio("") // Default empty bio
+                    .isActive(true) // Default active status
+                    .thumbnailUrl("") // Default empty thumbnail
+                    .thumbnailId("") // Default empty thumbnail ID
+                    .role(userRole)
+                    .build();
+
+            // Save the user
+            User savedUser = userRepository.save(newUser);
+
+            // Create response DTO
+            UserResponseDto userResponseDto = new UserResponseDto(savedUser);
+
+            log.info("Admin user created successfully with ID: {}, username: {}, email: {}, role: {}",
+                    savedUser.getId(), createUserDto.getUsername(), savedUser.getEmail(), createUserDto.getRole());
+            return ApiResponseUtil.created(userResponseDto, "User created successfully");
+
+        } catch (Exception e) {
+            log.error("Error creating admin user: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to create user. Please try again later.");
+        }
+    }
+
+    /**
+     * Validates password strength requirements
+     */
+    private boolean isPasswordStrong(String password) {
+        if (password == null || password.length() < 6) {
+            return false;
+        }
+
+        boolean hasUpperCase = password.chars().anyMatch(Character::isUpperCase);
+        boolean hasLowerCase = password.chars().anyMatch(Character::isLowerCase);
+        boolean hasDigit = password.chars().anyMatch(Character::isDigit);
+        boolean hasSpecial = password.chars().anyMatch(ch -> "@$!%*?&".indexOf(ch) >= 0);
+
+        return hasUpperCase && hasLowerCase && hasDigit && hasSpecial;
+    }
+
+    /**
+     * Validates email format
+     */
+    private boolean isEmailValid(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+
+        // Basic email validation pattern
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+        return email.matches(emailRegex);
     }
 
 }

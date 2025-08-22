@@ -41,4 +41,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
         @Query("SELECT COUNT(l) FROM Lesson l " +
                         "WHERE l.section.course.id = :courseId")
         Long countTotalLessonsByCourse(@Param("courseId") String courseId);
+
+        boolean existsByIdAndUserId(String enrollmentId, String userId);
 }
