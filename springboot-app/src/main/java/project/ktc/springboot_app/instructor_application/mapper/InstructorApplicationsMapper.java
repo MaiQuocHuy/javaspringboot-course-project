@@ -43,6 +43,7 @@ public class InstructorApplicationsMapper {
                                 .applicant(toUserDetailDto(application.getUser()))
                                 .status(application.getStatus())
                                 .documents(application.getDocuments())
+                                .rejectionReason(application.getRejectionReason())
                                 .submittedAt(application.getSubmittedAt())
                                 .build();
         }

@@ -115,14 +115,16 @@ public class CloudinaryServiceImp implements CloudinaryService {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String filename = originalFilename != null ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_") : "image";
+        String extension = "";
 
         // Remove file extension as Cloudinary handles it
         int lastDotIndex = filename.lastIndexOf('.');
         if (lastDotIndex > 0) {
+            extension = filename.substring(lastDotIndex);
             filename = filename.substring(0, lastDotIndex);
         }
 
-        return String.format("%s_%s_%s", filename, timestamp, uuid);
+        return String.format("%s_%s_%s%s", filename, timestamp, uuid, extension);
     }
 
     /**
