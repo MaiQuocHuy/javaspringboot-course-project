@@ -129,7 +129,7 @@ public class AdminCourseController {
         }
 
         @GetMapping("/{id}")
-        @PreAuthorize("hasPermission(#id, 'Course', 'course:READ') and !hasRole('STUDENT') and !hasRole('INSTRUCTOR')")
+        @PreAuthorize("hasPermission(#id, 'Course', 'course:READ')")
         // @PreAuthorize("hasRole('ADMIN')")
         @Operation(summary = "Get course details for admin review", description = "Retrieves complete course details including sections and lessons for admin review. Only accessible by admins.")
         @ApiResponses(value = {

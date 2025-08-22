@@ -38,3 +38,4 @@ build/
 
 .github/instructions/
 .github/prompts/
+.qoder/rules/
