@@ -220,6 +220,7 @@ public class AdminCourseServiceImp implements AdminCourseService {
                 .id(course.getId())
                 .title(course.getTitle())
                 .description(course.getDescription())
+                .price(course.getPrice())
                 .level(course.getLevel())
                 .thumbnailUrl(course.getThumbnailUrl())
                 .createdBy(CourseReviewDetailResponseDto.CreatedByDto.builder()
