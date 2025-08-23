@@ -1,12 +1,17 @@
 package project.ktc.springboot_app.lesson.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,9 +20,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.lesson.dto.CreateLessonDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonWithQuizDto;
+import project.ktc.springboot_app.lesson.dto.LessonSubmissionsResponseDto;
+import project.ktc.springboot_app.lesson.dto.SubmissionDetailResponseDto;
 import project.ktc.springboot_app.lesson.dto.LessonWithQuizResponseDto;
 import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
@@ -25,9 +33,12 @@ import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
 import project.ktc.springboot_app.lesson.services.InstructorLessonServiceImp;
 import project.ktc.springboot_app.quiz.dto.UpdateQuizDto;
 import project.ktc.springboot_app.quiz.dto.UpdateQuizResponseDto;
+import project.ktc.springboot_app.quiz.dto.QuizQuestionResponseDto;
 import project.ktc.springboot_app.quiz.services.QuizServiceImp;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/instructor/sections")
@@ -343,6 +354,144 @@ public class InstructorLessonController {
                         @Parameter(description = "Updated quiz data", required = true) @Valid @RequestBody UpdateQuizDto updateQuizDto) {
                 String currentUserId = SecurityUtil.getCurrentUserId();
                 return quizService.updateQuiz(sectionId, lessonId, updateQuizDto, currentUserId);
+        }
+
+        @GetMapping("/{sectionId}/lessons/{lessonId}/quizzes")
+        @Operation(summary = "Get quiz questions for a lesson", description = """
+                        Retrieves paginated quiz questions for a specific lesson owned by the instructor.
+
+                        **Permission Requirements:**
+                        - User must have INSTRUCTOR role
+                        - User must own the course containing the section
+                        - Lesson must belong to the specified section
+                        - Lesson must be of type 'QUIZ'
+
+                        **Query Parameters:**
+                        - page: Page number (0-based indexing). Default: 0
+                        - size: Number of items per page (1-100). Default: 10
+
+                        **Business Rules:**
+                        - Only quiz lessons can have their questions retrieved
+                        - Results are ordered by creation date (ascending)
+                        - Includes question text, options, correct answer, and explanation
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Quiz questions retrieved successfully"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid section/lesson relationship or lesson is not a quiz type"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the course"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Section or lesson not found"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during quiz questions retrieval")
+        })
+        public ResponseEntity<ApiResponse<PaginatedResponse<QuizQuestionResponseDto>>> getQuizQuestions(
+                        @Parameter(description = "Section ID containing the lesson", required = true) @PathVariable String sectionId,
+                        @Parameter(description = "Lesson ID containing the quiz questions", required = true) @PathVariable String lessonId,
+                        @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) int page,
+                        @Parameter(description = "Number of items per page (1-100)") @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+
+                Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
+                return instructorLessonService.getQuizQuestions(sectionId, lessonId, pageable);
+        }
+
+        /**
+         * Get lesson submissions for instructors
+         * Endpoint: GET /api/instructor/sections/lessons/{lessonId}/submissions
+         * 
+         * @param lessonId The ID of the lesson to get submissions for
+         * @param page     Page number (0-based indexing)
+         * @param size     Number of items per page (1-50)
+         * @return LessonSubmissionsResponseDto containing submissions data and summary
+         */
+        @GetMapping("/lessons/{lessonId}/submissions")
+        @Operation(summary = "Get lesson submissions", description = """
+                        Retrieves paginated submissions for a quiz lesson owned by the instructor.
+                        Includes both students who have submitted and those who haven't, along with summary statistics.
+
+                        **Permission Requirements:**
+                        - User must have INSTRUCTOR role
+                        - User must own the course containing the lesson
+                        - Lesson must be of type 'QUIZ'
+
+                        **Query Parameters:**
+                        - page: Page number (0-based indexing). Default: 0
+                        - size: Number of items per page (1-50). Default: 10
+
+                        **Business Rules:**
+                        - Each student can only have ONE submission per lesson
+                        - If a student resubmits, it will overwrite the previous submission completely
+                        - Returns all enrolled students with their submission status (submitted or not_submitted)
+                        - Submission statuses: not_submitted, submitted, graded
+                        - Results are ordered by submission date (most recent first), then by student name for non-submitted
+                        - Score range: 0.00 to 100.00 (stored as percentage)
+                        - Submission timestamps must be in the past
+
+                        **Response includes:**
+                        - Summary statistics (total students, submitted count, graded count, average score)
+                        - Paginated list of student submissions with status
+                        - Student information (ID, name, email)
+                        - Submission details (ID, score, timestamps) when available
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Submissions retrieved successfully"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid lesson - not a quiz type or invalid pagination parameters"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the lesson"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Lesson not found"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during submissions retrieval")
+        })
+        public ResponseEntity<ApiResponse<LessonSubmissionsResponseDto>> getSubmissions(
+                        @Parameter(description = "Lesson ID to get submissions for", required = true) @PathVariable String lessonId,
+                        @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) int page,
+                        @Parameter(description = "Number of items per page (1-50)") @RequestParam(defaultValue = "10") @Min(1) @Max(50) int size) {
+
+                Pageable pageable = PageRequest.of(page, size);
+                return instructorLessonService.getSubmissions(lessonId, pageable);
+        }
+
+        /**
+         * Get submission details for instructors
+         * Endpoint: GET
+         * /api/instructor/sections/lessons/{lessonId}/submissions/{submissionId}
+         * 
+         * @param lessonId     The ID of the lesson
+         * @param submissionId The ID of the submission
+         * @return SubmissionDetailResponseDto containing detailed submission
+         *         information
+         */
+        @GetMapping("/lessons/{lessonId}/submissions/{submissionId}")
+        @Operation(summary = "Get submission details", description = """
+                        Retrieves detailed information about a specific student submission for a quiz lesson.
+                        Only the instructor who owns the course can access this endpoint.
+
+                        **Permission Requirements:**
+                        - User must have INSTRUCTOR role
+                        - User must own the course containing the lesson
+                        - Lesson must be of type 'QUIZ'
+                        - Submission must belong to the specified lesson
+
+                        **Business Rules:**
+                        - Returns complete submission data including student information
+                        - Includes all quiz questions with student answers and correctness status
+                        - Shows question explanations for instructor review
+                        - Validates submission-lesson relationship
+                        - Enforces instructor ownership of the course
+
+                        **Response includes:**
+                        - Student information (ID, name, email)
+                        - Submission metadata (ID, score, submission timestamp, status)
+                        - Complete list of questions with answers, options, and correctness
+                        - Question explanations for detailed review
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Submission details retrieved successfully"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad request - lesson and submission do not match"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - instructor does not own the course"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Submission or lesson not found"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during submission details retrieval")
+        })
+        public ResponseEntity<ApiResponse<SubmissionDetailResponseDto>> getSubmissionDetails(
+                        @Parameter(description = "Lesson ID", required = true) @PathVariable String lessonId,
+                        @Parameter(description = "Submission ID", required = true) @PathVariable String submissionId) {
+
+                return instructorLessonService.getSubmissionDetails(lessonId, submissionId);
         }
 
 }

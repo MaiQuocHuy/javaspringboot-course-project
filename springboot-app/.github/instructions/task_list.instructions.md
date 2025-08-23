@@ -2869,6 +2869,117 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
     - Course not owned by instructor
 - **Testing:** Test course retrieval with valid and invalid slugs.
 
+### 4.31 `GET /api/instructor/sections/lessons/{lessonId}/submissions`
+- **Description:** Retrieves a list of submissions for courses owned by the current instructor.
+- **Request:**
+  - **Method** `GET`
+  - **URL** `/api/instructor/sections/lessons/{lessonId}/submissions`
+  - **Headers**
+    - `Authorization`: Bearer <token>
+  - **Query Parameters**
+    - `page`: The page number (default: 0)`
+    - `size`: The number of items per page (default: 10)`
+  - **Path Parameters**
+    - `lessonId`: The ID of the lesson.
+  - **Response**
+    ```json
+      {
+  "statusCode": 200,
+  "message": "Submissions retrieved successfully",
+  "data": {
+    "content": [
+      {
+        "submissionId": "sub-123",
+        "student": {
+          "id": "stu-001",
+          "name": "Nguyen Van A",
+          "email": "student@example.com"
+        },
+        "score": 8.5,
+        "submittedAt": "2025-07-26T10:30:00Z"
+      },
+      {
+        "submissionId": "sub-124",
+        "student": {
+          "id": "stu-002",
+          "name": "Tran Thi B",
+          "email": "student2@example.com"
+        },
+        "score": 7.0,
+        "submittedAt": "2025-07-26T11:15:00Z"
+      }
+    ],
+    "page": {
+      "number": 0,
+      "size": 10,
+      "totalPages": 1,
+      "totalElements": 2,
+      "first": true,
+      "last": true
+    }
+  },
+  "timeStamp": "2025-07-26T10:30:00Z"
+}
+    ```
+- **Business Rule**: 
+  - The score must be between 0 and 10.
+  - The submittedAt must be in the past.
+  - The student must be a valid student.
+  - Must be the owner of the course that contains this lesson.
+  - Return only submissions for that lesson.
+- **Authorization:** @PreAuthorize("hasRole('INSTRUCTOR')")
+- **Ownership check:** Only the instructor who created the course can view its submissions.
+- **Testing:** Test course submission retrieval with valid and invalid course IDs.
+
+### 4.30 `GET /api/instructor/sections/lessons/{lessonId}/submissions/{submissionId}`
+
+- **Description:** Retrieve details of a specific student submission for a lesson.  
+  Only the instructor who owns the course can access this endpoint.
+
+- **Parameters:**
+  - `lessonId` (path, required, integer): ID of the lesson.
+  - `submissionId` (path, required, integer): ID of the submission.
+
+- **Authorization:**
+  - Role: `INSTRUCTOR`
+  - The instructor must be the owner of the course containing the lesson.
+
+- **Responses:**
+  - `200 OK` – Submission details:
+    ```json
+    {
+      "id": 123,
+      "lessonId": 45,
+      "student": {
+        "id": 789,
+        "fullName": "Nguyen Van A",
+        "email": "a@example.com"
+      },
+      "score": 85.5,
+      "submittedAt": "2025-08-23T10:15:00Z",
+      "status": "SUBMITTED",
+      "answers": [
+        {
+          "questionId": 1,
+          "questionText": "What is Spring Boot?",
+          "options": {
+              "A": "framework",
+              "B": "library",
+              "C": "language",
+              "D": "database"
+            },
+          "answer": "B",
+          "isCorrect": true
+        }
+      ]
+    }
+    ```
+  - `403 Forbidden` – Instructor does not own the course.
+  - `404 Not Found` – Submission not found.
+  - `400 Bad Request` – Lesson and submission do not match.
+  - 
+
+
 ### 4.31 `PATCH /api/instructor/courses/:id/resubmit`
 
 - **Description:** Resubmits a course for review after making changes.

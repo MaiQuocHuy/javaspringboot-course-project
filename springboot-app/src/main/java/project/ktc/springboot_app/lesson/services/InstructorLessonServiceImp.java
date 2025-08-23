@@ -3,18 +3,27 @@ package project.ktc.springboot_app.lesson.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.lesson.dto.CreateLessonDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonWithQuizDto;
+import project.ktc.springboot_app.lesson.dto.LessonSubmissionResponseDto;
+import project.ktc.springboot_app.lesson.dto.SubmissionDetailResponseDto;
+import project.ktc.springboot_app.lesson.dto.SubmissionDetailResponseDto.StudentInfo;
+import project.ktc.springboot_app.lesson.dto.SubmissionDetailResponseDto.QuestionAnswerDto;
 import project.ktc.springboot_app.lesson.dto.LessonWithQuizResponseDto;
 import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
+import project.ktc.springboot_app.lesson.dto.StudentSubmissionDto;
+import project.ktc.springboot_app.lesson.dto.SubmissionSummaryDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
 import project.ktc.springboot_app.lesson.entity.Lesson;
@@ -27,7 +36,11 @@ import project.ktc.springboot_app.entity.LessonType;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.entity.QuizQuestion;
+import project.ktc.springboot_app.entity.QuizResult;
+import project.ktc.springboot_app.lesson.dto.LessonSubmissionsResponseDto;
+import project.ktc.springboot_app.quiz.dto.QuizQuestionResponseDto;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
+import project.ktc.springboot_app.quiz.repositories.QuizResultRepository;
 import project.ktc.springboot_app.section.dto.LessonDto;
 import project.ktc.springboot_app.section.dto.QuizDto;
 import project.ktc.springboot_app.section.dto.QuizQuestionDto;
@@ -72,6 +85,7 @@ public class InstructorLessonServiceImp implements LessonService {
     private final InstructorSectionRepository sectionRepository;
     private final VideoContentRepository videoContentRepository;
     private final QuizQuestionRepository quizQuestionRepository;
+    private final QuizResultRepository quizResultRepository;
     private final LessonCompletionRepository lessonCompletionRepository;
     private final LessonTypeRepository lessonTypeRepository;
     private final UserRepository userRepository;
@@ -1039,6 +1053,318 @@ public class InstructorLessonServiceImp implements LessonService {
                 .format("jpg")
                 .transformation(transformation)
                 .generate(publicId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<ApiResponse<PaginatedResponse<QuizQuestionResponseDto>>> getQuizQuestions(
+            String sectionId, String lessonId, Pageable pageable) {
+
+        log.info("Retrieving quiz questions for lesson {} in section {} with pagination: {}",
+                lessonId, sectionId, pageable);
+
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+
+            // 1. Validate section ownership
+            if (!lessonRepository.existsBySectionIdAndInstructorId(sectionId, currentUserId)) {
+                log.warn("Section {} not owned by instructor {}", sectionId, currentUserId);
+                return ApiResponseUtil.forbidden("You do not have permission to access this section");
+            }
+
+            // 2. Validate lesson belongs to section
+            if (!lessonRepository.existsByIdAndSectionId(lessonId, sectionId)) {
+                log.warn("Lesson {} does not belong to section {}", lessonId, sectionId);
+                return ApiResponseUtil.badRequest("Lesson does not belong to the specified section");
+            }
+
+            // 3. Validate lesson is of QUIZ type
+            if (!lessonRepository.isLessonOfQuizType(lessonId)) {
+                log.warn("Lesson {} is not of QUIZ type", lessonId);
+                return ApiResponseUtil.badRequest("Lesson is not a quiz type");
+            }
+
+            // 4. Query quiz questions with pagination and ownership validation
+            Page<QuizQuestion> questionsPage = quizQuestionRepository
+                    .findQuizQuestionsByLessonAndOwnership(lessonId, sectionId, currentUserId, pageable);
+
+            // 5. Transform to DTOs
+            List<QuizQuestionResponseDto> questionDtos = questionsPage.getContent()
+                    .stream()
+                    .map(this::convertToQuizQuestionResponseDto)
+                    .collect(Collectors.toList());
+
+            // 6. Build paginated response
+            PaginatedResponse<QuizQuestionResponseDto> response = PaginatedResponse
+                    .<QuizQuestionResponseDto>builder()
+                    .content(questionDtos)
+                    .page(PaginatedResponse.PageInfo.builder()
+                            .number(questionsPage.getNumber())
+                            .size(questionsPage.getSize())
+                            .totalPages(questionsPage.getTotalPages())
+                            .totalElements(questionsPage.getTotalElements())
+                            .first(questionsPage.isFirst())
+                            .last(questionsPage.isLast())
+                            .build())
+                    .build();
+
+            log.info("Successfully retrieved {} quiz questions for lesson {}",
+                    questionDtos.size(), lessonId);
+
+            return ApiResponseUtil.success(response, "Quiz questions retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving quiz questions for lesson {} in section {}: {}",
+                    lessonId, sectionId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve quiz questions: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Converts QuizQuestion entity to QuizQuestionResponseDto
+     */
+    private QuizQuestionResponseDto convertToQuizQuestionResponseDto(QuizQuestion question) {
+        Map<String, String> options = convertJsonToOptions(question.getOptions());
+
+        return QuizQuestionResponseDto.builder()
+                .id(question.getId())
+                .questionText(question.getQuestionText())
+                .options(options)
+                .correctAnswer(question.getCorrectAnswer())
+                .explanation(question.getExplanation())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<ApiResponse<LessonSubmissionsResponseDto>> getSubmissions(
+            String lessonId, Pageable pageable) {
+
+        log.info("Retrieving submissions for lesson {} with pagination: {}", lessonId, pageable);
+
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+
+            // 1. Validate lesson exists and instructor owns it
+            if (!lessonRepository.existsByIdAndSectionCourseInstructorId(lessonId, currentUserId)) {
+                log.warn("Lesson {} not owned by instructor {}", lessonId, currentUserId);
+                return ApiResponseUtil.forbidden("You do not have permission to access this lesson");
+            }
+
+            // 2. Validate lesson is of QUIZ type
+            if (!lessonRepository.isLessonOfQuizType(lessonId)) {
+                log.warn("Lesson {} is not of QUIZ type", lessonId);
+                return ApiResponseUtil.badRequest("Only quiz lessons can have submissions");
+            }
+
+            // 3. Get summary statistics
+            SubmissionSummaryDto summary = quizResultRepository.getSubmissionSummary(lessonId, currentUserId);
+
+            // 4. Get paginated student submissions
+            Page<StudentSubmissionDto> submissionsPage = quizResultRepository
+                    .findAllStudentSubmissionsByLesson(lessonId, currentUserId, pageable);
+
+            // 5. Transform to response DTOs
+            List<LessonSubmissionResponseDto> submissionResponses = submissionsPage.getContent()
+                    .stream()
+                    .map(this::convertToLessonSubmissionResponseDto)
+                    .collect(Collectors.toList());
+
+            // 6. Build paginated response for submissions
+            PaginatedResponse<LessonSubmissionResponseDto> submissionsPaginated = PaginatedResponse
+                    .<LessonSubmissionResponseDto>builder()
+                    .content(submissionResponses)
+                    .page(PaginatedResponse.PageInfo.builder()
+                            .number(submissionsPage.getNumber())
+                            .size(submissionsPage.getSize())
+                            .totalPages(submissionsPage.getTotalPages())
+                            .totalElements(submissionsPage.getTotalElements())
+                            .first(submissionsPage.isFirst())
+                            .last(submissionsPage.isLast())
+                            .build())
+                    .build();
+
+            // 7. Build complete response with summary
+            LessonSubmissionsResponseDto response = LessonSubmissionsResponseDto.builder()
+                    .summary(summary)
+                    .submissions(submissionsPaginated)
+                    .build();
+
+            log.info("Successfully retrieved submissions for lesson {} - Total students: {}, Submitted: {}",
+                    lessonId, summary.getTotalStudents(), summary.getSubmittedCount());
+
+            return ApiResponseUtil.success(response, "Submissions retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving submissions for lesson {}: {}", lessonId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve submissions: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Converts StudentSubmissionDto to LessonSubmissionResponseDto for API response
+     */
+    private LessonSubmissionResponseDto convertToLessonSubmissionResponseDto(StudentSubmissionDto submission) {
+        return LessonSubmissionResponseDto.builder()
+                .submissionId(submission.getSubmissionId())
+                .student(LessonSubmissionResponseDto.StudentSummary.builder()
+                        .id(submission.getStudentId())
+                        .name(submission.getStudentName())
+                        .email(submission.getStudentEmail())
+                        .build())
+                .status(submission.getEffectiveStatus())
+                .score(submission.getScore())
+                .submittedAt(submission.getSubmittedAt())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<ApiResponse<SubmissionDetailResponseDto>> getSubmissionDetails(
+            String lessonId, String submissionId) {
+
+        log.info("Retrieving submission details for submissionId {} in lesson {}", submissionId, lessonId);
+
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+
+            // 1. Fetch submission with instructor ownership validation
+            Optional<QuizResult> submissionOpt = quizResultRepository
+                    .findSubmissionDetailsByInstructor(submissionId, lessonId, currentUserId);
+
+            if (submissionOpt.isEmpty()) {
+                // Check if submission exists but doesn't belong to lesson
+                Optional<QuizResult> submissionCheck = quizResultRepository.findById(submissionId);
+                if (submissionCheck.isPresent()) {
+                    QuizResult submission = submissionCheck.get();
+                    if (!submission.getLesson().getId().equals(lessonId)) {
+                        return ApiResponseUtil.badRequest("Submission does not belong to the specified lesson");
+                    } else {
+                        return ApiResponseUtil.forbidden("You do not have permission to access this submission");
+                    }
+                } else {
+                    return ApiResponseUtil.notFound("Submission not found");
+                }
+            }
+
+            QuizResult submission = submissionOpt.get();
+            Lesson lesson = submission.getLesson();
+
+            // 2. Validate lesson is of QUIZ type
+            String lessonTypeName = lesson.getLessonType() != null ? lesson.getLessonType().getName() : "UNKNOWN";
+            if (!"QUIZ".equals(lessonTypeName)) {
+                return ApiResponseUtil.badRequest("Only quiz lessons can have submissions");
+            }
+
+            // 3. Fetch quiz questions for the lesson
+            List<QuizQuestion> questions = quizQuestionRepository.findQuestionsByLessonId(lessonId);
+            if (questions.isEmpty()) {
+                return ApiResponseUtil.notFound("No quiz questions found for this lesson");
+            }
+
+            // 4. Parse student answers from JSON
+            Map<String, String> studentAnswers = parseStudentAnswers(submission.getAnswers());
+
+            // 5. Build response DTO
+            SubmissionDetailResponseDto response = buildSubmissionDetailResponse(
+                    submission, questions, studentAnswers);
+
+            log.info("Successfully retrieved submission details for submissionId {} in lesson {}",
+                    submissionId, lessonId);
+
+            return ApiResponseUtil.success(response, "Submission details retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving submission details for submissionId {} in lesson {}: {}",
+                    submissionId, lessonId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve submission details: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Parse student answers from JSON string
+     */
+    private Map<String, String> parseStudentAnswers(String answersJson) {
+        try {
+            if (answersJson == null || answersJson.trim().isEmpty()) {
+                return new HashMap<>();
+            }
+            return objectMapper.readValue(answersJson, new TypeReference<Map<String, String>>() {
+            });
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to parse student answers: {}", answersJson, e);
+            return new HashMap<>();
+        }
+    }
+
+    /**
+     * Build the submission detail response DTO
+     */
+    private SubmissionDetailResponseDto buildSubmissionDetailResponse(
+            QuizResult submission, List<QuizQuestion> questions, Map<String, String> studentAnswers) {
+
+        // Build student info
+        StudentInfo studentInfo = StudentInfo.builder()
+                .id(submission.getUser().getId())
+                .fullName(submission.getUser().getName())
+                .email(submission.getUser().getEmail())
+                .build();
+
+        // Build question-answer DTOs
+        List<QuestionAnswerDto> questionAnswers = questions.stream()
+                .map(question -> buildQuestionAnswerDto(question, studentAnswers))
+                .collect(Collectors.toList());
+
+        // Build main response
+        return SubmissionDetailResponseDto.builder()
+                .id(submission.getId())
+                .lessonId(submission.getLesson().getId())
+                .student(studentInfo)
+                .score(submission.getScore())
+                .submittedAt(submission.getCompletedAt())
+                .status("SUBMITTED") // All submissions have this status in the current system
+                .answers(questionAnswers)
+                .build();
+    }
+
+    /**
+     * Build question-answer DTO for a single question
+     */
+    private QuestionAnswerDto buildQuestionAnswerDto(QuizQuestion question, Map<String, String> studentAnswers) {
+        // Parse question options from JSON
+        Map<String, String> options = parseQuestionOptions(question.getOptions());
+
+        // Get student's answer for this question
+        String studentAnswer = studentAnswers.get(question.getId());
+
+        // Determine correctness
+        boolean isCorrect = question.getCorrectAnswer().equals(studentAnswer);
+
+        return QuestionAnswerDto.builder()
+                .questionId(question.getId())
+                .questionText(question.getQuestionText())
+                .options(options)
+                .answer(studentAnswer)
+                .correctAnswer(question.getCorrectAnswer())
+                .isCorrect(isCorrect)
+                .explanation(question.getExplanation())
+                .build();
+    }
+
+    /**
+     * Parse question options from JSON string
+     */
+    private Map<String, String> parseQuestionOptions(String optionsJson) {
+        try {
+            if (optionsJson == null || optionsJson.trim().isEmpty()) {
+                return new HashMap<>();
+            }
+            return objectMapper.readValue(optionsJson, new TypeReference<Map<String, String>>() {
+            });
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to parse question options: {}", optionsJson, e);
+            return new HashMap<>();
+        }
     }
 
 }

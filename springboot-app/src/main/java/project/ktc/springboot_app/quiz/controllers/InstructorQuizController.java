@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +20,9 @@ import project.ktc.springboot_app.quiz.dto.CreateQuizDto;
 import project.ktc.springboot_app.quiz.dto.QuizResponseDto;
 import project.ktc.springboot_app.quiz.services.QuizServiceImp;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/instructor/quizzes")
@@ -53,4 +55,5 @@ public class InstructorQuizController {
 
                 return ApiResponseUtil.created(quiz, "Quiz created successfully");
         }
+        
 }

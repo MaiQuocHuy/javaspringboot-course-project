@@ -1,16 +1,21 @@
 package project.ktc.springboot_app.lesson.interfaces;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.lesson.dto.CreateLessonDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonResponseDto;
 import project.ktc.springboot_app.lesson.dto.CreateLessonWithQuizDto;
+import project.ktc.springboot_app.lesson.dto.LessonSubmissionsResponseDto;
 import project.ktc.springboot_app.lesson.dto.LessonWithQuizResponseDto;
 import project.ktc.springboot_app.lesson.dto.ReorderLessonsDto;
+import project.ktc.springboot_app.lesson.dto.SubmissionDetailResponseDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonDto;
 import project.ktc.springboot_app.lesson.dto.UpdateLessonResponseDto;
+import project.ktc.springboot_app.quiz.dto.QuizQuestionResponseDto;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 
 public interface LessonService {
@@ -91,4 +96,37 @@ public interface LessonService {
          */
         ResponseEntity<ApiResponse<LessonWithQuizResponseDto>> createLessonWithQuiz(String sectionId,
                         CreateLessonWithQuizDto lessonWithQuizDto);
+
+        /**
+         * Retrieves paginated quiz questions for a specific lesson owned by the instructor
+         * 
+         * @param sectionId The ID of the section containing the lesson
+         * @param lessonId  The ID of the lesson containing the quiz questions
+         * @param pageable  Pagination parameters
+         * @return PaginatedResponse containing quiz questions
+         */
+        ResponseEntity<ApiResponse<PaginatedResponse<QuizQuestionResponseDto>>> getQuizQuestions(
+                        String sectionId, String lessonId, Pageable pageable);
+
+        /**
+         * Retrieves paginated lesson submissions for a specific lesson owned by the instructor
+         * Includes both students who have submitted and those who haven't, along with summary statistics
+         * 
+         * @param lessonId The ID of the lesson to get submissions for
+         * @param pageable Pagination parameters
+         * @return LessonSubmissionsResponseDto containing submissions data and summary
+         */
+        ResponseEntity<ApiResponse<LessonSubmissionsResponseDto>> getSubmissions(
+                        String lessonId, Pageable pageable);
+
+        /**
+         * Retrieves detailed information about a specific student submission for a lesson
+         * Only the instructor who owns the course can access this endpoint
+         * 
+         * @param lessonId The ID of the lesson
+         * @param submissionId The ID of the submission
+         * @return SubmissionDetailResponseDto containing detailed submission information
+         */
+        ResponseEntity<ApiResponse<SubmissionDetailResponseDto>> getSubmissionDetails(
+                        String lessonId, String submissionId);
 }
