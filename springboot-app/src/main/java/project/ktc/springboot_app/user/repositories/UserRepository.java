@@ -17,6 +17,8 @@ import project.ktc.springboot_app.auth.entitiy.User;
 public interface UserRepository extends JpaRepository<User, String> {
         Optional<User> findByEmail(String email);
 
+        Optional<User> findByName(String name);
+
         @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.email = :email")
         Optional<User> findByEmailWithRoles(@Param("email") String email);
 

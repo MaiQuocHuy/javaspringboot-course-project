@@ -1,5 +1,7 @@
 package project.ktc.springboot_app.quiz.repositories;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -57,5 +59,24 @@ public interface QuizQuestionRepository extends JpaRepository<QuizQuestion, Stri
      * Find all quiz questions for a lesson
      */
     List<QuizQuestion> findByLessonId(String lessonId);
+
+    /**
+     * Find quiz questions by lesson with instructor ownership validation and pagination
+     * This query joins through lesson -> section -> course -> instructor to ensure
+     * the instructor owns the course containing the quiz questions
+     */
+    @Query("SELECT qq FROM QuizQuestion qq " +
+            "JOIN qq.lesson l " +
+            "JOIN l.section s " +
+            "JOIN s.course c " +
+            "WHERE l.id = :lessonId " +
+            "AND s.id = :sectionId " +
+            "AND c.instructor.id = :instructorId " +
+            "ORDER BY qq.createdAt ASC")
+    Page<QuizQuestion> findQuizQuestionsByLessonAndOwnership(
+        @Param("lessonId") String lessonId,
+        @Param("sectionId") String sectionId,
+        @Param("instructorId") String instructorId,
+        Pageable pageable);
 
 }

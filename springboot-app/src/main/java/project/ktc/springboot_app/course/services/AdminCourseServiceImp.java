@@ -11,6 +11,7 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewFilterDto;
 import project.ktc.springboot_app.course.dto.CourseReviewResponseDto;
@@ -164,6 +165,11 @@ public class AdminCourseServiceImp implements AdminCourseService {
 
             Course course = courseOpt.get();
 
+            Optional<Course> courseWithCategories = courseRepository.findCourseWithCategories(course.getId());
+            if (courseWithCategories.isPresent()) {
+                course.setCategories(courseWithCategories.get().getCategories());
+            }
+
             // Get sections with lessons
             List<Section> sections = sectionRepository.findSectionsByCourseIdOrderByOrder(courseId);
 
@@ -181,6 +187,17 @@ public class AdminCourseServiceImp implements AdminCourseService {
 
     private CourseReviewDetailResponseDto mapCourseToDetailDto(Course course, List<Section> sections) {
         // Calculate aggregated data
+
+        List<CourseReviewDetailResponseDto.CategorySummary> categorySummaries = new ArrayList<>();
+        if (course.getCategories() != null && !course.getCategories().isEmpty()) {
+            categorySummaries = course.getCategories().stream()
+                    .map(cat -> CourseReviewDetailResponseDto.CategorySummary.builder()
+                            .id(cat.getId())
+                            .name(cat.getName())
+                            .build())
+                    .collect(Collectors.toList());
+        }
+
         int totalLessons = sections.stream()
                 .mapToInt(section -> section.getLessons().size())
                 .sum();
@@ -203,11 +220,16 @@ public class AdminCourseServiceImp implements AdminCourseService {
                 .id(course.getId())
                 .title(course.getTitle())
                 .description(course.getDescription())
+                .price(course.getPrice())
+                .level(course.getLevel())
+                .thumbnailUrl(course.getThumbnailUrl())
                 .createdBy(CourseReviewDetailResponseDto.CreatedByDto.builder()
                         .id(course.getInstructor().getId())
                         .name(course.getInstructor().getName())
                         .email(course.getInstructor().getEmail())
+                        .avatar(course.getInstructor().getThumbnailUrl())
                         .build())
+                .categories(categorySummaries)
                 .countSection(sections.size())
                 .countLesson(totalLessons)
                 .totalDuration(totalDuration)

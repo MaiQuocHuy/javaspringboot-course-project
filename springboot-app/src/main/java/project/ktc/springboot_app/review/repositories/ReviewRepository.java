@@ -80,4 +80,6 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
                         "WHERE r.course.slug = :courseSlug " +
                         "ORDER BY r.reviewedAt DESC")
         Page<Review> findByCourseSlugWithUser(@Param("courseSlug") String courseSlug, Pageable pageable);
+
+        boolean existsByIdAndUserId(String reviewId, String userId);
 }
