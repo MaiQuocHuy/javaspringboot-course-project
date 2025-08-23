@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,7 @@ public class CourseReviewDetailResponseDto {
     private Integer countLesson;
     private Integer totalDuration;
     private CourseLevel level;
+    private BigDecimal price;
     private String thumbnailUrl;
     private List<CategorySummary> categories;
     private List<SectionDetailDto> sections;
