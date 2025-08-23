@@ -1,5 +1,5 @@
 ---
-applyTo: "**"
+trigger: manual
 ---
 
 CREATE TABLE IF NOT EXISTS `users` (
