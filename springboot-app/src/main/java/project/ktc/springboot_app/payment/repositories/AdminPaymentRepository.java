@@ -93,4 +93,34 @@ public interface AdminPaymentRepository extends JpaRepository<Payment, String> {
                         "ORDER BY p.createdAt DESC")
         Page<Payment> searchPayments(@Param("searchTerm") String searchTerm, Pageable pageable);
 
+        /**
+         * Count all payments
+         */
+        @Query("SELECT COUNT(p) FROM Payment p")
+        Long countAllPayments();
+
+        /**
+         * Count payments by status
+         */
+        @Query("SELECT COUNT(p) FROM Payment p WHERE p.status = :status")
+        Long countPaymentsByStatus(@Param("status") Payment.PaymentStatus status);
+
+        /**
+         * Count completed payments
+         */
+        @Query("SELECT COUNT(p) FROM Payment p WHERE p.status = 'COMPLETED'")
+        Long countCompletedPayments();
+
+        /**
+         * Count pending payments
+         */
+        @Query("SELECT COUNT(p) FROM Payment p WHERE p.status = 'PENDING'")
+        Long countPendingPayments();
+
+        /**
+         * Count failed payments
+         */
+        @Query("SELECT COUNT(p) FROM Payment p WHERE p.status = 'FAILED'")
+        Long countFailedPayments();
+
 }

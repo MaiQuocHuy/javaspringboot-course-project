@@ -8,6 +8,7 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.refund.dto.AdminRefundDetailsResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundResponseDto;
+import project.ktc.springboot_app.refund.dto.AdminRefundStatisticsResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundStatusUpdateResponseDto;
 import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
 
@@ -45,4 +46,11 @@ public interface AdminRefundService {
      */
     ResponseEntity<ApiResponse<AdminRefundStatusUpdateResponseDto>> updateRefundStatus(
             String refundId, UpdateRefundStatusDto updateDto);
+
+    /**
+     * Get refund statistics for admin dashboard
+     * 
+     * @return ResponseEntity containing refund counts by status
+     */
+    ResponseEntity<ApiResponse<AdminRefundStatisticsResponseDto>> getRefundStatistics();
 }

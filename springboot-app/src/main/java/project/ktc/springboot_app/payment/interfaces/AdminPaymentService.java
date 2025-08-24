@@ -9,10 +9,10 @@ import org.springframework.http.ResponseEntity;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminPaymentStatisticsResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaidOutResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
-import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
 
 /**
  * Interface for admin payment operations
@@ -90,4 +90,11 @@ public interface AdminPaymentService {
          * @return ResponseEntity containing the paid out operation result
          */
         ResponseEntity<ApiResponse<AdminPaidOutResponseDto>> paidOutPayment(String paymentId);
+
+        /**
+         * Get payment statistics for admin dashboard
+         * 
+         * @return ResponseEntity containing payment counts by status
+         */
+        ResponseEntity<ApiResponse<AdminPaymentStatisticsResponseDto>> getPaymentStatistics();
 }

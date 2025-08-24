@@ -46,4 +46,34 @@ public interface AdminRefundRepository extends RefundRepository {
                         "WHERE r.id = :refundId")
         Optional<Refund> findRefundByIdWithDetails(@Param("refundId") String refundId);
 
+        /**
+         * Count all refunds
+         */
+        @Query("SELECT COUNT(r) FROM Refund r")
+        Long countAllRefunds();
+
+        /**
+         * Count refunds by status
+         */
+        @Query("SELECT COUNT(r) FROM Refund r WHERE r.status = :status")
+        Long countRefundsByStatus(@Param("status") Refund.RefundStatus status);
+
+        /**
+         * Count pending refunds
+         */
+        @Query("SELECT COUNT(r) FROM Refund r WHERE r.status = 'PENDING'")
+        Long countPendingRefunds();
+
+        /**
+         * Count completed refunds
+         */
+        @Query("SELECT COUNT(r) FROM Refund r WHERE r.status = 'COMPLETED'")
+        Long countCompletedRefunds();
+
+        /**
+         * Count failed refunds
+         */
+        @Query("SELECT COUNT(r) FROM Refund r WHERE r.status = 'FAILED'")
+        Long countFailedRefunds();
+
 }
