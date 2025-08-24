@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import project.ktc.springboot_app.course.enums.CourseLevel;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +22,10 @@ public class CourseReviewDetailResponseDto {
     private Integer countSection;
     private Integer countLesson;
     private Integer totalDuration;
+    private CourseLevel level;
+    private BigDecimal price;
+    private String thumbnailUrl;
+    private List<CategorySummary> categories;
     private List<SectionDetailDto> sections;
 
     @Data
@@ -30,6 +36,16 @@ public class CourseReviewDetailResponseDto {
         private String id;
         private String name;
         private String email;
+        private String avatar;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CategorySummary {
+        private String id;
+        private String name;
     }
 
     @Data

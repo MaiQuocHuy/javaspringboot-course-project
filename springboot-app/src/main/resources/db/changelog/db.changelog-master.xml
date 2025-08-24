@@ -96,5 +96,6 @@
 
     <!-- Refunds System Enhancements -->
     <include file="db/changelog/changes/146-add-rejected-reason-to-refunds.xml"/>
+    <include file="db/changelog/changes/147-update-student-role-permissions.xml"/>
 
 </databaseChangeLog>

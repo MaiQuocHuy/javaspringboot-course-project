@@ -23,6 +23,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import project.ktc.springboot_app.auth.dto.UserResponseDto;
 import project.ktc.springboot_app.user.dto.AdminUserPageResponseDto;
+import project.ktc.springboot_app.user.dto.AdminCreateUserDto;
 import project.ktc.springboot_app.user.dto.CreateUserDto;
 import project.ktc.springboot_app.user.dto.UpdateUserDto;
 import project.ktc.springboot_app.user.dto.UpdateUserRoleDto;
@@ -62,19 +63,6 @@ public class AdminUserController {
 
                         @Parameter(description = "Sort criteria (format: field,direction)", example = "name,asc") @RequestParam(defaultValue = "createdAt,desc") String sort) {
                 return userService.getUsersWithPagination(search, role, isActive, page, size, sort);
-        }
-
-        @GetMapping("/simple")
-        @PreAuthorize("hasPermission(null, 'user:read') or hasRole('ADMIN')")
-        @Operation(summary = "Get all users (simple list)", description = "Retrieve a simple list of all users (deprecated - use paginated endpoint)")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Successfully retrieved list"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - user:read permission required"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        @Deprecated
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<UserResponseDto>>> getAllUsers() {
-                return userService.getUsers();
         }
 
         @GetMapping("/{id}")
@@ -121,9 +109,26 @@ public class AdminUserController {
                 return userService.updateUserStatus(id, status);
         }
 
+        @PostMapping("/newRole")
+        @PreAuthorize("hasPermission(null, 'user:create') or hasRole('ADMIN')")
+        @Operation(summary = "Create a new user", description = "Create a new user in the system with exactly one role and comprehensive validation")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "User created successfully"),
+                        @ApiResponse(responseCode = "400", description = "Bad Request - missing or invalid fields"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - missing or invalid JWT"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - caller is not ADMIN"),
+                        @ApiResponse(responseCode = "409", description = "Conflict - email or username already exists"),
+                        @ApiResponse(responseCode = "422", description = "Unprocessable Entity - password too weak, invalid email, or role not recognized"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> createUserV2(
+                        @Valid @RequestBody AdminCreateUserDto createUserDto) {
+                return userService.createAdminUser(createUserDto);
+        }
+
         @PostMapping
         @PreAuthorize("hasPermission(null, 'user:create') or hasRole('ADMIN')")
-        @Operation(summary = "Create a new user", description = "Create a new user in the system")
+        @Operation(summary = "Create a new user (original)", description = "Create a new user in the system")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "201", description = "User created successfully"),
                         @ApiResponse(responseCode = "400", description = "Invalid input or email already exists"),
@@ -134,28 +139,6 @@ public class AdminUserController {
                         @Valid @RequestBody CreateUserDto createUserDto) {
                 return userService.createUser(createUserDto);
         }
-
-        // @DeleteMapping("/{id}")
-        // @PreAuthorize("hasPermission(#id, 'User', 'user:delete') or
-        // hasRole('ADMIN')")
-        // @Operation(summary = "Delete a user", description = "Permanently delete a
-        // user from the system")
-        // @ApiResponses(value = {
-        // @ApiResponse(responseCode = "200", description = "User deleted
-        // successfully"),
-        // @ApiResponse(responseCode = "403", description = "Forbidden - user:delete
-        // permission required"),
-        // @ApiResponse(responseCode = "404", description = "User not found"),
-        // @ApiResponse(responseCode = "400", description = "Cannot delete user - has
-        // active dependencies")
-        // })
-        // public
-        // ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>>
-        // deleteUser(
-        // @Parameter(description = "User ID", required = true, example =
-        // "7200a420-2ff3-4f18-9933-1b86d05f1a78") @PathVariable String id) {
-        // return userService.deleteUser(id);
-        // }
 
         @PutMapping("/{id}")
         @PreAuthorize("hasPermission(#id, 'User', 'user:edit') or hasRole('ADMIN')")

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.permission.entity.FilterType;
 import project.ktc.springboot_app.permission.services.AuthorizationService;
+import project.ktc.springboot_app.permission.services.ResourceOwnershipService;
 
 import java.io.Serializable;
 
@@ -23,6 +24,7 @@ import java.io.Serializable;
 public class CustomPermissionEvaluator implements PermissionEvaluator {
 
     private final AuthorizationService authorizationService;
+    private final ResourceOwnershipService resourceOwnershipService;
 
     /**
      * Evaluate permission for domain object
@@ -78,11 +80,15 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
 
     /**
      * Evaluate permission for target by ID
+     * This method handles instance-level permission checks with
+     * ResourceOwnershipService integration.
      * 
      * @param authentication the authentication object
-     * @param targetId       the target ID
-     * @param targetType     the target type
-     * @param permission     the permission string
+     * @param targetId       the target resource ID (UUID string)
+     * @param targetType     the target resource type (e.g., "Course", "Review",
+     *                       "Enrollment", "User")
+     * @param permission     the permission string (e.g., "course:READ",
+     *                       "course:WRITE")
      * @return true if access is granted
      */
     @Override
@@ -100,17 +106,29 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         }
 
         String permissionKey = permission.toString();
+        String resourceId = parseResourceId(targetId);
 
-        log.debug("Evaluating permission: {} for user: {} with targetId: {} and targetType: {}",
-                permissionKey, user.getEmail(), targetId, targetType);
+        log.debug("Evaluating instance-level permission: {} for user: {} on {} with ID: {}",
+                permissionKey, user.getEmail(), targetType, resourceId);
 
         try {
+            // Evaluate the permission through the authorization service
             AuthorizationService.AuthorizationResult result = authorizationService.evaluatePermission(user,
                     permissionKey);
 
             if (!result.isAllowed()) {
-                log.debug("Permission denied: {} for user: {}, reason: {}",
+                log.debug("Permission denied by authorization service: {} for user: {}, reason: {}",
                         permissionKey, user.getEmail(), result.getReason());
+                return false;
+            }
+
+            // Check instance-level access using ResourceOwnershipService
+            boolean hasInstanceAccess = checkInstanceLevelAccess(user, resourceId,
+                    targetType, result.getEffectiveFilter());
+
+            if (!hasInstanceAccess) {
+                log.debug("Instance-level access denied for user: {} on {} {} with filter: {}",
+                        user.getEmail(), targetType, resourceId, result.getEffectiveFilter());
                 return false;
             }
 
@@ -118,15 +136,125 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
             EffectiveFilterContext.setCurrentFilter(result.getEffectiveFilter());
             EffectiveFilterContext.setCurrentUser(result.getUser());
 
-            log.debug("Permission granted: {} for user: {} with filter: {} for targetId: {}",
-                    permissionKey, user.getEmail(), result.getEffectiveFilter(), targetId);
+            log.debug("Instance-level permission granted: {} for user: {} on {} {} with filter: {}",
+                    permissionKey, user.getEmail(), targetType, resourceId, result.getEffectiveFilter());
 
             return true;
 
         } catch (Exception e) {
-            log.error("Error evaluating permission: {} for user: {} with targetId: {}",
-                    permissionKey, user.getEmail(), targetId, e);
+            log.error("Error evaluating instance-level permission: {} for user: {} on {} {}",
+                    permissionKey, user.getEmail(), targetType, resourceId, e);
             return false;
+        }
+    }
+
+    /**
+     * Check instance-level access based on filter type and ownership.
+     * 
+     * @param user            the authenticated user
+     * @param resourceId      the resource ID (UUID string)
+     * @param targetType      the resource type (Course, Enrollment, Review, User)
+     * @param effectiveFilter the effective filter type
+     * @return true if access is granted
+     */
+    private boolean checkInstanceLevelAccess(User user, String resourceId, String targetType,
+            FilterType.EffectiveFilterType effectiveFilter) {
+
+        if (resourceId == null || resourceId.trim().isEmpty()) {
+            log.debug("Resource ID is null or empty, denying access");
+            return false;
+        }
+
+        // ALL filter type grants access to all resources
+        if (effectiveFilter == FilterType.EffectiveFilterType.ALL) {
+            log.debug("ALL filter grants access to {} {} for user: {}",
+                    targetType, resourceId, user.getEmail());
+            return true;
+        }
+
+        // DENIED filter type denies all access
+        if (effectiveFilter == FilterType.EffectiveFilterType.DENIED) {
+            log.debug("DENIED filter blocks access to {} {} for user: {}",
+                    targetType, resourceId, user.getEmail());
+            return false;
+        }
+
+        // OWN filter type requires ownership check
+        if (effectiveFilter == FilterType.EffectiveFilterType.OWN) {
+            boolean hasOwnership = checkResourceOwnership(user, resourceId, targetType);
+            log.debug("OWN filter ownership check for {} {}: {} for user: {}",
+                    targetType, resourceId, hasOwnership, user.getEmail());
+            return hasOwnership;
+        }
+
+        // Unknown filter type - deny access for security
+        log.warn("Unknown filter type: {} for resource {} {}, denying access",
+                effectiveFilter, targetType, resourceId);
+        return false;
+    }
+
+    /**
+     * Check if user owns or has a relationship with the specified resource.
+     * 
+     * @param user       the user
+     * @param resourceId the resource ID (UUID string)
+     * @param targetType the resource type
+     * @return true if user has ownership/relationship with the resource
+     */
+    private boolean checkResourceOwnership(User user, String resourceId, String targetType) {
+        try {
+            switch (targetType.toLowerCase()) {
+                case "course":
+                    return resourceOwnershipService.isInstructorOfCourse(user.getId(), resourceId);
+
+                case "enrollment":
+                    return resourceOwnershipService.isEnrollmentOwner(user.getId(), resourceId);
+
+                case "review":
+                    return resourceOwnershipService.isReviewAuthor(user.getId(), resourceId);
+
+                case "user":
+                    return resourceOwnershipService.canAccessUserProfile(user.getId(), resourceId);
+
+                default:
+                    log.warn("Unknown resource type for ownership check: {}", targetType);
+                    return false;
+            }
+        } catch (Exception e) {
+            log.error("Error checking ownership for user: {} on {} {}",
+                    user.getEmail(), targetType, resourceId, e);
+            return false;
+        }
+    }
+
+    /**
+     * Parse resource ID from Serializable object.
+     * 
+     * @param targetId the target ID object
+     * @return parsed String ID (UUID) or null if parsing fails
+     */
+    private String parseResourceId(Serializable targetId) {
+        if (targetId == null) {
+            return null;
+        }
+
+        try {
+            if (targetId instanceof String) {
+                return (String) targetId;
+            }
+            if (targetId instanceof Number) {
+                return targetId.toString();
+            }
+
+            // Convert any other type to string
+            String result = targetId.toString();
+            log.debug("Converted resource ID from type: {} to string: {}",
+                    targetId.getClass().getSimpleName(), result);
+            return result;
+
+        } catch (Exception e) {
+            log.warn("Failed to parse resource ID: {}", targetId, e);
+            return null;
         }
     }
 
