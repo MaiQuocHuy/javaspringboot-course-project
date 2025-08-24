@@ -131,6 +131,7 @@ public class AdminPaymentDetailResponseDto {
                 .paymentMethod(payment.getPaymentMethod())
                 .createdAt(payment.getCreatedAt())
                 .paidAt(payment.getPaidAt())
+                .paidoutAt(payment.getPaidOutAt())
                 .updatedAt(payment.getUpdatedAt())
                 .stripeSessionId(payment.getSessionId())
                 .course(courseInfo)

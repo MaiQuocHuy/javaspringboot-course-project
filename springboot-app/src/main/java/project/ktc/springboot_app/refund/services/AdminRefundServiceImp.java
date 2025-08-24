@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.cloudinary.Api;
-
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
@@ -18,10 +16,10 @@ import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
-import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.refund.dto.AdminRefundDetailsResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundResponseDto;
+import project.ktc.springboot_app.refund.dto.AdminRefundStatisticsResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundStatusUpdateResponseDto;
 import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
 import project.ktc.springboot_app.refund.entity.Refund;
@@ -252,6 +250,33 @@ public class AdminRefundServiceImp implements AdminRefundService {
         } catch (Exception e) {
             log.error("Error updating refund status for refund ID {}: {}", refundId, e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to update refund status. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<AdminRefundStatisticsResponseDto>> getRefundStatistics() {
+        try {
+            log.info("Admin retrieving refund statistics");
+
+            // Fetch refund counts by status
+            Long totalRefunds = adminRefundRepository.countAllRefunds();
+            Long completedRefunds = adminRefundRepository.countRefundsByStatus(Refund.RefundStatus.COMPLETED);
+            Long pendingRefunds = adminRefundRepository.countRefundsByStatus(Refund.RefundStatus.PENDING);
+            Long failedRefunds = adminRefundRepository.countRefundsByStatus(Refund.RefundStatus.FAILED);
+
+            AdminRefundStatisticsResponseDto refundStatistics = AdminRefundStatisticsResponseDto.builder()
+                    .total(totalRefunds)
+                    .completed(completedRefunds)
+                    .pending(pendingRefunds)
+                    .failed(failedRefunds)
+                    .build();
+
+            log.info("Retrieved refund statistics: {}", refundStatistics);
+            return ApiResponseUtil.success(refundStatistics, "Refund statistics retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving refund statistics: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve refund statistics. Please try again later.");
         }
     }
 }

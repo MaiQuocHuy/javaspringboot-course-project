@@ -26,6 +26,7 @@ import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 import project.ktc.springboot_app.log.mapper.PaymentLogMapper;
 import project.ktc.springboot_app.log.services.SystemLogHelper;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminPaymentStatisticsResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaidOutResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
@@ -459,6 +460,38 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
         } catch (Exception e) {
             log.error("Error processing paid out for payment {}: {}", paymentId, e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to process paid out. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<AdminPaymentStatisticsResponseDto>> getPaymentStatistics() {
+        try {
+            log.info("Admin retrieving payment statistics");
+
+            // Get payment counts
+            Long totalPayments = adminPaymentRepository.countAllPayments();
+            Long pendingPayments = adminPaymentRepository.countPaymentsByStatus(PaymentStatus.PENDING);
+            Long completedPayments = adminPaymentRepository.countPaymentsByStatus(PaymentStatus.COMPLETED);
+            Long failedPayments = adminPaymentRepository.countPaymentsByStatus(PaymentStatus.FAILED);
+            Long refundedPayments = adminPaymentRepository.countPaymentsByStatus(PaymentStatus.REFUNDED);
+
+            AdminPaymentStatisticsResponseDto paymentStatistics = AdminPaymentStatisticsResponseDto
+                    .builder()
+                    .total(totalPayments)
+                    .pending(pendingPayments)
+                    .completed(completedPayments)
+                    .failed(failedPayments)
+                    .refunded(refundedPayments)
+                    .build();
+
+            log.info("Payment statistics: Total={}, Pending={}, Completed={}, Failed={}, Refunded={}",
+                    totalPayments, pendingPayments, completedPayments, failedPayments, refundedPayments);
+
+            return ApiResponseUtil.success(paymentStatistics, "Payment statistics retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving payment statistics: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve statistics. Please try again later.");
         }
     }
 }

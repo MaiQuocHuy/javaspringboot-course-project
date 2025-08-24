@@ -31,7 +31,22 @@ public class AdminRefundResponseDto {
         private String id;
         private BigDecimal amount;
         private String status;
+        private UserInfoDto user;
         private LocalDateTime createdAt;
+    }
+
+    /**
+     * Nested DTO for user information in payment response
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserInfoDto {
+        private String id;
+        private String name;
+        private String email;
+        private String thumbnailUrl;
     }
 
     public static AdminRefundResponseDto fromEntity(Refund refund) {
@@ -41,6 +56,12 @@ public class AdminRefundResponseDto {
                         .id(refund.getPayment().getId())
                         .amount(refund.getPayment().getAmount())
                         .status(refund.getPayment().getStatus().name())
+                        .user(UserInfoDto.builder()
+                                .id(refund.getPayment().getUser().getId())
+                                .name(refund.getPayment().getUser().getName())
+                                .email(refund.getPayment().getUser().getEmail())
+                                .thumbnailUrl(refund.getPayment().getUser().getThumbnailUrl())
+                                .build())
                         .createdAt(refund.getPayment().getCreatedAt())
                         .build())
                 .reason(refund.getReason())

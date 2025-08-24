@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.payment.dto.AdminPaidOutResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminPaymentStatisticsResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
@@ -246,6 +247,39 @@ public class AdminPaymentController {
                         @Parameter(description = "Payment ID", required = true) @PathVariable String paymentId) {
                 log.info("Admin attempting to paid out payment: {}", paymentId);
                 return adminPaymentService.paidOutPayment(paymentId);
+        }
+
+        /**
+         * Get payment statistics for admin dashboard
+         * 
+         * @return ResponseEntity containing payment counts by status
+         */
+        @GetMapping("/statistics")
+        @Operation(summary = "Get payment statistics", description = """
+                        **Purpose:**
+                        Retrieves comprehensive statistics about payments for admin dashboard.
+
+                        **Response Includes:**
+                        - Payment counts by status (total, pending, completed, failed, refunded)
+
+                        **Use Cases:**
+                        - Admin dashboard overview
+                        - Financial reporting
+                        - System health monitoring
+
+                        **Admin Only:**
+                        - This endpoint requires ADMIN role
+                        - Provides system-wide statistics
+                        """)
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminPaymentStatisticsResponseDto>> getPaymentStatistics() {
+                log.info("Admin retrieving payment statistics");
+                return adminPaymentService.getPaymentStatistics();
         }
 
 }
