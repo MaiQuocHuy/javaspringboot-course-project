@@ -17,6 +17,7 @@ import project.ktc.springboot_app.earning.repositories.InstructorEarningReposito
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.payment.entity.Payment;
+import project.ktc.springboot_app.payment.service.AdminPaymentServiceImpl;
 import project.ktc.springboot_app.refund.dto.AdminRefundDetailsResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundStatisticsResponseDto;
@@ -43,6 +44,7 @@ public class AdminRefundServiceImp implements AdminRefundService {
     private final InstructorEarningRepository instructorEarningRepository;
     private final StripePaymentDetailsService stripePaymentDetailsService;
     private final EnrollmentRepository enrollmentRepository;
+    private final AdminPaymentServiceImpl adminPaymentService;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<AdminRefundResponseDto>>> getAllRefunds(Pageable pageable) {
@@ -225,6 +227,18 @@ public class AdminRefundServiceImp implements AdminRefundService {
                 } catch (Exception e) {
                     log.error("Error removing enrollment for refund {}: {}", refundId, e.getMessage(), e);
                     // Continue with refund processing even if enrollment removal fails
+                }
+
+                // Update payment status to REFUNDED
+                try {
+                    payment.setStatus(Payment.PaymentStatus.REFUNDED);
+                    // Note: payment will be saved through the refund relationship, but we can save
+                    // explicitly if needed
+                    log.info("Updated payment {} status to REFUNDED due to refund completion", payment.getId());
+                } catch (Exception e) {
+                    log.error("Error updating payment status to REFUNDED for payment {}: {}",
+                            payment.getId(), e.getMessage(), e);
+                    // Continue with refund processing even if payment status update fails
                 }
             }
 
