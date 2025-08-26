@@ -12,20 +12,19 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import project.ktc.springboot_app.chat.dtos.ChatMessageResponse;
 import project.ktc.springboot_app.chat.dtos.SendMessageRequest;
 import project.ktc.springboot_app.chat.dtos.ChatMessagesListResponse;
 import project.ktc.springboot_app.chat.interfaces.ChatMessageService;
-import project.ktc.springboot_app.common.dto.PaginatedResponse;
 
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('STUDENT') or hasRole('INSTRUCTOR')")
 @Tag(name = "Chat API", description = "API for real-time course chat messaging")
 public class ChatMessageController {
 
