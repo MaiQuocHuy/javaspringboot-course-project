@@ -64,8 +64,8 @@ public class AdminCourseController {
 
         @GetMapping
         // @PreAuthorize("hasPermission(null, 'course:read') or hasRole('ADMIN')")
-        // @PreAuthorize("hasRole('ADMIN')")
-        @PreAuthorize("hasPermission(null, 'Course', 'course:READ')")
+        @PreAuthorize("hasRole('ADMIN')")
+        // @PreAuthorize("hasPermission(null, 'Course', 'course:READ')")
         @Operation(summary = "Get all courses for admin", description = "Retrieves a paginated list of all courses with filtering and sorting options. Only accessible by admins.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PaginatedResponse.class))),
