@@ -22,6 +22,14 @@ public interface FilterTypeRepository extends JpaRepository<FilterType, String> 
     Optional<FilterType> findByName(String name);
 
     /**
+     * Find filter type by name ignoring case
+     *
+     * @param name the filter type name
+     * @return optional filter type (case-insensitive)
+     */
+    Optional<FilterType> findByNameIgnoreCase(String name);
+
+    /**
      * Check if filter type name exists
      * 
      * @param name the filter type name

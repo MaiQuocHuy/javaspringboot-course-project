@@ -236,70 +236,84 @@ public class PermissionServiceImp implements PermissionService {
     @Override
     @Transactional
     public List<RolePermission> updatePermissionsForRole(String roleId, PermissionUpdateRequest request) {
-        logger.debug("Updating permissions for role ID: {} with {} changes",
-                roleId, request.getPermissions().size());
+        logger.debug("[updatePermissionsForRole] Incoming {} permission items for role {}",
+                request.getPermissions().size(), roleId);
 
-        // Validate role exists
+        // 1. Validate role exists
         UserRole role = userRoleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
 
-        // Process each permission update
-        for (PermissionUpdateRequest.PermissionUpdateItemDto permissionUpdate : request.getPermissions()) {
-            String permissionKey = permissionUpdate.getKey();
-            String filterTypeId = permissionUpdate.getFilterType(); // New field
+        // 2. Build current permissions map (permissionKey -> RolePermission)
+        List<RolePermission> currentRolePermissions = rolePermissionRepository.findAllByRole(role);
+        Map<String, RolePermission> currentMap = currentRolePermissions.stream()
+                .collect(Collectors.toMap(rp -> rp.getPermission().getPermissionKey(), rp -> rp));
 
-            logger.debug("Processing permission update: {} -> {} with filterType: {}", permissionKey,
-                    filterTypeId);
+        // 3. Prepare request keys set (for deactivation logic)
+        Set<String> requestedKeys = request.getPermissions().stream()
+                .map(PermissionUpdateRequest.PermissionUpdateItemDto::getKey)
+                .collect(Collectors.toSet());
 
-            // Validate permission exists and is active at system level
-            Optional<Permission> permissionOpt = permissionRepository.findByPermissionKey(permissionKey);
-            if (!permissionOpt.isPresent()) {
-                throw new RuntimeException("Permission not found with key: " + permissionKey);
-            }
+        // 4. Process each requested permission (activate / create + set filterType)
+        for (PermissionUpdateRequest.PermissionUpdateItemDto item : request.getPermissions()) {
+            String permissionKey = item.getKey();
+            String filterTypeId = item.getFilterType();
 
-            Permission permission = permissionOpt.get();
+            logger.debug("Processing permission '{}' with filterType '{}'", permissionKey, filterTypeId);
+
+            Permission permission = permissionRepository.findByPermissionKey(permissionKey)
+                    .orElseThrow(() -> new RuntimeException("Permission not found with key: " + permissionKey));
             if (!permission.isActive()) {
                 throw new RuntimeException("Permission " + permissionKey + " is disabled at system level");
             }
 
-            // Validate filterType if provided
-            FilterType filterType = null;
-            if (filterTypeId != null && !filterTypeId.trim().isEmpty()) {
+            // Default filterType to ALL when not provided
+            FilterType filterType;
+            if (filterTypeId == null || filterTypeId.trim().isEmpty()) {
+                filterType = filterTypeRepository.getAllFilterType()
+                        .orElseThrow(() -> new RuntimeException("FilterType not found with ID: filter-type-001"));
+            } else {
                 filterType = filterTypeRepository.findById(filterTypeId)
                         .orElseThrow(() -> new RuntimeException("FilterType not found with ID: " + filterTypeId));
-                logger.debug("Found filterType: {} ({})", filterType.getName(), filterType.getDescription());
             }
 
-            // Check if role-permission combination already exists
-            Optional<RolePermission> existingRolePermission = rolePermissionRepository
-                    .findByRoleAndPermissionKey(role, permissionKey);
-
-            if (existingRolePermission.isPresent()) {
-                // Update existing role-permission
-                RolePermission rolePermission = existingRolePermission.get();
-                rolePermission.setFilterType(filterType); // Set filterType
+            RolePermission rolePermission = currentMap.get(permissionKey);
+            if (rolePermission != null) {
+                // Reactivate & update filterType
+                rolePermission.setIsActive(true);
+                rolePermission.setFilterType(filterType);
                 rolePermissionRepository.save(rolePermission);
-                logger.debug("Updated existing role-permission: {} -> {} with filterType: {}",
-                        permissionKey, filterType != null ? filterType.getName() : "null");
+                logger.debug("Updated existing role-permission '{}' (active=true, filterType={})", permissionKey,
+                        filterType.getName());
             } else {
-                // Create new role-permission if it doesn't exist and is being activated
-                RolePermission newRolePermission = RolePermission.builder()
+                // Create new active mapping
+                rolePermission = RolePermission.builder()
                         .role(role)
                         .permission(permission)
-                        .filterType(filterType) // Set filterType
+                        .filterType(filterType)
+                        .isActive(true)
                         .build();
-                rolePermissionRepository.save(newRolePermission);
-                logger.debug("Created new role-permission: {} -> {} with filterType: {}",
-                        permissionKey, filterType != null ? filterType.getName() : "null");
+                rolePermissionRepository.save(rolePermission);
+                logger.debug("Created new role-permission '{}' (filterType={})", permissionKey, filterType.getName());
             }
         }
 
-        // Return updated list of all permissions for the role
-        List<RolePermission> updatedPermissions = rolePermissionRepository.findAllByRole(role);
-        logger.debug("Permission update completed for role: {}. Total permissions: {}",
-                role.getRole(), updatedPermissions.size());
+        // 5. Deactivate any existing role-permission not present in request (full
+        // replacement semantics)
+        int deactivatedCount = 0;
+        for (RolePermission existing : currentRolePermissions) {
+            String existingKey = existing.getPermission().getPermissionKey();
+            if (!requestedKeys.contains(existingKey) && Boolean.TRUE.equals(existing.getIsActive())) {
+                existing.setIsActive(false);
+                rolePermissionRepository.save(existing);
+                deactivatedCount++;
+                logger.debug("Deactivated role-permission '{}' for role {}", existingKey, role.getRole());
+            }
+        }
 
-        return updatedPermissions;
+        logger.debug("Permission update completed for role {}. Activated/updated: {}, Deactivated: {}", roleId,
+                requestedKeys.size(), deactivatedCount);
+
+        return rolePermissionRepository.findAllByRole(role);
     }
 
     @Override

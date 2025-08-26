@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.common.exception.InvalidFilterTypeException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.permission.dto.PermissionResponseDto;
 import project.ktc.springboot_app.permission.dto.PermissionUpdateRequest;
@@ -282,12 +283,20 @@ public class AdminPermissionController {
                 return ApiResponseUtil.badRequest("permissions array is required and cannot be empty");
             }
 
-            // Update permissions for the role
-            permissionService.updatePermissionsForRole(roleId.trim(), request);
-            log.debug("Successfully updated permissions for role ID: {}", roleId);
+            // Update permissions for the role (full replacement)
+            var updatedRolePermissions = permissionService.updatePermissionsForRole(roleId.trim(), request);
+            log.debug("Successfully updated permissions for role ID: {} ({} total records, {} active)", roleId,
+                    updatedRolePermissions.size(),
+                    updatedRolePermissions.stream().filter(rp -> rp.getIsActive()).count());
 
-            return ApiResponseUtil.success(null, "Permissions updated successfully");
+            // Map to update response including filter types
+            var responseDto = permissionMapper.toPermissionUpdateResponse(roleId.trim(), updatedRolePermissions);
 
+            return ApiResponseUtil.success(responseDto, "Permissions updated successfully");
+
+        } catch (InvalidFilterTypeException e) {
+            log.warn("Invalid filter type in request: {}", e.getMessage());
+            return ApiResponseUtil.badRequest(e.getMessage());
         } catch (RuntimeException e) {
             if (e.getMessage().contains("Role not found")) {
                 log.warn("Role not found: {}", roleId);

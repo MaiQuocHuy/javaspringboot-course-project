@@ -38,7 +38,6 @@ import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
  */
 @RestController
 @RequestMapping("/api/admin/payments")
-@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Admin Payment API", description = "API for managing payments (Admin only)")
@@ -54,6 +53,7 @@ public class AdminPaymentController {
          * @return ResponseEntity containing paginated list of payments
          */
         @GetMapping
+        @PreAuthorize("hasPermission('Payment', 'payment:READ')")
         @Operation(summary = "Get all payments", description = """
                         Retrieves all payments in the system with pagination support for admin view.
 
@@ -94,6 +94,7 @@ public class AdminPaymentController {
          * @return ResponseEntity containing list of all payments
          */
         @GetMapping("/all")
+        @PreAuthorize("hasPermission('Payment', 'payment:READ')")
         @Operation(summary = "Get all payments (no pagination)", description = """
                         Retrieves all payments in the system without pagination for admin view.
 
@@ -127,6 +128,7 @@ public class AdminPaymentController {
          * @return ResponseEntity containing detailed payment information
          */
         @GetMapping("/{paymentId}")
+        @PreAuthorize("hasPermission('Payment', 'payment:READ')")
         @Operation(summary = "Get payment details", description = """
                         Retrieves detailed information about a specific payment by ID for admin view.
 
@@ -167,6 +169,7 @@ public class AdminPaymentController {
          * @return ResponseEntity containing updated payment information
          */
         @PatchMapping("/{paymentId}/status")
+        @PreAuthorize("hasPermission('Payment', 'payment:UPDATE')")
         @Operation(summary = "Update payment status", description = """
                         Updates the status of a payment from PENDING to either COMPLETED or FAILED.
 
@@ -216,6 +219,7 @@ public class AdminPaymentController {
          * @return ResponseEntity containing paid out operation result
          */
         @PostMapping("/{paymentId}/paid-out")
+        @PreAuthorize("hasPermission('Payment', 'payment:PAID_OUT')")
         @Operation(summary = "Paid out payment to instructor", description = """
                         **Purpose:**
                         Pays out the payment to the course instructor by creating an instructor earning record.
@@ -255,6 +259,7 @@ public class AdminPaymentController {
          * @return ResponseEntity containing payment counts by status
          */
         @GetMapping("/statistics")
+        @PreAuthorize("hasPermission('Payment', 'payment:READ')")
         @Operation(summary = "Get payment statistics", description = """
                         **Purpose:**
                         Retrieves comprehensive statistics about payments for admin dashboard.

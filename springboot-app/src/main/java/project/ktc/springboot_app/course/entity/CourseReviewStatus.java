@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import project.ktc.springboot_app.entity.BaseEntity;
 
 @Getter
 @Setter
@@ -24,14 +25,10 @@ import lombok.Setter;
 @Builder
 @Entity
 @Table(name = "course_review_status")
-public class CourseReviewStatus {
+public class CourseReviewStatus extends BaseEntity {
     public enum ReviewStatus {
         PENDING, APPROVED, DENIED, RESUBMITTED
     }
-
-    @Id
-    @Column(length = 36)
-    private String id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false, unique = true)
@@ -40,11 +37,5 @@ public class CourseReviewStatus {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = true, length = 20)
     private ReviewStatus status;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
 }

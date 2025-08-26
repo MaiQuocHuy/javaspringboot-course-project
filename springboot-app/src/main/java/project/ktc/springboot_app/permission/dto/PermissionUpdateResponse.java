@@ -44,5 +44,10 @@ public class PermissionUpdateResponse {
          * The new active status for this permission in the role
          */
         private Boolean isActive;
+
+        /**
+         * The filter type applied (e.g., ALL / OWN) if any
+         */
+        private String filterType;
     }
 }
