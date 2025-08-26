@@ -325,7 +325,8 @@ public class AuthServiceImp implements AuthService {
             }
 
             if (foundUser.getRole() == null
-                    || !foundUser.getRole().getRole().equals(UserRoleEnum.ADMIN.name().toUpperCase().trim())) {
+                    || foundUser.getRole().getRole().equals(UserRoleEnum.INSTRUCTOR.name().toUpperCase().trim())
+                    || foundUser.getRole().getRole().equals(UserRoleEnum.STUDENT.name().toUpperCase().trim())) {
                 return ApiResponseUtil.unauthorized("You do not have permission to access this resource");
             }
 
