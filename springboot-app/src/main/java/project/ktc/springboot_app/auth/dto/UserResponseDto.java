@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
-import project.ktc.springboot_app.auth.enums.UserRoleEnum;
 
 @Getter
 @Setter
