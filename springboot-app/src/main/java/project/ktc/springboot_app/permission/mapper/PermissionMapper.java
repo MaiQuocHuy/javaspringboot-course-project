@@ -159,6 +159,7 @@ public class PermissionMapper {
                 .map(rp -> PermissionUpdateResponse.UpdatedPermissionDto.builder()
                         .key(rp.getPermission().getPermissionKey())
                         .isActive(rp.getIsActive())
+                        .filterType(rp.getFilterType() != null ? rp.getFilterType().getName() : null)
                         .build())
                 .collect(Collectors.toList());
 

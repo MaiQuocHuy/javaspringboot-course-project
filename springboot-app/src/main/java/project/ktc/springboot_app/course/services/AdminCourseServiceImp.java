@@ -356,10 +356,8 @@ public class AdminCourseServiceImp implements AdminCourseService {
                     .orElseGet(() -> {
                         log.info("Creating new course review status for course: {}", courseId);
                         return CourseReviewStatus.builder()
-                                .id(UUID.randomUUID().toString())
                                 .course(course)
                                 .status(CourseReviewStatus.ReviewStatus.PENDING)
-                                .createdAt(LocalDateTime.now())
                                 .build();
                     });
 

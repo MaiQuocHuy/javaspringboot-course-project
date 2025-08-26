@@ -858,11 +858,8 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 newStatus = CourseReviewStatus.ReviewStatus.PENDING;
                 action = "PENDING";
                 reviewStatus = CourseReviewStatus.builder()
-                        .id(UUID.randomUUID().toString())
                         .course(course)
                         .status(newStatus)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
                         .build();
                 log.info("Course {} has no history, setting status to PENDING", course.getId());
             }

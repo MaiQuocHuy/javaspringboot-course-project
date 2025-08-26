@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="148-add-permission-paidout" author="system">
+
+        <!-- Get ADMIN role ID -->
+        <sql>
+            SET @admin_role_id = (SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1);
+        </sql>
+
+       <insert tableName="actions">
+           <column name="id" value="act-paid_out-001"/>
+           <column name="name" value="payment:PAID_OUT"/>
+           <column name="description" value="Permission to paid out payments"/>
+           <column name="action_type" value="BUSINESS"/>
+            <column name="is_active" valueBoolean="true"/>
+       </insert>
+
+       <insert tableName="permissions">
+            <column name="id" value="perm-payment-paid_out-001"/>
+            <column name="resource_id" value="res-payment-001"/>
+            <column name="action_id" value="act-paid_out-001"/>
+            <column name="permission_key" value="payment:PAID_OUT"/>
+            <column name="description" value="Permission to paid out payments"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+         <insert tableName="role_permissions">
+            <column name="id" value="admin-payment-paid_out-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-payment-paid_out-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

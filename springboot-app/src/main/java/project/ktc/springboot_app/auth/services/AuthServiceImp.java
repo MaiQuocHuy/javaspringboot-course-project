@@ -52,7 +52,6 @@ import project.ktc.springboot_app.auth.interfaces.AuthService;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-
 public class AuthServiceImp implements AuthService {
 
     private final UserRepository userRepository;

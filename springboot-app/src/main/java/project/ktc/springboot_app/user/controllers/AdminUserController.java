@@ -41,7 +41,7 @@ public class AdminUserController {
         private final UserServiceImp userService;
 
         @GetMapping
-        @PreAuthorize("hasPermission(null, 'user:read') or hasRole('ADMIN')")
+        @PreAuthorize("hasPermission('User', 'user:READ')")
         @Operation(summary = "Get users with pagination and search", description = "Retrieve paginated list of users with search and filter capabilities")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Successfully retrieved users"),
@@ -66,7 +66,7 @@ public class AdminUserController {
         }
 
         @GetMapping("/{id}")
-        @PreAuthorize("hasPermission(#id, 'User', 'user:read') or hasRole('ADMIN')")
+        @PreAuthorize("hasPermission('User', 'user:READ')")
         @Operation(summary = "Get user by ID with admin details", description = "Retrieve a user by their ID with enrolled courses, total payments, and study time")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "User found"),
@@ -80,7 +80,7 @@ public class AdminUserController {
         }
 
         @PutMapping("/{id}/role")
-        @PreAuthorize("hasPermission(#id, 'User', 'user:edit') or hasRole('ADMIN')")
+        @PreAuthorize("hasPermission('User', 'user:UPDATE')")
         @Operation(summary = "Update user role", description = "Update the role of a user by their ID")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "User role updated successfully"),
@@ -95,7 +95,7 @@ public class AdminUserController {
         }
 
         @PutMapping("/{id}/status")
-        @PreAuthorize("hasPermission(#id, 'User', 'user:edit') or hasRole('ADMIN')")
+        @PreAuthorize("hasPermission('User', 'user:UPDATE')")
         @Operation(summary = "Update user status", description = "Update the active status of a user by their ID")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "User status updated successfully"),
@@ -110,7 +110,7 @@ public class AdminUserController {
         }
 
         @PostMapping("/newRole")
-        @PreAuthorize("hasPermission(null, 'user:create') or hasRole('ADMIN')")
+        @PreAuthorize("hasPermission('User', 'user:CREATE')")
         @Operation(summary = "Create a new user", description = "Create a new user in the system with exactly one role and comprehensive validation")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "201", description = "User created successfully"),
@@ -127,7 +127,7 @@ public class AdminUserController {
         }
 
         @PostMapping
-        @PreAuthorize("hasPermission(null, 'user:create') or hasRole('ADMIN')")
+        @PreAuthorize("hasPermission('User', 'user:CREATE')")
         @Operation(summary = "Create a new user (original)", description = "Create a new user in the system")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "201", description = "User created successfully"),
@@ -141,7 +141,7 @@ public class AdminUserController {
         }
 
         @PutMapping("/{id}")
-        @PreAuthorize("hasPermission(#id, 'User', 'user:edit') or hasRole('ADMIN')")
+        @PreAuthorize("hasPermission('User', 'user:UPDATE')")
         @Operation(summary = "Update user profile", description = "Update user basic information (name, email, bio)")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "User updated successfully"),

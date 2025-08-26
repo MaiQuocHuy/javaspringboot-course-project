@@ -40,6 +40,13 @@ public interface PermissionRepository extends JpaRepository<Permission, String> 
         Optional<Permission> findByPermissionKey(@Param("permissionKey") String permissionKey);
 
         /**
+         * Find permission by permission key regardless of active status (used for
+         * reactivation scenarios)
+         */
+        @Query("SELECT p FROM Permission p WHERE p.permissionKey = :permissionKey")
+        Optional<Permission> findAnyByPermissionKey(@Param("permissionKey") String permissionKey);
+
+        /**
          * Find all active permissions
          */
         @Query("SELECT p FROM Permission p " +
@@ -112,4 +119,12 @@ public interface PermissionRepository extends JpaRepository<Permission, String> 
                         "JOIN FETCH p.action a " +
                         "ORDER BY r.name, a.name")
         List<Permission> findAllPermissionsWithDetails();
+
+        // Helper: find Action by name (used for dynamic permission creation)
+        @Query("SELECT a FROM Action a WHERE a.name = :name")
+        Optional<project.ktc.springboot_app.permission.entity.Action> findActionByName(@Param("name") String name);
+
+        // Helper: find Resource by name (alternative to existing filtered query)
+        @Query("SELECT r FROM Resource r WHERE r.name = :name")
+        Optional<project.ktc.springboot_app.permission.entity.Resource> findResourceByName(@Param("name") String name);
 }
