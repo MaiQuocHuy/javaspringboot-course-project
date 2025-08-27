@@ -9,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto.CardInfoDto;
-import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.refund.entity.Refund;
 
 @Data
