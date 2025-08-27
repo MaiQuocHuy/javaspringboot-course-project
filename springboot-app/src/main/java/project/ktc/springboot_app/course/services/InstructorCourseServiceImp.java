@@ -38,6 +38,8 @@ import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
 import project.ktc.springboot_app.course.dto.common.BaseCourseResponseDto;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
+import project.ktc.springboot_app.instructor_application.entity.InstructorApplication.ApplicationStatus;
+import project.ktc.springboot_app.instructor_application.repositories.InstructorApplicationRepository;
 import project.ktc.springboot_app.course.repositories.CourseReviewStatusRepository;
 import project.ktc.springboot_app.course.repositories.CourseReviewStatusHistoryRepository;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
@@ -68,6 +70,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final CourseReviewStatusRepository courseReviewStatusRepository;
     private final CourseReviewStatusHistoryRepository courseReviewStatusHistoryRepository;
+    private final InstructorApplicationRepository applicationRepository;
     private final SystemLogHelper systemLogHelper;
 
     @Override
@@ -199,6 +202,18 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 log.warn("Instructor not found with ID: {}", instructorId);
                 return ApiResponseUtil.notFound("Instructor not found");
             }
+
+            // TODO: Remove this comment when going to production
+
+            // Optional<ApplicationStatus> latestStatus = applicationRepository
+            // .findLatestApplicationStatusByUserId(instructorId);
+            // if (latestStatus.filter(status -> status ==
+            // ApplicationStatus.APPROVED).isEmpty()) {
+            // return ApiResponseUtil
+            // .badRequest(
+            // "Your application to become an instructor is not approved yet. You cannot
+            // create courses.");
+            // }
 
             // Check slug for uniqueness with normalization and case-insensitive comparison
             String normalizedSlug = StringUtil.normalizeSlugForComparison(createCourseDto.getSlug());
