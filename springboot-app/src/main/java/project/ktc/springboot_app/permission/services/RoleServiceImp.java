@@ -52,6 +52,7 @@ public class RoleServiceImp implements RoleService {
             // Create new role entity
             UserRole newRole = UserRole.builder()
                     .role(roleType)
+                    .description(request.getDescription())
                     .build();
 
             // Save role to database
@@ -171,6 +172,7 @@ public class RoleServiceImp implements RoleService {
             return RoleWithPermissionsDto.builder()
                     .id(role.getId())
                     .name(role.getRole())
+                    .description(role.getDescription())
                     .totalPermission(permissionSummaries.size())
                     .permissions(permissionSummaries)
                     .build();
@@ -182,6 +184,7 @@ public class RoleServiceImp implements RoleService {
             return RoleWithPermissionsDto.builder()
                     .id(role.getId())
                     .name(role.getRole())
+                    .description(role.getDescription())
                     .totalPermission(0)
                     .permissions(List.of())
                     .build();

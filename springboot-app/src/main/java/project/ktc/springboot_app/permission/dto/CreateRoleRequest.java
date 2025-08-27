@@ -24,4 +24,8 @@ public class CreateRoleRequest {
     @Size(min = 3, max = 50, message = "Role name must be between 3 and 50 characters")
     @Pattern(regexp = "^[A-Z_]+$", message = "Role name must contain only uppercase letters and underscores")
     private String name;
+
+    @Schema(description = "Role description", example = "Manager role with administrative privileges")
+    @Size(max = 500, message = "Role description cannot exceed 500 characters")
+    private String description;
 }
