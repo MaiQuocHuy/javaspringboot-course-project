@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationDetailResponseDto;
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
 
 @Component
@@ -18,7 +19,6 @@ public class InstructorApplicationsMapper {
                                 .applicant(toUserBasicDto(application.getUser()))
                                 .status(application.getStatus())
                                 .submittedAt(application.getSubmittedAt())
-                                // .rejectionReason(application.getRejectionReason())
                                 .build();
         }
 
@@ -41,6 +41,18 @@ public class InstructorApplicationsMapper {
                 return AdminApplicationDetailDto.builder()
                                 .id(application.getId())
                                 .applicant(toUserDetailDto(application.getUser()))
+                                .status(application.getStatus())
+                                .documents(application.getDocuments())
+                                .rejectionReason(application.getRejectionReason())
+                                .submittedAt(application.getSubmittedAt())
+                                .build();
+        }
+
+        public InstructorApplicationDetailResponseDto toApplicationDetailResponseDto(
+                        InstructorApplication application) {
+                return InstructorApplicationDetailResponseDto.builder()
+                                .id(application.getId())
+                                // .applicant(toUserDetailDto(application.getUser()))
                                 .status(application.getStatus())
                                 .documents(application.getDocuments())
                                 .rejectionReason(application.getRejectionReason())

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationDetailResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminReviewApplicationRequestDto;
@@ -36,5 +37,8 @@ public interface InstructorApplicationService {
                         String applicationId);
 
         ResponseEntity<ApiResponse<Void>> reviewApplication(String id, AdminReviewApplicationRequestDto request);
+
+        ResponseEntity<ApiResponse<InstructorApplicationDetailResponseDto>> getApplicationByUserId(
+                        String userId);
 
 }
