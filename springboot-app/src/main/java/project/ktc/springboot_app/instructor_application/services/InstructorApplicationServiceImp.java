@@ -35,7 +35,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Service implementation for instructor application operations
@@ -210,35 +209,19 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             // Convert documents map to JSON string
             String documentsJson = objectMapper.writeValueAsString(documentUrls);
 
-            // Check if user already has an application (for resubmission cases)
-            Optional<InstructorApplication> existingApplication = applicationRepository.findByUserId(userId);
+            // Always create a new application for each submission
+            // This ensures proper tracking of rejection attempts
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-            InstructorApplication application;
-            if (existingApplication.isPresent()) {
-                // Update existing application for resubmission
-                application = existingApplication.get();
-                application.setDocuments(documentsJson);
-                application.setStatus(InstructorApplication.ApplicationStatus.PENDING);
-                application.setSubmittedAt(LocalDateTime.now());
-                application.setReviewedAt(null);
-                application.setReviewedBy(null);
-                application.setRejectionReason(null);
-                log.info("Updating existing application for user: {}", userId);
-            } else {
-                // Create new application
-                User user = userRepository.findById(userId)
-                        .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-
-                application = new InstructorApplication();
-                application.setUser(user);
-                application.setDocuments(documentsJson);
-                application.setStatus(InstructorApplication.ApplicationStatus.PENDING);
-                application.setSubmittedAt(LocalDateTime.now());
-                log.info("Creating new application for user: {}", userId);
-            }
+            InstructorApplication application = new InstructorApplication();
+            application.setUser(user);
+            application.setDocuments(documentsJson);
+            application.setStatus(InstructorApplication.ApplicationStatus.PENDING);
+            application.setSubmittedAt(LocalDateTime.now());
 
             applicationRepository.save(application);
-            log.info("Instructor application saved successfully for user: {}", userId);
+            log.info("New instructor application created successfully for user: {}", userId);
 
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize documents to JSON: {}", e.getMessage(), e);
