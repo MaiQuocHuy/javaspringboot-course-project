@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
-import project.ktc.springboot_app.refund.dto.AdminRefundStatusUpdateResponseDto;
+import project.ktc.springboot_app.refund.dto.RefundStatusUpdateResponseDto;
 import project.ktc.springboot_app.refund.dto.InstructorRefundDetailsResponseDto;
 import project.ktc.springboot_app.refund.dto.InstructorRefundResponseDto;
 import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
@@ -46,6 +46,6 @@ public interface InstructorRefundService {
      * @param updateDto the update request containing the new status
      * @return ResponseEntity with the update result
      */
-    ResponseEntity<ApiResponse<AdminRefundStatusUpdateResponseDto>> updateRefundStatus(
+    ResponseEntity<ApiResponse<RefundStatusUpdateResponseDto>> updateRefundStatus(
             String refundId, UpdateRefundStatusDto updateDto);
 }

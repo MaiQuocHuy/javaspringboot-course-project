@@ -24,7 +24,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
-import project.ktc.springboot_app.refund.dto.AdminRefundStatusUpdateResponseDto;
+import project.ktc.springboot_app.refund.dto.RefundStatusUpdateResponseDto;
 import project.ktc.springboot_app.refund.dto.InstructorRefundDetailsResponseDto;
 import project.ktc.springboot_app.refund.dto.InstructorRefundResponseDto;
 import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
@@ -144,13 +144,13 @@ public class InstructorRefundController {
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @Operation(summary = "Update refund status", description = "Updates the status of a specific refund by its ID. Only INSTRUCTOR role is allowed.")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Refund status updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AdminRefundStatusUpdateResponseDto.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Refund status updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = RefundStatusUpdateResponseDto.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid status value or refund not in PENDING state", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Instructor role required", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Refund not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class)))
     })
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminRefundStatusUpdateResponseDto>> updateRefundStatus(
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<RefundStatusUpdateResponseDto>> updateRefundStatus(
             @Parameter(description = "The ID of the refund to update", required = true) @PathVariable String id,
             @Parameter(description = "The status update request", required = true) @Valid @RequestBody UpdateRefundStatusDto updateDto) {
 

@@ -21,7 +21,7 @@ import project.ktc.springboot_app.earning.repositories.InstructorEarningReposito
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.payment.entity.Payment;
-import project.ktc.springboot_app.refund.dto.AdminRefundStatusUpdateResponseDto;
+import project.ktc.springboot_app.refund.dto.RefundStatusUpdateResponseDto;
 import project.ktc.springboot_app.refund.dto.InstructorRefundDetailsResponseDto;
 import project.ktc.springboot_app.refund.dto.InstructorRefundResponseDto;
 import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
@@ -138,7 +138,7 @@ public class InstructorRefundServiceImp implements InstructorRefundService {
 
     @Override
     @Transactional
-    public ResponseEntity<ApiResponse<AdminRefundStatusUpdateResponseDto>> updateRefundStatus(
+    public ResponseEntity<ApiResponse<RefundStatusUpdateResponseDto>> updateRefundStatus(
             String refundId, UpdateRefundStatusDto updateDto) {
 
         log.info("Processing refund status update for refund ID: {} to status: {}", refundId, updateDto.getStatus());
@@ -234,7 +234,7 @@ public class InstructorRefundServiceImp implements InstructorRefundService {
             Refund savedRefund = refundRepository.save(refund);
 
             // 7. Build response
-            AdminRefundStatusUpdateResponseDto response = AdminRefundStatusUpdateResponseDto.builder()
+            RefundStatusUpdateResponseDto response = RefundStatusUpdateResponseDto.builder()
                     .id(savedRefund.getId())
                     .paymentId(savedRefund.getPayment().getId())
                     .amount(savedRefund.getAmount())
