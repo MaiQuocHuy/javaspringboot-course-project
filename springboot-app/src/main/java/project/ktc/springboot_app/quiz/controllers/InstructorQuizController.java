@@ -20,9 +20,6 @@ import project.ktc.springboot_app.quiz.dto.CreateQuizDto;
 import project.ktc.springboot_app.quiz.dto.QuizResponseDto;
 import project.ktc.springboot_app.quiz.services.QuizServiceImp;
 import project.ktc.springboot_app.utils.SecurityUtil;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 @RestController
 @RequestMapping("/api/instructor/quizzes")
@@ -52,8 +49,6 @@ public class InstructorQuizController {
 
                 String currentUserId = SecurityUtil.getCurrentUserId();
                 QuizResponseDto quiz = quizService.createQuiz(createQuizDto, currentUserId);
-
                 return ApiResponseUtil.created(quiz, "Quiz created successfully");
         }
-        
 }

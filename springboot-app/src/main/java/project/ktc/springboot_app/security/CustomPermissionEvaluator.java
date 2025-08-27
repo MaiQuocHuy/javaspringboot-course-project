@@ -46,7 +46,10 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
             log.debug("User not found in authentication");
             return false;
         }
-
+        if (isRejectedRole(user.getRole().getRole())) {
+            log.debug("User role is not high enough");
+            return false;
+        }
         String permissionKey = permission.toString();
 
         log.debug("Evaluating permission: {} for user: {} with target: {}",
@@ -102,6 +105,11 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         User user = extractUser(authentication);
         if (user == null) {
             log.debug("User not found in authentication");
+            return false;
+        }
+
+        if (isRejectedRole(user.getRole().getRole())) {
+            log.debug("User role is not high enough");
             return false;
         }
 
@@ -310,5 +318,12 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
             currentFilter.remove();
             currentUser.remove();
         }
+    }
+
+    /**
+     * Check User Role
+     */
+    public boolean isRejectedRole(String role) {
+        return role.equals("STUDENT") || role.equals("INSTRUCTOR");
     }
 }

@@ -97,5 +97,7 @@
     <!-- Refunds System Enhancements -->
     <include file="db/changelog/changes/146-add-rejected-reason-to-refunds.xml"/>
     <include file="db/changelog/changes/147-update-student-role-permissions.xml"/>
-
+    <include file="db/changelog/changes/148-add-permission-paidout.xml"/>
+    <include file="db/changelog/changes/149-chat-message-table.xml"/>
+    <include file="db/changelog/changes/150-seed-chat-messages.xml"/>
 </databaseChangeLog>
