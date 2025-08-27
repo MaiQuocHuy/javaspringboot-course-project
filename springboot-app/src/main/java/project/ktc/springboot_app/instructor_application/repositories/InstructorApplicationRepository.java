@@ -7,6 +7,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
+import project.ktc.springboot_app.instructor_application.entity.InstructorApplication.ApplicationStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,10 +31,10 @@ public interface InstructorApplicationRepository extends JpaRepository<Instructo
     boolean existsByUserId(@Param("userId") String userId);
 
     /**
-     * Check if user has pending application
+     * Check if user already has an application in pending or approved status
      */
-    @Query("SELECT COUNT(ia) > 0 FROM InstructorApplication ia WHERE ia.user.id = :userId AND ia.status = 'PENDING'")
-    boolean hasPendingApplication(@Param("userId") String userId);
+    @Query("SELECT ia.status FROM InstructorApplication ia WHERE ia.user.id = :userId AND ia.status IN ('PENDING', 'APPROVED')")
+    List<InstructorApplication.ApplicationStatus> findActiveStatusesByUserId(@Param("userId") String userId);
 
     /**
      * Check if user has rejected application within recent period
@@ -64,4 +65,10 @@ public interface InstructorApplicationRepository extends JpaRepository<Instructo
      * Find latest instructor application by user ID
      */
     Optional<InstructorApplication> findFirstByUserIdOrderBySubmittedAtDesc(String userId);
+
+    /**
+     * Find latest instructor application status by user ID
+     */
+    @Query("SELECT ia.status FROM InstructorApplication ia WHERE ia.user.id = :userId ORDER BY ia.submittedAt DESC LIMIT 1")
+    Optional<ApplicationStatus> findLatestApplicationStatusByUserId(@Param("userId") String userId);
 }

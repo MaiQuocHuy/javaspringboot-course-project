@@ -27,4 +27,6 @@ public class InstructorApplicationDetailResponseDto {
 
     private String rejectionReason;
 
+    private long submitAttemptRemain;
+
 }

@@ -32,7 +32,6 @@ import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +53,7 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
     private final InstructorApplicationsMapper instructorApplicationMapper;
 
     // Constants for business rules
-    private static final int RESUBMISSION_DAYS_LIMIT = 3;
-    private static final int MAX_REJECTION_COUNT = 2;
+    private static final int MAX_REJECTION_COUNT = 5;
 
     @Override
     @Transactional
@@ -113,11 +111,15 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
      * Validate if user is eligible to submit instructor application
      */
     private void validateUserEligibility(String userId) {
-        // Check if user has pending application
-        if (applicationRepository.hasPendingApplication(userId)) {
-            log.warn("User {} attempted to submit application while having a pending application", userId);
-            throw new IneligibleApplicationException(
-                    "You already have a pending application. Please wait for it to be reviewed before submitting a new one.");
+        // Check if user has active application (PENDING or APPROVED)
+
+        var statuses = applicationRepository.findActiveStatusesByUserId(userId);
+
+        if (statuses.contains(ApplicationStatus.PENDING)) {
+            throw new IneligibleApplicationException("You already have a pending application...");
+        }
+        if (statuses.contains(ApplicationStatus.APPROVED)) {
+            throw new IneligibleApplicationException("You are already an approved instructor.");
         }
 
         // Check rejection count and resubmission eligibility
@@ -127,24 +129,6 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             throw new IneligibleApplicationException(
                     "You have reached the maximum number of rejections (" + MAX_REJECTION_COUNT
                             + "). You cannot submit a new application at this time.");
-        }
-
-        // If user has one rejection, check if within resubmission period
-        if (rejectionCount == 1) {
-            Optional<InstructorApplication> latestRejection = applicationRepository.findLatestRejectedByUserId(userId);
-
-            if (latestRejection.isPresent()) {
-                LocalDateTime rejectionDate = latestRejection.get().getReviewedAt();
-                long daysSinceRejection = ChronoUnit.DAYS.between(rejectionDate.toLocalDate(),
-                        LocalDateTime.now().toLocalDate());
-
-                if (daysSinceRejection > RESUBMISSION_DAYS_LIMIT) {
-                    log.warn("User {} attempted to resubmit after expiration of resubmission period", userId);
-                    throw new IneligibleApplicationException(
-                            "You can resubmit your application after " + RESUBMISSION_DAYS_LIMIT
-                                    + " days from your last rejection.");
-                }
-            }
         }
 
     }
@@ -284,6 +268,11 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             // Map to DTO
             InstructorApplicationDetailResponseDto responseDto = instructorApplicationMapper
                     .toApplicationDetailResponseDto(application);
+
+            long submitAttemptRemain = MAX_REJECTION_COUNT
+                    - applicationRepository.countRejectedApplicationsByUserId(userId);
+
+            responseDto.setSubmitAttemptRemain(submitAttemptRemain);
 
             return ApiResponseUtil.success(responseDto,
                     "Fetched application detail successfully for user id: " + userId);
