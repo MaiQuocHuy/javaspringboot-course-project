@@ -1,7 +1,9 @@
 package project.ktc.springboot_app.refund.services;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
@@ -17,46 +21,39 @@ import project.ktc.springboot_app.earning.repositories.InstructorEarningReposito
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.payment.entity.Payment;
-import project.ktc.springboot_app.refund.dto.AdminRefundDetailsResponseDto;
-import project.ktc.springboot_app.refund.dto.AdminRefundResponseDto;
-import project.ktc.springboot_app.refund.dto.AdminRefundStatisticsResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundStatusUpdateResponseDto;
+import project.ktc.springboot_app.refund.dto.InstructorRefundDetailsResponseDto;
+import project.ktc.springboot_app.refund.dto.InstructorRefundResponseDto;
 import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
 import project.ktc.springboot_app.refund.entity.Refund;
-import project.ktc.springboot_app.refund.interfaces.AdminRefundService;
-import project.ktc.springboot_app.refund.repositories.AdminRefundRepository;
+import project.ktc.springboot_app.refund.interfaces.InstructorRefundService;
+import project.ktc.springboot_app.refund.repositories.InstructorRefundRepository;
 import project.ktc.springboot_app.refund.repositories.RefundRepository;
 import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import project.ktc.springboot_app.utils.SecurityUtil;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AdminRefundServiceImp implements AdminRefundService {
-
-    private final AdminRefundRepository adminRefundRepository;
+public class InstructorRefundServiceImp implements InstructorRefundService {
+    private final InstructorRefundRepository instructorRefundRepository;
+    private final StripePaymentDetailsService stripePaymentDetailsService;
     private final RefundRepository refundRepository;
     private final InstructorEarningRepository instructorEarningRepository;
-    private final StripePaymentDetailsService stripePaymentDetailsService;
     private final EnrollmentRepository enrollmentRepository;
 
     @Override
-    public ResponseEntity<ApiResponse<PaginatedResponse<AdminRefundResponseDto>>> getAllRefunds(Pageable pageable) {
+    public ResponseEntity<ApiResponse<PaginatedResponse<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
+            Pageable pageable) {
         try {
-            log.info("Admin retrieving all refunds with pagination: page={}, size={}", pageable.getPageNumber(),
-                    pageable.getPageSize());
-            Page<Refund> refunds = adminRefundRepository.findAllRefunds(pageable);
-
-            List<AdminRefundResponseDto> refundDtos = refunds.getContent().stream()
-                    .map(AdminRefundResponseDto::fromEntity)
+            String userId = SecurityUtil.getCurrentUserId();
+            log.info("Fetching paginated refunds for instructor: {} by user: {}", userId);
+            Page<Refund> refunds = instructorRefundRepository.findAllRefundsByInstructorId(userId, pageable);
+            List<InstructorRefundResponseDto> refundDtos = refunds.getContent().stream()
+                    .map(InstructorRefundResponseDto::fromEntity)
                     .collect(Collectors.toList());
-
-            PaginatedResponse<AdminRefundResponseDto> paginatedResponse = PaginatedResponse
-                    .<AdminRefundResponseDto>builder()
+            PaginatedResponse<InstructorRefundResponseDto> paginatedResponse = PaginatedResponse
+                    .<InstructorRefundResponseDto>builder()
                     .content(refundDtos)
                     .page(PaginatedResponse.PageInfo.builder()
                             .number(refunds.getNumber())
@@ -67,82 +64,75 @@ public class AdminRefundServiceImp implements AdminRefundService {
                             .last(refunds.isLast())
                             .build())
                     .build();
-
-            log.info("Retrieved {} refunds for admin (page {} of {})", refundDtos.size(), refunds.getNumber(),
-                    refunds.getTotalPages());
-
-            return ApiResponseUtil.success(paginatedResponse, "Refunds retrieved successfully!");
-
+            log.info("User ID: {}, Refund DTOs: {}, Paginated Response: {}", userId, refundDtos, paginatedResponse);
+            return ApiResponseUtil.success(paginatedResponse, "Fetched all refunds for instructor");
         } catch (Exception e) {
-            log.error("Error retrieving all refunds for admin: {}", e.getMessage(), e);
-            return ApiResponseUtil.internalServerError("Error retrieving all refunds for admin");
+            log.error("Error fetching refunds for instructor: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("An error occurred while fetching refunds");
         }
     }
 
     @Override
-    public ResponseEntity<ApiResponse<List<AdminRefundResponseDto>>> getAllRefunds() {
+    public ResponseEntity<ApiResponse<List<InstructorRefundResponseDto>>> getAllRefundsByInstructorId() {
         try {
-            log.info("Admin retrieving all refunds without pagination");
+            String userId = SecurityUtil.getCurrentUserId();
+            log.info("Fetching all refunds for instructor: {} by user: {}", userId);
 
-            List<Refund> refunds = adminRefundRepository.findAllRefunds();
+            List<Refund> refunds = instructorRefundRepository.findAllRefundsByInstructorId(userId);
 
-            List<AdminRefundResponseDto> refundDtos = refunds.stream()
-                    .map(AdminRefundResponseDto::fromEntity)
+            List<InstructorRefundResponseDto> refundDtos = refunds.stream().map(InstructorRefundResponseDto::fromEntity)
                     .collect(Collectors.toList());
-
-            log.info("Retrieved {} refunds for admin", refundDtos.size());
-
-            return ApiResponseUtil.success(refundDtos, "Refunds retrieved successfully!");
-
+            log.info("User ID: {}, Refunds: {}, Refund DTOs: {}", userId, refunds, refundDtos);
+            return ApiResponseUtil.success(refundDtos, "Fetched all refunds for instructor");
         } catch (Exception e) {
-            log.error("Error retrieving all refunds for admin: {}", e.getMessage(), e);
-            return ApiResponseUtil.internalServerError("Error retrieving all refunds for admin");
+            log.error("Error fetching all refunds for instructor: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("An error occurred while fetching refunds");
         }
     }
 
     @Override
-    public ResponseEntity<ApiResponse<AdminRefundDetailsResponseDto>> getRefundDetail(String refundId) {
+    public ResponseEntity<ApiResponse<InstructorRefundDetailsResponseDto>> getRefundByIdAndInstructorIdWithDetails(
+            String refundId) {
         try {
-            log.info("Admin retrieving refund details for refund: {}", refundId);
-            Optional<Refund> refundOpt = adminRefundRepository.findRefundByIdWithDetails(refundId);
+            String userId = SecurityUtil.getCurrentUserId();
+            log.info("Fetching refund details for refund ID: {} and instructor ID: {} by user: {}", refundId,
+                    userId);
+            Optional<Refund> refundOpt = instructorRefundRepository.findRefundByIdAndInstructorIdWithDetails(refundId,
+                    userId);
             if (refundOpt.isEmpty()) {
-                log.warn("Refund not found with ID: {}", refundId);
+                log.warn("Refund not found with ID: {} for instructor ID: {}", refundId, userId);
                 return ApiResponseUtil.notFound("Refund not found");
             }
             Refund refund = refundOpt.get();
-            AdminRefundDetailsResponseDto refundDetail;
-            // Check if this is a Stripe payment and fetch additional details
+            InstructorRefundDetailsResponseDto refundDetail;
             if (stripePaymentDetailsService.isStripePayment(refund.getPayment().getPaymentMethod())
                     && refund.getPayment().getSessionId() != null) {
                 try {
                     var stripeData = stripePaymentDetailsService
                             .fetchPaymentDetails(refund.getPayment().getSessionId());
-                    AdminRefundDetailsResponseDto.StripePaymentData adminStripeData = null;
+                    InstructorRefundDetailsResponseDto.StripePaymentData instructorStripeData = null;
                     if (stripeData != null) {
-                        adminStripeData = AdminRefundDetailsResponseDto.StripePaymentData.builder()
+                        instructorStripeData = InstructorRefundDetailsResponseDto.StripePaymentData.builder()
                                 .transactionId(stripeData.getTransactionId())
                                 .receiptUrl(stripeData.getReceiptUrl())
-                                .cardBrand(stripeData.getCardBrand())
-                                .cardLast4(stripeData.getCardLast4())
-                                .cardExpMonth(stripeData.getCardExpMonth())
-                                .cardExpYear(stripeData.getCardExpYear())
                                 .build();
                     }
-                    refundDetail = AdminRefundDetailsResponseDto.fromEntityWithStripeData(refund, adminStripeData);
-
+                    refundDetail = InstructorRefundDetailsResponseDto.fromEntityWithStripeData(refund,
+                            instructorStripeData);
                 } catch (Exception e) {
-                    log.error("Error fetching Stripe payment details for refund: {}", refundId);
-                    refundDetail = AdminRefundDetailsResponseDto.fromEntity(refund);
+                    log.error("Error fetching Stripe payment details for session ID: {}",
+                            refund.getPayment().getSessionId(), e);
+                    refundDetail = InstructorRefundDetailsResponseDto.fromEntity(refund);
                 }
             } else {
-                refundDetail = AdminRefundDetailsResponseDto.fromEntity(refund);
-                log.info("Refund {} is not a Stripe payment or has no session ID, using basic details", refundId);
+                refundDetail = InstructorRefundDetailsResponseDto.fromEntity(refund);
+                log.info("Non-Stripe payment method or missing session ID for refund ID: {}", refundId);
             }
-            log.info("Refund details retrieved successfully for refund ID: {}", refundId);
-            return ApiResponseUtil.success(refundDetail, "Refund details retrieved successfully!");
+            log.info("Refund details fetched successfully for refund ID: {}", refundId);
+            return ApiResponseUtil.success(refundDetail, "Fetched refund details successfully");
         } catch (Exception e) {
-            log.error("Error retrieving refund details for admin: {}", e.getMessage(), e);
-            return ApiResponseUtil.internalServerError("Error retrieving refund details for admin");
+            log.error("Error fetching refund details for refund ID: {}", refundId, e);
+            return ApiResponseUtil.internalServerError("An error occurred while fetching refund details");
         }
     }
 
@@ -262,33 +252,6 @@ public class AdminRefundServiceImp implements AdminRefundService {
         } catch (Exception e) {
             log.error("Error updating refund status for refund ID {}: {}", refundId, e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to update refund status. Please try again later.");
-        }
-    }
-
-    @Override
-    public ResponseEntity<ApiResponse<AdminRefundStatisticsResponseDto>> getRefundStatistics() {
-        try {
-            log.info("Admin retrieving refund statistics");
-
-            // Fetch refund counts by status
-            Long totalRefunds = adminRefundRepository.countAllRefunds();
-            Long completedRefunds = adminRefundRepository.countRefundsByStatus(Refund.RefundStatus.COMPLETED);
-            Long pendingRefunds = adminRefundRepository.countRefundsByStatus(Refund.RefundStatus.PENDING);
-            Long failedRefunds = adminRefundRepository.countRefundsByStatus(Refund.RefundStatus.FAILED);
-
-            AdminRefundStatisticsResponseDto refundStatistics = AdminRefundStatisticsResponseDto.builder()
-                    .total(totalRefunds)
-                    .completed(completedRefunds)
-                    .pending(pendingRefunds)
-                    .failed(failedRefunds)
-                    .build();
-
-            log.info("Retrieved refund statistics: {}", refundStatistics);
-            return ApiResponseUtil.success(refundStatistics, "Refund statistics retrieved successfully");
-
-        } catch (Exception e) {
-            log.error("Error retrieving refund statistics: {}", e.getMessage(), e);
-            return ApiResponseUtil.internalServerError("Failed to retrieve refund statistics. Please try again later.");
         }
     }
 }

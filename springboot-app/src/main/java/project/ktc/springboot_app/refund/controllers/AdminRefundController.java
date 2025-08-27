@@ -29,6 +29,7 @@ import project.ktc.springboot_app.refund.interfaces.AdminRefundService;
 
 @RestController
 @RequestMapping("/api/admin/refund")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Admin Refund API", description = "Endpoints for admin refund management")
