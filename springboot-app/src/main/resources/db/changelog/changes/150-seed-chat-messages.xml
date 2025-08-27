@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Updated seed chat messages with realistic URLs and content -->
+    <changeSet id="150-seed-chat-messages" author="ktc">
+        <!-- TEXT MESSAGES -->
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-001"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-002"/><!-- Bob (STUDENT) -->
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-20 09:05:00"/>
+            <column name="updated_at" value="2025-08-20 09:05:00"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-001"/>
+            <column name="content"><![CDATA[Hi everyone! 👋 Excited to start the React course! Looking forward to learning about hooks and state management.]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-002"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-003"/><!-- Charlie (INSTRUCTOR) -->
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-20 09:07:10"/>
+            <column name="updated_at" value="2025-08-20 09:07:10"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-002"/>
+            <column name="content"><![CDATA[Welcome @Bob! 🎉 Feel free to ask questions anytime. We have a great community here to help each other learn.]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-003"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-011"/><!-- Kevin (STUDENT) -->
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-20 10:15:42"/>
+            <column name="updated_at" value="2025-08-20 10:15:42"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-003"/>
+            <column name="content"><![CDATA[Is there a recommended VS Code setup for React development? 💻 I want to make sure I have all the right extensions.]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-004"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-003"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-20 10:18:05"/>
+            <column name="updated_at" value="2025-08-20 10:18:05"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-004"/>
+            <column name="content"><![CDATA[Yes Kevin — install ESLint, Prettier, React DevTools, and Auto Rename Tag. Here's a quick setup check:
+```javascript
+// Test your setup with this simple component
+function Welcome({ name }) {
+  return <h1>Hello, {name}! Welcome to React 🚀</h1>;
+}
+export default Welcome;
+```]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-005"/>
+            <column name="course_id" value="course-002"/>
+            <column name="sender_id" value="user-010"/><!-- Julia (INSTRUCTOR) -->
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-21 08:40:12"/>
+            <column name="updated_at" value="2025-08-21 08:40:12"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-005"/>
+            <column name="content"><![CDATA[Today we'll dive deep into gradient descent optimization ↘️📉 Understanding how models learn step by step is crucial for ML success.]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-006"/>
+            <column name="course_id" value="course-002"/>
+            <column name="sender_id" value="user-005"/><!-- Edward (STUDENT) -->
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-21 08:55:31"/>
+            <column name="updated_at" value="2025-08-21 08:55:31"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-006"/>
+            <column name="content"><![CDATA[Could someone explain how to choose the right learning rate η? 🤔 I'm struggling with finding the balance between convergence speed and stability.]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-007"/>
+            <column name="course_id" value="course-005"/>
+            <column name="sender_id" value="user-008"/><!-- Hannah (INSTRUCTOR) -->
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-22 11:05:19"/>
+            <column name="updated_at" value="2025-08-22 11:05:19"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-007"/>
+            <column name="content"><![CDATA[Reminder: Python generators are incredibly memory efficient 🧠 They're perfect for processing large datasets without loading everything into memory at once.]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-008"/>
+            <column name="course_id" value="course-005"/>
+            <column name="sender_id" value="user-007"/><!-- George (STUDENT) -->
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-22 11:09:40"/>
+            <column name="updated_at" value="2025-08-22 11:09:40"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-008"/>
+            <column name="content"><![CDATA[Is this list comprehension valid and efficient? `squares = [x*x for x in range(1000)]` ✅ Or should I use a generator expression instead?]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-009"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-012"/><!-- Lisa (STUDENT) -->
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-23 14:12:00"/>
+            <column name="updated_at" value="2025-08-23 14:12:00"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-009"/>
+            <column name="content"><![CDATA[React 18's automatic batching changed how state updates work, right? ⚛️ I'm curious about how this affects performance in real applications.]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-010"/>
+            <column name="course_id" value="course-002"/>
+            <column name="sender_id" value="user-010"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-23 15:33:27"/>
+            <column name="updated_at" value="2025-08-23 15:33:27"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-010"/>
+            <column name="content"><![CDATA[Exactly Lisa! Concurrent rendering in React 18 dramatically improves state batching efficiency 😄 It reduces unnecessary re-renders significantly.]]></column>
+        </insert>
+
+        <!-- FILE MESSAGES with realistic URLs -->
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-011"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-003"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="2"/><!-- FILE -->
+            <column name="created_at" value="2025-08-21 09:20:00"/>
+            <column name="updated_at" value="2025-08-21 09:20:00"/>
+        </insert>
+        <insert tableName="chat_message_files">
+            <column name="id" value="msg-011"/>
+            <column name="file_url" value="https://storage.googleapis.com/course-materials/react/react-hooks-cheatsheet.pdf"/>
+            <column name="file_name" value="react-hooks-cheatsheet.pdf"/>
+            <column name="mime_type" value="application/pdf"/>
+            <column name="file_size" valueNumeric="345600"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-012"/>
+            <column name="course_id" value="course-002"/>
+            <column name="sender_id" value="user-010"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="2"/><!-- FILE -->
+            <column name="created_at" value="2025-08-22 10:05:10"/>
+            <column name="updated_at" value="2025-08-22 10:05:10"/>
+        </insert>
+        <insert tableName="chat_message_files">
+            <column name="id" value="msg-012"/>
+            <column name="file_url" value="https://aws.s3.amazonaws.com/ml-course/diagrams/gradient-descent-visualization.png"/>
+            <column name="file_name" value="gradient-descent-visualization.png"/>
+            <column name="mime_type" value="image/png"/>
+            <column name="file_size" valueNumeric="156780"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-013"/>
+            <column name="course_id" value="course-005"/>
+            <column name="sender_id" value="user-008"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="2"/><!-- FILE -->
+            <column name="created_at" value="2025-08-23 17:22:11"/>
+            <column name="updated_at" value="2025-08-23 17:22:11"/>
+        </insert>
+        <insert tableName="chat_message_files">
+            <column name="id" value="msg-013"/>
+            <column name="file_url" value="https://github.com/python-course/advanced-examples/archive/main.zip"/>
+            <column name="file_name" value="advanced-python-examples.zip"/>
+            <column name="mime_type" value="application/zip"/>
+            <column name="file_size" valueNumeric="2048576"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-014"/>
+            <column name="course_id" value="course-005"/>
+            <column name="sender_id" value="user-007"/>
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="2"/><!-- FILE -->
+            <column name="created_at" value="2025-08-24 09:14:55"/>
+            <column name="updated_at" value="2025-08-24 09:14:55"/>
+        </insert>
+        <insert tableName="chat_message_files">
+            <column name="id" value="msg-014"/>
+            <column name="file_url" value="https://firebasestorage.googleapis.com/uploads/user-007/memory-profile-analysis.png"/>
+            <column name="file_name" value="memory-profile-analysis.png"/>
+            <column name="mime_type" value="image/png"/>
+            <column name="file_size" valueNumeric="189440"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-015"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-011"/>
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="2"/><!-- FILE -->
+            <column name="created_at" value="2025-08-24 11:33:00"/>
+            <column name="updated_at" value="2025-08-24 11:33:00"/>
+        </insert>
+        <insert tableName="chat_message_files">
+            <column name="id" value="msg-015"/>
+            <column name="file_url" value="https://onedrive.com/share/react-state-management-notes.docx"/>
+            <column name="file_name" value="react-state-management-notes.docx"/>
+            <column name="mime_type" value="application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+            <column name="file_size" valueNumeric="687104"/>
+        </insert>
+
+        <!-- AUDIO MESSAGES with realistic URLs -->
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-016"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-003"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="3"/><!-- AUDIO -->
+            <column name="created_at" value="2025-08-24 13:10:10"/>
+            <column name="updated_at" value="2025-08-24 13:10:10"/>
+        </insert>
+        <insert tableName="chat_message_audios">
+            <column name="id" value="msg-016"/>
+            <column name="file_url" value="https://soundcloud.com/course-audio/react-hooks-detailed-explanation.mp3"/>
+            <column name="file_name" value="react-hooks-detailed-explanation.mp3"/>
+            <column name="mime_type" value="audio/mpeg"/>
+            <column name="file_size" valueNumeric="1572864"/>
+            <column name="duration" valueNumeric="298"/>
+            <column name="thumbnail_url" value="https://storage.googleapis.com/thumbnails/react-audio-thumb.jpg"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-017"/>
+            <column name="course_id" value="course-002"/>
+            <column name="sender_id" value="user-005"/>
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="3"/><!-- AUDIO -->
+            <column name="created_at" value="2025-08-25 08:22:44"/>
+            <column name="updated_at" value="2025-08-25 08:22:44"/>
+        </insert>
+        <insert tableName="chat_message_audios">
+            <column name="id" value="msg-017"/>
+            <column name="file_url" value="https://aws.s3.amazonaws.com/student-recordings/learning-rate-question.m4a"/>
+            <column name="file_name" value="learning-rate-question-detailed.m4a"/>
+            <column name="mime_type" value="audio/mp4"/>
+            <column name="file_size" valueNumeric="892928"/>
+            <column name="duration" valueNumeric="156"/>
+            <column name="thumbnail_url" value="https://storage.googleapis.com/thumbnails/student-audio.png"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-018"/>
+            <column name="course_id" value="course-005"/>
+            <column name="sender_id" value="user-008"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="3"/><!-- AUDIO -->
+            <column name="created_at" value="2025-08-25 10:50:05"/>
+            <column name="updated_at" value="2025-08-25 10:50:05"/>
+        </insert>
+        <insert tableName="chat_message_audios">
+            <column name="id" value="msg-018"/>
+            <column name="file_url" value="https://podcast.python-course.org/episodes/generator-patterns-masterclass.mp3"/>
+            <column name="file_name" value="generator-patterns-masterclass.mp3"/>
+            <column name="mime_type" value="audio/mpeg"/>
+            <column name="file_size" valueNumeric="2097152"/>
+            <column name="duration" valueNumeric="386"/>
+            <column name="thumbnail_url" value="https://storage.googleapis.com/thumbnails/python-podcast.png"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-019"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-012"/>
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="3"/><!-- AUDIO -->
+            <column name="created_at" value="2025-08-25 16:33:20"/>
+            <column name="updated_at" value="2025-08-25 16:33:20"/>
+        </insert>
+        <insert tableName="chat_message_audios">
+            <column name="id" value="msg-019"/>
+            <column name="file_url" value="https://vocaroo.com/react-state-follow-up-question"/>
+            <column name="file_name" value="react-state-follow-up.mp3"/>
+            <column name="mime_type" value="audio/mpeg"/>
+            <column name="file_size" valueNumeric="1048576"/>
+            <column name="duration" value="145"/>
+            <column name="thumbnail_url" value="https://storage.googleapis.com/thumbnails/student-question.png"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-020"/>
+            <column name="course_id" value="course-002"/>
+            <column name="sender_id" value="user-010"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="3"/><!-- AUDIO -->
+            <column name="created_at" value="2025-08-26 07:05:54"/>
+            <column name="updated_at" value="2025-08-26 07:05:54"/>
+        </insert>
+        <insert tableName="chat_message_audios">
+            <column name="id" value="msg-020"/>
+            <column name="file_url" value="https://anchor.fm/ml-course/episodes/training-schedule-optimization"/>
+            <column name="file_name" value="training-schedule-optimization.mp3"/>
+            <column name="mime_type" value="audio/mpeg"/>
+            <column name="file_size" valueNumeric="1835008"/>
+            <column name="duration" valueNumeric="334"/>
+            <column name="thumbnail_url" value="https://storage.googleapis.com/thumbnails/ml-instructor.png"/>
+        </insert>
+
+        <!-- VIDEO MESSAGES with realistic URLs -->
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-021"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-003"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="4"/><!-- VIDEO -->
+            <column name="created_at" value="2025-08-24 14:40:00"/>
+            <column name="updated_at" value="2025-08-24 14:40:00"/>
+        </insert>
+        <insert tableName="chat_message_videos">
+            <column name="id" value="msg-021"/>
+            <column name="file_url" value="https://vimeo.com/react-course/state-management-live-demo"/>
+            <column name="file_name" value="react-state-management-demo.mp4"/>
+            <column name="mime_type" value="video/mp4"/>
+            <column name="file_size" valueNumeric="67108864"/>
+            <column name="duration" valueNumeric="512"/>
+            <column name="resolution" value="1920x1080"/>
+            <column name="thumbnail_url" value="https://storage.googleapis.com/thumbnails/react-demo-thumb.jpg"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-022"/>
+            <column name="course_id" value="course-002"/>
+            <column name="sender_id" value="user-010"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="4"/><!-- VIDEO -->
+            <column name="created_at" value="2025-08-25 09:12:33"/>
+            <column name="updated_at" value="2025-08-25 09:12:33"/>
+        </insert>
+        <insert tableName="chat_message_videos">
+            <column name="id" value="msg-022"/>
+            <column name="file_url" value="https://youtube.com/watch?v=ml-gradient-descent-visualization"/>
+            <column name="file_name" value="gradient-descent-complete-explanation.mp4"/>
+            <column name="mime_type" value="video/mp4"/>
+            <column name="file_size" valueNumeric="104857600"/>
+            <column name="duration" valueNumeric="1245"/>
+            <column name="resolution" value="1920x1080"/>
+            <column name="thumbnail_url" value="https://img.youtube.com/vi/ml-gradient-descent-visualization/maxresdefault.jpg"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-023"/>
+            <column name="course_id" value="course-005"/>
+            <column name="sender_id" value="user-008"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="4"/><!-- VIDEO -->
+            <column name="created_at" value="2025-08-25 18:44:21"/>
+            <column name="updated_at" value="2025-08-25 18:44:21"/>
+        </insert>
+        <insert tableName="chat_message_videos">
+            <column name="id" value="msg-023"/>
+            <column name="file_url" value="https://wistia.com/python-course/metaclass-deep-dive-session"/>
+            <column name="file_name" value="python-metaclass-comprehensive-guide.mp4"/>
+            <column name="mime_type" value="video/mp4"/>
+            <column name="file_size" valueNumeric="89478485"/>
+            <column name="duration" valueNumeric="923"/>
+            <column name="resolution" value="1920x1080"/>
+            <column name="thumbnail_url" value="https://storage.googleapis.com/thumbnails/metaclass-session.jpg"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-024"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-002"/>
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="4"/><!-- VIDEO -->
+            <column name="created_at" value="2025-08-26 08:05:05"/>
+            <column name="updated_at" value="2025-08-26 08:05:05"/>
+        </insert>
+        <insert tableName="chat_message_videos">
+            <column name="id" value="msg-024"/>
+            <column name="file_url" value="https://streamable.com/custom-hook-implementation-demo"/>
+            <column name="file_name" value="custom-hook-practical-example.mp4"/>
+            <column name="mime_type" value="video/mp4"/>
+            <column name="file_size" valueNumeric="41943040"/>
+            <column name="duration" valueNumeric="387"/>
+            <column name="resolution" value="1920x1080"/>
+            <column name="thumbnail_url" value="https://storage.googleapis.com/thumbnails/custom-hook-demo.jpg"/>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-025"/>
+            <column name="course_id" value="course-002"/>
+            <column name="sender_id" value="user-005"/>
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="4"/><!-- VIDEO -->
+            <column name="created_at" value="2025-08-26 09:55:42"/>
+            <column name="updated_at" value="2025-08-26 09:55:42"/>
+        </insert>
+        <insert tableName="chat_message_videos">
+            <column name="id" value="msg-025"/>
+            <column name="file_url" value="https://loom.com/share/learning-rate-experiment-results"/>
+            <column name="file_name" value="learning-rate-experiment-analysis.mp4"/>
+            <column name="mime_type" value="video/mp4"/>
+            <column name="file_size" valueNumeric="35651584"/>
+            <column name="duration" valueNumeric="456"/>
+            <column name="resolution" value="1280x720"/>
+            <column name="thumbnail_url" value="https://storage.googleapis.com/thumbnails/experiment-analysis.jpg"/>
+        </insert>
+
+        <!-- Additional TEXT messages to reach 28 total -->
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-026"/>
+            <column name="course_id" value="course-005"/>
+            <column name="sender_id" value="user-007"/>
+            <column name="sender_role" value="STUDENT"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-26 10:10:10"/>
+            <column name="updated_at" value="2025-08-26 10:10:10"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-026"/>
+            <column name="content"><![CDATA[The metaclass explanation completely blew my mind 🤯 I never realized how powerful Python's meta-programming features could be. Thanks for the comprehensive video!]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-027"/>
+            <column name="course_id" value="course-002"/>
+            <column name="sender_id" value="user-010"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-26 11:05:33"/>
+            <column name="updated_at" value="2025-08-26 11:05:33"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-027"/>
+            <column name="content"><![CDATA[Excellent experiment @Edward! 📽️ Your learning rate analysis shows great understanding of the optimization process. We'll discuss your findings in detail during our next session.]]></column>
+        </insert>
+
+        <insert tableName="chat_messages">
+            <column name="id" value="msg-028"/>
+            <column name="course_id" value="course-001"/>
+            <column name="sender_id" value="user-003"/>
+            <column name="sender_role" value="INSTRUCTOR"/>
+            <column name="message_type_id" valueNumeric="1"/><!-- TEXT -->
+            <column name="created_at" value="2025-08-26 11:20:00"/>
+            <column name="updated_at" value="2025-08-26 11:20:00"/>
+        </insert>
+        <insert tableName="chat_message_texts">
+            <column name="id" value="msg-028"/>
+            <column name="content"><![CDATA[📅 Exciting news everyone! We'll have a live Q&A session tomorrow at 15:00 UTC. Come prepared with your React questions and we'll solve them together! 🗓️]]></column>
+        </insert>
+
+        <rollback>
+            <!-- Xóa con trước, cha sau để tránh lỗi khóa ngoại -->
+            DELETE FROM chat_message_texts WHERE id IN ('msg-001','msg-002','msg-003','msg-004','msg-005',
+                                                    'msg-006','msg-007','msg-008','msg-009','msg-010',
+                                                    'msg-026','msg-027','msg-028');
+            DELETE FROM chat_message_files WHERE id IN ('msg-011','msg-012','msg-013','msg-014','msg-015');
+            DELETE FROM chat_message_audios WHERE id IN ('msg-016','msg-017','msg-018','msg-019','msg-020');
+            DELETE FROM chat_message_videos WHERE id IN ('msg-021','msg-022','msg-023','msg-024','msg-025');
+            DELETE FROM chat_messages WHERE id IN ('msg-001','msg-002','msg-003','msg-004','msg-005',
+                                                'msg-006','msg-007','msg-008','msg-009','msg-010',
+                                                'msg-011','msg-012','msg-013','msg-014','msg-015',
+                                                'msg-016','msg-017','msg-018','msg-019','msg-020',
+                                                'msg-021','msg-022','msg-023','msg-024','msg-025',
+                                                'msg-026','msg-027','msg-028');
+        </rollback>
+
+    </changeSet>
+</databaseChangeLog>

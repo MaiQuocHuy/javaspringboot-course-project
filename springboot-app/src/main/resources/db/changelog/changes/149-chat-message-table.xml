@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="149-chat-message-table" author="system">
+   
+        <createTable tableName="chat_message_types">
+            <column name="id" type="INT UNSIGNED AUTO_INCREMENT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <insert tableName="chat_message_types">
+            <column name="id" valueNumeric="1"/>
+            <column name="name" value="TEXT"/>
+            <column name="description" value="Plain text message"/>
+        </insert>
+        <insert tableName="chat_message_types">
+            <column name="id" valueNumeric="2"/>
+            <column name="name" value="FILE"/>
+            <column name="description" value="File attachment message"/>
+        </insert>
+        <insert tableName="chat_message_types">
+            <column name="id" valueNumeric="3"/>
+            <column name="name" value="AUDIO"/>
+            <column name="description" value="Audio clip message"/>
+        </insert>
+        <insert tableName="chat_message_types">
+            <column name="id" valueNumeric="4"/>
+            <column name="name" value="VIDEO"/>
+            <column name="description" value="Video clip message"/>
+        </insert>
+
+        <!-- 1. Parent table -->
+        <createTable tableName="chat_messages">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sender_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sender_role" type="ENUM('STUDENT','INSTRUCTOR')">
+                <constraints nullable="false"/>
+            </column>
+            <!-- message_type_id references chat_message_types.id -->
+            <column name="message_type_id" type="INT UNSIGNED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="chat_messages" baseColumnNames="course_id"
+                                 referencedTableName="courses" referencedColumnNames="id"
+                                 onDelete="CASCADE" constraintName="fk_chat_messages_course"/>
+        <addForeignKeyConstraint baseTableName="chat_messages" baseColumnNames="sender_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 onDelete="CASCADE" constraintName="fk_chat_messages_sender"/>
+        <createIndex indexName="idx_chat_messages_course_created" tableName="chat_messages">
+            <column name="course_id"/>
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex indexName="idx_chat_messages_sender" tableName="chat_messages">
+            <column name="sender_id"/>
+        </createIndex>
+        <createIndex indexName="idx_chat_messages_message_type_id" tableName="chat_messages">
+            <column name="message_type_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="chat_messages" baseColumnNames="message_type_id"
+                                 referencedTableName="chat_message_types" referencedColumnNames="id"
+                                 constraintName="fk_chat_messages_message_type_id"/>
+
+        <!-- 2. Text messages -->
+        <createTable tableName="chat_message_texts">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="content" type="TEXT" remarks="UTF8MB4 content with emoji support"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="chat_message_texts" baseColumnNames="id"
+                                 referencedTableName="chat_messages" referencedColumnNames="id"
+                                 onDelete="CASCADE" constraintName="fk_chat_message_texts_parent"/>
+
+        <!-- 3. File messages -->
+        <createTable tableName="chat_message_files">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="file_url" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="mime_type" type="VARCHAR(150)"/>
+            <column name="file_size" type="BIGINT UNSIGNED"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="chat_message_files" baseColumnNames="id"
+                                 referencedTableName="chat_messages" referencedColumnNames="id"
+                                 onDelete="CASCADE" constraintName="fk_chat_message_files_parent"/>
+
+        <!-- 4. Audio messages -->
+        <createTable tableName="chat_message_audios">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="file_url" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="mime_type" type="VARCHAR(150)"/>
+            <column name="file_size" type="BIGINT UNSIGNED"/>
+            <column name="duration" type="BIGINT UNSIGNED" remarks="Duration in seconds"/>
+            <column name="thumbnail_url" type="VARCHAR(1000)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="chat_message_audios" baseColumnNames="id"
+                                 referencedTableName="chat_messages" referencedColumnNames="id"
+                                 onDelete="CASCADE" constraintName="fk_chat_message_audios_parent"/>
+
+        <!-- 5. Video messages -->
+        <createTable tableName="chat_message_videos">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="file_url" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_name" type="VARCHAR(255)"/>
+            <column name="mime_type" type="VARCHAR(150)"/>
+            <column name="file_size" type="BIGINT UNSIGNED"/>
+            <column name="duration" type="BIGINT UNSIGNED" remarks="Duration in seconds"/>
+            <column name="resolution" type="VARCHAR(50)" remarks="e.g. 1920x1080"/>
+            <column name="thumbnail_url" type="VARCHAR(1000)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="chat_message_videos" baseColumnNames="id"
+                                 referencedTableName="chat_messages" referencedColumnNames="id"
+                                 onDelete="CASCADE" constraintName="fk_chat_message_videos_parent"/>
+
+        <!-- 6. MySQL specific alterations for ON UPDATE + utf8mb4
+        <preConditions onFail="MARK_RAN"><dbms type="mysql"/></preConditions> -->
+        <sql>
+                        ALTER TABLE chat_messages 
+                            MODIFY updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+                                    ALTER TABLE chat_message_types 
+                                        MODIFY updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+            ALTER TABLE chat_message_texts 
+              MODIFY content TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+              MODIFY updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+            ALTER TABLE chat_message_files 
+              MODIFY updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+            ALTER TABLE chat_message_audios 
+              MODIFY updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+            ALTER TABLE chat_message_videos 
+              MODIFY updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+        </sql> 
+    </changeSet>
+
+</databaseChangeLog>
