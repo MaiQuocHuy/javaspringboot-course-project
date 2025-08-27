@@ -16,6 +16,7 @@ import project.ktc.springboot_app.common.exception.DocumentUploadException;
 import project.ktc.springboot_app.common.exception.IneligibleApplicationException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationDetailResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminReviewApplicationRequestDto;
@@ -258,6 +259,43 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize documents to JSON: {}", e.getMessage(), e);
             throw new DocumentUploadException("Failed to process document information", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<ApiResponse<InstructorApplicationDetailResponseDto>> getApplicationByUserId(String userId) {
+        try {
+            // Check authentication
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("No authenticated user found in security context");
+                return ApiResponseUtil.unauthorized("User not authenticated");
+            }
+
+            // Check if application exists
+            InstructorApplication application = applicationRepository.findFirstByUserIdOrderBySubmittedAtDesc(userId)
+                    .orElseThrow(() -> new RuntimeException("Application not found for user id: " + userId));
+
+            log.debug("Found application for User ID: {}, Status: {}", application.getUser().getId(),
+                    application.getStatus());
+
+            // Map to DTO
+            InstructorApplicationDetailResponseDto responseDto = instructorApplicationMapper
+                    .toApplicationDetailResponseDto(application);
+
+            return ApiResponseUtil.success(responseDto,
+                    "Fetched application detail successfully for user id: " + userId);
+
+        } catch (RuntimeException e) {
+            log.error("Application not found: {}", e.getMessage());
+            return ApiResponseUtil.notFound("Application not found for User ID: " + userId);
+
+        } catch (Exception e) {
+            log.error("Error retrieving application detail: {}", e.getMessage(), e);
+            return ApiResponseUtil
+                    .internalServerError("Failed to retrieve application detail. Try again later.");
         }
     }
 

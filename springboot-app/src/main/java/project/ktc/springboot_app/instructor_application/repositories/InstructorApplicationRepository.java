@@ -60,4 +60,8 @@ public interface InstructorApplicationRepository extends JpaRepository<Instructo
     @NonNull
     List<InstructorApplication> findAll();
 
+    /**
+     * Find latest instructor application by user ID
+     */
+    Optional<InstructorApplication> findFirstByUserIdOrderBySubmittedAtDesc(String userId);
 }
