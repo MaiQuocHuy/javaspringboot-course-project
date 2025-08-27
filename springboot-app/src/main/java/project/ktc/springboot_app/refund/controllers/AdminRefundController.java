@@ -1,13 +1,9 @@
 package project.ktc.springboot_app.refund.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,11 +16,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
-import project.ktc.springboot_app.refund.dto.AdminRefundDetailsResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundResponseDto;
 import project.ktc.springboot_app.refund.dto.AdminRefundStatisticsResponseDto;
-import project.ktc.springboot_app.refund.dto.AdminRefundStatusUpdateResponseDto;
-import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
 import project.ktc.springboot_app.refund.interfaces.AdminRefundService;
 
 @RestController
@@ -102,58 +95,6 @@ public class AdminRefundController {
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<AdminRefundResponseDto>>> getAllRefunds() {
                 log.info("Admin requesting all refunds without pagination");
                 return adminRefundService.getAllRefunds();
-        }
-
-        /**
-         * Get refund details by ID
-         * 
-         * @param refundId The refund ID to retrieve
-         * @return ResponseEntity containing detailed refund information
-         */
-        @GetMapping("/{refundId}")
-        @Operation(summary = "Get refund details", description = """
-                        Retrieves detailed information about a specific refund by ID for admin view.
-
-                        **Features:**
-                        - Returns comprehensive refund information
-                        - Includes user and course details
-                        - Shows Stripe payment data if applicable (transaction ID, receipt URL, card info)
-                        - Provides complete audit trail information
-
-                        **Admin Only:**
-                        - This endpoint requires ADMIN role
-                        - Access to any refund regardless of user ownership
-                        - Includes sensitive payment gateway information
-                        """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Refund details retrieved successfully"),
-                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @ApiResponse(responseCode = "404", description = "Refund not found"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminRefundDetailsResponseDto>> getRefundDetail(
-                        @Parameter(description = "Refund ID", required = true) @PathVariable String refundId) {
-                log.info("Admin requesting refund details for refund: {}", refundId);
-                return adminRefundService.getRefundDetail(refundId);
-        }
-
-        @PatchMapping("/{id}/status")
-        @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Update refund status", description = "Updates the status of a specific refund by its ID. Only ADMIN role is allowed.")
-        @ApiResponses(value = {
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Refund status updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AdminRefundStatusUpdateResponseDto.class))),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid status value or refund not in PENDING state", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Refund not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class)))
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminRefundStatusUpdateResponseDto>> updateRefundStatus(
-                        @Parameter(description = "The ID of the refund to update", required = true) @PathVariable String id,
-                        @Parameter(description = "The status update request", required = true) @Valid @RequestBody UpdateRefundStatusDto updateDto) {
-
-                log.info("Admin refund status update request for ID: {} with status: {}", id, updateDto.getStatus());
-                return adminRefundService.updateRefundStatus(id, updateDto);
         }
 
         /**
