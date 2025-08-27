@@ -4,15 +4,15 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
-import project.ktc.springboot_app.refund.dto.AdminRefundDetailsResponseDto;
-import project.ktc.springboot_app.refund.dto.AdminRefundResponseDto;
-import project.ktc.springboot_app.refund.dto.AdminRefundStatisticsResponseDto;
 import project.ktc.springboot_app.refund.dto.RefundStatusUpdateResponseDto;
+import project.ktc.springboot_app.refund.dto.InstructorRefundDetailsResponseDto;
+import project.ktc.springboot_app.refund.dto.InstructorRefundResponseDto;
 import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
 
-public interface AdminRefundService {
+public interface InstructorRefundService {
 
     /**
      * Get all payments with pagination for admin
@@ -20,14 +20,15 @@ public interface AdminRefundService {
      * @param pageable Pagination information
      * @return ResponseEntity containing paginated list of refunds
      */
-    ResponseEntity<ApiResponse<PaginatedResponse<AdminRefundResponseDto>>> getAllRefunds(Pageable pageable);
+    ResponseEntity<ApiResponse<PaginatedResponse<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
+            Pageable pageable);
 
     /**
      * Get all refunds without pagination for admin
      * 
      * @return ResponseEntity containing list of all refunds
      */
-    ResponseEntity<ApiResponse<List<AdminRefundResponseDto>>> getAllRefunds();
+    ResponseEntity<ApiResponse<List<InstructorRefundResponseDto>>> getAllRefundsByInstructorId();
 
     /**
      * Get refund details by ID for admin
@@ -35,12 +36,16 @@ public interface AdminRefundService {
      * @param refundId The refund ID to retrieve
      * @return ResponseEntity containing detailed refund information
      */
-    ResponseEntity<ApiResponse<AdminRefundDetailsResponseDto>> getRefundDetail(String refundId);
+    ResponseEntity<ApiResponse<InstructorRefundDetailsResponseDto>> getRefundByIdAndInstructorIdWithDetails(
+            String refundId);
 
     /**
-     * Get refund statistics for admin dashboard
+     * Updates the status of a refund by ID
      * 
-     * @return ResponseEntity containing refund counts by status
+     * @param refundId  the ID of the refund to update
+     * @param updateDto the update request containing the new status
+     * @return ResponseEntity with the update result
      */
-    ResponseEntity<ApiResponse<AdminRefundStatisticsResponseDto>> getRefundStatistics();
+    ResponseEntity<ApiResponse<RefundStatusUpdateResponseDto>> updateRefundStatus(
+            String refundId, UpdateRefundStatusDto updateDto);
 }

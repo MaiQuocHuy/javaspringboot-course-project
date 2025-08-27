@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminRefundStatusUpdateResponseDto {
+public class RefundStatusUpdateResponseDto {
 
     private String id;
     private String paymentId;
