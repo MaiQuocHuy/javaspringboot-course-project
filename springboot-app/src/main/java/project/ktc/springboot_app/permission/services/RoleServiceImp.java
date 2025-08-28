@@ -172,10 +172,19 @@ public class RoleServiceImp implements RoleService {
 
         UserRole role = findById(roleId);
 
+        // Check if role is one of the protected system roles
+        String roleName = role.getRole().toUpperCase();
+        if ("ADMIN".equals(roleName) || "INSTRUCTOR".equals(roleName) || "STUDENT".equals(roleName)) {
+            log.warn("Attempted to delete protected system role: {}", roleName);
+            throw new IllegalArgumentException("Cannot delete system role: " + roleName
+                    + ". This role is protected and required for system operation.");
+        }
+
         // Check if role is being used (optional validation)
         // You might want to add checks here to prevent deletion of roles in use
 
         userRoleRepository.delete(role);
+        log.info("Successfully deleted role: {} (ID: {})", role.getRole(), roleId);
     }
 
     @Override
