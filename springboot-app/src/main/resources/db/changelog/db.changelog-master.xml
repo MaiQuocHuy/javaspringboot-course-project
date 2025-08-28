@@ -101,4 +101,11 @@
     <include file="db/changelog/changes/149-chat-message-table.xml"/>
     <include file="db/changelog/changes/150-seed-chat-messages.xml"/>
     <include file="db/changelog/changes/151-remove-uniqueconstraints-userid.xml"/>
+    <include file="db/changelog/changes/151-add-description-to-user-roles.xml"/>
+    
+    <!-- Role Management System -->
+    <include file="db/changelog/changes/152-add-role-resource-permissions.xml"/>
+    
+    <!-- Remove Role Management System (Rollback) -->
+    <include file="db/changelog/changes/153-remove-role-resource-permissions.xml"/>
 </databaseChangeLog>
