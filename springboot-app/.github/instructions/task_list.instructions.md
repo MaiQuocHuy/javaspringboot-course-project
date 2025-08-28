@@ -1,7 +1,8 @@
 ---
-applyTo: "**"
----
 
+ applyTo: "**"
+
+---
 ## Standard API Response Format
 
 All API responses will follow a standardized format for consistency and ease of use on the frontend.
@@ -2870,6 +2871,7 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
 - **Testing:** Test course retrieval with valid and invalid slugs.
 
 ### 4.31 `GET /api/instructor/sections/lessons/{lessonId}/submissions`
+
 - **Description:** Retrieves a list of submissions for courses owned by the current instructor.
 - **Request:**
   - **Method** `GET`
@@ -2882,7 +2884,7 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - **Path Parameters**
     - `lessonId`: The ID of the lesson.
   - **Response**
-    ```json
+    `json
       {
   "statusCode": 200,
   "message": "Submissions retrieved successfully",
@@ -2920,8 +2922,8 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   },
   "timeStamp": "2025-07-26T10:30:00Z"
 }
-    ```
-- **Business Rule**: 
+    `
+- **Business Rule**:
   - The score must be between 0 and 10.
   - The submittedAt must be in the past.
   - The student must be a valid student.
@@ -2937,10 +2939,12 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   Only the instructor who owns the course can access this endpoint.
 
 - **Parameters:**
+
   - `lessonId` (path, required, integer): ID of the lesson.
   - `submissionId` (path, required, integer): ID of the submission.
 
 - **Authorization:**
+
   - Role: `INSTRUCTOR`
   - The instructor must be the owner of the course containing the lesson.
 
@@ -2963,11 +2967,11 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
           "questionId": 1,
           "questionText": "What is Spring Boot?",
           "options": {
-              "A": "framework",
-              "B": "library",
-              "C": "language",
-              "D": "database"
-            },
+            "A": "framework",
+            "B": "library",
+            "C": "language",
+            "D": "database"
+          },
           "answer": "B",
           "isCorrect": true
         }
@@ -2977,8 +2981,7 @@ Any missing or duplicate IDs will result in a 400 Bad Request.)
   - `403 Forbidden` – Instructor does not own the course.
   - `404 Not Found` – Submission not found.
   - `400 Bad Request` – Lesson and submission do not match.
-  - 
-
+  -
 
 ### 4.31 `PATCH /api/instructor/courses/:id/resubmit`
 
@@ -4430,3 +4433,102 @@ Only ADMIN users can call this API. -**Request**:
   - Only ADMIN can access this API.
   - All fields are mandatory.
   - Email must be unique.
+
+### 7.9 `DELETE /api/chat/{courseId}/messages/{messageId}`
+
+- **Description**: Deletes a specific chat message associated with a course. Only the owner of the message can delete it.
+
+- **Request**:
+
+  - **Method:** DELETE
+  - **Path:** /api/chat/{courseId}/messages/{messageId}
+  - **Headers**:
+    - Authorization: Bearer <accessToken>
+
+- **Response**:
+
+  - **Status Code:** 204 No Content
+  - **Body:** (empty)
+
+- **Errors**:
+
+  - 401 Unauthorized: missing or invalid JWT
+  - 403 Forbidden: caller is not owner of the message
+  - 404 Not Found: message or course not found
+
+- **Controller Responsibilities**:
+
+  - Validate JWT and extract user information.
+  - Check if the user is authorized to delete the message.
+  - Call ChatMessageService.deleteMessage(courseId, messageId).
+  - Return appropriate HTTP status.
+
+- **Service Responsibilities**:
+
+  - Verify message ownership.
+  - Delete the message from the database.
+
+- **Business Rules**:
+  - Only the owner of the message can delete it.
+  - Deletion is permanent and cannot be undone.
+  - Users must be enrolled in the course to delete messages.
+
+### 7.10 `PATCH /api/chat/{courseId}/messages/{messageId}`
+
+- **Description**: Updates the content of a specific chat message associated with a course. Only the owner of the message can update it. Only messages of type "TEXT" can be updated.
+
+- **Request**:
+
+  - **Method:** PATCH
+  - **Path:** /api/chat/{courseId}/messages/{messageId}
+  - **Headers**:
+    - Authorization: Bearer <accessToken>
+  - **Body:**
+    ```json
+    {
+      "type": "TEXT",
+      "content": "Updated message content"
+    }
+    ```
+
+- **Response**:
+
+  - **Status Code:** 200 OK
+  - **Body:**
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Message updated successfully",
+      "data": {
+        "id": "message_id",
+        "content": "Updated message content"
+      }
+    }
+    ```
+
+- **Errors**:
+
+  - 400 Bad Request: missing or invalid fields
+  - 401 Unauthorized: missing or invalid JWT
+  - 403 Forbidden: caller is not owner of the message
+  - 404 Not Found: message or course not found
+
+- **Controller Responsibilities**:
+  - Authenticate user via JWT.
+  - Verify user enrollment in the course.
+  - Call ChatMessageService.updateMessage(courseId, messageId, request).
+  - Return standardized success/error response.
+
+- **Service Responsibilities**:
+
+  - Validate content (non-empty, length constraints).
+  - Check message ownership.
+  - Ensure message type = TEXT.
+  - Update content and updatedAt.
+  - Save to DB and return updated entity.
+
+- **Business Rules**:
+Only the owner of the message can update it.
+Only TEXT messages can be updated.
+-Updates are permanent and cannot be undone.
+-Users must be enrolled in the course.
