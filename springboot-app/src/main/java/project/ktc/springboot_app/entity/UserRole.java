@@ -23,7 +23,4 @@ public class UserRole {
     @Column(length = 36, nullable = false)
     private String role;
 
-    @Column(length = 500, nullable = true)
-    private String description;
-
 }

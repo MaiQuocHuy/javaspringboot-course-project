@@ -52,7 +52,6 @@ public class RoleServiceImp implements RoleService {
             // Create new role entity
             UserRole newRole = UserRole.builder()
                     .role(roleType)
-                    .description(request.getDescription())
                     .build();
 
             // Save role to database
@@ -148,10 +147,99 @@ public class RoleServiceImp implements RoleService {
         }
     }
 
+    @Override
+    @Transactional
+    public UserRole updateRole(String roleId, project.ktc.springboot_app.permission.dto.UpdateRoleRequest request) {
+        log.info("Updating role with ID: {}", roleId);
+
+        UserRole role = findById(roleId);
+
+        // Validate new role name uniqueness if changed
+        String newRoleName = request.getName().toUpperCase().trim();
+        if (!role.getRole().equals(newRoleName) && existsByRoleName(newRoleName)) {
+            log.warn("Role update failed - role name already exists: {}", newRoleName);
+            throw new IllegalArgumentException("Role name '" + newRoleName + "' already exists");
+        }
+
+        role.setRole(newRoleName);
+        return userRoleRepository.save(role);
+    }
+
+    @Override
+    @Transactional
+    public void deleteRole(String roleId) {
+        log.info("Deleting role with ID: {}", roleId);
+
+        UserRole role = findById(roleId);
+
+        // Check if role is being used (optional validation)
+        // You might want to add checks here to prevent deletion of roles in use
+
+        userRoleRepository.delete(role);
+    }
+
+    @Override
+    @Transactional
+    public void assignPermissions(String roleId,
+            project.ktc.springboot_app.permission.dto.AssignPermissionsRequest request) {
+        log.info("Assigning {} permissions to role ID: {}", request.getPermissionIds().size(), roleId);
+
+        // Validate role exists
+        findById(roleId);
+
+        // Implementation depends on your permission assignment logic
+        // This is a placeholder - you'll need to implement based on your permission
+        // system
+        throw new UnsupportedOperationException("Permission assignment not implemented yet");
+    }
+
+    @Override
+    @Transactional
+    public void removePermissions(String roleId,
+            project.ktc.springboot_app.permission.dto.RemovePermissionsRequest request) {
+        log.info("Removing {} permissions from role ID: {}", request.getPermissionIds().size(), roleId);
+
+        // Validate role exists
+        findById(roleId);
+
+        // Implementation depends on your permission removal logic
+        // This is a placeholder - you'll need to implement based on your permission
+        // system
+        throw new UnsupportedOperationException("Permission removal not implemented yet");
+    }
+
+    @Override
+    public List<project.ktc.springboot_app.permission.dto.RolePermissionDetailDto> getRolePermissions(String roleId) {
+        log.info("Getting permissions for role ID: {}", roleId);
+
+        // Validate role exists
+        findById(roleId);
+        List<RolePermission> rolePermissions = rolePermissionRepository.findActiveByRoleId(roleId);
+
+        return rolePermissions.stream()
+                .map(rp -> project.ktc.springboot_app.permission.dto.RolePermissionDetailDto.builder()
+                        .permissionKey(rp.getPermission().getPermissionKey())
+                        .description(rp.getPermission().getDescription())
+                        .resource(rp.getPermission().getResourceName())
+                        .action(rp.getPermission().getActionName())
+                        .filterType(rp.getFilterType().getName())
+                        .isAssigned(true)
+                        .canAssignToRole(true)
+                        .isRestricted(false)
+                        .allowedRoles(List.of())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public RoleWithPermissionsDto convertToRoleWithPermissionsDto(UserRole role) {
+        return convertToRoleWithPermissionsDtoInternal(role);
+    }
+
     /**
      * Convert UserRole entity to RoleWithPermissionsDto
      */
-    private RoleWithPermissionsDto convertToRoleWithPermissionsDto(UserRole role) {
+    private RoleWithPermissionsDto convertToRoleWithPermissionsDtoInternal(UserRole role) {
         log.debug("Converting role {} to DTO with permissions", role.getId());
 
         try {
@@ -172,7 +260,6 @@ public class RoleServiceImp implements RoleService {
             return RoleWithPermissionsDto.builder()
                     .id(role.getId())
                     .name(role.getRole())
-                    .description(role.getDescription())
                     .totalPermission(permissionSummaries.size())
                     .permissions(permissionSummaries)
                     .build();
@@ -184,7 +271,6 @@ public class RoleServiceImp implements RoleService {
             return RoleWithPermissionsDto.builder()
                     .id(role.getId())
                     .name(role.getRole())
-                    .description(role.getDescription())
                     .totalPermission(0)
                     .permissions(List.of())
                     .build();

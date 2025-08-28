@@ -8,13 +8,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.validation.Valid;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -317,52 +314,6 @@ public class AdminPermissionController {
         } catch (Exception e) {
             log.error("Unexpected error updating permissions for role ID: {}", roleId, e);
             return ApiResponseUtil.internalServerError("Internal server error while updating permissions");
-        }
-    }
-
-    /**
-     * Create a new role
-     * 
-     * @param request the role creation request
-     * @return the created role information
-     */
-    @PostMapping("/roles")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Create a new role", description = "Creates a new role in the system. Only ADMIN users can call this API.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Role created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input - validation error or role name format error"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-            @ApiResponse(responseCode = "409", description = "Conflict - Role name already exists"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<project.ktc.springboot_app.permission.dto.RoleResponseDto>> createRole(
-            @Valid @RequestBody project.ktc.springboot_app.permission.dto.CreateRoleRequest request) {
-        log.info("Admin requesting to create new role: {}", request.getName());
-
-        try {
-            // Create the role
-            project.ktc.springboot_app.entity.UserRole createdRole = roleService.createRole(request);
-            log.info("Role created successfully with ID: {} and name: {}", createdRole.getId(),
-                    createdRole.getRole());
-
-            // Convert to DTO
-            project.ktc.springboot_app.permission.dto.RoleResponseDto responseDto = new project.ktc.springboot_app.permission.dto.RoleResponseDto();
-            responseDto.setId(createdRole.getId());
-            responseDto.setName(createdRole.getRole());
-            responseDto.setDescription(createdRole.getDescription());
-            responseDto.setCreatedAt(java.time.LocalDateTime.now());
-            responseDto.setUpdatedAt(java.time.LocalDateTime.now());
-
-            return ApiResponseUtil.success(responseDto, "Role created successfully");
-
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid role creation request: {}", e.getMessage());
-            return ApiResponseUtil.badRequest(e.getMessage());
-        } catch (Exception e) {
-            log.error("Error creating role: {}", e.getMessage(), e);
-            return ApiResponseUtil.internalServerError("Internal server error while creating role");
         }
     }
 }

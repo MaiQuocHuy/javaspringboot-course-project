@@ -26,9 +26,6 @@ public class RoleResponseDto {
     @Schema(description = "Role name", example = "MANAGER")
     private String name;
 
-    @Schema(description = "Role description", example = "Manager role with administrative privileges")
-    private String description;
-
     @Schema(description = "Role creation timestamp", example = "2025-08-18T10:30:00")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;

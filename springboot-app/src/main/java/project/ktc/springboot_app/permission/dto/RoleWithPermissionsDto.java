@@ -24,9 +24,6 @@ public class RoleWithPermissionsDto {
     @Schema(description = "Role name", example = "ADMIN")
     private String name;
 
-    @Schema(description = "Role description", example = "Administrator role with full system access")
-    private String description;
-
     @Schema(description = "Total number of permissions assigned to this role", example = "12")
     private Integer totalPermission;
 
