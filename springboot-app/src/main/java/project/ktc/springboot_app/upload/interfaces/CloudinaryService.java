@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import project.ktc.springboot_app.upload.dto.AudioUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.DocumentUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.VideoMetadataResponseDto;
@@ -14,11 +15,15 @@ public interface CloudinaryService {
 
     VideoUploadResponseDto uploadVideo(MultipartFile file) throws IOException;
 
+    AudioUploadResponseDto uploadAudio(MultipartFile file) throws IOException;
+
     DocumentUploadResponseDto uploadDocument(MultipartFile file) throws IOException;
 
     boolean deleteImage(String publicId) throws IOException;
 
     boolean deleteVideo(String publicId) throws IOException;
+
+    boolean deleteAudio(String publicId) throws IOException;
 
     boolean deleteDocument(String publicId) throws IOException;
 

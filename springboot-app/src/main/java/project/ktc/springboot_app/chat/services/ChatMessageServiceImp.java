@@ -6,15 +6,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.chat.dtos.SendMessageRequest;
+import project.ktc.springboot_app.chat.dtos.UpdateMessageRequest;
+import project.ktc.springboot_app.chat.dtos.AsyncSendMessageRequest;
+import project.ktc.springboot_app.chat.dtos.AsyncMessageAcknowledgment;
+import project.ktc.springboot_app.chat.dtos.AsyncMessageStatusEvent;
 import project.ktc.springboot_app.chat.dtos.ChatMessageResponse;
 import project.ktc.springboot_app.chat.dtos.SimpleChatMessageResponse;
 import project.ktc.springboot_app.chat.dtos.ChatMessagesListResponse;
+import project.ktc.springboot_app.chat.enums.MessageType;
 import project.ktc.springboot_app.chat.entities.*;
 import project.ktc.springboot_app.chat.interfaces.ChatMessageService;
 import project.ktc.springboot_app.chat.repositories.ChatMessageRepository;
@@ -121,7 +127,7 @@ public class ChatMessageServiceImp implements ChatMessageService {
             message = chatMessageRepository.save(message);
 
             ChatMessageResponse response = toResponse(message);
-            messagingTemplate.convertAndSend("/topic/courses." + courseId + ".chat", response);
+            messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", response);
 
             return ApiResponseUtil.created(response, "Message sent successfully");
 
@@ -387,5 +393,421 @@ public class ChatMessageServiceImp implements ChatMessageService {
                 .mimeType(mimeType)
                 .createdAt(m.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> deleteMessage(String courseId, String messageId, String userEmail) {
+        try {
+            // Validate input parameters
+            if (courseId == null || courseId.isBlank()) {
+                return ApiResponseUtil.badRequest("Invalid courseId format");
+            }
+            if (messageId == null || messageId.isBlank()) {
+                return ApiResponseUtil.badRequest("Invalid messageId format");
+            }
+
+            // Verify course exists
+            var course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new NoSuchElementException("Course not found"));
+
+            // Verify user exists
+            var user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+            // Validate access: user must be enrolled in the course OR be the course
+            // instructor
+            boolean isInstructor = course.getInstructor().getId().equals(user.getId());
+            boolean isEnrolled = enrollmentRepository.existsByUserIdAndCourseId(user.getId(), courseId);
+
+            if (!isInstructor && !isEnrolled) {
+                return ApiResponseUtil.forbidden("User not enrolled in course");
+            }
+
+            // Find the message
+            var message = chatMessageRepository.findById(messageId)
+                    .orElseThrow(() -> new NoSuchElementException("Message not found"));
+
+            // Verify message belongs to the specified course
+            if (!message.getCourse().getId().equals(courseId)) {
+                return ApiResponseUtil.notFound("Message not found in this course");
+            }
+
+            // Check ownership or permission to delete
+            // Only message owner, course instructor, or admin can delete
+            boolean isMessageOwner = message.getSender().getId().equals(user.getId());
+            boolean isAdmin = user.getRole() != null && "ADMIN".equals(user.getRole().getRole());
+
+            if (!isMessageOwner && !isInstructor && !isAdmin) {
+                return ApiResponseUtil.forbidden("User is not the message owner or lacks permission");
+            }
+
+            // Delete the message - JPA cascading will handle child entities automatically
+            // The @OneToOne mappings use CascadeType.ALL, so child entities will be deleted
+            chatMessageRepository.delete(message);
+
+            // Publish WebSocket event for real-time updates
+            var deleteEvent = java.util.Map.of(
+                    "type", "messageDeleted",
+                    "messageId", messageId,
+                    "courseId", courseId,
+                    "deletedBy", user.getId(),
+                    "timestamp", java.time.LocalDateTime.now());
+
+            messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", deleteEvent);
+
+            return ApiResponseUtil.noContent("Message deleted successfully");
+
+        } catch (NoSuchElementException e) {
+            if (e.getMessage().equals("Course not found")) {
+                return ApiResponseUtil.notFound("Course not found");
+            } else if (e.getMessage().equals("Message not found")) {
+                return ApiResponseUtil.notFound("Message not found");
+            }
+            return ApiResponseUtil.notFound(e.getMessage());
+        } catch (Exception e) {
+            return ApiResponseUtil.internalServerError("Failed to delete message. Please try again later.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<ChatMessageResponse>> updateMessage(String courseId, String messageId,
+            String userEmail, UpdateMessageRequest request) {
+        try {
+            // Validate input parameters
+            if (courseId == null || courseId.isBlank()) {
+                return ApiResponseUtil.badRequest("Invalid courseId format");
+            }
+            if (messageId == null || messageId.isBlank()) {
+                return ApiResponseUtil.badRequest("Invalid messageId format");
+            }
+
+            // Verify course exists
+            var course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new NoSuchElementException("Course not found"));
+
+            // Verify user exists
+            var user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+            // Validate access: user must be enrolled in the course OR be the course
+            // instructor
+            boolean isInstructor = course.getInstructor().getId().equals(user.getId());
+            boolean isEnrolled = enrollmentRepository.existsByUserIdAndCourseId(user.getId(), courseId);
+
+            if (!isInstructor && !isEnrolled) {
+                return ApiResponseUtil.forbidden("User not enrolled in course");
+            }
+
+            // Find the message
+            var message = chatMessageRepository.findById(messageId)
+                    .orElseThrow(() -> new NoSuchElementException("Message not found"));
+
+            // Verify message belongs to the specified course
+            if (!message.getCourse().getId().equals(courseId)) {
+                return ApiResponseUtil.notFound("Message not found in this course");
+            }
+
+            // Check ownership - only message owner can update
+            boolean isMessageOwner = message.getSender().getId().equals(user.getId());
+            if (!isMessageOwner) {
+                return ApiResponseUtil.forbidden("User is not the message owner");
+            }
+
+            // Verify message type is TEXT
+            if (!message.getMessageType().getName().equals("TEXT")) {
+                return ApiResponseUtil.badRequest("Only TEXT messages can be updated");
+            }
+
+            // Verify request type is TEXT
+            if (!"TEXT".equals(request.getType())) {
+                return ApiResponseUtil.badRequest("Message type must be TEXT");
+            }
+
+            // Update message content and timestamp
+            if (message.getTextDetail() != null) {
+                message.getTextDetail().setContent(request.getContent());
+            } else {
+                // Create text detail if it doesn't exist (shouldn't happen for TEXT messages)
+                ChatMessageText textDetail = ChatMessageText.builder()
+                        .message(message)
+                        .content(request.getContent())
+                        .build();
+                message.setTextDetail(textDetail);
+            }
+            message.setUpdatedAt(java.time.LocalDateTime.now());
+
+            // Save updated message
+            var updatedMessage = chatMessageRepository.save(message);
+
+            // Create response using existing toResponse method
+            var response = toResponse(updatedMessage);
+
+            // Publish WebSocket event for real-time updates
+            var updateEvent = java.util.Map.of(
+                    "type", "messageUpdated",
+                    "messageId", messageId,
+                    "courseId", courseId,
+                    "updatedBy", user.getId(),
+                    "content", request.getContent(),
+                    "timestamp", java.time.LocalDateTime.now());
+
+            messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", updateEvent);
+
+            return ApiResponseUtil.success(response, "Message updated successfully");
+
+        } catch (NoSuchElementException e) {
+            if (e.getMessage().equals("Course not found")) {
+                return ApiResponseUtil.notFound("Course not found");
+            } else if (e.getMessage().equals("Message not found")) {
+                return ApiResponseUtil.notFound("Message not found");
+            }
+            return ApiResponseUtil.notFound(e.getMessage());
+        } catch (Exception e) {
+            return ApiResponseUtil.internalServerError("Failed to update message. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<AsyncMessageAcknowledgment>> sendMessageAsync(String courseId, String senderEmail,
+            AsyncSendMessageRequest request) {
+        try {
+            // Validate input parameters
+            if (courseId == null || courseId.isBlank()) {
+                return ApiResponseUtil.badRequest("Invalid courseId format");
+            }
+            if (request.getTempId() == null || request.getTempId().isBlank()) {
+                return ApiResponseUtil.badRequest("TempId is required");
+            }
+
+            // Parse message type
+            MessageType messageType;
+            try {
+                messageType = MessageType.fromValue(request.getType());
+            } catch (IllegalArgumentException e) {
+                return ApiResponseUtil.badRequest("Invalid message type: " + request.getType());
+            }
+
+            // Quick validation: verify course exists and user access
+            var course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new NoSuchElementException("Course not found"));
+
+            var user = userRepository.findByEmail(senderEmail)
+                    .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+            // Validate access: user must be enrolled in the course OR be the course
+            // instructor
+            boolean isInstructor = course.getInstructor().getId().equals(user.getId());
+            boolean isEnrolled = enrollmentRepository.existsByUserIdAndCourseId(user.getId(), courseId);
+
+            if (!isInstructor && !isEnrolled) {
+                return ApiResponseUtil.forbidden("User not enrolled in course");
+            }
+
+            // Return immediate acknowledgment with 202 Accepted status
+            AsyncMessageAcknowledgment acknowledgment = AsyncMessageAcknowledgment.builder()
+                    .tempId(request.getTempId())
+                    .status("PENDING")
+                    .build();
+
+            // Process message asynchronously
+            processMessageAsync(courseId, senderEmail, request);
+
+            return ResponseEntity.status(org.springframework.http.HttpStatus.ACCEPTED)
+                    .body(ApiResponse.<AsyncMessageAcknowledgment>builder()
+                            .statusCode(202)
+                            .message("Message is being processed")
+                            .data(acknowledgment)
+                            .timestamp(java.time.ZonedDateTime.now())
+                            .build());
+
+        } catch (NoSuchElementException e) {
+            if (e.getMessage().equals("Course not found")) {
+                return ApiResponseUtil.notFound("Course not found");
+            } else if (e.getMessage().equals("User not found")) {
+                return ApiResponseUtil.unauthorized("User not found");
+            }
+            return ApiResponseUtil.notFound(e.getMessage());
+        } catch (Exception e) {
+            return ApiResponseUtil.internalServerError("Failed to process message request. Please try again later.");
+        }
+    }
+
+    @Async
+    public void processMessageAsync(String courseId, String senderEmail, AsyncSendMessageRequest request) {
+        try {
+            // Parse message type
+            MessageType messageType = MessageType.fromValue(request.getType());
+
+            // Send initial status update
+            broadcastStatusUpdate(courseId, request.getTempId(), "PENDING", null, null, null);
+
+            // Create pending message record first
+            String messageId = createPendingMessage(courseId, senderEmail, request, messageType);
+
+            if (messageType.isTextType()) {
+                // Text messages - process immediately
+                processTextMessage(courseId, senderEmail, request, messageId);
+            } else {
+                // Media messages - handle upload asynchronously
+                processMediaMessage(courseId, senderEmail, request, messageId, messageType);
+            }
+
+        } catch (Exception e) {
+            // Send failure notification via WebSocket
+            broadcastStatusUpdate(courseId, request.getTempId(), "FAILED", null, null,
+                    "Processing error: " + e.getMessage());
+        }
+    }
+
+    private String createPendingMessage(String courseId, String senderEmail, AsyncSendMessageRequest request,
+            MessageType messageType) {
+        var course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new NoSuchElementException("Course not found"));
+        var sender = userRepository.findByEmail(senderEmail)
+                .orElseThrow(() -> new NoSuchElementException("Sender not found"));
+        var type = chatMessageTypeRepository.findByNameIgnoreCase(messageType.getValue())
+                .orElseThrow(() -> new NoSuchElementException("Invalid message type"));
+
+        ChatMessage message = ChatMessage.builder()
+                .course(course)
+                .sender(sender)
+                .senderRole(sender.getRole() != null ? sender.getRole().getRole() : "STUDENT")
+                .messageType(type)
+                .build();
+
+        // Save to get ID
+        message = chatMessageRepository.save(message);
+        return message.getId();
+    }
+
+    private void processTextMessage(String courseId, String senderEmail, AsyncSendMessageRequest request,
+            String messageId) {
+        try {
+            // Update message with text content
+            ChatMessage message = chatMessageRepository.findById(messageId)
+                    .orElseThrow(() -> new NoSuchElementException("Message not found"));
+
+            ChatMessageText textDetail = ChatMessageText.builder()
+                    .message(message)
+                    .content(request.getContent())
+                    .build();
+
+            message.setTextDetail(textDetail);
+            message = chatMessageRepository.save(message);
+
+            // Broadcast success
+            ChatMessageResponse response = toResponse(message);
+            messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", response);
+
+            broadcastStatusUpdate(courseId, request.getTempId(), "SENT", messageId, null, null);
+
+        } catch (Exception e) {
+            broadcastStatusUpdate(courseId, request.getTempId(), "FAILED", null, null,
+                    "Text processing error: " + e.getMessage());
+        }
+    }
+
+    private void processMediaMessage(String courseId, String senderEmail, AsyncSendMessageRequest request,
+            String messageId, MessageType messageType) {
+        try {
+            // Send uploading status (although file is already uploaded, we still show this
+            // for consistency)
+            broadcastStatusUpdate(courseId, request.getTempId(), "UPLOADING", messageId, null, null);
+
+            // Use provided URLs and metadata (files are pre-uploaded via /api/upload/*
+            // endpoints)
+            String fileUrl = request.getFileUrl();
+            String thumbnailUrl = request.getThumbnailUrl();
+            Integer duration = request.getDuration();
+            String mimeType = request.getMimeType();
+            String resolution = request.getResolution();
+
+            // Update message with media details
+            updateMessageWithMediaDetails(messageId, messageType, fileUrl, thumbnailUrl, duration, mimeType, resolution,
+                    request);
+
+            // Load updated message and broadcast
+            ChatMessage message = chatMessageRepository.findById(messageId)
+                    .orElseThrow(() -> new NoSuchElementException("Message not found"));
+
+            ChatMessageResponse response = toResponse(message);
+            messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", response);
+
+            broadcastStatusUpdate(courseId, request.getTempId(), "SENT", messageId, fileUrl, null);
+
+        } catch (Exception e) {
+            broadcastStatusUpdate(courseId, request.getTempId(), "FAILED", null, null,
+                    "Media processing error: " + e.getMessage());
+        }
+    }
+
+    private void updateMessageWithMediaDetails(String messageId, MessageType messageType, String fileUrl,
+            String thumbnailUrl, Integer duration, String mimeType,
+            String resolution, AsyncSendMessageRequest request) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message not found"));
+
+        switch (messageType) {
+            case FILE -> {
+                ChatMessageFile fileDetail = ChatMessageFile.builder()
+                        .message(message)
+                        .fileUrl(fileUrl)
+                        .fileName(request.getFileName())
+                        .fileSize(request.getFileSize())
+                        .mimeType(mimeType)
+                        .build();
+                message.setFileDetail(fileDetail);
+            }
+            case VIDEO -> {
+                ChatMessageVideo videoDetail = ChatMessageVideo.builder()
+                        .message(message)
+                        .videoUrl(fileUrl)
+                        .fileName(request.getFileName())
+                        .fileSize(request.getFileSize())
+                        .thumbnailUrl(thumbnailUrl)
+                        .duration(duration != null ? duration.longValue() : null)
+                        .mimeType(mimeType)
+                        .resolution(resolution)
+                        .build();
+                message.setVideoDetail(videoDetail);
+            }
+            case AUDIO -> {
+                ChatMessageAudio audioDetail = ChatMessageAudio.builder()
+                        .message(message)
+                        .audioUrl(fileUrl)
+                        .fileName(request.getFileName())
+                        .fileSize(request.getFileSize())
+                        .duration(duration != null ? duration.longValue() : null)
+                        .mimeType(mimeType)
+                        .thumbnailUrl(thumbnailUrl)
+                        .build();
+                message.setAudioDetail(audioDetail);
+            }
+            default -> throw new IllegalArgumentException("Unsupported message type: " + messageType);
+        }
+
+        chatMessageRepository.save(message);
+    }
+
+    private void broadcastStatusUpdate(String courseId, String tempId, String status, String messageId, String fileUrl,
+            String error) {
+        AsyncMessageStatusEvent.AsyncMessageStatusEventBuilder eventBuilder = AsyncMessageStatusEvent.builder()
+                .tempId(tempId)
+                .status(status);
+
+        if (messageId != null) {
+            eventBuilder.messageId(messageId);
+        }
+        if (fileUrl != null) {
+            eventBuilder.fileUrl(fileUrl);
+        }
+        if (error != null) {
+            eventBuilder.error(error);
+        }
+
+        AsyncMessageStatusEvent event = eventBuilder.build();
+        messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", event);
     }
 }

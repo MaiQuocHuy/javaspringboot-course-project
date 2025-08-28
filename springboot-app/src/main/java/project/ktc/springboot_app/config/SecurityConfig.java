@@ -57,8 +57,8 @@ public class SecurityConfig {
                                                                 "/api/courses/**",
                                                                 "/api/categories/**",
                                                                 "/api/stripe/webhook",
-                                                                "/ws-chat/**", // STOMP handshake + SockJS
-                                                                "/ws-chat", // direct endpoint
+                                                                "/api/ws-chat/**", // STOMP handshake + SockJS
+                                                                "/api/ws-chat", // direct endpoint
                                                                 "/error")
                                                 .permitAll()
                                                 // Admin

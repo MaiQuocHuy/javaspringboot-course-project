@@ -1,0 +1,408 @@
+openapi: 3.0.3
+info:
+  title: Chat Message API
+  description: API for sending asynchronous chat messages with media support via pre-upload pattern
+  version: 1.0.0
+  contact:
+    name: KTC Backend Team
+    email: backend@ktc.com
+
+servers:
+  - url: https://api.ktc.com
+    description: Production server
+  - url: https://staging-api.ktc.com
+    description: Staging server
+  - url: http://localhost:8080
+    description: Development server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/chat/{courseId}/messages:
+    post:
+      tags:
+        - Chat Messages
+      summary: Send async chat message
+      description: |
+        Send a message to course chat with immediate acknowledgment and async processing.
+
+        **Workflow:**
+        1. For media messages: Upload file first via `/api/upload/*` endpoints
+        2. Send message with file URL and metadata
+        3. Receive immediate 202 response with PENDING status
+        4. Monitor WebSocket for status updates (UPLOADING → SENT/FAILED)
+
+        **Message Types:**
+        - `text`: Simple text message
+        - `file`: Document/file message (requires pre-upload)
+        - `video`: Video message (requires pre-upload)
+        - `audio`: Audio message (requires pre-upload)
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          description: UUID of the course
+          schema:
+            type: string
+            format: uuid
+            example: "7200a420-2ff3-4f18-9933-1b86d05f1a78"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AsyncSendMessageRequest"
+            examples:
+              textMessage:
+                summary: Text Message
+                value:
+                  tempId: "temp-txt-123"
+                  type: "text"
+                  content: "Hello everyone!"
+              fileMessage:
+                summary: File Message
+                value:
+                  tempId: "temp-file-456"
+                  type: "file"
+                  fileUrl: "https://res.cloudinary.com/example/raw/upload/v1693838234/documents/presentation.pdf"
+                  fileName: "presentation.pdf"
+                  fileSize: 2048000
+                  mimeType: "application/pdf"
+              videoMessage:
+                summary: Video Message
+                value:
+                  tempId: "temp-video-789"
+                  type: "video"
+                  fileUrl: "https://res.cloudinary.com/example/video/upload/v1693838234/videos/lecture.mp4"
+                  fileName: "lecture.mp4"
+                  fileSize: 52428800
+                  duration: 1800
+                  mimeType: "video/mp4"
+                  resolution: "1920x1080"
+                  thumbnailUrl: "https://res.cloudinary.com/example/image/upload/v1693838234/thumbnails/lecture_thumb.jpg"
+              audioMessage:
+                summary: Audio Message
+                value:
+                  tempId: "temp-audio-101"
+                  type: "audio"
+                  fileUrl: "https://res.cloudinary.com/example/video/upload/v1693838234/audio/recording.mp3"
+                  fileName: "recording.mp3"
+                  fileSize: 10485760
+                  duration: 600
+                  mimeType: "audio/mpeg"
+      responses:
+        "202":
+          description: Message acknowledged and being processed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AsyncMessageAcknowledgment"
+              example:
+                statusCode: 202
+                message: "Message accepted and being processed"
+                data:
+                  tempId: "temp-msg-12345"
+                  status: "PENDING"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                missingFileUrl:
+                  summary: Missing file URL for media message
+                  value:
+                    statusCode: 400
+                    message: "FileUrl is required for video messages. Upload the file first via /api/upload/* endpoints"
+                invalidFileUrl:
+                  summary: Invalid file URL format
+                  value:
+                    statusCode: 400
+                    message: "File URL must start with https://"
+                missingContent:
+                  summary: Missing content for text message
+                  value:
+                    statusCode: 400
+                    message: "Content is required for text messages"
+        "401":
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              example:
+                statusCode: 401
+                message: "Unauthorized"
+        "403":
+          description: User not enrolled in course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              example:
+                statusCode: 403
+                message: "User not enrolled in course"
+        "404":
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              example:
+                statusCode: 404
+                message: "Course not found"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              example:
+                statusCode: 500
+                message: "Internal server error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AsyncSendMessageRequest:
+      type: object
+      required:
+        - tempId
+        - type
+      properties:
+        tempId:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: Temporary ID for tracking the message
+          example: "temp-123"
+        type:
+          type: string
+          enum: [text, file, video, audio]
+          description: Type of message
+          example: "text"
+        content:
+          type: string
+          maxLength: 5000
+          description: Message content (required if type = 'text')
+          example: "Hello world!"
+        fileUrl:
+          type: string
+          pattern: "^https://.*"
+          description: File URL (for pre-uploaded files via /api/upload/* endpoints)
+          example: "https://res.cloudinary.com/example/raw/upload/v1234567890/documents/sample.pdf"
+        fileName:
+          type: string
+          maxLength: 255
+          description: File name
+          example: "document.pdf"
+        fileSize:
+          type: integer
+          maximum: 104857600
+          description: File size in bytes (max 100MB)
+          example: 1024000
+        thumbnailUrl:
+          type: string
+          description: Video thumbnail URL (for video messages)
+          example: "https://res.cloudinary.com/example/image/upload/v1234567890/video_thumbnails/thumb.jpg"
+        duration:
+          type: integer
+          minimum: 0
+          description: Duration in seconds (for video/audio messages)
+          example: 120
+        mimeType:
+          type: string
+          maxLength: 100
+          description: MIME type of the file
+          example: "video/mp4"
+        resolution:
+          type: string
+          maxLength: 50
+          description: Video resolution (for video messages)
+          example: "1920x1080"
+      discriminator:
+        propertyName: type
+        mapping:
+          text: "#/components/schemas/TextMessageRequest"
+          file: "#/components/schemas/FileMessageRequest"
+          video: "#/components/schemas/VideoMessageRequest"
+          audio: "#/components/schemas/AudioMessageRequest"
+
+    TextMessageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AsyncSendMessageRequest"
+        - type: object
+          required:
+            - content
+          properties:
+            type:
+              type: string
+              enum: [text]
+            content:
+              type: string
+              minLength: 1
+              maxLength: 5000
+
+    FileMessageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AsyncSendMessageRequest"
+        - type: object
+          required:
+            - fileUrl
+            - fileName
+          properties:
+            type:
+              type: string
+              enum: [file]
+            fileUrl:
+              type: string
+              pattern: "^https://.*"
+            fileName:
+              type: string
+              minLength: 1
+              maxLength: 255
+
+    VideoMessageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AsyncSendMessageRequest"
+        - type: object
+          required:
+            - fileUrl
+            - fileName
+          properties:
+            type:
+              type: string
+              enum: [video]
+            fileUrl:
+              type: string
+              pattern: "^https://.*"
+            fileName:
+              type: string
+              minLength: 1
+              maxLength: 255
+            duration:
+              type: integer
+              minimum: 0
+            resolution:
+              type: string
+              maxLength: 50
+            thumbnailUrl:
+              type: string
+
+    AudioMessageRequest:
+      allOf:
+        - $ref: "#/components/schemas/AsyncSendMessageRequest"
+        - type: object
+          required:
+            - fileUrl
+            - fileName
+          properties:
+            type:
+              type: string
+              enum: [audio]
+            fileUrl:
+              type: string
+              pattern: "^https://.*"
+            fileName:
+              type: string
+              minLength: 1
+              maxLength: 255
+            duration:
+              type: integer
+              minimum: 0
+
+    AsyncMessageAcknowledgment:
+      type: object
+      required:
+        - tempId
+        - status
+      properties:
+        tempId:
+          type: string
+          description: Temporary ID from the request
+          example: "temp-123"
+        status:
+          type: string
+          enum: [PENDING]
+          description: Initial status of the message
+          example: "PENDING"
+
+    ApiResponse:
+      type: object
+      required:
+        - statusCode
+        - message
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code
+          example: 200
+        message:
+          type: string
+          description: Response message
+          example: "Success"
+        data:
+          type: object
+          description: Response data (varies by endpoint)
+
+    # WebSocket Events (for documentation, not used in REST API)
+    AsyncMessageStatusEvent:
+      type: object
+      description: WebSocket event sent to /topic/courses/{courseId}/messages/status
+      required:
+        - tempId
+        - status
+      properties:
+        tempId:
+          type: string
+          description: Temporary ID from the original request
+          example: "temp-msg-12345"
+        status:
+          type: string
+          enum: [PENDING, UPLOADING, SENT, FAILED]
+          description: Current status of the message processing
+          example: "SENT"
+        messageId:
+          type: string
+          format: uuid
+          description: Final message ID (available when status = SENT)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        fileUrl:
+          type: string
+          description: File URL (for media messages)
+          example: "https://res.cloudinary.com/example/video/upload/v1693838234/videos/lecture.mp4"
+        type:
+          type: string
+          enum: [text, file, video, audio]
+          description: Message type
+          example: "video"
+        thumbnailUrl:
+          type: string
+          description: Thumbnail URL (for video messages)
+          example: "https://res.cloudinary.com/example/image/upload/v1693838234/thumbnails/lecture_thumb.jpg"
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Upload progress percentage (currently not used)
+          example: null
+        error:
+          type: string
+          description: Error message (when status = FAILED)
+          example: null
+
+externalDocs:
+  description: Chat Message API Integration Guide
+  url: ./Chat_Message_API_Documentation.md

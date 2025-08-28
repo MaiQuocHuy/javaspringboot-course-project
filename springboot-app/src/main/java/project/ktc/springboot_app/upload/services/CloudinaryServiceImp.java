@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import project.ktc.springboot_app.upload.dto.AudioUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.DocumentUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.upload.dto.VideoMetadataResponseDto;
@@ -205,6 +206,122 @@ public class CloudinaryServiceImp implements CloudinaryService {
                 .width((Integer) uploadResult.get("width"))
                 .height((Integer) uploadResult.get("height"))
                 .build();
+    }
+
+    /**
+     * Upload audio file to Cloudinary
+     * 
+     * @param file MultipartFile to upload
+     * @return AudioUploadResponseDto with upload details
+     * @throws IOException if upload fails
+     */
+    @Override
+    public AudioUploadResponseDto uploadAudio(MultipartFile file) {
+        log.info("Starting audio upload for file: {}", file.getOriginalFilename());
+
+        try {
+            // Generate unique public ID for audio
+            String publicId = generatePublicId(file.getOriginalFilename());
+
+            // Upload to Cloudinary
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "public_id", publicId,
+                            "folder", "course-audio",
+                            "resource_type", "video", // Audio is uploaded as video resource type in Cloudinary
+                            "quality", "auto",
+                            "format", "mp3" // Convert to MP3 for consistency
+                    ));
+
+            log.info("Audio upload successful. Public ID: {}, URL: {}",
+                    uploadResult.get("public_id"), uploadResult.get("secure_url"));
+
+            return buildAudioResponseDto(uploadResult, file);
+
+        } catch (IOException e) {
+            log.error("Failed to upload audio: {}", e.getMessage(), e);
+            throw new RuntimeException("Audio upload failed: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Delete audio from Cloudinary
+     * 
+     * @param publicId Public ID of the audio to delete
+     * @return true if deletion was successful, false otherwise
+     */
+    @Override
+    public boolean deleteAudio(String publicId) {
+        log.info("Deleting audio with public ID: {}", publicId);
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader().destroy(publicId,
+                    ObjectUtils.asMap("resource_type", "video")); // Audio is stored as video resource type
+
+            String resultStatus = (String) result.get("result");
+            boolean success = "ok".equals(resultStatus);
+
+            log.info("Audio deletion result for {}: {} ({})", publicId, success, resultStatus);
+            return success;
+
+        } catch (IOException e) {
+            log.error("Failed to delete audio with public ID: {}", publicId, e);
+            return false;
+        }
+    }
+
+    /**
+     * Build audio response DTO from Cloudinary upload result
+     */
+    private AudioUploadResponseDto buildAudioResponseDto(Map<String, Object> uploadResult, MultipartFile file) {
+        return AudioUploadResponseDto.builder()
+                .url((String) uploadResult.get("secure_url"))
+                .publicId((String) uploadResult.get("public_id"))
+                .fileName(file.getOriginalFilename())
+                .size(file.getSize())
+                .format((String) uploadResult.get("format"))
+                .duration(extractAudioDuration(uploadResult))
+                .bitrate(extractAudioBitrate(uploadResult))
+                .sampleRate(extractAudioSampleRate(uploadResult))
+                .channels(extractAudioChannels(uploadResult))
+                .uploadedAt(LocalDateTime.now())
+                .mimeType(file.getContentType())
+                .build();
+    }
+
+    private Double extractAudioDuration(Map<String, Object> uploadResult) {
+        Object duration = uploadResult.get("duration");
+        if (duration instanceof Number) {
+            return ((Number) duration).doubleValue();
+        }
+        return null;
+    }
+
+    private Integer extractAudioBitrate(Map<String, Object> uploadResult) {
+        Object bitrate = uploadResult.get("bit_rate");
+        if (bitrate instanceof Number) {
+            return ((Number) bitrate).intValue();
+        }
+        return null;
+    }
+
+    private Integer extractAudioSampleRate(Map<String, Object> uploadResult) {
+        Object sampleRate = uploadResult.get("audio_frequency");
+        if (sampleRate instanceof Number) {
+            return ((Number) sampleRate).intValue();
+        }
+        return null;
+    }
+
+    private Integer extractAudioChannels(Map<String, Object> uploadResult) {
+        Object channels = uploadResult.get("audio_channels");
+        if (channels instanceof Number) {
+            return ((Number) channels).intValue();
+        }
+        return null;
     }
 
     /**
