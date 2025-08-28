@@ -62,4 +62,52 @@ public interface RoleService {
      * @return paginated list of roles with permissions
      */
     Page<RoleWithPermissionsDto> getAllRolesWithPermissions(int page, int size);
+
+    /**
+     * Update a role
+     * 
+     * @param roleId  the role ID
+     * @param request the update request
+     * @return updated role entity
+     */
+    UserRole updateRole(String roleId, project.ktc.springboot_app.permission.dto.UpdateRoleRequest request);
+
+    /**
+     * Delete a role
+     * 
+     * @param roleId the role ID
+     */
+    void deleteRole(String roleId);
+
+    /**
+     * Assign permissions to a role
+     * 
+     * @param roleId  the role ID
+     * @param request the assign permissions request
+     */
+    void assignPermissions(String roleId, project.ktc.springboot_app.permission.dto.AssignPermissionsRequest request);
+
+    /**
+     * Remove permissions from a role
+     * 
+     * @param roleId  the role ID
+     * @param request the remove permissions request
+     */
+    void removePermissions(String roleId, project.ktc.springboot_app.permission.dto.RemovePermissionsRequest request);
+
+    /**
+     * Get permissions assigned to a specific role
+     * 
+     * @param roleId the role ID
+     * @return list of role permission details
+     */
+    List<project.ktc.springboot_app.permission.dto.RolePermissionDetailDto> getRolePermissions(String roleId);
+
+    /**
+     * Convert UserRole entity to RoleWithPermissionsDto
+     * 
+     * @param role the role entity
+     * @return role with permissions DTO
+     */
+    RoleWithPermissionsDto convertToRoleWithPermissionsDto(UserRole role);
 }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Remove Role Resource and Permissions (Rollback for 152-add-role-resource-permissions.xml) -->
+    <changeSet id="153-1" author="ktc">
+        
+        <!-- Remove Role Permissions from ADMIN Role first (to avoid foreign key constraints) -->
+        <delete tableName="role_permissions">
+            <where>id = 'roleP-admin-role-read-001'</where>
+        </delete>
+
+        <delete tableName="role_permissions">
+            <where>id = 'roleP-admin-role-create-001'</where>
+        </delete>
+
+        <delete tableName="role_permissions">
+            <where>id = 'roleP-admin-role-update-001'</where>
+        </delete>
+
+        <delete tableName="role_permissions">
+            <where>id = 'roleP-admin-role-delete-001'</where>
+        </delete>
+
+    </changeSet>
+
+    <!-- Remove Role Permissions -->
+    <changeSet id="153-2" author="ktc">
+        
+        <!-- Remove role:READ permission -->
+        <delete tableName="permissions">
+            <where>id = 'perm-role-read-001'</where>
+        </delete>
+
+        <!-- Remove role:CREATE permission -->
+        <delete tableName="permissions">
+            <where>id = 'perm-role-create-001'</where>
+        </delete>
+
+        <!-- Remove role:UPDATE permission -->
+        <delete tableName="permissions">
+            <where>id = 'perm-role-update-001'</where>
+        </delete>
+
+        <!-- Remove role:DELETE permission -->
+        <delete tableName="permissions">
+            <where>id = 'perm-role-delete-001'</where>
+        </delete>
+
+    </changeSet>
+
+    <!-- Remove Role Resource -->
+    <changeSet id="153-3" author="ktc">
+        
+        <!-- Remove Role Resource (must be last due to foreign key constraints) -->
+        <delete tableName="resources">
+            <where>id = 'res-role-mgmt-001'</where>
+        </delete>
+
+    </changeSet>
+
+</databaseChangeLog>

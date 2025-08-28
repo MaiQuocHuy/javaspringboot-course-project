@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog 
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="151-add-description-to-user-roles" author="system">
+        <comment>Add description column to user_roles table</comment>
+        
+        <addColumn tableName="user_roles">
+            <column name="description" type="VARCHAR(500)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <!-- Update existing roles with default descriptions -->
+        <update tableName="user_roles">
+            <column name="description" value="Student role with basic course access"/>
+            <where>role = 'STUDENT'</where>
+        </update>
+        
+        <update tableName="user_roles">
+            <column name="description" value="Instructor role with course creation and management capabilities"/>
+            <where>role = 'INSTRUCTOR'</where>
+        </update>
+        
+        <update tableName="user_roles">
+            <column name="description" value="Administrator role with full system access and management capabilities"/>
+            <where>role = 'ADMIN'</where>
+        </update>
+        
+        <rollback>
+            <dropColumn tableName="user_roles" columnName="description"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

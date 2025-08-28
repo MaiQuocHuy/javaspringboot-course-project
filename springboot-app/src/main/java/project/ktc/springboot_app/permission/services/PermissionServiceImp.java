@@ -543,4 +543,31 @@ public class PermissionServiceImp implements PermissionService {
 
         return new project.ktc.springboot_app.permission.dto.RolePermissionGroupedDto(resourceGroups);
     }
+
+    @Override
+    public List<project.ktc.springboot_app.permission.dto.PermissionDto> getAllPermissions() {
+        logger.info("Fetching all permissions for admin interface");
+
+        List<Permission> permissions = permissionRepository.findAllPermissionsWithDetails();
+
+        return permissions.stream()
+                .map(this::convertToPermissionDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Convert Permission entity to PermissionDto
+     */
+    private project.ktc.springboot_app.permission.dto.PermissionDto convertToPermissionDto(Permission permission) {
+        return project.ktc.springboot_app.permission.dto.PermissionDto.builder()
+                .id(permission.getId())
+                .permissionKey(permission.getPermissionKey())
+                .resourceName(permission.getResourceName())
+                .actionName(permission.getActionName())
+                .description(permission.getDescription())
+                .isActive(permission.getIsActive())
+                .createdAt(permission.getCreatedAt())
+                .updatedAt(permission.getUpdatedAt())
+                .build();
+    }
 }
