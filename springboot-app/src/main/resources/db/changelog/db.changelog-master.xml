@@ -104,4 +104,7 @@
     
     <!-- Role Management System -->
     <include file="db/changelog/changes/152-add-role-resource-permissions.xml"/>
+    
+    <!-- Remove Role Management System (Rollback) -->
+    <include file="db/changelog/changes/153-remove-role-resource-permissions.xml"/>
 </databaseChangeLog>

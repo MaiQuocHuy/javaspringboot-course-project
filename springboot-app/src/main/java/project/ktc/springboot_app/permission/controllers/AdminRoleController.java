@@ -34,7 +34,7 @@ public class AdminRoleController {
      * Get all roles with pagination and their associated permissions
      */
     @GetMapping
-    @PreAuthorize("hasPermission('Role', 'role:READ')")
+    // @PreAuthorize("hasPermission('Role', 'role:READ')")
     public ResponseEntity<ApiResponse<Page<RoleWithPermissionsDto>>> getAllRoles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -48,7 +48,7 @@ public class AdminRoleController {
      * Get all roles without pagination (for dropdowns)
      */
     @GetMapping("/list")
-    @PreAuthorize("hasPermission('Role', 'role:READ')")
+    // @PreAuthorize("hasPermission('Role', 'role:READ')")
     public ResponseEntity<ApiResponse<List<RoleResponseDto>>> getAllRolesList() {
         log.info("Fetching all roles list");
 
@@ -67,7 +67,7 @@ public class AdminRoleController {
      * Get role by ID with its permissions
      */
     @GetMapping("/{roleId}")
-    @PreAuthorize("hasPermission('Role', 'role:READ')")
+    // @PreAuthorize("hasPermission('Role', 'role:READ')")
     public ResponseEntity<ApiResponse<RoleWithPermissionsDto>> getRoleById(@PathVariable String roleId) {
         log.info("Fetching role by ID: {}", roleId);
 
@@ -81,7 +81,7 @@ public class AdminRoleController {
      * Create a new role
      */
     @PostMapping
-    @PreAuthorize("hasPermission('Role', 'role:CREATE')")
+    // @PreAuthorize("hasPermission('Role', 'role:CREATE')")
     public ResponseEntity<ApiResponse<RoleResponseDto>> createRole(@Valid @RequestBody CreateRoleRequest request) {
         log.info("Creating new role with name: {}", request.getName());
 
@@ -98,7 +98,7 @@ public class AdminRoleController {
      * Update a role
      */
     @PutMapping("/{roleId}")
-    @PreAuthorize("hasPermission('Role', 'role:UPDATE')")
+    // @PreAuthorize("hasPermission('Role', 'role:UPDATE')")
     public ResponseEntity<ApiResponse<RoleResponseDto>> updateRole(
             @PathVariable String roleId,
             @Valid @RequestBody UpdateRoleRequest request) {
@@ -117,7 +117,7 @@ public class AdminRoleController {
      * Delete a role
      */
     @DeleteMapping("/{roleId}")
-    @PreAuthorize("hasPermission('Role', 'role:DELETE')")
+    // @PreAuthorize("hasPermission('Role', 'role:DELETE')")
     public ResponseEntity<ApiResponse<Void>> deleteRole(@PathVariable String roleId) {
         log.info("Deleting role with ID: {}", roleId);
 
@@ -129,7 +129,7 @@ public class AdminRoleController {
      * Assign permissions to a role
      */
     @PostMapping("/{roleId}/permissions")
-    @PreAuthorize("hasPermission('Role', 'role:UPDATE')")
+    // @PreAuthorize("hasPermission('Role', 'role:UPDATE')")
     public ResponseEntity<ApiResponse<Void>> assignPermissions(
             @PathVariable String roleId,
             @Valid @RequestBody AssignPermissionsRequest request) {
@@ -143,7 +143,7 @@ public class AdminRoleController {
      * Remove permissions from a role
      */
     @DeleteMapping("/{roleId}/permissions")
-    @PreAuthorize("hasPermission('Role', 'role:UPDATE')")
+    // @PreAuthorize("hasPermission('Role', 'role:UPDATE')")
     public ResponseEntity<ApiResponse<Void>> removePermissions(
             @PathVariable String roleId,
             @Valid @RequestBody RemovePermissionsRequest request) {
@@ -157,7 +157,7 @@ public class AdminRoleController {
      * Get all available permissions (for assignment)
      */
     @GetMapping("/permissions/available")
-    @PreAuthorize("hasPermission('Permission', 'permission:READ')")
+    // @PreAuthorize("hasPermission('Permission', 'permission:READ')")
     public ResponseEntity<ApiResponse<List<PermissionDto>>> getAvailablePermissions() {
         log.info("Fetching available permissions for role assignment");
 
@@ -169,7 +169,7 @@ public class AdminRoleController {
      * Get permissions assigned to a specific role
      */
     @GetMapping("/{roleId}/permissions")
-    @PreAuthorize("hasPermission('Role', 'role:READ')")
+    // @PreAuthorize("hasPermission('Role', 'role:READ')")
     public ResponseEntity<ApiResponse<List<RolePermissionDetailDto>>> getRolePermissions(@PathVariable String roleId) {
         log.info("Fetching permissions for role ID: {}", roleId);
 
