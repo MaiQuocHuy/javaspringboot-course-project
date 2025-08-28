@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationDetailResponseDto;
 import project.ktc.springboot_app.instructor_application.services.InstructorApplicationServiceImp;
 
 /**
@@ -32,7 +34,7 @@ public class InstructorApplicationController {
         private final InstructorApplicationServiceImp instructorApplicationService;
 
         @PostMapping(value = "/documents/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        @PreAuthorize("hasRole('STUDENT')")
+        @PreAuthorize("hasRole('INSTRUCTOR')")
         @Operation(summary = "Upload instructor application documents", description = """
                         Upload required documents to apply for the instructor role.
                         Documents are stored on Cloudinary and recorded as a JSON key-value structure.
@@ -75,6 +77,14 @@ public class InstructorApplicationController {
                                 other != null ? other.getOriginalFilename() : "null");
 
                 return instructorApplicationService.uploadDocuments(certificate, portfolio, cv, other);
+        }
+
+        @GetMapping("/{userId}")
+        @PreAuthorize("hasRole('INSTRUCTOR')")
+        @Operation(summary = "Upload instructor application documents", description = "Get the latest instructor application details by user ID.")
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<InstructorApplicationDetailResponseDto>> getApplicationByUserId(
+                        @PathVariable String userId) {
+                return instructorApplicationService.getApplicationByUserId(userId);
         }
 
 }

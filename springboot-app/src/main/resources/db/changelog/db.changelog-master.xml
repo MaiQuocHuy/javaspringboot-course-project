@@ -100,6 +100,7 @@
     <include file="db/changelog/changes/148-add-permission-paidout.xml"/>
     <include file="db/changelog/changes/149-chat-message-table.xml"/>
     <include file="db/changelog/changes/150-seed-chat-messages.xml"/>
+    <include file="db/changelog/changes/151-remove-uniqueconstraints-userid.xml"/>
     <include file="db/changelog/changes/151-add-description-to-user-roles.xml"/>
     
     <!-- Role Management System -->

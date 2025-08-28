@@ -5,16 +5,15 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import project.ktc.springboot_app.auth.entitiy.User;
-import project.ktc.springboot_app.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "instructor_applications", uniqueConstraints = @UniqueConstraint(name = "unique_app_user", columnNames = {
-                "user_id" }), indexes = {
-                                @Index(name = "idx_app_status", columnList = "status")
-                })
+@Table(name = "instructor_applications", indexes = {
+                @Index(name = "idx_app_status", columnList = "status"),
+                @Index(name = "idx_user_submitted", columnList = "user_id, submitted_at")
+})
 @Getter
 @Setter
 public class InstructorApplication {

@@ -296,32 +296,8 @@ public class StudentLessonServiceImp implements StudentService {
                     .submittedAt(quizResult.getCompletedAt())
                     .build();
 
-            // 13. Create or update lesson completion record if submitted successfully
-            Optional<LessonCompletion> existingCompletionOpt = lessonCompletionRepository
-                    .findByUserIdAndLessonId(currentUserId, lessonId);
-
-            LessonCompletion completion;
-            if (existingCompletionOpt.isPresent()) {
-                // Update existing completion time
-                completion = existingCompletionOpt.get();
-                completion.setCompletedAt(LocalDateTime.now());
-                log.info("Updating existing lesson completion for student {} on lesson {}", currentUserId, lessonId);
-            } else {
-                // Create new completion record
-                completion = new LessonCompletion();
-                completion.setUser(student);
-                completion.setLesson(lesson);
-                completion.setCompletedAt(LocalDateTime.now());
-                log.info("Creating new lesson completion for student {} on lesson {}", currentUserId, lessonId);
-            }
-
-            lessonCompletionRepository.save(completion);
-
             log.info("Successfully processed quiz submission for student {} on lesson {}. Score: {}/{}",
                     currentUserId, lessonId, correctAnswers, totalQuestions);
-
-            // Check if all lessons in the course are completed and update enrollment status
-            checkAndUpdateCourseCompletion(currentUserId, courseId);
 
             return ApiResponseUtil.success(responseDto, "Quiz submitted successfully");
 
