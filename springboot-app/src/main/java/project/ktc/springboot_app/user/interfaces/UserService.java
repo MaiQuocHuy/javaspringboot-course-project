@@ -2,7 +2,6 @@ package project.ktc.springboot_app.user.interfaces;
 
 import java.util.List;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.common.dto.ApiResponse;
