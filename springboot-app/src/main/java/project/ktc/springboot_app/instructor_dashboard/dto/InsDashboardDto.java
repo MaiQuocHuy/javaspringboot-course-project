@@ -7,4 +7,7 @@ import lombok.Data;
 @Builder
 public class InsDashboardDto {
   private StatisticItemDto courseStatistics;
+  private StatisticItemDto studentStatistics;
+  private StatisticItemDto revenueStatistics;
+  private StatisticItemDto ratingStatistics;
 }

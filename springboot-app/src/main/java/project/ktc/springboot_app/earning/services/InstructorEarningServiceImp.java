@@ -14,13 +14,16 @@ import project.ktc.springboot_app.earning.dto.EarningDetailResponseDto;
 import project.ktc.springboot_app.earning.dto.EarningResponseDto;
 import project.ktc.springboot_app.earning.dto.EarningSummaryDto;
 import project.ktc.springboot_app.earning.dto.EarningsWithSummaryDto;
+import project.ktc.springboot_app.earning.dto.MonthlyEarningsDto;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.earning.interfaces.InstructorEarningService;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -190,4 +193,31 @@ public class InstructorEarningServiceImp implements InstructorEarningService {
                 .paidAt(earning.getPaidAt())
                 .build();
     }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<MonthlyEarningsDto>>> getRecentRevenues() {
+        List<MonthlyEarningsDto> recentRevenues = new ArrayList<>();
+        try {
+            for (int i = 0; i < 3; i++) {
+                LocalDate targetDate = LocalDate.now().minusMonths(i);
+                int year = targetDate.getYear();
+                int month = targetDate.getMonthValue();
+                String instructorId = SecurityUtil.getCurrentUserId();
+
+                BigDecimal revenue = instructorEarningRepository.getTotalEarningsByMonth(instructorId, year, month);
+
+                MonthlyEarningsDto monthlyEarningsDto = MonthlyEarningsDto.builder()
+                        .year(year)
+                        .month(month)
+                        .revenue(revenue != null ? revenue : BigDecimal.ZERO)
+                        .build();
+
+                recentRevenues.add(monthlyEarningsDto);
+            }
+            return ApiResponseUtil.success(recentRevenues, "Recent revenues retrieved successfully");
+        } catch (Exception e) {
+            return ApiResponseUtil.internalServerError("Failed to retrieve recent revenues. Please try again later.");
+        }
+    }
+
 }
