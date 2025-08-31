@@ -26,6 +26,14 @@ public interface InstructorStudentRepository extends JpaRepository<Enrollment, S
                         "WHERE e.user.id = :studentId")
         List<Object[]> getStudentCourses(String studentId);
 
+        // Get student's courses details
+        @Query("SELECT DISTINCT c, e.enrolledAt FROM Course c "
+                        +
+                        "LEFT JOIN fetch c.categories " +
+                        "INNER JOIN c.enrollments e " +
+                        "WHERE e.user.id = :studentId")
+        List<Object[]> getStudentCoursesDetails(String studentId);
+
         @Query("SELECT COUNT(e) FROM Enrollment e WHERE YEAR(e.enrolledAt) = :year AND MONTH(e.enrolledAt) = :month")
         Long countStudentsEnrolledByMonth(int year, int month);
 }

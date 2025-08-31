@@ -15,6 +15,9 @@ import project.ktc.springboot_app.auth.entitiy.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
+        @SuppressWarnings("null")
+        Optional<User> findById(String id);
+
         Optional<User> findByEmail(String email);
 
         Optional<User> findByName(String name);

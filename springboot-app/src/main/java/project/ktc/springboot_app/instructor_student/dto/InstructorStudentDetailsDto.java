@@ -9,10 +9,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class InstructorStudentDto {
+public class InstructorStudentDetailsDto {
+
   private String id;
   private String name;
   private String email;
   private String thumbnailUrl;
-  private List<EnrolledCourses> enrolledCourses;
+
+  private List<EnrolledCoursesDetails> enrolledCourses;
 }
