@@ -16,6 +16,7 @@ import project.ktc.springboot_app.common.exception.DocumentUploadException;
 import project.ktc.springboot_app.common.exception.IneligibleApplicationException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
+import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationDetailResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminReviewApplicationRequestDto;
@@ -31,11 +32,9 @@ import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Service implementation for instructor application operations
@@ -53,8 +52,7 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
     private final InstructorApplicationsMapper instructorApplicationMapper;
 
     // Constants for business rules
-    private static final int RESUBMISSION_DAYS_LIMIT = 3;
-    private static final int MAX_REJECTION_COUNT = 2;
+    private static final int MAX_REJECTION_COUNT = 5;
 
     @Override
     @Transactional
@@ -112,11 +110,15 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
      * Validate if user is eligible to submit instructor application
      */
     private void validateUserEligibility(String userId) {
-        // Check if user has pending application
-        if (applicationRepository.hasPendingApplication(userId)) {
-            log.warn("User {} attempted to submit application while having a pending application", userId);
-            throw new IneligibleApplicationException(
-                    "You already have a pending application. Please wait for it to be reviewed before submitting a new one.");
+        // Check if user has active application (PENDING or APPROVED)
+
+        var statuses = applicationRepository.findActiveStatusesByUserId(userId);
+
+        if (statuses.contains(ApplicationStatus.PENDING)) {
+            throw new IneligibleApplicationException("You already have a pending application...");
+        }
+        if (statuses.contains(ApplicationStatus.APPROVED)) {
+            throw new IneligibleApplicationException("You are already an approved instructor.");
         }
 
         // Check rejection count and resubmission eligibility
@@ -126,24 +128,6 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             throw new IneligibleApplicationException(
                     "You have reached the maximum number of rejections (" + MAX_REJECTION_COUNT
                             + "). You cannot submit a new application at this time.");
-        }
-
-        // If user has one rejection, check if within resubmission period
-        if (rejectionCount == 1) {
-            Optional<InstructorApplication> latestRejection = applicationRepository.findLatestRejectedByUserId(userId);
-
-            if (latestRejection.isPresent()) {
-                LocalDateTime rejectionDate = latestRejection.get().getReviewedAt();
-                long daysSinceRejection = ChronoUnit.DAYS.between(rejectionDate.toLocalDate(),
-                        LocalDateTime.now().toLocalDate());
-
-                if (daysSinceRejection > RESUBMISSION_DAYS_LIMIT) {
-                    log.warn("User {} attempted to resubmit after expiration of resubmission period", userId);
-                    throw new IneligibleApplicationException(
-                            "You can resubmit your application after " + RESUBMISSION_DAYS_LIMIT
-                                    + " days from your last rejection.");
-                }
-            }
         }
 
     }
@@ -225,39 +209,65 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             // Convert documents map to JSON string
             String documentsJson = objectMapper.writeValueAsString(documentUrls);
 
-            // Check if user already has an application (for resubmission cases)
-            Optional<InstructorApplication> existingApplication = applicationRepository.findByUserId(userId);
+            // Always create a new application for each submission
+            // This ensures proper tracking of rejection attempts
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-            InstructorApplication application;
-            if (existingApplication.isPresent()) {
-                // Update existing application for resubmission
-                application = existingApplication.get();
-                application.setDocuments(documentsJson);
-                application.setStatus(InstructorApplication.ApplicationStatus.PENDING);
-                application.setSubmittedAt(LocalDateTime.now());
-                application.setReviewedAt(null);
-                application.setReviewedBy(null);
-                application.setRejectionReason(null);
-                log.info("Updating existing application for user: {}", userId);
-            } else {
-                // Create new application
-                User user = userRepository.findById(userId)
-                        .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-
-                application = new InstructorApplication();
-                application.setUser(user);
-                application.setDocuments(documentsJson);
-                application.setStatus(InstructorApplication.ApplicationStatus.PENDING);
-                application.setSubmittedAt(LocalDateTime.now());
-                log.info("Creating new application for user: {}", userId);
-            }
+            InstructorApplication application = new InstructorApplication();
+            application.setUser(user);
+            application.setDocuments(documentsJson);
+            application.setStatus(InstructorApplication.ApplicationStatus.PENDING);
+            application.setSubmittedAt(LocalDateTime.now());
 
             applicationRepository.save(application);
-            log.info("Instructor application saved successfully for user: {}", userId);
+            log.info("New instructor application created successfully for user: {}", userId);
 
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize documents to JSON: {}", e.getMessage(), e);
             throw new DocumentUploadException("Failed to process document information", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<ApiResponse<InstructorApplicationDetailResponseDto>> getApplicationByUserId(String userId) {
+        try {
+            // Check authentication
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                log.warn("No authenticated user found in security context");
+                return ApiResponseUtil.unauthorized("User not authenticated");
+            }
+
+            // Check if application exists
+            InstructorApplication application = applicationRepository.findFirstByUserIdOrderBySubmittedAtDesc(userId)
+                    .orElseThrow(() -> new RuntimeException("Application not found for user id: " + userId));
+
+            log.debug("Found application for User ID: {}, Status: {}", application.getUser().getId(),
+                    application.getStatus());
+
+            // Map to DTO
+            InstructorApplicationDetailResponseDto responseDto = instructorApplicationMapper
+                    .toApplicationDetailResponseDto(application);
+
+            long submitAttemptRemain = MAX_REJECTION_COUNT
+                    - applicationRepository.countRejectedApplicationsByUserId(userId);
+
+            responseDto.setSubmitAttemptRemain(submitAttemptRemain);
+
+            return ApiResponseUtil.success(responseDto,
+                    "Fetched application detail successfully for user id: " + userId);
+
+        } catch (RuntimeException e) {
+            log.error("Application not found: {}", e.getMessage());
+            return ApiResponseUtil.notFound("Application not found for User ID: " + userId);
+
+        } catch (Exception e) {
+            log.error("Error retrieving application detail: {}", e.getMessage(), e);
+            return ApiResponseUtil
+                    .internalServerError("Failed to retrieve application detail. Try again later.");
         }
     }
 

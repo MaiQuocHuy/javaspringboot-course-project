@@ -14,6 +14,9 @@ import java.util.Optional;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, String> {
+    // Find by ID
+    @SuppressWarnings("null")
+    Optional<Category> findById(String id);
 
     // Find by name (case insensitive)
     Optional<Category> findByNameIgnoreCase(String name);

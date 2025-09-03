@@ -1,0 +1,70 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Remove unique constraint và thêm index mới để support multiple applications per user -->
+     <changeSet id="151" author="ktc">
+        
+        <!-- Bước 1: Drop foreign key constraint trước -->
+        <dropForeignKeyConstraint 
+            baseTableName="instructor_applications" 
+            constraintName="fk_app_user"/>
+        
+        <!-- Bước 2: Drop unique constraint -->
+        <dropUniqueConstraint 
+            tableName="instructor_applications" 
+            constraintName="unique_app_user"/>
+        
+        <!-- Bước 3: Recreate foreign key constraint -->
+        <addForeignKeyConstraint 
+            baseTableName="instructor_applications" 
+            baseColumnNames="user_id"
+            referencedTableName="users" 
+            referencedColumnNames="id"
+            onDelete="CASCADE" 
+            constraintName="fk_app_user"/>
+        
+        <!-- Bước 4: Thêm index mới để optimize query theo user_id và submitted_at -->
+        <createIndex tableName="instructor_applications" indexName="idx_user_submitted">
+            <column name="user_id"/>
+            <column name="submitted_at" descending="true"/>
+        </createIndex>
+        
+        <!-- Bước 5: Thêm index cho user_id và status để optimize query -->
+        <createIndex tableName="instructor_applications" indexName="idx_user_status">
+            <column name="user_id"/>
+            <column name="status"/>
+        </createIndex>
+        
+        <!-- Rollback instructions -->
+        <rollback>
+            <!-- Drop các index mới -->
+            <dropIndex tableName="instructor_applications" indexName="idx_user_submitted"/>
+            <dropIndex tableName="instructor_applications" indexName="idx_user_status"/>
+            
+            <!-- Drop foreign key -->
+            <dropForeignKeyConstraint 
+                baseTableName="instructor_applications" 
+                constraintName="fk_app_user"/>
+            
+            <!-- Restore unique constraint -->
+            <addUniqueConstraint 
+                tableName="instructor_applications" 
+                columnNames="user_id" 
+                constraintName="unique_app_user"/>
+            
+            <!-- Recreate foreign key -->
+            <addForeignKeyConstraint 
+                baseTableName="instructor_applications" 
+                baseColumnNames="user_id"
+                referencedTableName="users" 
+                referencedColumnNames="id"
+                onDelete="CASCADE" 
+                constraintName="fk_app_user"/>
+        </rollback>
+        
+    </changeSet>
+
+</databaseChangeLog>

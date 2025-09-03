@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Add Role Resource and Permissions -->
+    <changeSet id="152-1" author="ktc">
+        
+        <!-- Add Role Resource (for role management itself, not user-role assignments) -->
+        <insert tableName="resources">
+            <column name="id" value="res-role-mgmt-001"/>
+            <column name="name" value="Role"/>
+            <column name="description" value="Role management and configuration"/>
+            <column name="resource_path" value="/roles"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Add Role Permissions -->
+        <!-- Role:role:READ -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-role-read-001"/>
+            <column name="permission_key" value="role:READ"/>
+            <column name="description" value="Read roles"/>
+            <column name="resource_id" value="res-role-mgmt-001"/>
+            <column name="action_id" value="act-read-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Role:role:CREATE -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-role-create-001"/>
+            <column name="permission_key" value="role:CREATE"/>
+            <column name="description" value="Create new roles"/>
+            <column name="resource_id" value="res-role-mgmt-001"/>
+            <column name="action_id" value="act-create-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Role:role:UPDATE -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-role-update-001"/>
+            <column name="permission_key" value="role:UPDATE"/>
+            <column name="description" value="Update existing roles"/>
+            <column name="resource_id" value="res-role-mgmt-001"/>
+            <column name="action_id" value="act-update-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Role:role:DELETE -->
+        <insert tableName="permissions">
+            <column name="id" value="perm-role-delete-001"/>
+            <column name="permission_key" value="role:DELETE"/>
+            <column name="description" value="Delete roles"/>
+            <column name="resource_id" value="res-role-mgmt-001"/>
+            <column name="action_id" value="act-delete-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+    <!-- Assign Role Permissions to ADMIN Role -->
+    <changeSet id="152-2" author="ktc">
+        
+        <!-- Get ADMIN role ID -->
+        <sql>
+            SET @admin_role_id = (SELECT id FROM user_roles WHERE role = 'ADMIN' LIMIT 1);
+        </sql>
+
+        <!-- Assign role:READ permission to ADMIN -->
+        <insert tableName="role_permissions">
+            <column name="id" value="roleP-admin-role-read-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-role-read-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Assign role:CREATE permission to ADMIN -->
+        <insert tableName="role_permissions">
+            <column name="id" value="roleP-admin-role-create-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-role-create-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Assign role:UPDATE permission to ADMIN -->
+        <insert tableName="role_permissions">
+            <column name="id" value="roleP-admin-role-update-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-role-update-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Assign role:DELETE permission to ADMIN -->
+        <insert tableName="role_permissions">
+            <column name="id" value="roleP-admin-role-delete-001"/>
+            <column name="role_id" valueComputed="@admin_role_id"/>
+            <column name="permission_id" value="perm-role-delete-001"/>
+            <column name="filter_type_id" value="filter-type-001"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

@@ -31,6 +31,15 @@ public interface InstructorCourseRepository extends JpaRepository<Course, String
                         @Param("status") String status,
                         Pageable pageable);
 
+        // Get total instructor's courses
+        @Query("SELECT COUNT(c) FROM Course c " +
+                        "WHERE c.instructor.id = :instructorId AND c.isDeleted = false")
+        Long countTotalCoursesByInstructorId(String instructorId);
+
+        // Get total active courses
+        @Query("SELECT COUNT(c) FROM Course c WHERE c.instructor.id = :instructorId AND c.isDeleted = false AND c.isApproved = true")
+        Long countTotalActiveCoursesByInstructorId(String instructorId);
+
         /**
          * Get enrollment count for a course
          */

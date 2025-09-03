@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.dto.UserResponseDto;
-import project.ktc.springboot_app.auth.entitiy.User;
 
 import java.math.BigDecimal;
 import java.util.List;

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository

@@ -14,9 +14,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.earning.dto.EarningDetailResponseDto;
 import project.ktc.springboot_app.earning.dto.EarningsWithSummaryDto;
+import project.ktc.springboot_app.earning.dto.MonthlyEarningsDto;
 import project.ktc.springboot_app.earning.services.InstructorEarningServiceImp;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/instructor/earnings")
@@ -62,6 +67,11 @@ public class InstructorEarningController {
         log.info("GET /api/instructor/earnings/{} - Fetching earning details", id);
 
         return instructorEarningService.getEarningDetails(id);
+    }
+
+    @GetMapping("/recent-revenues")
+    public ResponseEntity<ApiResponse<List<MonthlyEarningsDto>>> getRecentRevenues() {
+        return instructorEarningService.getRecentRevenues();
     }
 
     private Pageable createPageable(int page, int size, String sort) {
