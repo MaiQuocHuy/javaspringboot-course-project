@@ -1,0 +1,36 @@
+# Certificate Official Seal & Stamp
+
+## Current Status
+✅ **Professional SVG seal created**: `stamp.svg` contains a beautiful institutional seal
+
+## Files in this directory:
+- `stamp.svg` - Professional SVG seal (recommended for PDF generation)
+- `stamp.png.placeholder` - This instruction file
+- `certificate-background.html` - Beautiful certificate template
+
+## How to use a custom stamp:
+
+### Option 1: Use the provided SVG seal (Recommended)
+The `stamp.svg` file contains a professional institutional seal that will work perfectly with your certificates.
+
+### Option 2: Replace with your own image
+1. Create/obtain your official institutional seal image
+2. Save it as `stamp.png` (90x90 pixels or larger)
+3. Use transparent background for best results
+4. Remove the `.placeholder` extension from this file
+
+## Stamp Design Features:
+- **Professional circular design** with institution branding
+- **Multiple border rings** for authentic look
+- **Curved text** showing institution name
+- **Central KTC monogram** 
+- **Decorative elements** (stars, patterns)
+- **Golden color scheme** (#d4af37) matching certificate theme
+
+## Technical Notes:
+- SVG format provides crisp scaling for any size
+- Compatible with iText PDF generation
+- Matches the certificate's color scheme
+- Professional government/academic seal appearance
+
+The certificate PDF generation will automatically include this stamp when generating certificates.

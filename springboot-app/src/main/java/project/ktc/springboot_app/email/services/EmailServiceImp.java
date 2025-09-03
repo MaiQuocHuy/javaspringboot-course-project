@@ -253,6 +253,67 @@ public class EmailServiceImp implements EmailService {
     }
 
     /**
+     * Send certificate notification email asynchronously
+     */
+    @Override
+    @Async("emailTaskExecutor")
+    public CompletableFuture<EmailSendResult> sendCertificateNotificationEmailAsync(
+            String studentEmail,
+            String studentName,
+            String courseTitle,
+            String instructorName,
+            String certificateCode,
+            String certificateUrl,
+            java.time.LocalDateTime issueDate) {
+
+        try {
+            log.info("Sending certificate notification email to: {}", studentEmail);
+
+            // Create template variables
+            Map<String, Object> templateVariables = new HashMap<>();
+            templateVariables.put("studentName", studentName);
+            templateVariables.put("courseTitle", courseTitle);
+            templateVariables.put("instructorName", instructorName);
+            templateVariables.put("certificateCode", certificateCode);
+            templateVariables.put("certificateUrl", certificateUrl);
+            templateVariables.put("issueDate", issueDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")));
+            templateVariables.put("year", String.valueOf(Year.now().getValue()));
+
+            // Create verification URL
+            String verificationUrl = String.format("https://certificates.ktc.edu/verify/%s", certificateCode);
+            templateVariables.put("verificationUrl", verificationUrl);
+
+            // Create email request
+            EmailRequest request = EmailRequest.builder()
+                    .to(List.of(studentEmail))
+                    .subject("🎓 Your Certificate is Ready - " + courseTitle)
+                    .templateName("certificate-notification-template")
+                    .templateVariables(templateVariables)
+                    .async(true)
+                    .build();
+
+            EmailSendResult result = sendEmail(request);
+
+            if (result.isSuccess()) {
+                log.info("Certificate notification email sent successfully to: {}", studentEmail);
+            } else {
+                log.error("Failed to send certificate notification email to {}: {}", studentEmail,
+                        result.getErrorMessage());
+            }
+
+            return CompletableFuture.completedFuture(result);
+
+        } catch (Exception e) {
+            log.error("Failed to send certificate notification email to {}: {}", studentEmail, e.getMessage(), e);
+            EmailSendResult errorResult = EmailSendResult.builder()
+                    .success(false)
+                    .errorMessage("Failed to send certificate notification email: " + e.getMessage())
+                    .build();
+            return CompletableFuture.completedFuture(errorResult);
+        }
+    }
+
+    /**
      * Get provider by name
      */
     private EmailProvider getProviderByName(String providerName) {

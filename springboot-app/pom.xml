@@ -119,6 +119,24 @@
         	<artifactId>cloudinary-http45</artifactId>
         	<version>1.39.0</version>
     	</dependency>
+    	
+    	<!-- iText PDF for certificate generation (currently using wkhtmltopdf instead) -->
+		<!-- <dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itext7-core</artifactId>
+			<version>7.2.5</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>layout</artifactId>
+			<version>7.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>html2pdf</artifactId>
+			<version>4.0.5</version>
+		</dependency> -->
 
 		<!-- DevTool -->
 		<dependency>
