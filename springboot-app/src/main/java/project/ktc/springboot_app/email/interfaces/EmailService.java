@@ -103,4 +103,25 @@ public interface EmailService {
                         String paymentMethod,
                         java.time.LocalDateTime paymentDate);
 
+        /**
+         * Send certificate notification email asynchronously
+         * 
+         * @param studentEmail    Email of the student
+         * @param studentName     Name of the student
+         * @param courseTitle     Title of the completed course
+         * @param instructorName  Name of the course instructor
+         * @param certificateCode Unique certificate code
+         * @param certificateUrl  URL to download the certificate
+         * @param issueDate       Date when certificate was issued
+         * @return CompletableFuture with email send result
+         */
+        CompletableFuture<EmailSendResult> sendCertificateNotificationEmailAsync(
+                        String studentEmail,
+                        String studentName,
+                        String courseTitle,
+                        String instructorName,
+                        String certificateCode,
+                        String certificateUrl,
+                        java.time.LocalDateTime issueDate);
+
 }

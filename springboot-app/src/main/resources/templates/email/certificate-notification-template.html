@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="'Certificate of Completion - ' + ${courseTitle}">
+      Certificate of Completion
+    </title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+      }
+
+      .header p {
+        margin: 10px 0 0 0;
+        font-size: 16px;
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 40px 30px;
+      }
+
+      .congratulations {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .congratulations .emoji {
+        font-size: 48px;
+        margin-bottom: 15px;
+        display: block;
+      }
+
+      .congratulations h2 {
+        color: #2c5aa0;
+        font-size: 24px;
+        margin: 0;
+        font-weight: 600;
+      }
+
+      .message {
+        font-size: 16px;
+        margin-bottom: 30px;
+        line-height: 1.7;
+      }
+
+      .certificate-info {
+        background-color: #f8f9fa;
+        border-left: 4px solid #2c5aa0;
+        padding: 20px;
+        margin: 30px 0;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .certificate-info h3 {
+        color: #2c5aa0;
+        margin: 0 0 15px 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+
+      .info-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 120px;
+      }
+
+      .info-value {
+        color: #333;
+        flex: 1;
+        text-align: right;
+      }
+
+      .certificate-code {
+        font-family: "Courier New", monospace;
+        background-color: #e3f2fd;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-weight: bold;
+        color: #1976d2;
+      }
+
+      .download-section {
+        text-align: center;
+        margin: 40px 0;
+      }
+
+      .download-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 16px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .download-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+      }
+
+      .verification-info {
+        background-color: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 30px 0;
+      }
+
+      .verification-info h4 {
+        color: #856404;
+        margin: 0 0 10px 0;
+        font-size: 16px;
+      }
+
+      .verification-info p {
+        margin: 0;
+        color: #856404;
+        font-size: 14px;
+      }
+
+      .verification-link {
+        color: #856404;
+        text-decoration: underline;
+      }
+
+      .next-steps {
+        background-color: #e8f5e8;
+        border-left: 4px solid #28a745;
+        padding: 20px;
+        margin: 30px 0;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .next-steps h3 {
+        color: #155724;
+        margin: 0 0 15px 0;
+        font-size: 18px;
+      }
+
+      .next-steps ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .next-steps li {
+        color: #155724;
+        margin-bottom: 8px;
+      }
+
+      .footer {
+        background-color: #f8f9fa;
+        padding: 30px;
+        text-align: center;
+        border-top: 1px solid #dee2e6;
+      }
+
+      .footer p {
+        margin: 5px 0;
+        color: #6c757d;
+        font-size: 14px;
+      }
+
+      .footer .logo {
+        font-weight: 600;
+        color: #2c5aa0;
+        font-size: 16px;
+      }
+
+      .social-links {
+        margin: 20px 0;
+      }
+
+      .social-links a {
+        color: #6c757d;
+        text-decoration: none;
+        margin: 0 10px;
+        font-size: 14px;
+      }
+
+      @media (max-width: 600px) {
+        .email-container {
+          margin: 10px;
+          box-shadow: none;
+        }
+
+        .content {
+          padding: 20px 15px;
+        }
+
+        .info-row {
+          flex-direction: column;
+        }
+
+        .info-value {
+          text-align: left;
+          margin-top: 5px;
+        }
+
+        .download-button {
+          display: block;
+          margin: 0 auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>🎓 Certificate Ready!</h1>
+        <p>Your certificate of completion is now available</p>
+      </div>
+
+      <div class="content">
+        <div class="congratulations">
+          <span class="emoji">🎉</span>
+          <h2>
+            Congratulations, <span th:text="${studentName}">Student Name</span>!
+          </h2>
+        </div>
+
+        <div class="message">
+          <p>
+            We're thrilled to inform you that your
+            <strong>Certificate of Completion</strong> for the course
+            <strong
+              >"<span th:text="${courseTitle}">Course Title</span>"</strong
+            >
+            has been successfully generated and is now ready for download.
+          </p>
+
+          <p>
+            This certificate recognizes your dedication and successful
+            completion of all course requirements. You should be proud of this
+            achievement!
+          </p>
+        </div>
+
+        <div class="certificate-info">
+          <h3>📋 Certificate Details</h3>
+          <div class="info-row">
+            <span class="info-label">Student:</span>
+            <span class="info-value" th:text="${studentName}"
+              >Student Name</span
+            >
+          </div>
+          <div class="info-row">
+            <span class="info-label">Course:</span>
+            <span class="info-value" th:text="${courseTitle}"
+              >Course Title</span
+            >
+          </div>
+          <div class="info-row">
+            <span class="info-label">Instructor:</span>
+            <span class="info-value" th:text="${instructorName}"
+              >Instructor Name</span
+            >
+          </div>
+          <div class="info-row">
+            <span class="info-label">Issue Date:</span>
+            <!-- If issueDate is a java.time type you can format it using #temporals -->
+            <span class="info-value" th:text="${issueDate}">01 Jan 2025</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Certificate Code:</span>
+            <span class="info-value">
+              <span class="certificate-code" th:text="${certificateCode}"
+                >ABC-123456</span
+              >
+            </span>
+          </div>
+        </div>
+
+        <div class="download-section">
+          <a
+            th:href="${certificateUrl}"
+            class="download-button"
+            th:download="'certificate_' + ${certificateCode} + '.pdf'"
+            target="_blank"
+          >
+            📥 Download Your Certificate
+          </a>
+          <p style="margin-top: 15px; color: #6c757d; font-size: 14px">
+            Click the button above to download your certificate as a PDF file
+          </p>
+        </div>
+
+        <div class="verification-info">
+          <h4>🔐 Certificate Verification</h4>
+          <p>
+            Your certificate can be verified online using the certificate code:
+            <strong
+              ><span th:text="${certificateCode}">ABC-123456</span></strong
+            >
+          </p>
+        </div>
+
+        <div class="next-steps">
+          <h3>🚀 What's Next?</h3>
+          <ul>
+            <li>Add this certificate to your LinkedIn profile</li>
+            <li>Include it in your professional portfolio</li>
+            <li>Share your achievement on social media</li>
+            <li>Explore our other courses to continue learning</li>
+            <li>Consider pursuing advanced courses in this field</li>
+          </ul>
+        </div>
+
+        <div class="message">
+          <p>
+            Thank you for choosing KTC Learning Platform for your educational
+            journey. We're proud to be part of your professional development and
+            look forward to supporting your continued growth.
+          </p>
+
+          <p>
+            If you have any questions about your certificate or need assistance,
+            please don't hesitate to contact our support team.
+          </p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p class="logo">KTC Learning Platform</p>
+        <p>Empowering learners worldwide with quality education</p>
+
+        <div class="social-links">
+          <a href="#">About Us</a>
+          <a href="#">Courses</a>
+          <a href="#">Support</a>
+          <a href="#">Contact</a>
+        </div>
+
+        <p>
+          &copy; <span th:text="${year}">2025</span> KTC Learning Platform. All
+          rights reserved.
+        </p>
+        <p>
+          You received this email because you completed a course on our
+          platform.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

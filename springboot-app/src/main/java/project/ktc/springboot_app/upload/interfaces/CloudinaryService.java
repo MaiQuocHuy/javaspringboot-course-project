@@ -35,4 +35,14 @@ public interface CloudinaryService {
      * @throws IOException if metadata retrieval fails
      */
     VideoMetadataResponseDto getVideoMetadata(String videoUrlOrPublicId) throws IOException;
+
+    /**
+     * Upload PDF certificate to Cloudinary
+     * 
+     * @param pdfData  PDF file as byte array
+     * @param filename Name of the PDF file
+     * @return Document upload response with URL
+     * @throws IOException if upload fails
+     */
+    DocumentUploadResponseDto uploadCertificatePdf(byte[] pdfData, String filename) throws IOException;
 }

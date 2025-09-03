@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Create certificates table -->
+    <changeSet id="151-01-create-certificates-table" author="ktc">
+        <createTable tableName="certificates">
+            <column name="certificate_id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="issued_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="certificate_code" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="file_url" type="VARCHAR(500)"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        
+        <!-- Add indexes for performance -->
+        <createIndex tableName="certificates" indexName="idx_cert_user">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="certificates" indexName="idx_cert_course">
+            <column name="course_id"/>
+        </createIndex>
+        <createIndex tableName="certificates" indexName="idx_cert_code">
+            <column name="certificate_code"/>
+        </createIndex>
+        
+        <!-- Add foreign key constraints -->
+        <addForeignKeyConstraint baseTableName="certificates" baseColumnNames="user_id" 
+                               referencedTableName="users" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_certificate_user"/>
+        <addForeignKeyConstraint baseTableName="certificates" baseColumnNames="course_id" 
+                               referencedTableName="courses" referencedColumnNames="id" 
+                               onDelete="CASCADE" constraintName="fk_certificate_course"/>
+    </changeSet>
+
+    <!-- Seed sample certificates data -->
+    <changeSet id="151-02-seed-certificates" author="ktc">
+        <!-- Certificate for Bob completing React Course -->
+        <insert tableName="certificates">
+            <column name="certificate_id" value="cert-001"/>
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-001"/> <!-- Complete React Development Course -->
+            <column name="issued_at" value="2024-12-30 15:30:00"/>
+            <column name="certificate_code" value="RC-2024-001-UXYZ8901"/>
+            <column name="file_url" value="https://certificates.ktc.edu/downloads/cert-001.pdf"/>
+            <column name="created_at" value="2024-12-30 15:30:00"/>
+            <column name="updated_at" value="2024-12-30 15:30:00"/>
+        </insert>
+        
+        <!-- Certificate for Edward Chen completing Machine Learning Fundamentals -->
+        <insert tableName="certificates">
+            <column name="certificate_id" value="cert-002"/>
+            <column name="user_id" value="user-005"/> <!-- Edward Chen -->
+            <column name="course_id" value="course-002"/> <!-- Machine Learning Fundamentals -->
+            <column name="issued_at" value="2025-01-15 14:20:00"/>
+            <column name="certificate_code" value="ML-2025-002-ABCD2345"/>
+            <column name="file_url" value="https://certificates.ktc.edu/downloads/cert-002.pdf"/>
+            <column name="created_at" value="2025-01-15 14:20:00"/>
+            <column name="updated_at" value="2025-01-15 14:20:00"/>
+        </insert>
+        
+        <!-- Certificate for George Wilson completing Cybersecurity Essentials -->
+        <insert tableName="certificates">
+            <column name="certificate_id" value="cert-003"/>
+            <column name="user_id" value="user-007"/> <!-- George Wilson -->
+            <column name="course_id" value="course-004"/> <!-- Cybersecurity Essentials -->
+            <column name="issued_at" value="2025-01-20 10:45:00"/>
+            <column name="certificate_code" value="CS-2025-003-EFGH6789"/>
+            <column name="file_url" value="https://certificates.ktc.edu/downloads/cert-003.pdf"/>
+            <column name="created_at" value="2025-01-20 10:45:00"/>
+            <column name="updated_at" value="2025-01-20 10:45:00"/>
+        </insert>
+        
+        <!-- Certificate for Kevin Lee completing Full Stack Web Development -->
+        <insert tableName="certificates">
+            <column name="certificate_id" value="cert-004"/>
+            <column name="user_id" value="user-011"/> <!-- Kevin Lee -->
+            <column name="course_id" value="course-006"/> <!-- Full Stack Web Development -->
+            <column name="issued_at" value="2025-01-25 16:15:00"/>
+            <column name="certificate_code" value="FS-2025-004-IJKL0123"/>
+            <column name="file_url"/>  <!-- No PDF generated yet -->
+            <column name="created_at" value="2025-01-25 16:15:00"/>
+            <column name="updated_at" value="2025-01-25 16:15:00"/>
+        </insert>
+        
+        <!-- Certificate for Lisa Brown completing Introduction to AI -->
+        <insert tableName="certificates">
+            <column name="certificate_id" value="cert-005"/>
+            <column name="user_id" value="user-012"/> <!-- Lisa Brown -->
+            <column name="course_id" value="course-010"/> <!-- Introduction to Artificial Intelligence -->
+            <column name="issued_at" value="2025-01-28 13:30:00"/>
+            <column name="certificate_code" value="AI-2025-005-MNOP4567"/>
+            <column name="file_url" value="https://certificates.ktc.edu/downloads/cert-005.pdf"/>
+            <column name="created_at" value="2025-01-28 13:30:00"/>
+            <column name="updated_at" value="2025-01-28 13:30:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

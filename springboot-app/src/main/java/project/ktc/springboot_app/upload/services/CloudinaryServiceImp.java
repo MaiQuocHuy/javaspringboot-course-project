@@ -578,4 +578,93 @@ public class CloudinaryServiceImp implements CloudinaryService {
                 .transformation(transformation)
                 .generate(publicId);
     }
+
+    /**
+     * Generate download URL for certificate PDF with attachment flag
+     * This forces browsers to download the file instead of displaying it inline
+     * 
+     * @param publicId Cloudinary public ID
+     * @param filename Original filename
+     * @return Download URL with attachment flag
+     */
+    private String generateDownloadUrl(String publicId, String filename) {
+        try {
+            // Generate URL with fl_attachment flag to force download
+            // For Cloudinary raw files, we need to modify the URL manually to add
+            // attachment flag
+            String baseUrl = cloudinary.url()
+                    .resourceType("raw")
+                    .generate(publicId);
+
+            // Insert fl_attachment flag into the URL
+            // URL format: https://res.cloudinary.com/cloud/raw/upload/v123/file.pdf
+            // Target format:
+            // https://res.cloudinary.com/cloud/raw/upload/fl_attachment/v123/file.pdf
+            String downloadUrl = baseUrl.replace("/upload/", "/upload/fl_attachment/");
+
+            log.info("Generated download URL for {}: {}", publicId, downloadUrl);
+            return downloadUrl;
+
+        } catch (Exception e) {
+            log.error("Failed to generate download URL for {}: {}", publicId, e.getMessage(), e);
+            // Fallback to regular URL if download URL generation fails
+            return cloudinary.url()
+                    .resourceType("raw")
+                    .generate(publicId);
+        }
+    }
+
+    /**
+     * Upload PDF certificate to Cloudinary
+     * 
+     * @param pdfData  PDF file as byte array
+     * @param filename Name of the PDF file
+     * @return Document upload response with URL
+     * @throws IOException if upload fails
+     */
+    @Override
+    public DocumentUploadResponseDto uploadCertificatePdf(byte[] pdfData, String filename) throws IOException {
+        log.info("Starting certificate PDF upload: {}", filename);
+
+        try {
+            // Generate unique public ID for certificates
+            String publicId = "certificates/" + generatePublicId(filename);
+
+            // Upload PDF to Cloudinary
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                    pdfData,
+                    ObjectUtils.asMap(
+                            "public_id", publicId,
+                            "resource_type", "raw", // Use raw for PDF files
+                            "folder", "certificates",
+                            "use_filename", true,
+                            "unique_filename", true,
+                            "overwrite", false));
+
+            log.info("Certificate PDF upload successful. Public ID: {}, URL: {}",
+                    uploadResult.get("public_id"), uploadResult.get("secure_url"));
+
+            // Generate download URL with attachment flag to force download
+            String certPublicId = (String) uploadResult.get("public_id");
+            String regularUrl = (String) uploadResult.get("secure_url");
+            String downloadUrl = generateDownloadUrl(certPublicId, filename);
+
+            log.info("Regular URL: {}", regularUrl);
+            log.info("Download URL: {}", downloadUrl);
+
+            return DocumentUploadResponseDto.builder()
+                    .url(downloadUrl) // URL that forces download
+                    .publicId((String) uploadResult.get("public_id"))
+                    .originalFilename(filename)
+                    .size((long) pdfData.length)
+                    .resourceType((String) uploadResult.get("resource_type"))
+                    .format((String) uploadResult.get("format"))
+                    .build();
+
+        } catch (IOException e) {
+            log.error("Failed to upload certificate PDF: {}", e.getMessage(), e);
+            throw new RuntimeException("Certificate PDF upload failed: " + e.getMessage(), e);
+        }
+    }
 }

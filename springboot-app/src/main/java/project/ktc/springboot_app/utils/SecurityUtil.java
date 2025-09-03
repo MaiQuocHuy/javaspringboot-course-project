@@ -106,4 +106,21 @@ public class SecurityUtil {
             return Collections.emptyList();
         }
     }
+
+    public boolean hasRole(String roleName) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) {
+                return false;
+            }
+
+            return auth.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .anyMatch(authority -> authority.equals("ROLE_" + roleName) || authority.equals(roleName));
+        } catch (Exception e) {
+            log.error("Error checking role: {}", roleName, e);
+            return false;
+        }
+    }
 }

@@ -4532,3 +4532,79 @@ Only the owner of the message can update it.
 Only TEXT messages can be updated.
 -Updates are permanent and cannot be undone.
 -Users must be enrolled in the course.
+
+### 7.11 `POST /api/certificates`
+
+- **Description**:  
+  Creates a new certificate for a given user and course.  
+  Only users with the ADMIN role are authorized to call this API.
+
+---
+
+- **Request**:
+  - **Method:** POST
+  - **Path:** /api/certificates
+  - **Headers**:
+    - Authorization: Bearer <accessToken>
+  - **Body:**
+    ```json
+    {
+      "userId": "user_id",
+      "courseId": "course_id"
+    }
+    ```
+
+---
+
+- **Response**:
+  - **Status Code:** 201 Created
+  - **Body:**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Certificate created successfully",
+      "data": {
+        "id": "certificate_id",
+        "certificateCode": "CERT-XYZ123",
+        "issuedAt": "2025-09-02T12:30:00Z",
+        "fileUrl": "https://cdn.example.com/certificates/CERT-XYZ123.pdf"
+      }
+    }
+    ```
+
+---
+
+- **Errors**:
+  - 400 Bad Request: Missing or invalid fields (`userId`, `courseId`)
+  - 401 Unauthorized: Missing or invalid JWT
+  - 403 Forbidden: Caller is not ADMIN
+  - 404 Not Found: User or course not found
+  - 409 Conflict: Certificate already exists
+
+---
+
+- **Controller Responsibilities**:
+  - Validate JWT and ensure ADMIN role.
+  - Parse and validate request body.
+  - Call `CertificateService.createCertificate(userId, courseId)`.
+  - Return service response with proper HTTP status and JSON structure.
+
+---
+
+- **Service Responsibilities**:
+  - Check if user and course exist.
+  - Ensure certificate does not already exist for given user & course.
+  - Generate unique certificate code.
+  - Generate certificate file (PDF).
+  - Save certificate metadata (DB) and fileUrl.
+  - Return created certificate details.
+  - Check user finish lesson of course.
+---
+
+- **Business Rules**:
+  - Only ADMIN users can create certificates.
+  - User and course must exist.
+  - Each user can only have one certificate per course.
+  - Certificate code must be unique.
+  - Certificate must have an associated file (PDF).
+  - Certificate must be persisted in the database.
