@@ -47,4 +47,11 @@ public class AdminInstructorApplicationController {
             @RequestBody @Valid project.ktc.springboot_app.instructor_application.dto.AdminReviewApplicationRequestDto request) {
         return instructorApplicationService.reviewApplication(id, request);
     }
+
+    @DeleteMapping("/applications/{id}")
+    @PreAuthorize("hasPermission('InstructorApplication', 'instructor_application:DELETE')")
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> deleteApplicationById(
+            @PathVariable String id) {
+        return instructorApplicationService.deleteApplicationById(id);
+    }
 }

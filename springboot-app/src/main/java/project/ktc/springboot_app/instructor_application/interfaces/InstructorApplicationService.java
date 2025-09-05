@@ -41,4 +41,5 @@ public interface InstructorApplicationService {
         ResponseEntity<ApiResponse<InstructorApplicationDetailResponseDto>> getApplicationByUserId(
                         String userId);
 
+        ResponseEntity<ApiResponse<Void>> deleteApplicationById(String applicationId);
 }
