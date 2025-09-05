@@ -26,7 +26,7 @@ public class SimpleChatMessageResponse {
     @Schema(description = "Sender role", example = "STUDENT", allowableValues = { "STUDENT", "INSTRUCTOR" })
     private String senderRole;
 
-    @Schema(description = "Message type", example = "text", allowableValues = { "text", "file" })
+    @Schema(description = "Message type", example = "TEXT", allowableValues = { "TEXT", "FILE" })
     private String type;
 
     @Schema(description = "Message content", example = "Hello world")

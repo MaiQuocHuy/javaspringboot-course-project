@@ -82,7 +82,7 @@ public class ChatMessageController {
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<ChatMessagesListResponse>> getMessages(
                         @Parameter(description = "Course ID", required = true, example = "7200a420-2ff3-4f18-9933-1b86d05f1a78") @PathVariable String courseId,
                         @Parameter(description = "Page number (0-based), ignored if beforeMessageId or afterMessageId is provided", example = "0") @RequestParam(defaultValue = "0") @Min(0) Integer page,
-                        @Parameter(description = "Number of messages per page", example = "50") @RequestParam(defaultValue = "50") @Min(1) @Max(100) Integer size,
+                        @Parameter(description = "Number of messages per page", example = "50") @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer size,
                         @Parameter(description = "Fetch messages created before this message ID (keyset pagination)", example = "123") @RequestParam(required = false) String beforeMessageId,
                         @Parameter(description = "Fetch messages created after this message ID (keyset pagination)", example = "456") @RequestParam(required = false) String afterMessageId,
                         Authentication authentication) {

@@ -214,7 +214,7 @@ public class ChatMessageServiceImp implements ChatMessageService {
                 .senderName(m.getSender().getName())
                 .senderRole(m.getSenderRole())
                 .type(m.getMessageType().getName())
-                .textContent(m.getTextDetail() != null ? m.getTextDetail().getContent() : null)
+                .content(m.getTextDetail() != null ? m.getTextDetail().getContent() : null)
                 .fileUrl(m.getFileDetail() != null ? m.getFileDetail().getFileUrl() : null)
                 .fileName(m.getFileDetail() != null ? m.getFileDetail().getFileName() : null)
                 .fileSize(m.getFileDetail() != null ? m.getFileDetail().getFileSize() : null)
@@ -710,7 +710,7 @@ public class ChatMessageServiceImp implements ChatMessageService {
             log.info("Message sent: {}", response);
             messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", response);
 
-            broadcastStatusUpdate(courseId, response.getTextContent(), response.getSenderRole(),
+            broadcastStatusUpdate(courseId, response.getContent(), response.getSenderRole(),
                     response.getSenderName(), response.getSenderThumbnailUrl(), request.getTempId(), "SENT", messageId,
                     null, null);
 
@@ -747,7 +747,7 @@ public class ChatMessageServiceImp implements ChatMessageService {
             ChatMessageResponse response = toResponse(message);
             messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", response);
 
-            broadcastStatusUpdate(courseId, response.getTextContent(), response.getSenderRole(),
+            broadcastStatusUpdate(courseId, response.getContent(), response.getSenderRole(),
                     response.getSenderName(),
                     response.getSenderThumbnailUrl(), request.getTempId(), "SENT", messageId, fileUrl, null);
 

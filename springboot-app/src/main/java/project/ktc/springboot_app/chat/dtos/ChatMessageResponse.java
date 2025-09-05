@@ -31,7 +31,7 @@ public class ChatMessageResponse {
     private String type;
 
     @Schema(description = "Text content for TEXT type messages", example = "Hello everyone! How are you doing with the course?")
-    private String textContent;
+    private String content;
 
     @Schema(description = "File URL for FILE type messages", example = "https://example.com/files/document.pdf")
     private String fileUrl;
