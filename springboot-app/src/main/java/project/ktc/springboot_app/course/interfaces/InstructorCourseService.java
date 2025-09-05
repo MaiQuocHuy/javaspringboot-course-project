@@ -1,5 +1,7 @@
 package project.ktc.springboot_app.course.interfaces;
 
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,15 +13,22 @@ import project.ktc.springboot_app.course.dto.CreateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
+import project.ktc.springboot_app.course.entity.CourseReviewStatus.ReviewStatus;
+import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
 import project.ktc.springboot_app.course.dto.InstructorCourseDetailResponseDto;
 
 public interface InstructorCourseService {
 
         ResponseEntity<ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> findInstructorCourses(
-                        String instructorId,
                         String search,
-                        String status,
+                        ReviewStatus status,
+                        List<String> categoryIds,
+                        Double minPrice,
+                        Double maxPrice,
+                        Integer rating,
+                        CourseLevel level,
+                        Boolean isPublished,
                         Pageable pageable);
 
         ResponseEntity<ApiResponse<CourseResponseDto>> createCourse(

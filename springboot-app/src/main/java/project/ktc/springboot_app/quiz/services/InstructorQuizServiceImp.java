@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,10 +22,11 @@ import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.entity.QuizResult;
 import project.ktc.springboot_app.quiz.dto.QuizScoreResponseDto;
 import project.ktc.springboot_app.quiz.dto.QuizScoreDetailResponseDto;
-import project.ktc.springboot_app.quiz.interfaces.StudentQuizService;
+import project.ktc.springboot_app.quiz.interfaces.InstructorQuizService;
 import project.ktc.springboot_app.quiz.repositories.QuizResultRepository;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 
+import java.util.Optional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class StudentQuizServiceImp implements StudentQuizService {
+public class InstructorQuizServiceImp implements InstructorQuizService {
 
         private final QuizResultRepository quizResultRepository;
         private final QuizQuestionRepository quizQuestionRepository;
@@ -46,68 +45,78 @@ public class StudentQuizServiceImp implements StudentQuizService {
         private final ObjectMapper objectMapper;
 
         @Override
-        public ResponseEntity<ApiResponse<PaginatedResponse<QuizScoreResponseDto>>> getQuizScores(Pageable pageable) {
-                log.info("Getting quiz scores for current user with pagination: {}", pageable);
+        public ResponseEntity<ApiResponse<PaginatedResponse<QuizScoreResponseDto>>> getStudentQuizScores(
+                        String studentId, Pageable pageable) {
+                try {
+                        // Get current user
+                        Optional<User> currentUser = userRepository.findById(studentId);
+                        if (currentUser.isEmpty()) {
+                                return ApiResponseUtil.notFound("Student not found");
+                        }
 
-                // Get current user
-                String currentUserEmail = getCurrentUserEmail();
-                User currentUser = userRepository.findByEmail(currentUserEmail)
-                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                        // Get quiz results for the user
+                        Page<QuizResult> quizResultsPage = quizResultRepository.findQuizScoresByUserId(studentId,
+                                        pageable);
 
-                // Get quiz results for the user
-                Page<QuizResult> quizResultsPage = quizResultRepository.findQuizScoresByUserId(currentUser.getId(),
-                                pageable);
+                        // Map to DTOs
+                        List<QuizScoreResponseDto> quizScoreDtos = quizResultsPage.getContent().stream()
+                                        .map(this::mapToQuizScoreDto)
+                                        .collect(Collectors.toList());
 
-                // Map to DTOs
-                List<QuizScoreResponseDto> quizScoreDtos = quizResultsPage.getContent().stream()
-                                .map(this::mapToQuizScoreDto)
-                                .collect(Collectors.toList());
+                        // Create paginated response
+                        PaginatedResponse<QuizScoreResponseDto> paginatedResponse = PaginatedResponse
+                                        .<QuizScoreResponseDto>builder()
+                                        .content(quizScoreDtos)
+                                        .page(PaginatedResponse.PageInfo.builder()
+                                                        .number(quizResultsPage.getNumber())
+                                                        .size(quizResultsPage.getSize())
+                                                        .totalPages(quizResultsPage.getTotalPages())
+                                                        .totalElements(quizResultsPage.getTotalElements())
+                                                        .first(quizResultsPage.isFirst())
+                                                        .last(quizResultsPage.isLast())
+                                                        .build())
+                                        .build();
 
-                // Create paginated response
-                PaginatedResponse<QuizScoreResponseDto> paginatedResponse = PaginatedResponse
-                                .<QuizScoreResponseDto>builder()
-                                .content(quizScoreDtos)
-                                .page(PaginatedResponse.PageInfo.builder()
-                                                .number(quizResultsPage.getNumber())
-                                                .size(quizResultsPage.getSize())
-                                                .totalPages(quizResultsPage.getTotalPages())
-                                                .totalElements(quizResultsPage.getTotalElements())
-                                                .first(quizResultsPage.isFirst())
-                                                .last(quizResultsPage.isLast())
-                                                .build())
-                                .build();
+                        return ApiResponseUtil.success(paginatedResponse, "Quiz scores retrieved successfully");
+                } catch (Exception e) {
+                        return ApiResponseUtil.internalServerError("An error occurred while retrieving quiz scores");
+                }
 
-                return ApiResponseUtil.success(paginatedResponse, "Quiz scores retrieved successfully");
         }
 
         @Override
-        public ResponseEntity<ApiResponse<QuizScoreDetailResponseDto>> getQuizScoreDetail(String quizResultId) {
-                log.info("Getting quiz score detail for quiz result ID: {}", quizResultId);
+        public ResponseEntity<ApiResponse<QuizScoreDetailResponseDto>> getStudentQuizScoreDetail(String studentId,
+                        String quizResultId) {
+                try {
+                        // Check if student exists
+                        Optional<User> enrolledStudent = userRepository.findById(studentId);
+                        if (enrolledStudent.isEmpty()) {
+                                return ApiResponseUtil.notFound("Student not found");
+                        }
+                        // Get quiz result with ownership validation
+                        QuizResult quizResult = quizResultRepository
+                                        .findQuizResultByIdAndUserId(quizResultId, studentId)
+                                        .orElseThrow(() -> new ResourceNotFoundException(
+                                                        "Quiz result not found or access denied"));
 
-                // Get current user
-                String currentUserEmail = getCurrentUserEmail();
-                User currentUser = userRepository.findByEmail(currentUserEmail)
-                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                        log.info("Quiz result found: {}", quizResult);
+                        // Get quiz questions for this lesson
+                        List<QuizQuestion> quizQuestions = quizQuestionRepository
+                                        .findByLessonId(quizResult.getLesson().getId());
 
-                // Get quiz result with ownership validation
-                QuizResult quizResult = quizResultRepository
-                                .findQuizResultByIdAndUserId(quizResultId, currentUser.getId())
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Quiz result not found or access denied"));
+                        // Parse student answers
+                        Map<String, String> studentAnswers = parseStudentAnswers(quizResult.getAnswers());
 
-                log.info("Quiz result found: {}", quizResult);
-                // Get quiz questions for this lesson
-                List<QuizQuestion> quizQuestions = quizQuestionRepository
-                                .findByLessonId(quizResult.getLesson().getId());
+                        // Build response
+                        QuizScoreDetailResponseDto responseDto = mapToQuizScoreDetailDto(quizResult, quizQuestions,
+                                        studentAnswers);
 
-                // Parse student answers
-                Map<String, String> studentAnswers = parseStudentAnswers(quizResult.getAnswers());
+                        return ApiResponseUtil.success(responseDto, "Quiz score details retrieved successfully");
+                } catch (Exception e) {
+                        return ApiResponseUtil
+                                        .internalServerError("An error occurred while retrieving quiz score details");
+                }
 
-                // Build response
-                QuizScoreDetailResponseDto responseDto = mapToQuizScoreDetailDto(quizResult, quizQuestions,
-                                studentAnswers);
-
-                return ApiResponseUtil.success(responseDto, "Quiz score details retrieved successfully");
         }
 
         private QuizScoreDetailResponseDto mapToQuizScoreDetailDto(QuizResult quizResult,
@@ -247,13 +256,5 @@ public class StudentQuizServiceImp implements StudentQuizService {
                 BigDecimal correctAnswersBd = percentage.multiply(BigDecimal.valueOf(totalQuestions));
 
                 return correctAnswersBd.setScale(0, RoundingMode.HALF_UP).intValue();
-        }
-
-        private String getCurrentUserEmail() {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                if (authentication == null || authentication.getName() == null) {
-                        throw new ResourceNotFoundException("No authenticated user found");
-                }
-                return authentication.getName();
         }
 }

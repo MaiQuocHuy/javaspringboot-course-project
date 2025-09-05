@@ -20,8 +20,6 @@ import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 import project.ktc.springboot_app.section.dto.*;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
-import project.ktc.springboot_app.upload.dto.VideoMetadataResponseDto;
-import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.utils.StringUtil;
 
@@ -55,7 +53,6 @@ public class StudentCourseServiceImp implements StudentCourseService {
     private final EnrollmentRepository enrollmentRepository;
     private final LessonCompletionRepository lessonCompletionRepository;
     private final QuizQuestionRepository quizQuestionRepository;
-    private final CloudinaryServiceImp cloudinaryService;
     private final ObjectMapper objectMapper;
 
     /**

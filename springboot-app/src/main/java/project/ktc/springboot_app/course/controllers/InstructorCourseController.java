@@ -1,15 +1,11 @@
 package project.ktc.springboot_app.course.controllers;
 
-import java.util.Optional;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +19,11 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.constraints.Min;
+import java.util.List;
+import project.ktc.springboot_app.course.entity.CourseReviewStatus;
+import project.ktc.springboot_app.course.enums.CourseRating;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -32,7 +33,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
@@ -42,7 +42,6 @@ import project.ktc.springboot_app.course.dto.CourseResponseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
 import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
 import project.ktc.springboot_app.course.dto.InstructorCourseDetailResponseDto;
-import project.ktc.springboot_app.course.enums.CourseInstructorStatus;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.services.InstructorCourseServiceImp;
 import project.ktc.springboot_app.utils.SecurityUtil;
@@ -62,32 +61,39 @@ public class InstructorCourseController {
         @PreAuthorize("hasPermission(null, 'course:read') or hasRole('INSTRUCTOR')")
         @Operation(summary = "Get instructor's courses", description = "Retrieve paginated list of courses created by the instructor with filtering options", security = @SecurityRequirement(name = "bearerAuth"))
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> getInstructorCourses(
-                        @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
-
-                        @Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") int size,
-
-                        @Parameter(description = "Search term for course title", example = "") @RequestParam(required = false) String search,
-
-                        @Parameter(description = "Course status filter", schema = @Schema(implementation = CourseInstructorStatus.class)) @RequestParam(required = false) CourseInstructorStatus status,
-
-                        @Parameter(description = "Sort criteria", example = "createdAt,DESC") @RequestParam(defaultValue = "createdAt,DESC") String sort) {
-
-                log.info("Received request to get instructor courses with page: {}, size: {}, search: {}, status: {}, sort: {}",
-                                page, size, search, status, sort);
-
-                // Get authenticated user
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                User currentUser = (User) authentication.getPrincipal();
-                String instructorId = currentUser.getId();
+                        @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") @Min(value = 0, message = "Page number must be greater than or equal to 0") int page,
+                        @Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") @Min(value = 1, message = "Page size must be greater than 0") int size,
+                        @Parameter(description = "Sort criteria", example = "createdAt,DESC") @RequestParam(defaultValue = "createdAt,DESC") String sort,
+                        @Parameter(description = "Search term for course title") @RequestParam(required = false) String search,
+                        @Parameter(description = "Course status filter", schema = @Schema(implementation = CourseReviewStatus.ReviewStatus.class)) @RequestParam(required = false) CourseReviewStatus.ReviewStatus status,
+                        @Parameter(description = "Course's categories") @RequestParam(required = false) List<String> categoryIds,
+                        @Parameter(description = "Course's minimum price") @RequestParam(required = false) @Min(value = 0, message = "Minimum price must be greater than or equal to 0") Double minPrice,
+                        @Parameter(description = "Course's maximum price") @RequestParam(required = false) @Min(value = 0, message = "Maximum price must be greater than or equal to 0") Double maxPrice,
+                        @Parameter(description = "Course's minimum average rating", schema = @Schema(implementation = CourseRating.class)) @RequestParam(required = false) CourseRating rating,
+                        @Parameter(description = "Course's level", schema = @Schema(implementation = CourseLevel.class)) @RequestParam(required = false) CourseLevel level,
+                        @Parameter(description = "Course's publication status", schema = @Schema(implementation = Boolean.class)) @RequestParam(required = false) Boolean isPublished) {
 
                 // Parse sort parameter
                 Pageable pageable = createPageable(page, size, sort);
 
+                // Validate price range if both values are provided
+                if (minPrice != null && maxPrice != null && maxPrice < minPrice) {
+                        return project.ktc.springboot_app.common.utils.ApiResponseUtil
+                                        .badRequest("Maximum price cannot be less than minimum price");
+                }
+
+                // Get average rating value from enum if provided
+                Integer ratingValue = rating != null ? rating.getValue() : null;
+
                 // Get instructor courses
                 ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> response = instructorCourseService
                                 .findInstructorCourses(
-                                                instructorId, search,
-                                                Optional.ofNullable(status).map(Enum::name).orElse(null), pageable);
+                                                search, status, categoryIds,
+                                                minPrice, maxPrice,
+                                                ratingValue,
+                                                level,
+                                                isPublished,
+                                                pageable);
 
                 return response;
         }

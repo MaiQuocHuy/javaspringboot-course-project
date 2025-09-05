@@ -17,7 +17,6 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
-import project.ktc.springboot_app.earning.dto.MonthlyEarningsDto;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
 import project.ktc.springboot_app.instructor_dashboard.dto.InsDashboardDto;
 import project.ktc.springboot_app.instructor_dashboard.dto.StatisticItemDto;
