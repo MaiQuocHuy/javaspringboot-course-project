@@ -344,13 +344,18 @@ public class UserServiceImp implements UserService {
             }
 
             // Find or create the new role
-            Optional<UserRole> newRoleOpt = userRoleRepository.findByRole(role.getRole().toUpperCase().trim());
+            String normalizedRoleName = role.getRole().toUpperCase().trim();
+            log.info("Looking for role: {}", normalizedRoleName);
+
+            Optional<UserRole> newRoleOpt = userRoleRepository.findByRole(normalizedRoleName);
             UserRole newRole = null;
 
             if (newRoleOpt.isPresent()) {
                 newRole = newRoleOpt.get();
+                log.info("Found role: {} with ID: {}", newRole.getRole(), newRole.getId());
             } else {
-                return ApiResponseUtil.badRequest("Invalid role.");
+                log.warn("Role not found in database: {}", normalizedRoleName);
+                return ApiResponseUtil.badRequest("Invalid role: " + normalizedRoleName);
             }
             // Update user's role reference
             UserRole oldRole = user.getRole();
@@ -685,6 +690,21 @@ public class UserServiceImp implements UserService {
         // Basic email validation pattern
         String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
         return email.matches(emailRegex);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<String>>> getAvailableRoles() {
+        try {
+            List<String> roleNames = userRoleRepository.findAll().stream()
+                    .map(role -> role.getRole())
+                    .collect(java.util.stream.Collectors.toList());
+
+            log.info("Available roles in database: {}", roleNames);
+            return ApiResponseUtil.success(roleNames, "Available roles retrieved successfully");
+        } catch (Exception e) {
+            log.error("Error retrieving available roles: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve available roles");
+        }
     }
 
 }

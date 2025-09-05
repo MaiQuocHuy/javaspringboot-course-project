@@ -92,6 +92,13 @@ public class AdminUserController {
                 return userService.updateUserRole(id, roleDto);
         }
 
+        @GetMapping("/debug/available-roles")
+        @PreAuthorize("hasPermission('User', 'user:READ')")
+        @Operation(summary = "Debug: Get available roles", description = "Get all available roles in the database for debugging")
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<java.util.List<String>>> getAvailableRoles() {
+                return userService.getAvailableRoles();
+        }
+
         @PutMapping("/{id}/status")
         @PreAuthorize("hasPermission('User', 'user:UPDATE')")
         @Operation(summary = "Update user status", description = "Update the active status of a user by their ID")
