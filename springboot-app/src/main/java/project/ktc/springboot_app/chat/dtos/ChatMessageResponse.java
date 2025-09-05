@@ -62,4 +62,7 @@ public class ChatMessageResponse {
 
     @Schema(description = "Message creation timestamp", example = "2025-08-26T10:30:00")
     private LocalDateTime createdAt;
+
+    @Schema(description = "Thumbnail URL of the sender", example = "https://example.com/profiles/johndoe.jpg")
+    private String senderThumbnailUrl;
 }

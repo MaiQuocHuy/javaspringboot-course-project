@@ -37,4 +37,16 @@ public class AsyncMessageStatusEvent {
 
     @Schema(description = "Message type", example = "video", allowableValues = { "text", "file", "video", "audio" })
     private String type;
+
+    @Schema(description = "Message content (for text messages)", example = "Hello world")
+    private String content;
+
+    @Schema(description = "Sender Name", example = "John Doe")
+    private String senderName;
+
+    @Schema(description = "Sender Role", example = "STUDENT", allowableValues = { "STUDENT", "INSTRUCTOR" })
+    private String senderRole;
+
+    @Schema(description = "Sender Thumbnail Url", example = "https://example.com/thumbnail.jpg")
+    private String senderThumbnailUrl;
 }
