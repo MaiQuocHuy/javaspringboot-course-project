@@ -33,13 +33,13 @@ import project.ktc.springboot_app.course.dto.CourseStatusUpdateResponseDto;
 import project.ktc.springboot_app.course.dto.InstructorCourseDetailResponseDto;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.entity.CourseReviewStatus;
+import project.ktc.springboot_app.course.entity.CourseReviewStatus.ReviewStatus;
+import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.entity.CourseReviewStatusHistory;
 import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
 import project.ktc.springboot_app.course.dto.common.BaseCourseResponseDto;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
-import project.ktc.springboot_app.instructor_application.entity.InstructorApplication.ApplicationStatus;
-import project.ktc.springboot_app.instructor_application.repositories.InstructorApplicationRepository;
 import project.ktc.springboot_app.course.repositories.CourseReviewStatusRepository;
 import project.ktc.springboot_app.course.repositories.CourseReviewStatusHistoryRepository;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
@@ -52,6 +52,7 @@ import project.ktc.springboot_app.upload.services.FileValidationService;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.StringUtil;
 import project.ktc.springboot_app.utils.MathUtil;
+import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.log.services.SystemLogHelper;
 import project.ktc.springboot_app.log.dto.CourseLogDto;
 import project.ktc.springboot_app.log.utils.CourseLogMapper;
@@ -70,43 +71,51 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final CourseReviewStatusRepository courseReviewStatusRepository;
     private final CourseReviewStatusHistoryRepository courseReviewStatusHistoryRepository;
-    private final InstructorApplicationRepository applicationRepository;
     private final SystemLogHelper systemLogHelper;
-
-    @Override
-    public ResponseEntity<ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> findInstructorCourses(
-            String instructorId,
-            String search,
-            String status, Pageable pageable) {
-        log.info("Finding courses for instructor: {} with filters: search={}, status={}, page={}",
-                instructorId, search, status, pageable.getPageNumber());
-
-        Page<Course> coursePage = instructorCourseRepository.findByInstructorIdWithFilters(
-                instructorId, search, status, pageable);
-
-        List<CourseDashboardResponseDto> courseResponses = coursePage.getContent().stream()
-                .map(this::mapToCourseDashboard)
-                .collect(Collectors.toList());
-
-        PaginatedResponse<CourseDashboardResponseDto> paginatedResponse = PaginatedResponse
-                .<CourseDashboardResponseDto>builder()
-                .content(courseResponses)
-                .page(PaginatedResponse.PageInfo.builder()
-                        .number(coursePage.getNumber())
-                        .size(coursePage.getSize())
-                        .totalElements(coursePage.getTotalElements())
-                        .totalPages(coursePage.getTotalPages())
-                        .first(coursePage.isFirst())
-                        .last(coursePage.isLast())
-                        .build())
-                .build();
-
-        return ApiResponseUtil.success(paginatedResponse, "Instructor courses retrieved successfully");
-    }
 
     /**
      * Get instructor's courses with pagination and filtering
      */
+    @Override
+    public ResponseEntity<ApiResponse<PaginatedResponse<CourseDashboardResponseDto>>> findInstructorCourses(
+            String search,
+            ReviewStatus status, List<String> categoryIds, Double minPrice,
+            Double maxPrice,
+            Integer rating, CourseLevel level, Boolean isPublished, Pageable pageable) {
+        try {
+            log.info(
+                    "Finding courses for instructor: {} with filters: search={}, status={}, categoryIds={},minPrice={}, maxPrice={}, rating={}, level={}, isPublished={}, page={}",
+                    search, status, categoryIds, minPrice, maxPrice, rating, level, isPublished,
+                    pageable.getPageNumber());
+
+            String instructorId = SecurityUtil.getCurrentUserId();
+            Page<Course> coursePage = instructorCourseRepository.findByInstructorIdWithFilters(
+                    instructorId, search, status, categoryIds, minPrice, maxPrice, rating, level, isPublished,
+                    pageable);
+
+            List<CourseDashboardResponseDto> courseResponses = coursePage.getContent().stream()
+                    .map(this::mapToCourseDashboard)
+                    .collect(Collectors.toList());
+
+            PaginatedResponse<CourseDashboardResponseDto> paginatedResponse = PaginatedResponse
+                    .<CourseDashboardResponseDto>builder()
+                    .content(courseResponses)
+                    .page(PaginatedResponse.PageInfo.builder()
+                            .number(coursePage.getNumber())
+                            .size(coursePage.getSize())
+                            .totalElements(coursePage.getTotalElements())
+                            .totalPages(coursePage.getTotalPages())
+                            .first(coursePage.isFirst())
+                            .last(coursePage.isLast())
+                            .build())
+                    .build();
+
+            return ApiResponseUtil.success(paginatedResponse, "Instructor courses retrieved successfully");
+        } catch (Exception e) {
+            return ApiResponseUtil.internalServerError("Failed to retrieve courses. Please try again later!");
+        }
+
+    }
 
     private CourseDashboardResponseDto mapToCourseDashboard(Course course) {
         // Get enrollment count

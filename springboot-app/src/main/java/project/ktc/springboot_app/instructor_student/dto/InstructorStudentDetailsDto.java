@@ -1,10 +1,9 @@
 package project.ktc.springboot_app.instructor_student.dto;
 
-import java.util.List;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
 
 @Getter
 @Setter
@@ -16,5 +15,5 @@ public class InstructorStudentDetailsDto {
   private String email;
   private String thumbnailUrl;
 
-  private List<EnrolledCoursesDetails> enrolledCourses;
+  private PaginatedResponse<EnrolledCoursesDetails> enrolledCourses;
 }
