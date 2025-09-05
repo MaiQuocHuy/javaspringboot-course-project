@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.permission.dto.UserPermissionsDto;
 import project.ktc.springboot_app.permission.services.AuthorizationService;
 
@@ -34,7 +35,7 @@ public class UserPermissionController {
         log.info("Getting permissions for current user: {}", currentUser.getEmail());
 
         UserPermissionsDto permissions = authorizationService.getUserPermissionsDto(currentUser);
-        return ResponseEntity.ok(ApiResponse.success(permissions, "User permissions retrieved successfully"));
+        return ApiResponseUtil.success(permissions, "User permissions retrieved successfully");
     }
 
     /**
@@ -53,8 +54,8 @@ public class UserPermissionController {
         boolean hasPermission = authorizationService.getUserPermissions(currentUser)
                 .contains(permissionKey);
 
-        return ResponseEntity.ok(ApiResponse.success(hasPermission,
-                String.format("Permission check for '%s' completed", permissionKey)));
+        return ApiResponseUtil.success(hasPermission,
+                String.format("Permission check for '%s' completed", permissionKey));
     }
 
     /**
@@ -73,6 +74,6 @@ public class UserPermissionController {
                 .name(currentUser.getRole().getRole())
                 .build();
 
-        return ResponseEntity.ok(ApiResponse.success(roleInfo, "User role retrieved successfully"));
+        return ApiResponseUtil.success(roleInfo, "User role retrieved successfully");
     }
 }
