@@ -1,54 +1,78 @@
 package project.ktc.springboot_app.quiz.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import project.ktc.springboot_app.common.utils.ApiResponseUtil;
-import project.ktc.springboot_app.quiz.dto.CreateQuizDto;
-import project.ktc.springboot_app.quiz.dto.QuizResponseDto;
-import project.ktc.springboot_app.quiz.services.QuizServiceImp;
-import project.ktc.springboot_app.utils.SecurityUtil;
+import org.springframework.web.bind.annotation.*;
 
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.quiz.dto.QuizScoreDetailResponseDto;
+import project.ktc.springboot_app.quiz.dto.QuizScoreResponseDto;
+import project.ktc.springboot_app.quiz.interfaces.InstructorQuizService;
+
+@Tag(name = "Instructor's Enrolled Student's Quiz Scores Management API", description = "Get quiz scores for students enrolled in instructor's courses")
 @RestController
-@RequestMapping("/api/instructor/quizzes")
 @PreAuthorize("hasRole('INSTRUCTOR')")
-@Tag(name = "Instructor Quiz Management", description = "Endpoints for instructors to manage quiz content")
+@RequestMapping("/api/instructor/enrolled-students/{studentId}")
 @RequiredArgsConstructor
-@Slf4j
 public class InstructorQuizController {
 
-        private final QuizServiceImp quizService;
+    private final InstructorQuizService instructorQuizService;
 
-        @PostMapping
-        @Operation(summary = "Create a new quiz for a lesson", description = "Creates a new quiz with multiple choice questions for a lesson owned by the instructor. "
-                        +
-                        "The lesson must be of type QUIZ and should not already have quiz questions.")
-        @ApiResponses(value = {
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Quiz created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request data or validation errors", content = @Content(mediaType = "application/json")),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Valid authentication required", content = @Content(mediaType = "application/json")),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - INSTRUCTOR role required or lesson not owned by instructor", content = @Content(mediaType = "application/json")),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Lesson not found", content = @Content(mediaType = "application/json")),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Conflict - Lesson already has quiz questions", content = @Content(mediaType = "application/json")),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json"))
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<QuizResponseDto>> createQuiz(
-                        @Parameter(description = "Quiz creation data including title, description, lesson ID and questions") @Valid @RequestBody CreateQuizDto createQuizDto) {
+    @Operation(summary = "Get enrolled student's quiz scores", description = "Retrieves the quiz scores for all completed quizzes in courses the student is enrolled in")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Quiz scores retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+    })
+    @GetMapping("/quiz-scores")
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<QuizScoreResponseDto>>> getQuizScores(
+            @PathVariable String studentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "completedAt,desc") String sort) {
 
-                String currentUserId = SecurityUtil.getCurrentUserId();
-                QuizResponseDto quiz = quizService.createQuiz(createQuizDto, currentUserId);
-                return ApiResponseUtil.created(quiz, "Quiz created successfully");
+        // Parse sort parameter
+        Sort sortObj = parseSort(sort);
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+
+        return instructorQuizService.getStudentQuizScores(studentId, pageable);
+    }
+
+    private Sort parseSort(String sort) {
+        if (sort == null || sort.trim().isEmpty()) {
+            return Sort.by(Sort.Direction.DESC, "completedAt");
         }
+
+        String[] parts = sort.split(",");
+        String property = parts[0].trim();
+        Sort.Direction direction = parts.length > 1 && "asc".equalsIgnoreCase(parts[1].trim())
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        return Sort.by(direction, property);
+    }
+
+    @Operation(summary = "Get quiz score details", description = "Retrieves detailed information about a specific quiz score for enrolled student")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Quiz score details retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+            @ApiResponse(responseCode = "404", description = "Quiz result not found or access denied")
+    })
+
+    @GetMapping("/quiz-scores/{quizResultId}")
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<QuizScoreDetailResponseDto>> getQuizScoreDetail(
+            @PathVariable String studentId, @PathVariable String quizResultId) {
+
+        return instructorQuizService.getStudentQuizScoreDetail(studentId, quizResultId);
+    }
 }
