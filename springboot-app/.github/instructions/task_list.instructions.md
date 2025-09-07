@@ -4608,3 +4608,70 @@ Only TEXT messages can be updated.
   - Certificate code must be unique.
   - Certificate must have an associated file (PDF).
   - Certificate must be persisted in the database.
+
+### 7.12 `POST /api/discounts`
+
+- **Description**:  
+  Creates a new discount for a given course.  
+  Only users with the ADMIN role are authorized to call this API.
+
+- **Request**:
+  - **Method:** POST
+  - **Path:** /api/discounts
+  - **Headers**:
+  - **Body:** 
+    ```json
+    {
+      "code": "DISCOUNT10",
+      "discount_percent": 10.00,
+      "description": "10% discount for all courses",
+      "type": "REFERRAL",
+      "owner_user_id": "user-001"
+    }
+    ```
+
+- **Response**:
+  - **Status Code:** 201 Created
+  - **Body:**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Discount created successfully",
+      "data": {
+        "id": "discount_id",
+        "code": "DISCOUNT10",
+        "discount_percent": 10.00,
+        "description": "10% discount for all courses",
+        "type": "GENERAL",              // hoặc REFERRAL
+        "owner_user_id": "user-001",    // REQUIRED nếu REFERRAL, null nếu GENERAL
+        "start_date": "2024-01-01T00:00:00",
+        "end_date": "2024-12-31T23:59:59",
+        "usage_limit": 1000,
+        "per_user_limit": 1
+      }
+    }
+    ```
+
+- **Errors**:
+  - 400 Bad Request: Missing or invalid fields (`code`, `discount_percent`, `description`, `type`, `owner_user_id`)
+  - 401 Unauthorized: Missing or invalid JWT
+  - 403 Forbidden: Caller is not ADMIN
+  - 404 Not Found: User not found
+  - 409 Conflict: Discount already exists
+
+- **Controller Responsibilities**:
+  - Validate JWT and ensure ADMIN role.
+  - Parse and validate request body.
+  - Call `DiscountService.createDiscount(discountDto)`.
+  - Return service response with proper HTTP status and JSON structure. 
+
+- **Service Responsibilities**:
+  - Check if user exists.
+  - Ensure discount does not already exist for given code.
+  - Save discount to database.
+  - Return created discount details.
+
+- **Business Rules**:
+  - Only ADMIN users can create discounts.
+  - User must exist.
+  - Discount code must be unique. 

@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Additional discount seed data -->
+    <changeSet id="155-01" author="ktc">
+        <!-- More General Discounts -->
+        <insert tableName="discounts">
+            <column name="id" value="d5e6f7g8-h9i0-1234-5678-345678901234"/>
+            <column name="code" value="NEWUSER25"/>
+            <column name="discount_percent" value="25.00"/>
+            <column name="description" value="Special discount for first-time users"/>
+            <column name="type" value="GENERAL"/>
+            <column name="owner_user_id"/>
+            <column name="start_date" value="2024-01-01 00:00:00"/>
+            <column name="end_date" value="2024-12-31 23:59:59"/>
+            <column name="usage_limit" value="200"/>
+            <column name="per_user_limit" value="1"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        
+        <insert tableName="discounts">
+            <column name="id" value="d6f7g8h9-i0j1-2345-6789-456789012345"/>
+            <column name="code" value="BLACKFRIDAY50"/>
+            <column name="discount_percent" value="50.00"/>
+            <column name="description" value="Black Friday mega sale"/>
+            <column name="type" value="GENERAL"/>
+            <column name="owner_user_id"/>
+            <column name="start_date" value="2024-11-29 00:00:00"/>
+            <column name="end_date" value="2024-12-02 23:59:59"/>
+            <column name="usage_limit" value="1000"/>
+            <column name="per_user_limit" value="3"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        
+        <insert tableName="discounts">
+            <column name="id" value="d7g8h9i0-j1k2-3456-789a-56789012345a"/>
+            <column name="code" value="STUDENT15"/>
+            <column name="discount_percent" value="15.00"/>
+            <column name="description" value="Student discount program"/>
+            <column name="type" value="GENERAL"/>
+            <column name="owner_user_id"/>
+            <column name="start_date" value="2024-01-01 00:00:00"/>
+            <column name="end_date" value="2025-12-31 23:59:59"/>
+            <column name="usage_limit"/>
+            <column name="per_user_limit" value="10"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        
+        <!-- More Referral Discounts -->
+        <insert tableName="discounts">
+            <column name="id" value="d8h9i0j1-k2l3-4567-89ab-6789012345ab"/>
+            <column name="code" value="INVITE30"/>
+            <column name="discount_percent" value="30.00"/>
+            <column name="description" value="Premium referral program"/>
+            <column name="type" value="REFERRAL"/>
+            <column name="owner_user_id" value="user-009"/> <!-- Ian -->
+            <column name="start_date" value="2024-01-01 00:00:00"/>
+            <column name="end_date" value="2025-12-31 23:59:59"/>
+            <column name="usage_limit"/>
+            <column name="per_user_limit"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        
+        <insert tableName="discounts">
+            <column name="id" value="d9i0j1k2-l3m4-5678-9abc-789012345abc"/>
+            <column name="code" value="FAMILY25"/>
+            <column name="discount_percent" value="25.00"/>
+            <column name="description" value="Family and friends referral"/>
+            <column name="type" value="REFERRAL"/>
+            <column name="owner_user_id" value="user-012"/> <!-- Lisa -->
+            <column name="start_date" value="2024-06-01 00:00:00"/>
+            <column name="end_date" value="2024-12-31 23:59:59"/>
+            <column name="usage_limit" value="300"/>
+            <column name="per_user_limit" value="3"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        
+        <!-- Expired/Inactive Discounts for testing -->
+        <insert tableName="discounts">
+            <column name="id" value="da0j1k2l-m4n5-6789-abcd-89012345abcd"/>
+            <column name="code" value="EXPIRED10"/>
+            <column name="discount_percent" value="10.00"/>
+            <column name="description" value="Expired promotional discount"/>
+            <column name="type" value="GENERAL"/>
+            <column name="owner_user_id"/>
+            <column name="start_date" value="2023-01-01 00:00:00"/>
+            <column name="end_date" value="2023-12-31 23:59:59"/>
+            <column name="usage_limit" value="100"/>
+            <column name="per_user_limit" value="1"/>
+            <column name="is_active" valueBoolean="false"/>
+        </insert>
+    </changeSet>
+
+    <!-- Discount Usage seed data -->
+    <changeSet id="155-02" author="ktc">
+        <!-- Alice used WELCOME10 discount -->
+        <insert tableName="discount_usages">
+            <column name="id" value="du1a2b3c-4d5e-6f78-9012-123456789012"/>
+            <column name="discount_id" value="d1a2b3c4-e5f6-7890-abcd-ef1234567890"/> <!-- WELCOME10 -->
+            <column name="user_id" value="user-001"/> <!-- Alice -->
+            <column name="course_id" value="course-001"/> <!-- Complete React Development Course -->
+            <column name="referred_by_user_id"/>
+            <column name="used_at" value="2024-02-15 10:30:00"/>
+            <column name="discount_percent" value="10.00"/>
+            <column name="discount_amount" value="9.99"/>
+        </insert>
+        
+        <!-- Bob used SUMMER2024 discount -->
+        <insert tableName="discount_usages">
+            <column name="id" value="du2b3c4d-5e6f-7890-1234-23456789012a"/>
+            <column name="discount_id" value="d2b3c4d5-e6f7-8901-bcde-f12345678901"/> <!-- SUMMER2024 -->
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-002"/> <!-- Machine Learning Fundamentals -->
+            <column name="referred_by_user_id"/>
+            <column name="used_at" value="2024-07-10 14:20:00"/>
+            <column name="discount_percent" value="20.00"/>
+            <column name="discount_amount" value="19.98"/>
+        </insert>
+        
+        <!-- Diana used REFER15 discount (referred by Charlie) -->
+        <insert tableName="discount_usages">
+            <column name="id" value="du3c4d5e-6f78-9012-3456-3456789012ab"/>
+            <column name="discount_id" value="d3c4d5e6-f7g8-9012-cdef-123456789012"/> <!-- REFER15 -->
+            <column name="user_id" value="user-004"/> <!-- Diana -->
+            <column name="course_id" value="course-003"/> <!-- Mobile App Development -->
+            <column name="referred_by_user_id" value="user-003"/> <!-- Charlie -->
+            <column name="used_at" value="2024-03-22 09:15:00"/>
+            <column name="discount_percent" value="15.00"/>
+            <column name="discount_amount" value="14.99"/>
+        </insert>
+        
+        <!-- Edward used FRIEND20 discount (referred by Fiona) -->
+        <insert tableName="discount_usages">
+            <column name="id" value="du4d5e6f-7890-1234-5678-456789012abc"/>
+            <column name="discount_id" value="d4d5e6f7-g8h9-0123-def0-234567890123"/> <!-- FRIEND20 -->
+            <column name="user_id" value="user-005"/> <!-- Edward -->
+            <column name="course_id" value="course-005"/> <!-- Advanced Python Programming -->
+            <column name="referred_by_user_id" value="user-006"/> <!-- Fiona -->
+            <column name="used_at" value="2024-04-18 16:45:00"/>
+            <column name="discount_percent" value="20.00"/>
+            <column name="discount_amount" value="19.98"/>
+        </insert>
+        
+        <!-- George used NEWUSER25 discount -->
+        <insert tableName="discount_usages">
+            <column name="id" value="du5e6f78-9012-3456-7890-56789012abcd"/>
+            <column name="discount_id" value="d5e6f7g8-h9i0-1234-5678-345678901234"/> <!-- NEWUSER25 -->
+            <column name="user_id" value="user-007"/> <!-- George -->
+            <column name="course_id" value="course-007"/> <!-- Cloud Computing with AWS -->
+            <column name="referred_by_user_id"/>
+            <column name="used_at" value="2024-05-12 11:30:00"/>
+            <column name="discount_percent" value="25.00"/>
+            <column name="discount_amount" value="24.99"/>
+        </insert>
+        
+        <!-- Hannah used INVITE30 discount (referred by Ian) -->
+        <insert tableName="discount_usages">
+            <column name="id" value="du6f7890-1234-5678-9012-6789012abcde"/>
+            <column name="discount_id" value="d8h9i0j1-k2l3-4567-89ab-6789012345ab"/> <!-- INVITE30 -->
+            <column name="user_id" value="user-008"/> <!-- Hannah -->
+            <column name="course_id" value="course-008"/> <!-- Database Design -->
+            <column name="referred_by_user_id" value="user-009"/> <!-- Ian -->
+            <column name="used_at" value="2024-06-08 13:20:00"/>
+            <column name="discount_percent" value="30.00"/>
+            <column name="discount_amount" value="29.97"/>
+        </insert>
+        
+        <!-- Julia used STUDENT15 discount -->
+        <insert tableName="discount_usages">
+            <column name="id" value="du7890123-4567-8901-2345-sdf12"/>
+            <column name="discount_id" value="d7g8h9i0-j1k2-3456-789a-56789012345a"/> <!-- STUDENT15 -->
+            <column name="user_id" value="user-010"/> <!-- Julia -->
+            <column name="course_id" value="course-010"/> <!-- Introduction to AI -->
+            <column name="referred_by_user_id"/>
+            <column name="used_at" value="2024-08-25 15:10:00"/>
+            <column name="discount_percent" value="15.00"/>
+            <column name="discount_amount" value="14.99"/>
+        </insert>
+        
+        <!-- Kevin used FAMILY25 discount (referred by Lisa) -->
+        <insert tableName="discount_usages">
+            <column name="id" value="du890123-4567-8901-2345-8901def"/>
+            <column name="discount_id" value="d9i0j1k2-l3m4-5678-9abc-789012345abc"/> <!-- FAMILY25 -->
+            <column name="user_id" value="user-011"/> <!-- Kevin -->
+            <column name="course_id" value="course-011"/> <!-- Deep Learning -->
+            <column name="referred_by_user_id" value="user-012"/> <!-- Lisa -->
+            <column name="used_at" value="2024-09-14 12:40:00"/>
+            <column name="discount_percent" value="25.00"/>
+            <column name="discount_amount" value="24.99"/>
+        </insert>
+    </changeSet>
+
+    <!-- Affiliate Payout seed data -->
+    <changeSet id="155-03" author="ktc">
+        <!-- Charlie gets commission for referring Diana (REFER15) -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="ap1a2b3c-4d5e-6f78-9012-12342"/>
+            <column name="referred_by_user_id" value="user-003"/> <!-- Charlie -->
+            <column name="course_id" value="course-003"/> <!-- Mobile App Development -->
+            <column name="discount_usage_id" value="du3c4d5e-6f78-9012-3456-3456789012ab"/>
+            <column name="commission_percent" value="10.00"/>
+            <column name="commission_amount" value="8.50"/>
+            <column name="payout_status" value="PAID"/>
+            <column name="created_at" value="2024-03-22 09:15:00"/>
+            <column name="updated_at" value="2024-04-01 09:55:00"/>
+            <column name="paid_at" value="2024-04-01 10:00:00"/>
+        </insert>
+        
+        <!-- Fiona gets commission for referring Edward (FRIEND20) -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="ap2b3c4d-5e6f-7890-1234-2345a"/>
+            <column name="referred_by_user_id" value="user-006"/> <!-- Fiona -->
+            <column name="course_id" value="course-005"/> <!-- Advanced Python Programming -->
+            <column name="discount_usage_id" value="du4d5e6f-7890-1234-5678-456789012abc"/>
+            <column name="commission_percent" value="12.00"/>
+            <column name="commission_amount" value="9.60"/>
+            <column name="payout_status" value="PAID"/>
+            <column name="created_at" value="2024-04-18 16:45:00"/>
+            <column name="updated_at" value="2024-05-01 09:45:00"/>
+            <column name="paid_at" value="2024-05-01 10:00:00"/>
+        </insert>
+        
+        <!-- Ian gets commission for referring Hannah (INVITE30) -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="ap3c4d5e-6f78-9012-3456-345sab"/>
+            <column name="referred_by_user_id" value="user-009"/> <!-- Ian -->
+            <column name="course_id" value="course-008"/> <!-- Database Design -->
+            <column name="discount_usage_id" value="du6f7890-1234-5678-9012-6789012abcde"/>
+            <column name="commission_percent" value="15.00"/>
+            <column name="commission_amount" value="14.98"/>
+            <column name="payout_status" value="PENDING"/>
+            <column name="created_at" value="2024-06-08 13:20:00"/>
+            <column name="updated_at" value="2024-06-08 13:20:00"/>
+        </insert>
+        
+        <!-- Lisa gets commission for referring Kevin (FAMILY25) -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="ap4d5e6f-7890-1234-5678-456c"/>
+            <column name="referred_by_user_id" value="user-012"/> <!-- Lisa -->
+            <column name="course_id" value="course-011"/> <!-- Deep Learning -->
+            <column name="discount_usage_id" value="du890123-4567-8901-2345-8901def"/>
+            <column name="commission_percent" value="12.50"/>
+            <column name="commission_amount" value="12.49"/>
+            <column name="payout_status" value="PENDING"/>
+            <column name="created_at" value="2024-09-14 12:40:00"/>
+            <column name="updated_at" value="2024-09-14 12:40:00"/>
+        </insert>
+        
+        <!-- Direct affiliate payout without discount usage (organic referral) -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="ap5e6f78-9012-3456-7890-5678"/>
+            <column name="referred_by_user_id" value="user-003"/> <!-- Charlie -->
+            <column name="course_id" value="course-006"/> <!-- Full Stack Web Development -->
+            <column name="discount_usage_id"/> <!-- NULL - no discount used -->
+            <column name="commission_percent" value="8.00"/>
+            <column name="commission_amount" value="7.99"/>
+            <column name="payout_status" value="PAID"/>
+            <column name="created_at" value="2024-05-20 14:30:00"/>
+            <column name="updated_at" value="2024-06-01 09:50:00"/>
+            <column name="paid_at" value="2024-06-01 10:00:00"/>
+        </insert>
+        
+        <!-- Cancelled payout example -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="ap6f7890-1234-5678-9012-678de"/>
+            <column name="referred_by_user_id" value="user-004"/> <!-- Diana -->
+            <column name="course_id" value="course-009"/> <!-- DevOps and CI/CD -->
+            <column name="discount_usage_id"/> <!-- NULL -->
+            <column name="commission_percent" value="10.00"/>
+            <column name="commission_amount" value="9.99"/>
+            <column name="payout_status" value="CANCELLED"/>
+            <column name="created_at" value="2024-07-15 11:20:00"/>
+            <column name="updated_at" value="2024-07-20 08:55:00"/>
+            <column name="cancelled_at" value="2024-07-20 09:00:00"/>
+        </insert>
+        
+        <!-- Multiple commission payouts for active referrers -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="ap7890123-4567-8901-2345-7890f"/>
+            <column name="referred_by_user_id" value="user-006"/> <!-- Fiona -->
+            <column name="course_id" value="course-012"/> <!-- Advanced NodeJS -->
+            <column name="discount_usage_id"/>
+            <column name="commission_percent" value="11.00"/>
+            <column name="commission_amount" value="10.99"/>
+            <column name="payout_status" value="PENDING"/>
+            <column name="created_at" value="2024-10-05 16:15:00"/>
+            <column name="updated_at" value="2024-10-05 16:15:00"/>
+        </insert>
+        
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="ap890123-4567-8901-2345-89012"/>
+            <column name="referred_by_user_id" value="user-009"/> <!-- Ian -->
+            <column name="course_id" value="course-013"/> <!-- Vue.js Development -->
+            <column name="discount_usage_id"/>
+            <column name="commission_percent" value="9.50"/>
+            <column name="commission_amount" value="9.49"/>
+            <column name="payout_status" value="PENDING"/>
+            <column name="created_at" value="2024-10-12 13:45:00"/>
+            <column name="updated_at" value="2024-10-12 13:45:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
