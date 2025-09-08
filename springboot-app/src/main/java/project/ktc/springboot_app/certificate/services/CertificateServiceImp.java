@@ -178,8 +178,9 @@ public class CertificateServiceImp implements CertificateService {
                     savedCertificate.getId(), savedCertificate.getCertificateCode());
 
             // 9. Process PDF generation, upload, and email notification asynchronously
+            // Pass only the ID to avoid entity detachment issues
             CertificateServiceImp self = applicationContext.getBean(CertificateServiceImp.class);
-            self.processCertificateAsync(savedCertificate);
+            self.processCertificateAsync(savedCertificate.getId());
 
             // 10. Build response
             CertificateResponseDto responseDto = mapToCertificateResponseDto(savedCertificate);
@@ -197,21 +198,44 @@ public class CertificateServiceImp implements CertificateService {
      * Process certificate PDF generation, cloud upload, and email notification
      * asynchronously
      * This method runs in a separate thread and has its own transaction context
+     * 
+     * @param certificateId The ID of the certificate to process
      */
     @Async("taskExecutor")
     @Transactional
-    public void processCertificateAsync(Certificate certificate) {
-        log.info("Starting async processing for certificate: {}", certificate.getCertificateCode());
+    public void processCertificateAsync(String certificateId) {
+        log.info("Starting async processing for certificate ID: {}", certificateId);
 
         try {
+            // Reload the certificate entity with all necessary relationships in a fresh
+            // transaction
+            // Use method with JOIN FETCH to avoid LazyInitializationException
+            Optional<Certificate> certificateOpt = certificateRepository.findByIdWithRelationships(certificateId);
+            if (certificateOpt.isEmpty()) {
+                log.error("Certificate not found with ID: {} during async processing", certificateId);
+                return;
+            }
+
+            Certificate certificate = certificateOpt.get();
+
+            // Ensure all necessary relationships are loaded to avoid
+            // LazyInitializationException
+            // The certificate should have user, course, and course.instructor loaded
+            if (certificate.getUser() == null || certificate.getCourse() == null) {
+                log.error("Certificate {} has missing relationships during async processing", certificateId);
+                return;
+            }
+
+            log.info("Certificate reloaded successfully: {}", certificate.getCertificateCode());
+
             // Generate PDF and upload to cloud storage
             generateAndUploadCertificatePdf(certificate);
 
             log.info("Async processing completed successfully for certificate: {}", certificate.getCertificateCode());
 
         } catch (Exception e) {
-            log.error("Failed to process certificate asynchronously for {}: {}",
-                    certificate.getCertificateCode(), e.getMessage(), e);
+            log.error("Failed to process certificate asynchronously for ID {}: {}",
+                    certificateId, e.getMessage(), e);
             // Note: In a production environment, you might want to implement retry logic
             // or move failed certificates to a dead letter queue for manual processing
         }

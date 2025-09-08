@@ -102,7 +102,7 @@ public class CertificateController {
                         @ApiResponse(responseCode = "409", description = "Conflict - Certificate already exists", content = @Content(mediaType = "application/json")),
                         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json"))
         })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CertificateResponseDto>> createCertificateAsyn(
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CertificateResponseDto>> createCertificateAsync(
                         @Parameter(description = "Certificate creation request", required = true) @Valid @RequestBody CreateCertificateDto createCertificateDto) {
 
                 log.info("Admin request to create certificate for user {} and course {}",
