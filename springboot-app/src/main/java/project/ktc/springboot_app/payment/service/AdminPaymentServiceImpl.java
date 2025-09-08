@@ -20,7 +20,6 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
-import project.ktc.springboot_app.discount.entity.Discount;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
@@ -37,6 +36,8 @@ import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
 import project.ktc.springboot_app.payment.repositories.AdminPaymentRepository;
 import project.ktc.springboot_app.refund.entity.Refund;
 import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
+import project.ktc.springboot_app.utils.ExtractPaymentDetailFromSessionId;
+import project.ktc.springboot_app.utils.ExtractPaymentDetailFromSessionId.PaymentDetailDto;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.stripe.services.StripeWebhookService;
 import project.ktc.springboot_app.discount.interfaces.AffiliatePayoutService;
@@ -396,9 +397,11 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
 
             if (timeSinceCompletion.toDays() < 3) {
                 long hoursRemaining = 72 - timeSinceCompletion.toHours();
-                log.warn("Payment {} is within 3-day waiting period. {} hours remaining", paymentId, hoursRemaining);
+                log.warn("Payment {} is within 3-day waiting period. {} hours remaining",
+                        paymentId, hoursRemaining);
                 return ApiResponseUtil.badRequest(
-                        String.format("Payment must wait 3 days before paid out. %d hours remaining", hoursRemaining));
+                        String.format("Payment must wait 3 days before paid out. %d hours remaining",
+                                hoursRemaining));
             }
 
             // 5. Check refund status - failed refunds allowed
@@ -425,11 +428,38 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
                 return ApiResponseUtil.badRequest("Instructor earning already exists for this payment");
             }
 
-            // 7. Calculate instructor earning (assuming 70% goes to instructor, 30%
-            // platform fee)
+            // 7. Calculate instructor earning using original price from Stripe session
             BigDecimal platformFeeRate = new BigDecimal("0.30"); // 30% platform fee
             BigDecimal instructorRate = BigDecimal.ONE.subtract(platformFeeRate); // 70% to instructor
-            BigDecimal instructorEarningAmount = payment.getAmount().multiply(instructorRate);
+
+            BigDecimal baseAmountForCalculation = payment.getAmount(); // Default to payment amount
+
+            // Try to get original price from Stripe session if available
+            if (payment.getSessionId() != null && !payment.getSessionId().trim().isEmpty()) {
+                try {
+                    log.info("Extracting original price from Stripe session for payment: {}", paymentId);
+                    PaymentDetailDto paymentDetails = ExtractPaymentDetailFromSessionId
+                            .extractPaymentDetails(payment.getSessionId());
+
+                    if (paymentDetails.getOriginalPrice() != null) {
+                        baseAmountForCalculation = paymentDetails.getOriginalPrice();
+                        log.info(
+                                "Using original price {} from Stripe session instead of discounted amount {} for instructor earning calculation",
+                                baseAmountForCalculation, payment.getAmount());
+                    } else {
+                        log.warn("Original price not found in Stripe session metadata, using payment amount: {}",
+                                payment.getAmount());
+                    }
+                } catch (Exception e) {
+                    log.error(
+                            "Failed to extract original price from Stripe session {}: {}. Using payment amount instead.",
+                            payment.getSessionId(), e.getMessage(), e);
+                }
+            } else {
+                log.info("No session ID found for payment {}, using payment amount for calculation", paymentId);
+            }
+
+            BigDecimal instructorEarningAmount = baseAmountForCalculation.multiply(instructorRate);
 
             // 8. Create instructor earning record
             InstructorEarning instructorEarning = new InstructorEarning();
@@ -457,14 +487,20 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
                     .instructorEarning(instructorEarningAmount)
                     .paidOutAt(updatedPayment.getPaidOutAt())
                     .earningId(savedEarning.getId())
-                    .message("Payment successfully paid out to instructor")
+                    .message(String.format(
+                            "Payment successfully paid out to instructor. Instructor earning calculated from %s amount: %s",
+                            baseAmountForCalculation.equals(payment.getAmount()) ? "discounted" : "original",
+                            baseAmountForCalculation))
                     .build();
 
             // Create affiliate payout for referral discounts when payment is paid out
             createAffiliatePayoutForReferralDiscount(payment);
 
-            log.info("Payment {} successfully paid out. Instructor earning created: {}", paymentId,
-                    savedEarning.getId());
+            log.info(
+                    "Payment {} successfully paid out. Instructor earning created: {}. Base amount used for calculation: {} ({})",
+                    paymentId, savedEarning.getId(), baseAmountForCalculation,
+                    baseAmountForCalculation.equals(payment.getAmount()) ? "discounted amount"
+                            : "original price from Stripe");
             return ApiResponseUtil.success(response, "Payment paid out successfully");
 
         } catch (Exception e) {
