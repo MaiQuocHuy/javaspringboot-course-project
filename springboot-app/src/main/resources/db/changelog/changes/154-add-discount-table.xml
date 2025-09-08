@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Create DISCOUNT table -->
+    <changeSet id="154-01" author="ktc">
+        <createTable tableName="discounts">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="discount_percent" type="DECIMAL(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="owner_user_id" type="VARCHAR(36)"/>
+            <column name="start_date" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="end_date" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="usage_limit" type="INT"/>
+            <column name="per_user_limit" type="INT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        
+        <createIndex tableName="discounts" indexName="idx_discount_type_active">
+            <column name="type"/>
+            <column name="is_active"/>
+        </createIndex>
+        
+        <createIndex tableName="discounts" indexName="idx_discount_code">
+            <column name="code"/>
+        </createIndex>
+        
+        <addForeignKeyConstraint baseTableName="discounts" baseColumnNames="owner_user_id"
+                               referencedTableName="users" referencedColumnNames="id"
+                               onDelete="SET NULL" constraintName="fk_discount_owner_user"/>
+    </changeSet>
+
+    <!-- Create DISCOUNT_USAGE table -->
+    <changeSet id="154-02" author="ktc">
+        <createTable tableName="discount_usages">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="discount_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="referred_by_user_id" type="VARCHAR(36)"/>
+            <column name="used_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="discount_percent" type="DECIMAL(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_amount" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addForeignKeyConstraint baseTableName="discount_usages" baseColumnNames="discount_id"
+                               referencedTableName="discounts" referencedColumnNames="id"
+                               onDelete="RESTRICT" constraintName="fk_discount_usage_discount"/>
+        
+        <addForeignKeyConstraint baseTableName="discount_usages" baseColumnNames="user_id"
+                               referencedTableName="users" referencedColumnNames="id"
+                               onDelete="RESTRICT" constraintName="fk_discount_usage_user"/>
+        
+        <addForeignKeyConstraint baseTableName="discount_usages" baseColumnNames="course_id"
+                               referencedTableName="courses" referencedColumnNames="id"
+                               onDelete="RESTRICT" constraintName="fk_discount_usage_course"/>
+        
+        <addForeignKeyConstraint baseTableName="discount_usages" baseColumnNames="referred_by_user_id"
+                               referencedTableName="users" referencedColumnNames="id"
+                               onDelete="SET NULL" constraintName="fk_discount_usage_referrer"/>
+        
+        <createIndex tableName="discount_usages" indexName="idx_discount_usage_user_discount">
+            <column name="user_id"/>
+            <column name="discount_id"/>
+        </createIndex>
+        
+        <createIndex tableName="discount_usages" indexName="idx_discount_usage_course">
+            <column name="course_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Create AFFILIATE_PAYOUT table -->
+    <changeSet id="154-03" author="ktc">
+        <createTable tableName="affiliate_payouts">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="referred_by_user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_usage_id" type="VARCHAR(36)"/>
+            <column name="commission_percent" type="DECIMAL(4,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="commission_amount" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payout_status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="paid_at" type="TIMESTAMP"/>
+            <column name="cancelled_at" type="TIMESTAMP"/>
+        </createTable>
+        
+        <addForeignKeyConstraint baseTableName="affiliate_payouts" baseColumnNames="referred_by_user_id"
+                               referencedTableName="users" referencedColumnNames="id"
+                               onDelete="RESTRICT" constraintName="fk_affiliate_payout_user"/>
+        
+        <addForeignKeyConstraint baseTableName="affiliate_payouts" baseColumnNames="course_id"
+                               referencedTableName="courses" referencedColumnNames="id"
+                               onDelete="RESTRICT" constraintName="fk_affiliate_payout_course"/>
+        
+        <addForeignKeyConstraint baseTableName="affiliate_payouts" baseColumnNames="discount_usage_id"
+                               referencedTableName="discount_usages" referencedColumnNames="id"
+                               onDelete="SET NULL" constraintName="fk_affiliate_payout_usage"/>
+        
+        <createIndex tableName="affiliate_payouts" indexName="idx_affiliate_payout_user_status">
+            <column name="referred_by_user_id"/>
+            <column name="payout_status"/>
+        </createIndex>
+        
+        <createIndex tableName="affiliate_payouts" indexName="idx_affiliate_payout_course">
+            <column name="course_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Seed data for discount types -->
+    <changeSet id="154-04" author="ktc">
+        <!-- General discount example -->
+        <insert tableName="discounts">
+            <column name="id" value="d1a2b3c4-e5f6-7890-abcd-ef1234567890"/>
+            <column name="code" value="WELCOME10"/>
+            <column name="discount_percent" value="10.00"/>
+            <column name="description" value="Welcome discount for new users"/>
+            <column name="type" value="GENERAL"/>
+            <column name="owner_user_id"/>
+            <column name="start_date" value="2024-01-01 00:00:00"/>
+            <column name="end_date" value="2024-12-31 23:59:59"/>
+            <column name="usage_limit" value="1000"/>
+            <column name="per_user_limit" value="1"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        
+        <!-- Another general discount -->
+        <insert tableName="discounts">
+            <column name="id" value="d2b3c4d5-e6f7-8901-bcde-f12345678901"/>
+            <column name="code" value="SUMMER2024"/>
+            <column name="discount_percent" value="20.00"/>
+            <column name="description" value="Summer promotion discount"/>
+            <column name="type" value="GENERAL"/>
+            <column name="owner_user_id"/>
+            <column name="start_date" value="2024-06-01 00:00:00"/>
+            <column name="end_date" value="2024-08-31 23:59:59"/>
+            <column name="usage_limit" value="500"/>
+            <column name="per_user_limit" value="2"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        
+        <!-- Referral discount -->
+        <insert tableName="discounts">
+            <column name="id" value="d3c4d5e6-f7g8-9012-cdef-123456789012"/>
+            <column name="code" value="REFER15"/>
+            <column name="discount_percent" value="15.00"/>
+            <column name="description" value="Referral program discount"/>
+            <column name="type" value="REFERRAL"/>
+            <column name="owner_user_id" value="user-003"/> <!-- Charlie -->
+            <column name="start_date" value="2024-01-01 00:00:00"/>
+            <column name="end_date" value="2025-12-31 23:59:59"/>
+            <column name="usage_limit"/>
+            <column name="per_user_limit"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        
+        <!-- Another referral discount -->
+        <insert tableName="discounts">
+            <column name="id" value="d4d5e6f7-g8h9-0123-def0-234567890123"/>
+            <column name="code" value="FRIEND20"/>
+            <column name="discount_percent" value="20.00"/>
+            <column name="description" value="Friends referral program"/>
+            <column name="type" value="REFERRAL"/>
+            <column name="owner_user_id" value="user-006"/> <!-- Fiona -->
+            <column name="start_date" value="2024-01-01 00:00:00"/>
+            <column name="end_date" value="2025-12-31 23:59:59"/>
+            <column name="usage_limit"/>
+            <column name="per_user_limit" value="5"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

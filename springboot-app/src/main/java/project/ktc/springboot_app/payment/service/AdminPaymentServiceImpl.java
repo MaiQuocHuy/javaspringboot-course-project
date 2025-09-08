@@ -20,6 +20,7 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.discount.entity.Discount;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
@@ -36,8 +37,12 @@ import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
 import project.ktc.springboot_app.payment.repositories.AdminPaymentRepository;
 import project.ktc.springboot_app.refund.entity.Refund;
 import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
-import project.ktc.springboot_app.stripe.services.StripeWebhookService;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import project.ktc.springboot_app.stripe.services.StripeWebhookService;
+import project.ktc.springboot_app.discount.interfaces.AffiliatePayoutService;
+import project.ktc.springboot_app.discount.repositories.DiscountUsageRepository;
+import project.ktc.springboot_app.discount.entity.DiscountUsage;
+import project.ktc.springboot_app.discount.enums.DiscountType;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -57,6 +62,8 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     private final EnrollmentServiceImp enrollmentService;
     private final StripeWebhookService stripeWebhookService;
     private final InstructorEarningRepository instructorEarningRepository;
+    private final AffiliatePayoutService affiliatePayoutService;
+    private final DiscountUsageRepository discountUsageRepository;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(Pageable pageable) {
@@ -453,6 +460,9 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
                     .message("Payment successfully paid out to instructor")
                     .build();
 
+            // Create affiliate payout for referral discounts when payment is paid out
+            createAffiliatePayoutForReferralDiscount(payment);
+
             log.info("Payment {} successfully paid out. Instructor earning created: {}", paymentId,
                     savedEarning.getId());
             return ApiResponseUtil.success(response, "Payment paid out successfully");
@@ -492,6 +502,54 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
         } catch (Exception e) {
             log.error("Error retrieving payment statistics: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to retrieve statistics. Please try again later.");
+        }
+    }
+
+    /**
+     * Creates affiliate payout for referral discounts when payment is paid out
+     * This ensures commission is only paid when payment is actually processed
+     */
+    private void createAffiliatePayoutForReferralDiscount(Payment payment) {
+        try {
+            log.info("🔍 Checking for affiliate payout eligibility for payment: {}", payment.getId());
+
+            // Find discount usage records for this payment
+            List<DiscountUsage> discountUsages = discountUsageRepository
+                    .findByUserIdAndCourseId(payment.getUser().getId(), payment.getCourse().getId());
+
+            if (discountUsages.isEmpty()) {
+                log.debug("No discount usage found for payment: {}", payment.getId());
+                return;
+            }
+
+            // Process each discount usage that might be eligible for affiliate payout
+            for (DiscountUsage usage : discountUsages) {
+                if (usage.getDiscount().getType() == DiscountType.REFERRAL &&
+                        usage.getReferredByUser() != null) {
+
+                    log.info("🎯 Creating affiliate payout for referral discount: {} used in payment: {}",
+                            usage.getDiscount().getCode(), payment.getId());
+
+                    // Create affiliate payout with PAID status (since payment is being paid out)
+                    affiliatePayoutService.createPayoutAsync(usage, payment.getAmount(), payment.getId())
+                            .thenAccept(payout -> {
+                                log.info(
+                                        "✅ Affiliate payout created successfully: {} for referrer: {} with commission: ${}",
+                                        payout.getId(), usage.getReferredByUser().getId(),
+                                        payout.getCommissionAmount());
+                            })
+                            .exceptionally(throwable -> {
+                                log.error("❌ Failed to create affiliate payout for discount usage: {} - {}",
+                                        usage.getId(), throwable.getMessage());
+                                return null;
+                            });
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Error in affiliate payout creation for payment: {} - {}",
+                    payment.getId(), e.getMessage(), e);
+            // Don't fail the payment payout process for affiliate payout errors
         }
     }
 }
