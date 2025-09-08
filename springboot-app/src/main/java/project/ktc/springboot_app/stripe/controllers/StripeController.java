@@ -23,6 +23,8 @@ import project.ktc.springboot_app.stripe.services.StripeWebhookService;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.payment.interfaces.PaymentService;
+import project.ktc.springboot_app.discount.interfaces.DiscountPriceService;
+import project.ktc.springboot_app.stripe.dto.PriceCalculationResponse;
 
 import java.util.Optional;
 
@@ -40,6 +42,7 @@ public class StripeController {
     private final StripeCheckoutService stripeCheckoutService;
     private final CourseRepository courseRepository;
     private final PaymentService paymentService;
+    private final DiscountPriceService discountPriceService;
 
     /**
      * Creates a Stripe Checkout Session for course enrollment
@@ -53,18 +56,21 @@ public class StripeController {
             // Get current user
             String currentUserId = SecurityUtil.getCurrentUserId();
 
-            // Validate course
-            Optional<Course> courseOpt = courseRepository.findById(request.getCourseId());
-            if (courseOpt.isEmpty()) {
-                return ApiResponseUtil.notFound("Course not found");
+            // Validate course and calculate price with discount
+            PriceCalculationResponse priceCalculation;
+            try {
+                priceCalculation = discountPriceService.calculatePrice(
+                        request.getCourseId(),
+                        currentUserId,
+                        request.getDiscountCode());
+            } catch (IllegalArgumentException e) {
+                log.warn("Price calculation failed: {}", e.getMessage());
+                return ApiResponseUtil.badRequest(e.getMessage());
             }
 
-            Course course = courseOpt.get();
-
-            // Validate course is published and approved
-            if (!course.getIsPublished() || !course.getIsApproved()) {
-                return ApiResponseUtil.badRequest("Course is not available for purchase");
-            }
+            // Get course for session creation
+            Course course = courseRepository.findById(request.getCourseId())
+                    .orElseThrow(() -> new IllegalArgumentException("Course not found"));
 
             // Check if user has already completed payment for this course
             Optional<Payment> completedPaymentOpt = paymentService
@@ -73,12 +79,21 @@ public class StripeController {
                 return ApiResponseUtil.badRequest("You have already purchased this course");
             }
 
-            // Create checkout session
-            Session session = stripeCheckoutService.createCheckoutSession(currentUserId, course);
+            // Check if payment with courseId and user has exists
+            Optional<Payment> paymentOpt = paymentService.findPaymentByCourseIdAndUserId(course.getId(), currentUserId);
+            if (paymentOpt.isPresent()) {
+                return ApiResponseUtil.badRequest("Payment with courseId and user has already exists");
+            }
 
-            CreateCheckoutSessionResponse response = new CreateCheckoutSessionResponse();
-            response.setSessionId(session.getId());
-            response.setSessionUrl(session.getUrl());
+            // Create checkout session with final price
+            Session session = stripeCheckoutService.createCheckoutSessionWithDiscount(
+                    currentUserId, course, priceCalculation);
+
+            CreateCheckoutSessionResponse response = CreateCheckoutSessionResponse.builder()
+                    .sessionId(session.getId())
+                    .sessionUrl(session.getUrl())
+                    .priceCalculation(priceCalculation)
+                    .build();
 
             return ApiResponseUtil.success(response, "Checkout session created successfully");
 
@@ -86,6 +101,9 @@ public class StripeController {
             log.error("Stripe error creating checkout session: {}", e.getMessage(), e);
             return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Failed to create checkout session: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid request for checkout session: {}", e.getMessage());
+            return ApiResponseUtil.badRequest(e.getMessage());
         } catch (Exception e) {
             log.error("Error creating checkout session: {}", e.getMessage(), e);
             return ApiResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create checkout session");

@@ -41,7 +41,7 @@ public class CertificateController {
         private final CertificateService certificateService;
         private final CertificatePdfService certificatePdfService;
 
-        @PostMapping
+        @PostMapping("/sync")
         @PreAuthorize("hasRole('ADMIN')")
         @Operation(summary = "Create a new certificate", description = """
                         Creates a new certificate for a user who completed a course.
@@ -74,6 +74,41 @@ public class CertificateController {
                                 createCertificateDto.getUserId(), createCertificateDto.getCourseId());
 
                 return certificateService.createCertificate(createCertificateDto);
+        }
+
+        @PostMapping("/async")
+        @PreAuthorize("hasRole('ADMIN')")
+        @Operation(summary = "Create a new certificate", description = """
+                        Creates a new certificate for a user who completed a course.
+                        Only users with ADMIN role can create certificates.
+
+                        **Business Rules:**
+                        - User and course must exist
+                        - User must be enrolled in the course
+                        - User must have completed all lessons in the course
+                        - Each user can only have one certificate per course
+                        - Certificate code must be unique
+
+                        **Generated Certificate Code Format:**
+                        [COURSE_PREFIX]-[YEAR]-[SEQUENCE]-[RANDOM_ID]
+                        Example: RC-2025-001-ABCD1234
+                        """)
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Certificate created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = CertificateResponseDto.class))),
+                        @ApiResponse(responseCode = "400", description = "Bad Request - Invalid input or user hasn't completed course", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Missing or invalid JWT", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - ADMIN role required", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "404", description = "Not Found - User or course not found", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "409", description = "Conflict - Certificate already exists", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json"))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CertificateResponseDto>> createCertificateAsync(
+                        @Parameter(description = "Certificate creation request", required = true) @Valid @RequestBody CreateCertificateDto createCertificateDto) {
+
+                log.info("Admin request to create certificate for user {} and course {}",
+                                createCertificateDto.getUserId(), createCertificateDto.getCourseId());
+
+                return certificateService.createCertificateAsync(createCertificateDto);
         }
 
         @GetMapping

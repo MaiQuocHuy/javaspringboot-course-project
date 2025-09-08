@@ -2,9 +2,11 @@ package project.ktc.springboot_app.certificate.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.ktc.springboot_app.auth.entitiy.User;
@@ -46,6 +48,7 @@ public class CertificateServiceImp implements CertificateService {
     private final CertificatePdfService certificatePdfService;
     private final CloudinaryService cloudinaryService;
     private final EmailService emailService;
+    private final ApplicationContext applicationContext;
 
     @Override
     @Transactional
@@ -118,6 +121,123 @@ public class CertificateServiceImp implements CertificateService {
         } catch (Exception e) {
             log.error("Error creating certificate: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to create certificate: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<CertificateResponseDto>> createCertificateAsync(
+            CreateCertificateDto createCertificateDto) {
+        log.info("Creating certificate asynchronously for user {} and course {}",
+                createCertificateDto.getUserId(), createCertificateDto.getCourseId());
+
+        try {
+            // 1. Validate user exists
+            Optional<User> userOpt = userRepository.findById(createCertificateDto.getUserId());
+            if (userOpt.isEmpty()) {
+                return ApiResponseUtil.notFound("User not found with id: " + createCertificateDto.getUserId());
+            }
+            User user = userOpt.get();
+
+            // 2. Validate course exists
+            Optional<Course> courseOpt = courseRepository.findById(createCertificateDto.getCourseId());
+            if (courseOpt.isEmpty()) {
+                return ApiResponseUtil.notFound("Course not found with id: " + createCertificateDto.getCourseId());
+            }
+            Course course = courseOpt.get();
+
+            // 3. Check if certificate already exists
+            if (certificateRepository.existsByUserIdAndCourseId(user.getId(), course.getId())) {
+                return ApiResponseUtil.conflict("Certificate already exists for this user and course");
+            }
+
+            // 4. Validate user completed all lessons in the course
+            if (!hasUserCompletedAllLessons(user.getId(), course.getId())) {
+                return ApiResponseUtil.badRequest("User has not completed all lessons in the course");
+            }
+
+            // 5. Validate user is enrolled in the course
+            if (!enrollmentRepository.existsByUserIdAndCourseId(user.getId(), course.getId())) {
+                return ApiResponseUtil.badRequest("User is not enrolled in the course");
+            }
+
+            // 6. Generate unique certificate code
+            String certificateCode = generateUniqueCertificateCode(course);
+
+            // 7. Create certificate entity
+            Certificate certificate = new Certificate();
+            certificate.setUser(user);
+            certificate.setCourse(course);
+            certificate.setCertificateCode(certificateCode);
+            certificate.setIssuedAt(LocalDateTime.now());
+
+            // 8. Save certificate first (without file URL)
+            Certificate savedCertificate = certificateRepository.save(certificate);
+
+            log.info("Certificate created successfully with ID: {} and code: {}",
+                    savedCertificate.getId(), savedCertificate.getCertificateCode());
+
+            // 9. Process PDF generation, upload, and email notification asynchronously
+            // Pass only the ID to avoid entity detachment issues
+            CertificateServiceImp self = applicationContext.getBean(CertificateServiceImp.class);
+            self.processCertificateAsync(savedCertificate.getId());
+
+            // 10. Build response
+            CertificateResponseDto responseDto = mapToCertificateResponseDto(savedCertificate);
+
+            return ApiResponseUtil.created(responseDto,
+                    "Certificate created successfully. PDF generation and email notification are being processed in the background.");
+
+        } catch (Exception e) {
+            log.error("Error creating certificate asynchronously: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to create certificate: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Process certificate PDF generation, cloud upload, and email notification
+     * asynchronously
+     * This method runs in a separate thread and has its own transaction context
+     * 
+     * @param certificateId The ID of the certificate to process
+     */
+    @Async("taskExecutor")
+    @Transactional
+    public void processCertificateAsync(String certificateId) {
+        log.info("Starting async processing for certificate ID: {}", certificateId);
+
+        try {
+            // Reload the certificate entity with all necessary relationships in a fresh
+            // transaction
+            // Use method with JOIN FETCH to avoid LazyInitializationException
+            Optional<Certificate> certificateOpt = certificateRepository.findByIdWithRelationships(certificateId);
+            if (certificateOpt.isEmpty()) {
+                log.error("Certificate not found with ID: {} during async processing", certificateId);
+                return;
+            }
+
+            Certificate certificate = certificateOpt.get();
+
+            // Ensure all necessary relationships are loaded to avoid
+            // LazyInitializationException
+            // The certificate should have user, course, and course.instructor loaded
+            if (certificate.getUser() == null || certificate.getCourse() == null) {
+                log.error("Certificate {} has missing relationships during async processing", certificateId);
+                return;
+            }
+
+            log.info("Certificate reloaded successfully: {}", certificate.getCertificateCode());
+
+            // Generate PDF and upload to cloud storage
+            generateAndUploadCertificatePdf(certificate);
+
+            log.info("Async processing completed successfully for certificate: {}", certificate.getCertificateCode());
+
+        } catch (Exception e) {
+            log.error("Failed to process certificate asynchronously for ID {}: {}",
+                    certificateId, e.getMessage(), e);
+            // Note: In a production environment, you might want to implement retry logic
+            // or move failed certificates to a dead letter queue for manual processing
         }
     }
 

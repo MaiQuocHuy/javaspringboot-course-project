@@ -19,6 +19,13 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
+import project.ktc.springboot_app.discount.interfaces.DiscountPriceService;
+import project.ktc.springboot_app.discount.interfaces.AffiliatePayoutService;
+import project.ktc.springboot_app.discount.entity.DiscountUsage;
+import project.ktc.springboot_app.discount.repositories.DiscountUsageRepository;
+import project.ktc.springboot_app.discount.enums.DiscountType;
+
+import java.math.BigDecimal;
 
 /**
  * Service to handle Stripe webhook events
@@ -34,6 +41,9 @@ public class StripeWebhookService {
     private final EmailService emailService;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final DiscountPriceService discountPriceService;
+    private final AffiliatePayoutService affiliatePayoutService;
+    private final DiscountUsageRepository discountUsageRepository;
 
     /**
      * Processes incoming webhook events from Stripe
@@ -190,8 +200,12 @@ public class StripeWebhookService {
             // Extract metadata (courseId and userId should be stored in session metadata)
             String courseId = session.getMetadata() != null ? session.getMetadata().get("courseId") : null;
             String userId = session.getMetadata() != null ? session.getMetadata().get("userId") : null;
+            String discountCode = session.getMetadata() != null ? session.getMetadata().get("discountCode") : null;
+            String discountAmountStr = session.getMetadata() != null ? session.getMetadata().get("discountAmount")
+                    : null;
 
-            log.info("📊 Session metadata - CourseId: {}, UserId: {}", courseId, userId);
+            log.info("📊 Session metadata - CourseId: {}, UserId: {}, DiscountCode: {}", courseId, userId,
+                    discountCode);
 
             if (courseId == null || userId == null) {
                 log.error("❌ Missing required metadata in session. CourseId: {}, UserId: {}", courseId, userId);
@@ -225,6 +239,25 @@ public class StripeWebhookService {
             // Create enrollment for the user
             enrollmentService.createEnrollmentFromWebhook(userId, courseId, session.getId());
             log.info("✅ Enrollment created for user {} in course {}", userId, courseId);
+
+            // Record discount usage if discount was applied
+            if (discountCode != null && !discountCode.trim().isEmpty() && discountAmountStr != null) {
+                try {
+                    BigDecimal discountAmount = new BigDecimal(discountAmountStr);
+                    discountPriceService.recordDiscountUsage(discountCode, userId, courseId, discountAmount,
+                            payment.getId());
+                    log.info("✅ Discount usage recorded for code: {} with amount: {}", discountCode, discountAmount);
+
+                    // Note: Affiliate payout will be created when payment is actually paid out to
+                    // instructor
+                    // This ensures commission is only paid when payment is confirmed and processed
+
+                } catch (Exception discountException) {
+                    log.error("❌ Failed to record discount usage for code: {} - {}", discountCode,
+                            discountException.getMessage());
+                    // Don't fail the whole webhook processing for discount recording failure
+                }
+            }
 
             // Send payment confirmation email asynchronously
             sendPaymentConfirmationEmail(session, courseId, userId);
@@ -536,6 +569,56 @@ public class StripeWebhookService {
         } catch (Exception e) {
             log.error("❌ Error retrieving session {}: {}", sessionId, e.getMessage(), e);
             return null;
+        }
+    }
+
+    /**
+     * Creates affiliate payout asynchronously for referral discounts
+     */
+    private void createAffiliatePayoutAsync(String discountCode, String userId, String courseId,
+            BigDecimal finalPrice) {
+        log.info("💰 Checking for affiliate payout eligibility - discount: {}", discountCode);
+
+        try {
+            // Find the discount usage record that was just created
+            var discountUsages = discountUsageRepository.findByUserIdAndCourseId(userId, courseId);
+            if (discountUsages.isEmpty()) {
+                log.warn("No discount usage found for user: {} and course: {}", userId, courseId);
+                return;
+            }
+
+            // Find the most recent usage for this discount code
+            DiscountUsage relevantUsage = discountUsages.stream()
+                    .filter(usage -> usage.getDiscount().getCode().equalsIgnoreCase(discountCode))
+                    .findFirst()
+                    .orElse(null);
+
+            if (relevantUsage == null) {
+                log.warn("No discount usage found for code: {}", discountCode);
+                return;
+            }
+
+            // Only create payout for REFERRAL type discounts
+            if (relevantUsage.getDiscount().getType() == DiscountType.REFERRAL) {
+                log.info("🎉 Creating affiliate payout for referral discount: {}", discountCode);
+
+                // Create payout asynchronously (final price is already after discount)
+                affiliatePayoutService.createPayoutAsync(relevantUsage, finalPrice, relevantUsage.getDiscount().getId())
+                        .thenAccept(payout -> {
+                            log.info("✅ Affiliate payout created successfully: {} for amount: ${}",
+                                    payout.getId(), payout.getCommissionAmount());
+                        })
+                        .exceptionally(throwable -> {
+                            log.error("❌ Failed to create affiliate payout: {}", throwable.getMessage());
+                            return null;
+                        });
+            } else {
+                log.debug("📄 Discount is not REFERRAL type, skipping payout creation");
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Error in affiliate payout creation: {}", e.getMessage(), e);
+            // Don't fail webhook processing for payout errors
         }
     }
 }

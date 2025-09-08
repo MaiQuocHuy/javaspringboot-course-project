@@ -19,7 +19,6 @@ import jakarta.validation.constraints.Max;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.course.dto.CourseDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
-import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.services.CourseServiceImp;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/courses")
@@ -38,7 +36,6 @@ import java.util.List;
 public class CourseController {
 
         private final CourseServiceImp courseService;
-        private final CourseRepository courseRepository;
 
         @GetMapping
         @Operation(summary = "Get all published courses", description = "Retrieves a paginated list of all published and non-deleted courses with filtering and sorting options")

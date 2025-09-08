@@ -109,4 +109,8 @@
     
     <!-- Remove Role Management System (Rollback) -->
     <include file="db/changelog/changes/153-remove-role-resource-permissions.xml"/>
+    
+    <!-- Discount and Affiliate System -->
+    <include file="db/changelog/changes/154-add-discount-table.xml"/>
+    <include file="db/changelog/changes/155-seed-discount.xml"/>
 </databaseChangeLog>
