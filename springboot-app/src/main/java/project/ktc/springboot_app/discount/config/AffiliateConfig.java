@@ -25,7 +25,7 @@ public class AffiliateConfig {
          * Default commission percentage for referral payouts
          * This is applied to the final price (after discount)
          */
-        private BigDecimal percent = new BigDecimal("5.0");
+        private BigDecimal percent = new BigDecimal("3.0");
 
         /**
          * Whether affiliate commission system is enabled
@@ -34,7 +34,7 @@ public class AffiliateConfig {
     }
 
     /**
-     * Get commission percentage as decimal (e.g., 5.0 for 5%)
+     * Get commission percentage as decimal (e.g., 3.0 for 3%)
      */
     public BigDecimal getCommissionPercent() {
         return commission.percent;
