@@ -125,7 +125,6 @@ public class CertificateServiceImp implements CertificateService {
     }
 
     @Override
-    @Transactional
     public ResponseEntity<ApiResponse<CertificateResponseDto>> createCertificateAsync(
             CreateCertificateDto createCertificateDto) {
         log.info("Creating certificate asynchronously for user {} and course {}",
