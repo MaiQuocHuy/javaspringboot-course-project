@@ -55,4 +55,7 @@ public interface InstructorCourseService {
                         String courseId,
                         String instructorId);
 
+        ResponseEntity<ApiResponse<List<CourseDashboardResponseDto>>> getAllPublishedCourses(
+                        String instructorId);
+
 }

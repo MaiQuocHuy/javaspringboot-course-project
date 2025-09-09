@@ -1,6 +1,8 @@
 package project.ktc.springboot_app.chat.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +39,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChatMessageServiceImp implements ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
@@ -127,6 +130,7 @@ public class ChatMessageServiceImp implements ChatMessageService {
             message = chatMessageRepository.save(message);
 
             ChatMessageResponse response = toResponse(message);
+            log.info("Message sent: {}", response);
             messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", response);
 
             return ApiResponseUtil.created(response, "Message sent successfully");
@@ -210,7 +214,7 @@ public class ChatMessageServiceImp implements ChatMessageService {
                 .senderName(m.getSender().getName())
                 .senderRole(m.getSenderRole())
                 .type(m.getMessageType().getName())
-                .textContent(m.getTextDetail() != null ? m.getTextDetail().getContent() : null)
+                .content(m.getTextDetail() != null ? m.getTextDetail().getContent() : null)
                 .fileUrl(m.getFileDetail() != null ? m.getFileDetail().getFileUrl() : null)
                 .fileName(m.getFileDetail() != null ? m.getFileDetail().getFileName() : null)
                 .fileSize(m.getFileDetail() != null ? m.getFileDetail().getFileSize() : null)
@@ -225,6 +229,7 @@ public class ChatMessageServiceImp implements ChatMessageService {
                         ? m.getVideoDetail().getDuration().intValue()
                         : null)
                 .createdAt(m.getCreatedAt())
+                .senderThumbnailUrl(m.getSender().getThumbnailUrl())
                 .build();
     }
 
@@ -385,6 +390,9 @@ public class ChatMessageServiceImp implements ChatMessageService {
         return SimpleChatMessageResponse.builder()
                 .id(m.getId()) // Keep String UUID as is
                 .senderId(m.getSender().getId())
+                .senderName(m.getSender().getName())
+                .senderThumbnailUrl(m.getSender().getThumbnailUrl())
+                .senderRole(m.getSenderRole())
                 .type(type)
                 .content(content)
                 .fileUrl(fileUrl)
@@ -641,7 +649,7 @@ public class ChatMessageServiceImp implements ChatMessageService {
             MessageType messageType = MessageType.fromValue(request.getType());
 
             // Send initial status update
-            broadcastStatusUpdate(courseId, request.getTempId(), "PENDING", null, null, null);
+            broadcastStatusUpdate(courseId, null, null, null, null, request.getTempId(), "PENDING", null, null, null);
 
             // Create pending message record first
             String messageId = createPendingMessage(courseId, senderEmail, request, messageType);
@@ -656,7 +664,7 @@ public class ChatMessageServiceImp implements ChatMessageService {
 
         } catch (Exception e) {
             // Send failure notification via WebSocket
-            broadcastStatusUpdate(courseId, request.getTempId(), "FAILED", null, null,
+            broadcastStatusUpdate(courseId, null, null, null, null, request.getTempId(), "FAILED", null, null,
                     "Processing error: " + e.getMessage());
         }
     }
@@ -699,12 +707,15 @@ public class ChatMessageServiceImp implements ChatMessageService {
 
             // Broadcast success
             ChatMessageResponse response = toResponse(message);
+            log.info("Message sent: {}", response);
             messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", response);
 
-            broadcastStatusUpdate(courseId, request.getTempId(), "SENT", messageId, null, null);
+            broadcastStatusUpdate(courseId, response.getContent(), response.getSenderRole(),
+                    response.getSenderName(), response.getSenderThumbnailUrl(), request.getTempId(), "SENT", messageId,
+                    null, null);
 
         } catch (Exception e) {
-            broadcastStatusUpdate(courseId, request.getTempId(), "FAILED", null, null,
+            broadcastStatusUpdate(courseId, null, null, null, null, request.getTempId(), "FAILED", null, null,
                     "Text processing error: " + e.getMessage());
         }
     }
@@ -714,7 +725,8 @@ public class ChatMessageServiceImp implements ChatMessageService {
         try {
             // Send uploading status (although file is already uploaded, we still show this
             // for consistency)
-            broadcastStatusUpdate(courseId, request.getTempId(), "UPLOADING", messageId, null, null);
+            broadcastStatusUpdate(courseId, null, null, null, null, request.getTempId(), "UPLOADING", messageId, null,
+                    null);
 
             // Use provided URLs and metadata (files are pre-uploaded via /api/upload/*
             // endpoints)
@@ -735,10 +747,12 @@ public class ChatMessageServiceImp implements ChatMessageService {
             ChatMessageResponse response = toResponse(message);
             messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", response);
 
-            broadcastStatusUpdate(courseId, request.getTempId(), "SENT", messageId, fileUrl, null);
+            broadcastStatusUpdate(courseId, response.getContent(), response.getSenderRole(),
+                    response.getSenderName(),
+                    response.getSenderThumbnailUrl(), request.getTempId(), "SENT", messageId, fileUrl, null);
 
         } catch (Exception e) {
-            broadcastStatusUpdate(courseId, request.getTempId(), "FAILED", null, null,
+            broadcastStatusUpdate(courseId, null, null, null, null, request.getTempId(), "FAILED", null, null,
                     "Media processing error: " + e.getMessage());
         }
     }
@@ -791,7 +805,10 @@ public class ChatMessageServiceImp implements ChatMessageService {
         chatMessageRepository.save(message);
     }
 
-    private void broadcastStatusUpdate(String courseId, String tempId, String status, String messageId, String fileUrl,
+    private void broadcastStatusUpdate(String courseId, String content, String senderRole, String senderName,
+            String senderThumbnailUrl,
+            String tempId,
+            String status, String messageId, String fileUrl,
             String error) {
         AsyncMessageStatusEvent.AsyncMessageStatusEventBuilder eventBuilder = AsyncMessageStatusEvent.builder()
                 .tempId(tempId)
@@ -806,8 +823,41 @@ public class ChatMessageServiceImp implements ChatMessageService {
         if (error != null) {
             eventBuilder.error(error);
         }
+        if (content != null) {
+            eventBuilder.content(content);
+        }
+        if (senderName != null) {
+            eventBuilder.senderName(senderName);
+        }
+        if (senderRole != null) {
+            eventBuilder.senderRole(senderRole);
+        }
+        if (senderThumbnailUrl != null) {
+            eventBuilder.senderThumbnailUrl(senderThumbnailUrl);
+        }
 
         AsyncMessageStatusEvent event = eventBuilder.build();
+
+        // Broadcast to all users in the course (including receivers)
         messagingTemplate.convertAndSend("/topic/courses/" + courseId + "/messages", event);
+
+        // Also broadcast to sender's personal topic for acknowledgment
+        // This helps with real-time status updates for the sender
+        if (senderName != null) {
+            try {
+                // Get current authenticated user to get sender ID
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                if (auth != null && auth.getName() != null) {
+                    var sender = userRepository.findByEmail(auth.getName());
+                    if (sender.isPresent()) {
+                        String senderId = sender.get().getId();
+                        messagingTemplate.convertAndSend("/topic/users/" + senderId + "/status", event);
+                    }
+                }
+            } catch (Exception e) {
+                // Log error but don't fail the main broadcast
+                log.warn("Failed to send personal status update to sender: {}", e.getMessage());
+            }
+        }
     }
 }

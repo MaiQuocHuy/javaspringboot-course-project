@@ -1,5 +1,7 @@
 package project.ktc.springboot_app.enrollment.interfaces;
 
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
@@ -14,6 +16,8 @@ public interface EnrollmentService {
 
     ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(Enrollment.CompletionStatus status,
             Pageable pageable);
+
+    ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(Enrollment.CompletionStatus status);
 
     /**
      * Creates enrollment from webhook (bypassing authentication)

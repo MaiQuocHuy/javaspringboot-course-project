@@ -732,6 +732,28 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
         return ApiResponseUtil.success(responseDto, "Course details retrieved successfully");
     }
 
+    @Override
+    public ResponseEntity<ApiResponse<List<CourseDashboardResponseDto>>> getAllPublishedCourses(String instructorId) {
+        log.info("Getting all published courses for instructor: {}", instructorId);
+
+        try {
+            // Find all published courses for the instructor
+            List<Course> publishedCourses = instructorCourseRepository.findByInstructorIdAndIsPublished(instructorId,
+                    true);
+
+            // Map to DTOs
+            List<CourseDashboardResponseDto> courseDtos = publishedCourses.stream()
+                    .map(course -> mapToCourseDashboard(course))
+                    .collect(Collectors.toList());
+
+            return ApiResponseUtil.success(courseDtos, "Published courses retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving published courses for instructor {}: {}", instructorId, e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve published courses");
+        }
+    }
+
     private InstructorCourseDetailResponseDto mapToInstructorCourseDetailResponse(
             Course course,
             Integer enrollmentCount,

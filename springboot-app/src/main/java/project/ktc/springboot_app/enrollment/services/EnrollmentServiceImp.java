@@ -125,6 +125,24 @@ public class EnrollmentServiceImp implements EnrollmentService {
         return ApiResponseUtil.success(paginatedResponse, "Enrolled courses retrieved successfully");
     }
 
+    @Override
+    public ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(Enrollment.CompletionStatus status) {
+        log.info("Fetching all enrolled courses for current user with status: {}", status);
+
+        // Get current authenticated user ID
+        String currentUserId = SecurityUtil.getCurrentUserId();
+
+        // Fetch all enrollments without pagination
+        List<Enrollment> enrollments = enrollmentRepository.findByUserIdWithCourseAndInstructor(currentUserId, status);
+
+        // Convert to DTOs with progress calculation
+        List<MyEnrolledCourseDto> enrolledCourses = enrollments.stream()
+                .map(this::mapToMyEnrolledCourseDto)
+                .collect(Collectors.toList());
+
+        return ApiResponseUtil.success(enrolledCourses, "Enrolled courses retrieved successfully");
+    }
+
     private MyEnrolledCourseDto mapToMyEnrolledCourseDto(Enrollment enrollment) {
         Course course = enrollment.getCourse();
 
