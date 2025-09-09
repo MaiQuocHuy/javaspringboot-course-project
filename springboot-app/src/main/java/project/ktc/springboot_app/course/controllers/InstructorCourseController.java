@@ -322,6 +322,39 @@ public class InstructorCourseController {
                 return instructorCourseService.updateCourseStatus(courseId, updateStatusDto, instructorId);
         }
 
+        @GetMapping("/published")
+        @Operation(summary = "Get all published courses", description = """
+                        Retrieve all published courses owned by the instructor without pagination.
+
+                        **Permission Requirements:**
+                        - Requires INSTRUCTOR role
+                        - Returns only courses owned by the authenticated instructor
+
+                        **Response includes:**
+                        - All courses with status PUBLISHED
+                        - Basic course information (id, title, description, price, level, thumbnail)
+                        - Course statistics (enrollment count, ratings, section count)
+                        - Categories list
+                        - Ordered by creation date (newest first)
+
+                        **Business Rules:**
+                        - Only returns courses with isPublished = true
+                        - Returns empty list if no published courses found
+                        """, security = @SecurityRequirement(name = "bearerAuth"))
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Published courses retrieved successfully"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<CourseDashboardResponseDto>>> getAllPublishedCourses() {
+
+                log.info("Received request to get all published courses");
+
+                String instructorId = SecurityUtil.getCurrentUserId();
+
+                // Call service to get all published courses
+                return instructorCourseService.getAllPublishedCourses(instructorId);
+        }
+
         @GetMapping("/{id}")
         @Operation(summary = "Get course details", description = """
                         Retrieve detailed information about a specific course owned by the instructor.
