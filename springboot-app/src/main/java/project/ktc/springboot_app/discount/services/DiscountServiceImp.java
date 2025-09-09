@@ -369,7 +369,7 @@ public class DiscountServiceImp implements DiscountService {
             // null)
             Discount discount = Discount.builder()
                     .code(discountCode)
-                    .discountPercent(BigDecimal.valueOf(10.0)) // Fixed 10% discount for induction
+                    .discountPercent(BigDecimal.valueOf(2.0)) // Fixed 2% discount for induction
                     .description("Induction discount for " + user.getName())
                     .type(DiscountType.REFERRAL)
                     .ownerUser(user)

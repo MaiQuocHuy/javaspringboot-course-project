@@ -108,4 +108,20 @@ public interface CertificateService {
          * @return true if current user has access, false otherwise
          */
         boolean hasAccessToCertificate(String certificateId);
+
+        /**
+         * Create a new certificate asynchronously for a user who completed a course
+         * Only ADMIN users can create certificates
+         * The certificate creation process runs in background and includes:
+         * - Validation of user and course
+         * - PDF generation
+         * - Cloud storage upload
+         * - Email notification
+         * 
+         * @param createCertificateDto Certificate creation data
+         * @return Immediate response with certificate basic info (PDF will be generated
+         *         asynchronously)
+         */
+        ResponseEntity<ApiResponse<CertificateResponseDto>> createCertificateAsync(
+                        CreateCertificateDto createCertificateDto);
 }

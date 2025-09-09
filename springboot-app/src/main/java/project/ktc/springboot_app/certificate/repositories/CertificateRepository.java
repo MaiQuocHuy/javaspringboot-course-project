@@ -98,4 +98,15 @@ public interface CertificateRepository extends JpaRepository<Certificate, String
         * Check if certificate code exists (for uniqueness validation)
         */
        boolean existsByCertificateCode(String certificateCode);
+
+       /**
+        * Find certificate by ID with all necessary relationships eagerly loaded
+        * Used for async processing to avoid LazyInitializationException
+        */
+       @Query("SELECT c FROM Certificate c " +
+                     "LEFT JOIN FETCH c.user u " +
+                     "LEFT JOIN FETCH c.course co " +
+                     "LEFT JOIN FETCH co.instructor i " +
+                     "WHERE c.id = :certificateId")
+       Optional<Certificate> findByIdWithRelationships(@Param("certificateId") String certificateId);
 }
