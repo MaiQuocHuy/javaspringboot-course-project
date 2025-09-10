@@ -16,72 +16,82 @@ import java.util.List;
  */
 public interface DiscountService {
 
-    /**
-     * Create a new discount
-     * 
-     * @param request The discount creation request
-     * @return ResponseEntity with created discount information
-     */
-    ResponseEntity<ApiResponse<DiscountResponseDto>> createDiscount(CreateDiscountRequest request);
+        /**
+         * Create a new discount
+         * 
+         * @param request The discount creation request
+         * @return ResponseEntity with created discount information
+         */
+        ResponseEntity<ApiResponse<DiscountResponseDto>> createDiscount(CreateDiscountRequest request);
 
-    /**
-     * Create a user-specific induction discount (REFERRAL type)
-     * Each user can only create one REFERRAL discount
-     * 
-     * @param userId The user ID to create induction discount for
-     * @return ResponseEntity with created discount information
-     */
-    ResponseEntity<ApiResponse<DiscountResponseDto>> createUserInductionDiscount(String userId);
+        /**
+         * Create a user-specific induction discount (REFERRAL type)
+         * Each user can only create one REFERRAL discount
+         * 
+         * @param userId The user ID to create induction discount for
+         * @return ResponseEntity with created discount information
+         */
+        ResponseEntity<ApiResponse<DiscountResponseDto>> createUserInductionDiscount(String userId);
 
-    /**
-     * Get all discounts with pagination
-     */
-    ResponseEntity<ApiResponse<PaginatedResponse<DiscountResponseDto>>> getAllDiscounts(Pageable pageable);
+        /**
+         * Get user's induction discount (REFERRAL type)
+         * Returns the user's personal REFERRAL discount if it exists
+         * 
+         * @param userId The user ID to get induction discount for
+         * @return ResponseEntity with user's induction discount information
+         */
+        ResponseEntity<ApiResponse<DiscountResponseDto>> getUserInductionDiscount(String userId);
 
-    /**
-     * Get discounts by type
-     */
-    ResponseEntity<ApiResponse<PaginatedResponse<DiscountResponseDto>>> getDiscountsByType(DiscountType type,
-            Pageable pageable);
+        /**
+         * Get all discounts with pagination
+         */
+        ResponseEntity<ApiResponse<PaginatedResponse<DiscountResponseDto>>> getAllDiscounts(Pageable pageable);
 
-    /**
-     * Get discount by ID
-     */
-    ResponseEntity<ApiResponse<DiscountResponseDto>> getDiscountById(String id);
+        /**
+         * Get discounts by type
+         */
+        ResponseEntity<ApiResponse<PaginatedResponse<DiscountResponseDto>>> getDiscountsByType(DiscountType type,
+                        Pageable pageable);
 
-    /**
-     * Get discount by code
-     */
-    ResponseEntity<ApiResponse<DiscountResponseDto>> getDiscountByCode(String code);
+        /**
+         * Get discount by ID
+         */
+        ResponseEntity<ApiResponse<DiscountResponseDto>> getDiscountById(String id);
 
-    /**
-     * Get discounts by owner user ID
-     */
-    ResponseEntity<ApiResponse<PaginatedResponse<DiscountResponseDto>>> getDiscountsByOwnerUserId(String ownerUserId,
-            Pageable pageable);
+        /**
+         * Get discount by code
+         */
+        ResponseEntity<ApiResponse<DiscountResponseDto>> getDiscountByCode(String code);
 
-    /**
-     * Update discount status (activate/deactivate)
-     */
-    ResponseEntity<ApiResponse<DiscountResponseDto>> updateDiscountStatus(String id, boolean isActive);
+        /**
+         * Get discounts by owner user ID
+         */
+        ResponseEntity<ApiResponse<PaginatedResponse<DiscountResponseDto>>> getDiscountsByOwnerUserId(
+                        String ownerUserId,
+                        Pageable pageable);
 
-    /**
-     * Delete discount
-     */
-    ResponseEntity<ApiResponse<Void>> deleteDiscount(String id);
+        /**
+         * Update discount status (activate/deactivate)
+         */
+        ResponseEntity<ApiResponse<DiscountResponseDto>> updateDiscountStatus(String id, boolean isActive);
 
-    /**
-     * Check if discount is valid and available for use
-     */
-    boolean isDiscountValidForUse(String discountCode, String userId, String courseId);
+        /**
+         * Delete discount
+         */
+        ResponseEntity<ApiResponse<Void>> deleteDiscount(String id);
 
-    /**
-     * Get currently valid discounts
-     */
-    List<Discount> getCurrentlyValidDiscounts();
+        /**
+         * Check if discount is valid and available for use
+         */
+        boolean isDiscountValidForUse(String discountCode, String userId, String courseId);
 
-    /**
-     * Convert entity to DTO
-     */
-    DiscountResponseDto convertToDto(Discount discount);
+        /**
+         * Get currently valid discounts
+         */
+        List<Discount> getCurrentlyValidDiscounts();
+
+        /**
+         * Convert entity to DTO
+         */
+        DiscountResponseDto convertToDto(Discount discount);
 }

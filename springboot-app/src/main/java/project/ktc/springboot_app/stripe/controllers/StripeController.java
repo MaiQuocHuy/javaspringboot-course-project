@@ -4,15 +4,18 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
+import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.stripe.dto.CreateCheckoutSessionRequest;
@@ -154,6 +157,42 @@ public class StripeController {
     @GetMapping("/webhook/health")
     public ResponseEntity<String> webhookHealth() {
         return ResponseEntity.ok("Stripe webhook endpoint is healthy");
+    }
+
+    /**
+     * Calculate price with discount validation (for frontend preview)
+     */
+    @PostMapping("/calculate-price")
+    @Operation(summary = "Calculate price with discount", description = "Calculate final price with discount validation for preview purposes")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Price calculated successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid course ID or discount code"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Course not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<ApiResponse<PriceCalculationResponse>> calculatePrice(
+            @Valid @RequestBody CreateCheckoutSessionRequest request) {
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            log.info("User {} calculating price for course: {} with discount: {}",
+                    currentUserId, request.getCourseId(), request.getDiscountCode());
+
+            // Calculate price with discount
+            PriceCalculationResponse priceResponse = discountPriceService.calculatePrice(
+                    request.getCourseId(),
+                    currentUserId,
+                    request.getDiscountCode());
+
+            return ApiResponseUtil.success(priceResponse, "Price calculated successfully");
+
+        } catch (IllegalArgumentException e) {
+            log.warn("Price calculation validation error: {}", e.getMessage());
+            return ApiResponseUtil.badRequest(e.getMessage());
+        } catch (Exception e) {
+            log.error("Error calculating price: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to calculate price. Please try again later.");
+        }
     }
 
     /**
