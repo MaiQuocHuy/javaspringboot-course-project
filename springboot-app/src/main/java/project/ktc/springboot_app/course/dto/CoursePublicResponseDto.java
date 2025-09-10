@@ -24,6 +24,7 @@ public class CoursePublicResponseDto {
     private Long enrollCount;
     private Double averageRating;
     private Long sectionCount;
+    private Integer totalHours; // Total course duration in hours
     private Boolean isEnrolled;
     private List<CategorySummary> categories;
     private InstructorSummary instructor;
