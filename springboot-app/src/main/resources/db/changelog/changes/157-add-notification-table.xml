@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Create notifications table -->
+    <changeSet id="157-01" author="ktc">
+        <createTable tableName="notifications">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_url" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="ENUM('LOW','MEDIUM','HIGH')" defaultValue="LOW">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_read" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="read_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expired_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <!-- Add foreign key constraints -->
+        <addForeignKeyConstraint
+            baseTableName="notifications"
+            baseColumnNames="user_id"
+            constraintName="fk_notification_user"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+            baseTableName="notifications"
+            baseColumnNames="resource_id"
+            constraintName="fk_notification_resource"
+            referencedTableName="resources"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <!-- Add indexes for better performance -->
+        <createIndex tableName="notifications" indexName="idx_notifications_user">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="notifications" indexName="idx_notifications_resource">
+            <column name="resource_id"/>
+        </createIndex>
+
+        <createIndex tableName="notifications" indexName="idx_notifications_entity">
+            <column name="entity_id"/>
+        </createIndex>
+
+        <createIndex tableName="notifications" indexName="idx_notifications_is_read">
+            <column name="is_read"/>
+        </createIndex>
+
+        <createIndex tableName="notifications" indexName="idx_notifications_priority">
+            <column name="priority"/>
+        </createIndex>
+
+        <createIndex tableName="notifications" indexName="idx_notifications_created_at">
+            <column name="created_at"/>
+        </createIndex>
+
+        <createIndex tableName="notifications" indexName="idx_notifications_expired_at">
+            <column name="expired_at"/>
+        </createIndex>
+
+        <!-- Composite index for common queries -->
+        <createIndex tableName="notifications" indexName="idx_notifications_user_read_created">
+            <column name="user_id"/>
+            <column name="is_read"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

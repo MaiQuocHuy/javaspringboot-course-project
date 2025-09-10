@@ -1,8 +1,7 @@
 ---
-
- applyTo: "**"
-
+applyTo: "**"
 ---
+
 ## Standard API Response Format
 
 All API responses will follow a standardized format for consistency and ease of use on the frontend.
@@ -4514,6 +4513,7 @@ Only ADMIN users can call this API. -**Request**:
   - 404 Not Found: message or course not found
 
 - **Controller Responsibilities**:
+
   - Authenticate user via JWT.
   - Verify user enrollment in the course.
   - Call ChatMessageService.updateMessage(courseId, messageId, request).
@@ -4528,10 +4528,10 @@ Only ADMIN users can call this API. -**Request**:
   - Save to DB and return updated entity.
 
 - **Business Rules**:
-Only the owner of the message can update it.
-Only TEXT messages can be updated.
--Updates are permanent and cannot be undone.
--Users must be enrolled in the course.
+  Only the owner of the message can update it.
+  Only TEXT messages can be updated.
+  -Updates are permanent and cannot be undone.
+  -Users must be enrolled in the course.
 
 ### 7.11 `POST /api/certificates`
 
@@ -4599,6 +4599,7 @@ Only TEXT messages can be updated.
   - Save certificate metadata (DB) and fileUrl.
   - Return created certificate details.
   - Check user finish lesson of course.
+
 ---
 
 - **Business Rules**:
@@ -4616,14 +4617,15 @@ Only TEXT messages can be updated.
   Only users with the ADMIN role are authorized to call this API.
 
 - **Request**:
+
   - **Method:** POST
   - **Path:** /api/discounts
   - **Headers**:
-  - **Body:** 
+  - **Body:**
     ```json
     {
       "code": "DISCOUNT10",
-      "discount_percent": 10.00,
+      "discount_percent": 10.0,
       "description": "10% discount for all courses",
       "type": "REFERRAL",
       "owner_user_id": "user-001"
@@ -4631,6 +4633,7 @@ Only TEXT messages can be updated.
     ```
 
 - **Response**:
+
   - **Status Code:** 201 Created
   - **Body:**
     ```json
@@ -4640,10 +4643,10 @@ Only TEXT messages can be updated.
       "data": {
         "id": "discount_id",
         "code": "DISCOUNT10",
-        "discount_percent": 10.00,
+        "discount_percent": 10.0,
         "description": "10% discount for all courses",
-        "type": "GENERAL",              // hoặc REFERRAL
-        "owner_user_id": "user-001",    // REQUIRED nếu REFERRAL, null nếu GENERAL
+        "type": "GENERAL", // hoặc REFERRAL
+        "owner_user_id": "user-001", // REQUIRED nếu REFERRAL, null nếu GENERAL
         "start_date": "2024-01-01T00:00:00",
         "end_date": "2024-12-31T23:59:59",
         "usage_limit": 1000,
@@ -4653,6 +4656,7 @@ Only TEXT messages can be updated.
     ```
 
 - **Errors**:
+
   - 400 Bad Request: Missing or invalid fields (`code`, `discount_percent`, `description`, `type`, `owner_user_id`)
   - 401 Unauthorized: Missing or invalid JWT
   - 403 Forbidden: Caller is not ADMIN
@@ -4660,12 +4664,14 @@ Only TEXT messages can be updated.
   - 409 Conflict: Discount already exists
 
 - **Controller Responsibilities**:
+
   - Validate JWT and ensure ADMIN role.
   - Parse and validate request body.
   - Call `DiscountService.createDiscount(discountDto)`.
-  - Return service response with proper HTTP status and JSON structure. 
+  - Return service response with proper HTTP status and JSON structure.
 
 - **Service Responsibilities**:
+
   - Check if user exists.
   - Ensure discount does not already exist for given code.
   - Save discount to database.
@@ -4674,4 +4680,74 @@ Only TEXT messages can be updated.
 - **Business Rules**:
   - Only ADMIN users can create discounts.
   - User must exist.
-  - Discount code must be unique. 
+  - Discount code must be unique.
+
+### 7.13 `POST /api/notifications`
+
+- **Description**:  
+  Creates a new notification for a given user. Only users with the ADMIN role are authorized to call this API. System services (payment, course approval, enrollment, etc.) can also trigger this API internally to notify INSTRUCTOR or STUDENT.
+- **Request**:
+
+  - **Method:** POST
+  - **Path:** /api/notifications
+  - **Headers**:
+  - **Body**:
+    ```json
+    {
+      "user_id": "user-001",
+      "resource_id": "course-123",
+      "entity_id": "payment-456",
+      "message": "Thanh toán thành công cho khóa học 'Advanced React Development'",
+      "action_url": "/courses/advanced-react-development",
+      "priority": "HIGH",
+      "expired_at": "2025-12-31T23:59:59Z"
+    }
+    ```
+
+- **Response**:
+
+  - **Status Code:** 201 Created
+  - **Body**:
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Notification created successfully",
+      "data": {
+        "id": "notification_id",
+        "user_id": "user-001",
+        "resource_id": "course-123",
+        "entity_id": "payment-456",
+        "message": "Thanh toán thành công cho khóa học 'Advanced React Development'",
+        "action_url": "/courses/advanced-react-development",
+        "priority": "HIGH",
+        "is_read": false,
+        "created_at": "2025-09-02T12:30:00Z",
+        "expired_at": "2025-12-31T23:59:59Z"
+      }
+    }
+    ```
+
+- **Errors**:
+
+  - 400 Bad Request: Missing or invalid fields (`user_id`, `message`, `action_url`, `priority`)
+  - 401 Unauthorized: Missing or invalid JWT
+  - 403 Forbidden: Caller is not ADMIN
+  - 404 Not Found: User not found
+
+- **Controller Responsibilities**:
+
+  - Validate JWT and ensure ADMIN role.
+  - Parse and validate request body.
+  - Call `NotificationService.createNotification(notificationDto)`.
+  - Return service response with proper HTTP status and JSON structure.
+
+- **Service Responsibilities**:
+
+  - Check if user exists.
+  - Create notification in database.
+  - Return created notification details.
+
+- **Business Rules**:
+  - Only ADMIN users can create notifications.
+  - User must exist.
+  - Notification must have a message and action URL.
