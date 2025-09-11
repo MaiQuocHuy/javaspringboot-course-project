@@ -47,7 +47,11 @@ public class InstructorApplication {
         @Column(name = "rejection_reason", columnDefinition = "TEXT")
         private String rejectionReason;
 
+        @Column(name = "is_deleted", nullable = false)
+        private boolean isDeleted = false;
+
         public enum ApplicationStatus {
                 PENDING, APPROVED, REJECTED
         }
+
 }

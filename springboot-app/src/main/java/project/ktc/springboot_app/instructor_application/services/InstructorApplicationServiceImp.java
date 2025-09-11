@@ -20,7 +20,6 @@ import project.ktc.springboot_app.instructor_application.dto.DocumentUploadRespo
 import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationDetailResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminReviewApplicationRequestDto;
-import project.ktc.springboot_app.instructor_application.dto.DeleteApplicationDto;
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication.ApplicationStatus;
 import project.ktc.springboot_app.instructor_application.interfaces.InstructorApplicationService;
@@ -37,8 +36,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Service implementation for instructor application operations
@@ -330,7 +327,7 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             }
 
             // Find application
-            InstructorApplication application = applicationRepository.findById(applicationId)
+            InstructorApplication application = applicationRepository.findByIdAndNotDeleted(applicationId)
                     .orElseThrow(() -> new RuntimeException("Application not found"));
 
             // Check if already reviewed
@@ -399,24 +396,13 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             }
 
             // Find application
-            InstructorApplication application = applicationRepository.findById(applicationId)
+            InstructorApplication application = applicationRepository.findByIdAndNotDeleted(applicationId)
                     .orElseThrow(() -> new RuntimeException("Application not found"));
 
-            // Xóa documents trên Cloudinary trước khi xóa application
-            if (application.getDocuments() != null && !application.getDocuments().isEmpty()) {
-                try {
-                    log.info("Deleting documents from Cloudinary for application: {}", applicationId);
-                    deleteAllDocumentsFromCloudinary(application.getDocuments());
-                } catch (Exception e) {
-                    // Log lỗi nhưng vẫn tiếp tục xóa application
-                    log.error("Error deleting documents from Cloudinary, continuing with application deletion: {}",
-                            e.getMessage());
-                }
-            }
-
-            // Xóa application từ database
-            applicationRepository.delete(application);
-            log.info("Application {} deleted by user {}", applicationId, authentication.getName());
+            // Soft delete: set isDeleted = true instead of hard delete
+            application.setDeleted(true);
+            applicationRepository.save(application);
+            log.info("Application {} soft deleted by admin {}", applicationId, authentication.getName());
 
             return ApiResponseUtil.success("Application deleted successfully");
 
@@ -430,87 +416,4 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
         }
     }
 
-    /**
-     * Xóa tất cả documents từ Cloudinary dựa trên JSON string
-     * 
-     * @param documentsJson JSON string chứa URLs của documents
-     */
-
-    private void deleteAllDocumentsFromCloudinary(String documentsJson) {
-        if (documentsJson == null || documentsJson.isEmpty()) {
-            log.info("No documents to delete");
-            return;
-        }
-
-        try {
-            // Parse JSON thành object
-            DeleteApplicationDto documents = objectMapper.readValue(
-                    documentsJson,
-                    DeleteApplicationDto.class);
-
-            // Xóa từng document (trừ portfolio vì là GitHub link)
-            deleteDocumentIfCloudinary(documents.getCv(), "CV");
-            deleteDocumentIfCloudinary(documents.getOther(), "Other document");
-            deleteDocumentIfCloudinary(documents.getCertificate(), "Certificate");
-
-            // Portfolio thường là GitHub link nên không cần xóa
-            if (documents.getPortfolio() != null &&
-                    documents.getPortfolio().contains("cloudinary.com")) {
-                deleteDocumentIfCloudinary(documents.getPortfolio(), "Portfolio");
-            }
-
-            log.info("Successfully processed document deletion from Cloudinary");
-
-        } catch (Exception e) {
-            log.error("Error parsing or deleting documents from JSON: {}", documentsJson, e);
-            // Không throw exception để không ảnh hưởng việc xóa application
-        }
-    }
-
-    /**
-     * Xóa document nếu là Cloudinary URL
-     */
-
-    private void deleteDocumentIfCloudinary(String url, String documentType) {
-        if (url == null || url.isEmpty()) {
-            log.debug("No {} to delete", documentType);
-            return;
-        }
-
-        if (!url.contains("cloudinary.com")) {
-            log.debug("{} is not a Cloudinary URL: {}", documentType, url);
-            return;
-        }
-
-        try {
-            String publicId = extractPublicIdFromUrl(url);
-            if (publicId != null) {
-                boolean deleted = cloudinaryService.deleteDocument(publicId);
-                if (deleted) {
-                    log.info("Successfully deleted {} from Cloudinary: {}", documentType, publicId);
-                } else {
-                    log.warn("Failed to delete {} from Cloudinary: {}", documentType, publicId);
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error deleting {} from Cloudinary: {}", documentType, url, e);
-        }
-    }
-
-    private String extractPublicIdFromUrl(String cloudinaryUrl) {
-        if (cloudinaryUrl == null || !cloudinaryUrl.contains("cloudinary.com")) {
-            return null;
-        }
-        // Matches: /upload/v{version}/instructor-documents/{filename_with_extension}
-        Pattern pattern = Pattern.compile("/upload/(?:v\\d+/)?(instructor-documents/[^?]+)");
-        Matcher matcher = pattern.matcher(cloudinaryUrl);
-
-        if (matcher.find()) {
-
-            return matcher.group(1);
-        }
-
-        log.warn("Could not extract public ID from URL: {}", cloudinaryUrl);
-        return null;
-    }
 }
