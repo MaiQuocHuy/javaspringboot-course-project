@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Seed Data for Notifications Table -->
+    <changeSet id="158-seed-notification" author="system">
+
+        <!-- ===================== ADMIN NOTIFICATIONS ===================== -->
+        
+        <!-- Admin: Student Payment Success -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-001"/>
+            <column name="user_id" value="user-001"/> <!-- Alice (Admin) -->
+            <column name="resource_id" value="res-payment-001"/>
+            <column name="entity_id" value="payment-001"/>
+            <column name="message" value="Student Bob đã thanh toán thành công khóa học Complete React Development Course ($99.99)"/>
+            <column name="action_url" value="/admin/payments/payment-001"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 10:30:00"/>
+            <column name="expired_at" value="2025-02-15 10:30:00"/>
+        </insert>
+
+        <!-- Admin: Payment Pending to Completed -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-002"/>
+            <column name="user_id" value="user-001"/> <!-- Alice (Admin) -->
+            <column name="resource_id" value="res-payment-001"/>
+            <column name="entity_id" value="payment-002"/>
+            <column name="message" value="Thanh toán #payment-002 đã chuyển từ Pending → Completed. Cần xác nhận chi trả cho instructor"/>
+            <column name="action_url" value="/admin/payments/payment-002"/>
+            <column name="priority" value="HIGH"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 11:45:00"/>
+            <column name="expired_at" value="2025-02-15 11:45:00"/>
+        </insert>
+
+        <!-- Admin: New Course Needs Approval -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-003"/>
+            <column name="user_id" value="user-001"/> <!-- Alice (Admin) -->
+            <column name="resource_id" value="res-course-001"/>
+            <column name="entity_id" value="course-002"/>
+            <column name="message" value="Khóa học mới 'Machine Learning Fundamentals' từ Julia Anderson cần được duyệt"/>
+            <column name="action_url" value="/admin/courses/course-002"/>
+            <column name="priority" value="HIGH"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 09:15:00"/>
+            <column name="expired_at" value="2025-02-15 09:15:00"/>
+        </insert>
+
+        <!-- Admin: Instructor Application Needs Approval -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-004"/>
+            <column name="user_id" value="user-001"/> <!-- Alice (Admin) -->
+            <column name="resource_id" value="res-user-001"/>
+            <column name="entity_id" value="app-001"/>
+            <column name="message" value="Đơn đăng ký instructor từ David Wilson cần được xem xét và duyệt"/>
+            <column name="action_url" value="/admin/instructor-applications/instructor-app-001"/>
+            <column name="priority" value="HIGH"/>
+            <column name="is_read" valueBoolean="true"/>
+            <column name="created_at" value="2025-01-14 16:20:00"/>
+            <column name="expired_at" value="2025-02-14 16:20:00"/>
+        </insert>
+
+        <!-- ===================== INSTRUCTOR NOTIFICATIONS ===================== -->
+        
+        <!-- Instructor: Course Approved -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-005"/>
+            <column name="user_id" value="user-003"/> <!-- Charlie (Instructor) -->
+            <column name="resource_id" value="res-course-001"/>
+            <column name="entity_id" value="course-001"/>
+            <column name="message" value="🎉 Chúc mừng! Khóa học 'Complete React Development Course' của bạn đã được duyệt và có thể bán"/>
+            <column name="action_url" value="/instructor/courses/course-001"/>
+            <column name="priority" value="HIGH"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 08:00:00"/>
+            <column name="expired_at" value="2025-03-15 08:00:00"/>
+        </insert>
+
+        <!-- Instructor: Course Rejected -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-006"/>
+            <column name="user_id" value="user-006"/> <!-- Fiona (Instructor) -->
+            <column name="resource_id" value="res-course-001"/>
+            <column name="entity_id" value="course-003"/>
+            <column name="message" value="❌ Khóa học 'Mobile App Development' cần chỉnh sửa. Lý do: Nội dung chưa đầy đủ ở phần advanced concepts"/>
+            <column name="action_url" value="/instructor/courses/course-003"/>
+            <column name="priority" value="HIGH"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 14:30:00"/>
+            <column name="expired_at" value="2025-03-15 14:30:00"/>
+        </insert>
+
+        <!-- Instructor: New Student Enrolled -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-007"/>
+            <column name="user_id" value="user-003"/> <!-- Charlie (Instructor) -->
+            <column name="resource_id" value="res-enrollment-001"/>
+            <column name="entity_id" value="enroll-001"/>
+            <column name="message" value="👨‍🎓 Student mới Bob đã tham gia khóa học 'Complete React Development Course'. Chào mừng học viên mới!"/>
+            <column name="action_url" value="/instructor/students"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 10:35:00"/>
+            <column name="expired_at" value="2025-03-15 10:35:00"/>
+        </insert>
+
+        <!-- Instructor: New Review from Student -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-008"/>
+            <column name="user_id" value="user-003"/> <!-- Charlie (Instructor) -->
+            <column name="resource_id" value="res-review-001"/>
+            <column name="entity_id" value="review-001"/>
+            <column name="message" value="⭐ Bob đã đánh giá 5 sao cho khóa học 'Complete React Development Course': 'Excellent course with clear explanations!'"/>
+            <column name="action_url" value="/instructor/reviews"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="is_read" valueBoolean="true"/>
+            <column name="created_at" value="2025-01-14 18:45:00"/>
+            <column name="expired_at" value="2025-03-14 18:45:00"/>
+        </insert>
+
+        <!-- ===================== STUDENT NOTIFICATIONS ===================== -->
+        
+        <!-- Student: New Course Available -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-009"/>
+            <column name="user_id" value="user-002"/> <!-- Bob (Student) -->
+            <column name="resource_id" value="res-course-001"/>
+            <column name="entity_id" value="course-002"/>
+            <column name="message" value="🚀 Khóa học mới 'Machine Learning Fundamentals' đã được mở! Phù hợp cho người mới bắt đầu"/>
+            <column name="action_url" value="/student/courses/course-002"/>
+            <column name="priority" value="LOW"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 12:00:00"/>
+            <column name="expired_at" value="2025-02-15 12:00:00"/>
+        </insert>
+
+        <!-- Student: Successfully Enrolled -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-010"/>
+            <column name="user_id" value="user-002"/> <!-- Bob (Student) -->
+            <column name="resource_id" value="res-enrollment-001"/>
+            <column name="entity_id" value="enroll-001"/>
+            <column name="message" value="🎉 Bạn đã tham gia thành công khóa học 'Complete React Development Course'! Bắt đầu học ngay thôi"/>
+            <column name="action_url" value="/student/courses/course-001"/>
+            <column name="priority" value="HIGH"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 10:32:00"/>
+            <column name="expired_at" value="2025-03-15 10:32:00"/>
+        </insert>
+
+        <!-- Student: New Lesson Added -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-011"/>
+            <column name="user_id" value="user-002"/> <!-- Bob (Student) -->
+            <column name="resource_id" value="res-lesson-001"/>
+            <column name="entity_id" value="lesson-003"/>
+            <column name="message" value="📖 Bài học mới 'Advanced React Hooks' đã được thêm vào khóa học 'Complete React Development Course'"/>
+            <column name="action_url" value="/student/courses/course-001"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 15:20:00"/>
+            <column name="expired_at" value="2025-02-15 15:20:00"/>
+        </insert>
+
+        <!-- Student: Certificate Ready -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-012"/>
+            <column name="user_id" value="user-004"/> <!-- Diana (Student) -->
+            <column name="resource_id" value="res-course-001"/>
+            <column name="entity_id" value="course-001"/>
+            <column name="message" value="🏆 Chúc mừng! Chứng chỉ hoàn thành khóa học 'Complete React Development Course' đã sẵn sàng để tải xuống"/>
+            <column name="action_url" value="/student/certificates"/>
+            <column name="priority" value="HIGH"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 16:45:00"/>
+            <column name="expired_at" value="2025-04-15 16:45:00"/>
+        </insert>
+
+        <!-- ===================== MORE DIVERSE NOTIFICATIONS ===================== -->
+        
+        <!-- Admin: Multiple Payment Success -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-013"/>
+            <column name="user_id" value="user-001"/> <!-- Alice (Admin) -->
+            <column name="resource_id" value="res-payment-001"/>
+            <column name="entity_id" value="payment-003"/>
+            <column name="message" value="Diana đã thanh toán thành công khóa học Machine Learning Fundamentals ($149.99)"/>
+            <column name="action_url" value="/admin/payments/payment-003"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="is_read" valueBoolean="true"/>
+            <column name="created_at" value="2025-01-14 14:15:00"/>
+            <column name="expired_at" value="2025-02-14 14:15:00"/>
+        </insert>
+
+        <!-- Instructor: Another Student Enrolled -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-014"/>
+            <column name="user_id" value="user-010"/> <!-- Julia (Instructor) -->
+            <column name="resource_id" value="res-enrollment-001"/>
+            <column name="entity_id" value="enroll-002"/>
+            <column name="message" value="👨‍🎓 Student Diana đã tham gia khóa học 'Machine Learning Fundamentals'. Tổng số học viên: 2"/>
+            <column name="action_url" value="/instructor/students"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-14 14:18:00"/>
+            <column name="expired_at" value="2025-03-14 14:18:00"/>
+        </insert>
+
+        <!-- Student: Course Recommendation -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-015"/>
+            <column name="user_id" value="user-005"/> <!-- Eva (Student) -->
+            <column name="resource_id" value="res-course-001"/>
+            <column name="entity_id" value="course-003"/>
+            <column name="message" value="🚀 Dựa trên sở thích của bạn, khóa học 'Mobile App Development with React Native' có thể phù hợp!"/>
+            <column name="action_url" value="/student/courses/course-003"/>
+            <column name="priority" value="LOW"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 13:30:00"/>
+            <column name="expired_at" value="2025-02-15 13:30:00"/>
+        </insert>
+
+        <!-- Admin: Refund Request -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-016"/>
+            <column name="user_id" value="user-001"/> <!-- Alice (Admin) -->
+            <column name="resource_id" value="res-payment-001"/>
+            <column name="entity_id" value="refund-001"/>
+            <column name="message" value="💰 Yêu cầu hoàn tiền từ Eva cho khóa học Mobile App Development ($129.99). Lý do: Không phù hợp với nhu cầu"/>
+            <column name="action_url" value="/admin/refunds/refund-001"/>
+            <column name="priority" value="HIGH"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 17:00:00"/>
+            <column name="expired_at" value="2025-02-15 17:00:00"/>
+        </insert>
+
+        <!-- Instructor: Low Rating Alert -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-017"/>
+            <column name="user_id" value="user-006"/> <!-- Fiona (Instructor) -->
+            <column name="resource_id" value="res-review-001"/>
+            <column name="entity_id" value="review-002"/>
+            <column name="message" value="⚠️ Eva đã đánh giá 2 sao cho khóa học 'Mobile App Development': 'Nội dung khó hiểu, cần giải thích rõ hơn'"/>
+            <column name="action_url" value="/instructor/reviews"/>
+            <column name="priority" value="HIGH"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 16:30:00"/>
+            <column name="expired_at" value="2025-03-15 16:30:00"/>
+        </insert>
+
+        <!-- Student: Course Update -->
+        <insert tableName="notifications">
+            <column name="id" value="notif-018"/>
+            <column name="user_id" value="user-004"/> <!-- Diana (Student) -->
+            <column name="resource_id" value="res-course-001"/>
+            <column name="entity_id" value="course-002"/>
+            <column name="message" value="📚 Khóa học 'Machine Learning Fundamentals' đã được cập nhật với 3 bài học mới về Deep Learning"/>
+            <column name="action_url" value="/student/courses/course-002"/>
+            <column name="priority" value="MEDIUM"/>
+            <column name="is_read" valueBoolean="false"/>
+            <column name="created_at" value="2025-01-15 11:00:00"/>
+            <column name="expired_at" value="2025-02-15 11:00:00"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

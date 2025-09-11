@@ -114,4 +114,15 @@ public interface InstructorCourseRepository extends JpaRepository<Course, String
                         "WHERE c.id = :courseId AND c.instructor.id = :instructorId AND c.isDeleted = false")
         Optional<Course> findByIdAndInstructorId(@Param("courseId") String courseId,
                         @Param("instructorId") String instructorId);
+
+        /**
+         * Find all published courses for an instructor
+         */
+        @Query("SELECT c FROM Course c " +
+                        "LEFT JOIN FETCH c.categories " +
+                        "WHERE c.instructor.id = :instructorId AND c.isPublished = :isPublished AND c.isDeleted = false "
+                        +
+                        "ORDER BY c.createdAt DESC")
+        List<Course> findByInstructorIdAndIsPublished(@Param("instructorId") String instructorId,
+                        @Param("isPublished") Boolean isPublished);
 }

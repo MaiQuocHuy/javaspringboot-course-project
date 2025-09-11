@@ -20,13 +20,13 @@ public class AsyncSendMessageRequest {
     private String tempId;
 
     @NotBlank
-    @Pattern(regexp = "^(text|file|video|audio)$", message = "Type must be 'text', 'file', 'video', or 'audio'")
-    @Schema(description = "Type of message", example = "text", allowableValues = { "text", "file", "video",
-            "audio" }, requiredMode = Schema.RequiredMode.REQUIRED)
+    @Pattern(regexp = "^(TEXT|FILE|VIDEO|AUDIO)$", message = "Type must be 'TEXT', 'FILE', 'VIDEO', or 'AUDIO'")
+    @Schema(description = "Type of message", example = "TEXT", allowableValues = { "TEXT", "FILE", "VIDEO",
+            "AUDIO" }, requiredMode = Schema.RequiredMode.REQUIRED)
     private String type;
 
     @Size(max = 5000)
-    @Schema(description = "Message content (required if type = 'text')", example = "Hello world!")
+    @Schema(description = "Message content (required if type = 'TEXT')", example = "Hello world!")
     private String content;
 
     // For when file is already uploaded and URL is provided (recommended pattern)
