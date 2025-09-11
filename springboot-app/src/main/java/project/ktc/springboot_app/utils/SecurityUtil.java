@@ -63,6 +63,27 @@ public class SecurityUtil {
 
     }
 
+    public String getCurrentUserName() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) {
+                log.warn("SecurityContext has no authenticated user");
+                return null;
+            }
+
+            Object principal = auth.getPrincipal();
+            if (principal instanceof User user) {
+                return user.getName();
+            }
+
+            log.warn("Unexpected principal type: {}", principal.getClass().getName());
+            return null;
+        } catch (Exception e) {
+            log.error("Error getting current user name", e);
+            return null;
+        }
+    }
+
     public User getCurrentUser() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
