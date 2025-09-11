@@ -8,6 +8,11 @@
 
     <!-- Additional seed data for user-002 (Bob) -->
     <changeSet id="159-01" author="ktc">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM discounts WHERE id = 'db0b0b0b-b0b0-b0b0-b0b0-b0b0b0b0b0b0'
+            </sqlCheck>
+        </preConditions>
         <!-- Create referral discount for Bob -->
         <insert tableName="discounts">
             <column name="id" value="db0b0b0b-b0b0-b0b0-b0b0-b0b0b0b0b0b0"/>
