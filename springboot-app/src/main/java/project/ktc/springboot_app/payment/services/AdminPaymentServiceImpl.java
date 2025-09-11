@@ -66,6 +66,7 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     private final InstructorEarningRepository instructorEarningRepository;
     private final AffiliatePayoutService affiliatePayoutService;
     private final DiscountUsageRepository discountUsageRepository;
+    private final NotificationHelper notificationHelper;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(Pageable pageable) {
@@ -270,6 +271,12 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
                     .status(updatedPayment.getStatus().name())
                     .updatedAt(LocalDateTime.now())
                     .build();
+
+            if (paymentStatus == PaymentStatus.COMPLETED) {
+                String userName = payment.getUser().getName();
+                notificationHelper.createAdminStudentPaymentNotification(payment.getId(), userName,
+                        payment.getCourse().getId(), payment.getAmount());
+            }
 
             log.info("Successfully updated payment status for payment: {} from {} to {}",
                     paymentId, oldStatus, newStatus);

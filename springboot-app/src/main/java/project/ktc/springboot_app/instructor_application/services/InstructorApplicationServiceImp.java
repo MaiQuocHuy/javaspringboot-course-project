@@ -1,3 +1,4 @@
+
 package project.ktc.springboot_app.instructor_application.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,6 +26,7 @@ import project.ktc.springboot_app.instructor_application.entity.InstructorApplic
 import project.ktc.springboot_app.instructor_application.interfaces.InstructorApplicationService;
 import project.ktc.springboot_app.instructor_application.mapper.InstructorApplicationsMapper;
 import project.ktc.springboot_app.instructor_application.repositories.InstructorApplicationRepository;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 import project.ktc.springboot_app.upload.exception.InvalidDocumentFormatException;
 import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.services.FileValidationService;
@@ -52,6 +54,7 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
     private final FileValidationService fileValidationService;
     private final ObjectMapper objectMapper;
     private final InstructorApplicationsMapper instructorApplicationMapper;
+    private final NotificationHelper notificationHelper;
 
     // Constants for business rules
     private static final int MAX_REJECTION_COUNT = 5;
@@ -353,8 +356,13 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
 
             if (request.getAction() == ApplicationStatus.REJECTED) {
                 application.setRejectionReason(request.getRejectionReason());
+                // Notify applicant about rejection
+                notificationHelper.createStudentInstructorApplicationRejectedNotification(application.getUser().getId(),
+                        application.getId(), request.getRejectionReason());
             } else {
                 application.setRejectionReason(null); // Clear rejection reason if approving
+                notificationHelper.createStudentInstructorApplicationApprovedNotification(application.getUser().getId(),
+                        application.getId());
             }
 
             applicationRepository.save(application);
