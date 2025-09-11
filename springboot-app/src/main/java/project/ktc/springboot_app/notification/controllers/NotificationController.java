@@ -588,7 +588,8 @@ public class NotificationController {
                                                         "course-003", // courseId
                                                         "React Native Development", // courseName
                                                         "Nguyễn Văn Minh", // studentName
-                                                        "106c78bb-bf04-44a8-a3ba-2fa7f9eb5e54" // enrollmentId
+                                                        "106c78bb-bf04-44a8-a3ba-2fa7f9eb5e54",
+                                                        "enrollment-003" // enrollmentId
                                         ).get(); // Convert async to sync
 
                         project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto> response = project.ktc.springboot_app.common.dto.ApiResponse
@@ -603,46 +604,6 @@ public class NotificationController {
                         return ResponseEntity.status(500).body(errorResponse);
                 }
         }
-
-        /**
-         * Test instructor new review notification
-         */
-        // @PostMapping("/test/instructor/new-review")
-        // @Operation(summary = "Test instructor new review notification", description =
-        // "Creates a test instructor new review notification")
-        // public
-        // ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto>>
-        // testInstructorNewReview() {
-        // log.info("Testing instructor new review notification");
-
-        // try {
-        // NotificationResponseDto notification =
-        // notificationHelper.createInstructorNewReviewNotification(
-        // "instructor-004", // instructorId
-        // "course-004", // courseId
-        // "Vue.js Fundamentals", // courseName
-        // "Trần Thị Lan", // studentName
-        // "review-004", // reviewId
-        // 5, // rating (5 stars)
-        // "Khóa học rất hay và chi tiết, giảng viên dạy dễ hiểu. Tôi đã học được rất
-        // nhiều kiến thức bổ ích từ khóa học này." // reviewText
-        // ).get(); // Convert async to sync
-
-        // project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto>
-        // response = project.ktc.springboot_app.common.dto.ApiResponse
-        // .created(
-        // notification,
-        // "Instructor new review notification created successfully");
-        // return ResponseEntity.status(201).body(response);
-        // } catch (Exception e) {
-        // log.error("Error creating instructor new review notification: {}",
-        // e.getMessage(), e);
-        // project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto>
-        // errorResponse = project.ktc.springboot_app.common.dto.ApiResponse
-        // .error(500, "Error: " + e.getMessage());
-        // return ResponseEntity.status(500).body(errorResponse);
-        // }
-        // }
 
         /**
          * Test all instructor notifications at once
@@ -665,11 +626,8 @@ public class NotificationController {
 
                         notificationHelper.createInstructorNewStudentEnrollmentNotification(
                                         "instructor-102", "course-102", "DevOps Essentials", "Phạm Văn Hòa",
+                                        "student-102",
                                         "enrollment-102").get();
-
-                        notificationHelper.createInstructorNewReviewNotification(
-                                        "instructor-103", "course-103", "Machine Learning Basics", "Lê Thị Mai",
-                                        "review-103", 4, "Khóa học tốt nhưng cần thêm ví dụ thực tế").get();
 
                         return ResponseEntity.ok(project.ktc.springboot_app.common.dto.ApiResponse.success(
                                         "All instructor notifications created successfully",

@@ -235,7 +235,8 @@ public class EnrollmentServiceImp implements EnrollmentService {
 
             notificationHelper.createInstructorNewStudentEnrollmentNotification(
                     enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(),
-                    enrollment.getCourse().getTitle(), enrollment.getUser().getName(), enrollment.getId());
+                    enrollment.getCourse().getTitle(), enrollment.getUser().getName(), enrollment.getUser().getId(),
+                    enrollment.getId());
 
             log.info("Enrollment successfully created for user {} in course {}", userId, courseId);
 

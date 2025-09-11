@@ -347,7 +347,7 @@ public class NotificationHelper {
 
         String message = String.format("Đơn đăng ký giảng viên mới từ %s (%s) cần được duyệt",
                 applicantName, applicantEmail);
-        String actionUrl = "/admin/instructors/applications/" + applicationId;
+        String actionUrl = "/admin/applications/" + applicationId;
 
         createNotificationsForUsersWithPermission(
                 "instructor_application:READ",
@@ -384,7 +384,7 @@ public class NotificationHelper {
             courseName = "Unknown Course";
         }
         if (courseUrl == null || courseUrl.trim().isEmpty()) {
-            courseUrl = "/courses/" + courseId;
+            courseUrl = "/instructor/courses/" + courseId;
         }
 
         String message = String.format("🎉 Chúc mừng! Khóa học '%s' của bạn đã được phê duyệt và có thể xuất bản",
@@ -424,7 +424,7 @@ public class NotificationHelper {
             courseName = "Unknown Course";
         }
         if (courseUrl == null || courseUrl.trim().isEmpty()) {
-            courseUrl = "/courses/" + courseId;
+            courseUrl = "/instructor/courses/" + courseId;
         }
         if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
             rejectionReason = "Vui lòng xem chi tiết trong hệ thống";
@@ -451,7 +451,8 @@ public class NotificationHelper {
      * Notify instructor when a new student enrolls in their course
      */
     public CompletableFuture<NotificationResponseDto> createInstructorNewStudentEnrollmentNotification(
-            String instructorId, String courseId, String courseName, String studentName, String enrollmentId) {
+            String instructorId, String courseId, String courseName, String studentName, String studentId,
+            String enrollmentId) {
         // Validate inputs
         if (instructorId == null || instructorId.trim().isEmpty()) {
             log.error("Cannot create instructor new student notification: instructorId is null or empty");
@@ -473,7 +474,7 @@ public class NotificationHelper {
         }
 
         String message = String.format("📚 %s vừa đăng ký khóa học '%s' của bạn", studentName, courseName);
-        String actionUrl = "/instructor/courses/" + courseId + "/students";
+        String actionUrl = "/instructor/students/" + studentId;
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
                 .user_id(instructorId)
@@ -487,65 +488,6 @@ public class NotificationHelper {
 
         log.info("Creating new student enrollment notification for instructor: {} - course: {} - student: {}",
                 instructorId, courseId, studentName);
-        return notificationService.createNotification(notificationDto);
-    }
-
-    /**
-     * Instructor Notification 4: Có đánh giá mới từ student (MEDIUM priority)
-     * Notify instructor when a student leaves a new review/rating for their course
-     */
-    public CompletableFuture<NotificationResponseDto> createInstructorNewReviewNotification(
-            String instructorId, String courseId, String courseName, String studentName,
-            String reviewId, int rating, String reviewText) {
-        // Validate inputs
-        if (instructorId == null || instructorId.trim().isEmpty()) {
-            log.error("Cannot create instructor new review notification: instructorId is null or empty");
-            return CompletableFuture
-                    .failedFuture(new IllegalArgumentException("Instructor ID cannot be null or empty"));
-        }
-        if (courseId == null || courseId.trim().isEmpty()) {
-            log.error("Cannot create instructor new review notification: courseId is null or empty");
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Course ID cannot be null or empty"));
-        }
-        if (courseName == null || courseName.trim().isEmpty()) {
-            courseName = "Unknown Course";
-        }
-        if (studentName == null || studentName.trim().isEmpty()) {
-            studentName = "Một học viên";
-        }
-        if (reviewId == null || reviewId.trim().isEmpty()) {
-            reviewId = "unknown";
-        }
-        if (rating < 1 || rating > 5) {
-            rating = 5; // Default to 5 stars if invalid
-        }
-
-        // Create star emoji based on rating
-        String stars = "⭐".repeat(rating);
-
-        // Truncate review text if too long
-        String shortReviewText = "";
-        if (reviewText != null && !reviewText.trim().isEmpty()) {
-            shortReviewText = reviewText.length() > 50 ? reviewText.substring(0, 50) + "..." : reviewText;
-            shortReviewText = " - \"" + shortReviewText + "\"";
-        }
-
-        String message = String.format("💬 %s vừa đánh giá %s khóa học '%s'%s",
-                studentName, stars, courseName, shortReviewText);
-        String actionUrl = "/instructor/courses/" + courseId + "/reviews";
-
-        CreateNotificationDto notificationDto = CreateNotificationDto.builder()
-                .user_id(instructorId)
-                .resource_id("res-review-001")
-                .entity_id(reviewId)
-                .message(message)
-                .action_url(actionUrl)
-                .priority(NotificationPriority.MEDIUM)
-                .expired_at(LocalDateTime.now().plusDays(30))
-                .build();
-
-        log.info("Creating new review notification for instructor: {} - course: {} - rating: {} stars - reviewer: {}",
-                instructorId, courseId, rating, studentName);
         return notificationService.createNotification(notificationDto);
     }
 
@@ -571,7 +513,7 @@ public class NotificationHelper {
         }
 
         String message = "🎉 Chúc mừng! Đơn đăng ký làm giảng viên của bạn đã được phê duyệt. Bây giờ bạn có thể tạo và quản lý khóa học.";
-        String actionUrl = "/instructor/dashboard";
+        String actionUrl = "/settings?tab=application";
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
                 .user_id(studentId)
@@ -613,7 +555,7 @@ public class NotificationHelper {
         String message = String.format(
                 "❌ Đơn đăng ký làm giảng viên của bạn đã bị từ chối. Lý do: %s. Bạn có thể nộp đơn mới sau 3 ngày.",
                 rejectionReason);
-        String actionUrl = "/profile/instructor-application";
+        String actionUrl = "/settings?tab=application";
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
                 .user_id(studentId)
