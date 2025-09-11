@@ -406,6 +406,40 @@ public class DiscountServiceImp implements DiscountService {
         }
     }
 
+    @Override
+    public ResponseEntity<ApiResponse<DiscountResponseDto>> getUserInductionDiscount(String userId) {
+        try {
+            log.info("Getting user induction discount for user ID: {}", userId);
+
+            // Validate user exists
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                log.warn("User not found with ID: {}", userId);
+                return ApiResponseUtil.notFound("User not found");
+            }
+
+            // Find user's REFERRAL discount
+            Discount userReferralDiscount = discountRepository.findByOwnerUserIdAndType(userId, DiscountType.REFERRAL)
+                    .orElse(null);
+            if (userReferralDiscount == null) {
+                log.info("No induction discount found for user: {}", userId);
+                return ApiResponseUtil.notFound("No induction discount found for this user");
+            }
+
+            // Convert to DTO and return
+            DiscountResponseDto responseDto = convertToDto(userReferralDiscount);
+
+            log.info("User induction discount found with ID: {} and code: {} for user: {}",
+                    userReferralDiscount.getId(), userReferralDiscount.getCode(), userId);
+            return ApiResponseUtil.success(responseDto, "User induction discount retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error getting user induction discount for user {}: {}", userId, e.getMessage(), e);
+            return ApiResponseUtil
+                    .internalServerError("Failed to retrieve induction discount. Please try again later.");
+        }
+    }
+
     /**
      * Generates a unique discount code for a user based on their name and timestamp
      */
