@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+      http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- Additional seed data for user-002 (Bob) -->
+    <changeSet id="159-01" author="ktc">
+        <!-- Create referral discount for Bob -->
+        <insert tableName="discounts">
+            <column name="id" value="db0b0b0b-b0b0-b0b0-b0b0-b0b0b0b0b0b0"/>
+            <column name="code" value="BOBFRIEND10"/>
+            <column name="discount_percent" value="10.00"/>
+            <column name="description" value="Bob's friend referral discount"/>
+            <column name="type" value="REFERRAL"/>
+            <column name="owner_user_id" value="user-002"/> <!-- Bob -->
+            <column name="start_date" value="2024-01-01 00:00:00"/>
+            <column name="end_date" value="2025-12-31 23:59:59"/>
+            <column name="usage_limit"/>
+            <column name="per_user_limit"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Create another referral discount for Bob -->
+        <insert tableName="discounts">
+            <column name="id" value="db1b1b1b-b1b1-b1b1-b1b1-b1b1b1b1b1b1"/>
+            <column name="code" value="BOBSPECIAL15"/>
+            <column name="discount_percent" value="15.00"/>
+            <column name="description" value="Bob's special referral program"/>
+            <column name="type" value="REFERRAL"/>
+            <column name="owner_user_id" value="user-002"/> <!-- Bob -->
+            <column name="start_date" value="2024-06-01 00:00:00"/>
+            <column name="end_date" value="2025-06-30 23:59:59"/>
+            <column name="usage_limit" value="100"/>
+            <column name="per_user_limit" value="2"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Bob uses another general discount -->
+        <insert tableName="discount_usages">
+            <column name="id" value="dub2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2"/>
+            <column name="discount_id" value="d7g8h9i0-j1k2-3456-789a-56789012345a"/> <!-- STUDENT15 -->
+            <column name="user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-004"/> <!-- Data Science with Python -->
+            <column name="referred_by_user_id"/>
+            <column name="used_at" value="2024-08-15 10:30:00"/>
+            <column name="discount_percent" value="15.00"/>
+            <column name="discount_amount" value="14.99"/>
+        </insert>
+
+        <!-- User-003 (Charlie) uses Bob's BOBFRIEND10 discount -->
+        <insert tableName="discount_usages">
+            <column name="id" value="dub3b3b3-b3b3-b3b3-b3b3-b3b3b3b3b3b3"/>
+            <column name="discount_id" value="db0b0b0b-b0b0-b0b0-b0b0-b0b0b0b0b0b0"/> <!-- BOBFRIEND10 -->
+            <column name="user_id" value="user-003"/> <!-- Charlie -->
+            <column name="course_id" value="course-006"/> <!-- Full Stack Web Development -->
+            <column name="referred_by_user_id" value="user-002"/> <!-- Bob -->
+            <column name="used_at" value="2024-09-10 14:20:00"/>
+            <column name="discount_percent" value="10.00"/>
+            <column name="discount_amount" value="9.99"/>
+        </insert>
+
+        <!-- User-007 (George) uses Bob's BOBSPECIAL15 discount -->
+        <insert tableName="discount_usages">
+            <column name="id" value="dub4b4b4-b4b4-b4b4-b4b4-b4b4b4b4b4b4"/>
+            <column name="discount_id" value="db1b1b1b-b1b1-b1b1-b1b1-b1b1b1b1b1b1"/> <!-- BOBSPECIAL15 -->
+            <column name="user_id" value="user-007"/> <!-- George -->
+            <column name="course_id" value="course-009"/> <!-- DevOps and CI/CD -->
+            <column name="referred_by_user_id" value="user-002"/> <!-- Bob -->
+            <column name="used_at" value="2024-09-20 16:45:00"/>
+            <column name="discount_percent" value="15.00"/>
+            <column name="discount_amount" value="14.99"/>
+        </insert>
+
+        <!-- User-010 (Julia) uses Bob's BOBFRIEND10 discount -->
+        <insert tableName="discount_usages">
+            <column name="id" value="dub5b5b5-b5b5-b5b5-b5b5-b5b5b5b5b5b5"/>
+            <column name="discount_id" value="db0b0b0b-b0b0-b0b0-b0b0-b0b0b0b0b0b0"/> <!-- BOBFRIEND10 -->
+            <column name="user_id" value="user-010"/> <!-- Julia -->
+            <column name="course_id" value="course-012"/> <!-- Advanced NodeJS -->
+            <column name="referred_by_user_id" value="user-002"/> <!-- Bob -->
+            <column name="used_at" value="2024-10-01 11:30:00"/>
+            <column name="discount_percent" value="10.00"/>
+            <column name="discount_amount" value="9.99"/>
+        </insert>
+
+        <!-- Bob gets affiliate payout for Charlie's usage -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="apb1b1b1-b1b1-b1b1-b1b1-b1b1b1b1b1b1"/>
+            <column name="referred_by_user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-006"/> <!-- Full Stack Web Development -->
+            <column name="discount_usage_id" value="dub3b3b3-b3b3-b3b3-b3b3-b3b3b3b3b3b3"/>
+            <column name="commission_percent" value="10.00"/>
+            <column name="commission_amount" value="8.99"/>
+            <column name="payout_status" value="PAID"/>
+            <column name="created_at" value="2024-09-10 14:20:00"/>
+            <column name="updated_at" value="2024-10-01 09:30:00"/>
+            <column name="paid_at" value="2024-10-01 10:00:00"/>
+        </insert>
+
+        <!-- Bob gets affiliate payout for George's usage -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="apb2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2"/>
+            <column name="referred_by_user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-009"/> <!-- DevOps and CI/CD -->
+            <column name="discount_usage_id" value="dub4b4b4-b4b4-b4b4-b4b4-b4b4b4b4b4b4"/>
+            <column name="commission_percent" value="12.00"/>
+            <column name="commission_amount" value="10.79"/>
+            <column name="payout_status" value="PENDING"/>
+            <column name="created_at" value="2024-09-20 16:45:00"/>
+            <column name="updated_at" value="2024-09-20 16:45:00"/>
+        </insert>
+
+        <!-- Bob gets affiliate payout for Julia's usage -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="apb3b3b3-b3b3-b3b3-b3b3-b3b3b3b3b3b3"/>
+            <column name="referred_by_user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-012"/> <!-- Advanced NodeJS -->
+            <column name="discount_usage_id" value="dub5b5b5-b5b5-b5b5-b5b5-b5b5b5b5b5b5"/>
+            <column name="commission_percent" value="10.00"/>
+            <column name="commission_amount" value="8.99"/>
+            <column name="payout_status" value="PENDING"/>
+            <column name="created_at" value="2024-10-01 11:30:00"/>
+            <column name="updated_at" value="2024-10-01 11:30:00"/>
+        </insert>
+
+        <!-- Bob gets direct affiliate payout (no discount usage) -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="apb4b4b4-b4b4-b4b4-b4b4-b4b4b4b4b4b4"/>
+            <column name="referred_by_user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-013"/> <!-- Vue.js Development -->
+            <column name="discount_usage_id"/> <!-- NULL - no discount used -->
+            <column name="commission_percent" value="8.00"/>
+            <column name="commission_amount" value="7.99"/>
+            <column name="payout_status" value="PAID"/>
+            <column name="created_at" value="2024-08-25 15:20:00"/>
+            <column name="updated_at" value="2024-09-01 09:45:00"/>
+            <column name="paid_at" value="2024-09-01 10:00:00"/>
+        </insert>
+
+        <!-- Bob gets cancelled payout -->
+        <insert tableName="affiliate_payouts">
+            <column name="id" value="apb5b5b5-b5b5-b5b5-b5b5-b5b5b5b5b5b5"/>
+            <column name="referred_by_user_id" value="user-002"/> <!-- Bob -->
+            <column name="course_id" value="course-014"/> <!-- Blockchain Fundamentals -->
+            <column name="discount_usage_id"/> <!-- NULL -->
+            <column name="commission_percent" value="9.00"/>
+            <column name="commission_amount" value="8.99"/>
+            <column name="payout_status" value="CANCELLED"/>
+            <column name="created_at" value="2024-07-30 12:10:00"/>
+            <column name="updated_at" value="2024-08-05 08:30:00"/>
+            <column name="cancelled_at" value="2024-08-05 09:00:00"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
