@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,7 +47,7 @@ public class InstructorStudentServiceImpl implements InstructorStudentService {
   private final CourseRepository courseRepository;
 
   private List<String> getEnrolledStudentIds(String instructorId) {
-    return instructorStudentRepository.getEnrolledStudentsByInstructorId(instructorId);
+    return instructorStudentRepository.getEnrolledStudentIdsByInstructorId(instructorId);
   }
 
   private Double calculateProgress(String userId, String courseId) {
@@ -111,7 +110,7 @@ public class InstructorStudentServiceImpl implements InstructorStudentService {
               .build();
 
           // Get student's enrolled courses
-          List<Object[]> studentCourses = instructorStudentRepository.getStudentCourses(studentId);
+          List<Object[]> studentCourses = instructorStudentRepository.getStudentCourses(instructorId, studentId);
           if (studentCourses != null && !studentCourses.isEmpty()) {
             List<EnrolledCourses> enrolledCourses = new ArrayList<>();
             for (Object[] course : studentCourses) {
@@ -168,7 +167,7 @@ public class InstructorStudentServiceImpl implements InstructorStudentService {
 
           // Get student's enrolled courses
           List<Object[]> enrolledCoursesData = instructorStudentRepository
-              .getStudentCoursesDetails(student.getId());
+              .getStudentCoursesDetails(instructorId, student.getId());
 
           List<EnrolledCoursesDetails> enrolledCoursesDetails = new ArrayList<>();
           Set<String> processedCourseIds = new HashSet<>();

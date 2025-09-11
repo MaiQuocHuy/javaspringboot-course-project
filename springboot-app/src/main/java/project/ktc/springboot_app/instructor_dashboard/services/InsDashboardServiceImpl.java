@@ -58,7 +58,7 @@ public class InsDashboardServiceImpl implements InsDashboardService {
 
   private StatisticItemDto studentStatistics(String instructorId) {
     // Get total enrolled students
-    List<String> enrolledStudentIds = instructorStudentRepository.getEnrolledStudentsByInstructorId(instructorId);
+    List<String> enrolledStudentIds = instructorStudentRepository.getEnrolledStudentIdsByInstructorId(instructorId);
     // Get current and last month enrolled students
     Long totalCurrentEnrolledStudents = instructorStudentRepository.countStudentsEnrolledByMonth(
         LocalDate.now().getYear(),
