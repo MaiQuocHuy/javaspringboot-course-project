@@ -24,6 +24,10 @@ public class AdminInstructorApplicationResponseDto {
 
     private ApplicationStatus status;
 
+    private String documents;
+
+    private String rejectionReason;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime submittedAt;
 

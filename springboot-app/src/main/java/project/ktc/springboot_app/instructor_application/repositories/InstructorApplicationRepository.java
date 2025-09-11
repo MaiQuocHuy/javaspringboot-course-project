@@ -21,8 +21,14 @@ public interface InstructorApplicationRepository extends JpaRepository<Instructo
     /**
      * Find instructor application by user ID
      */
-    @Query("SELECT ia FROM InstructorApplication ia WHERE ia.user.id = :userId")
+    @Query("SELECT ia FROM InstructorApplication ia WHERE ia.user.id = :userId ORDER BY ia.submittedAt DESC")
     Optional<InstructorApplication> findByUserId(@Param("userId") String userId);
+
+    /**
+     * Find instructor application by user ID
+     */
+    @Query("SELECT ia FROM InstructorApplication ia WHERE ia.user.id = :userId ORDER BY ia.submittedAt DESC")
+    List<InstructorApplication> findByUserIdAdmin(@Param("userId") String userId);
 
     /**
      * Check if user has any instructor application
@@ -60,6 +66,23 @@ public interface InstructorApplicationRepository extends JpaRepository<Instructo
     @Query("SELECT ia FROM InstructorApplication ia JOIN FETCH ia.user ORDER BY ia.submittedAt DESC")
     @NonNull
     List<InstructorApplication> findAll();
+
+    /**
+     * Find all instructor applications (1 latest per user)
+     */
+    @Query("""
+            SELECT ia
+            FROM InstructorApplication ia
+            JOIN FETCH ia.user u
+            WHERE ia.submittedAt = (
+                SELECT MAX(ia2.submittedAt)
+                FROM InstructorApplication ia2
+                WHERE ia2.user.id = u.id
+            )
+            ORDER BY ia.submittedAt DESC
+            """)
+    @NonNull
+    List<InstructorApplication> findAllLatestPerUser();
 
     /**
      * Find latest instructor application by user ID

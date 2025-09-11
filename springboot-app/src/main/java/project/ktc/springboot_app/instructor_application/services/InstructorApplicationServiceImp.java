@@ -17,7 +17,6 @@ import project.ktc.springboot_app.common.exception.IneligibleApplicationExceptio
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.instructor_application.dto.DocumentUploadResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.InstructorApplicationDetailResponseDto;
-import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminReviewApplicationRequestDto;
 import project.ktc.springboot_app.instructor_application.dto.DeleteApplicationDto;
@@ -277,7 +276,7 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
     @Override
     @Transactional
     public ResponseEntity<ApiResponse<List<AdminInstructorApplicationResponseDto>>> getAllApplicationAdmin() {
-        List<InstructorApplication> applications = applicationRepository.findAll();
+        List<InstructorApplication> applications = applicationRepository.findAllLatestPerUser();
 
         List<AdminInstructorApplicationResponseDto> responseList = instructorApplicationMapper
                 .toAdminResponseDtoList(applications);
@@ -292,37 +291,20 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
 
     @Override
     @Transactional
-    public ResponseEntity<ApiResponse<AdminApplicationDetailDto>> getApplicationByIdAdmin(String applicationId) {
-        try {
-            // Check authentication
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<ApiResponse<List<AdminInstructorApplicationResponseDto>>> getApplicationByUserIdAdmin(
+            String userId) {
+        List<InstructorApplication> applications = applicationRepository.findByUserIdAdmin(userId);
 
-            if (authentication == null || !authentication.isAuthenticated()) {
-                log.warn("No authenticated user found in security context");
-                return ApiResponseUtil.unauthorized("User not authenticated");
-            }
+        List<AdminInstructorApplicationResponseDto> responseList = instructorApplicationMapper
+                .toAdminDetailResponseDtoList(applications);
 
-            // Check if application exists
-            InstructorApplication application = applicationRepository.findById(applicationId)
-                    .orElseThrow(() -> new RuntimeException("Application not found with id: " + applicationId));
-
-            log.debug("Found application with ID: {}, Status: {}", application.getId(), application.getStatus());
-
-            // Map to DTO
-            AdminApplicationDetailDto responseDto = instructorApplicationMapper.toAdminDetailResponseDto(application);
-
-            return ApiResponseUtil.success(responseDto,
-                    "Fetched application detail successfully with id: " + applicationId);
-
-        } catch (RuntimeException e) {
-            log.error("Application not found: {}", e.getMessage());
-            return ApiResponseUtil.notFound("Application not found with ID: " + applicationId);
-
-        } catch (Exception e) {
-            log.error("Error retrieving application detail: {}", e.getMessage(), e);
-            return ApiResponseUtil
-                    .internalServerError("Failed to retrieve application detail. Try again later.");
+        if (responseList.isEmpty()) {
+            log.warn("No instructor applications found");
+            return ApiResponseUtil.success(responseList, "No instructor applications found");
         }
+
+        return ApiResponseUtil.success(responseList,
+                "Fetched applications successfully for user ID: " + userId);
     }
 
     @Override

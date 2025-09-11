@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
 
-import project.ktc.springboot_app.instructor_application.dto.AdminApplicationDetailDto;
 import project.ktc.springboot_app.instructor_application.dto.AdminInstructorApplicationResponseDto;
 import project.ktc.springboot_app.instructor_application.services.InstructorApplicationServiceImp;
 
@@ -33,11 +32,11 @@ public class AdminInstructorApplicationController {
         return instructorApplicationService.getAllApplicationAdmin();
     }
 
-    @GetMapping("/applications/{id}")
+    @GetMapping("/applications/{userId}")
     @PreAuthorize("hasPermission('InstructorApplication', 'instructor_application:READ')")
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminApplicationDetailDto>> getApplicationByIdAdmin(
-            @PathVariable String id) {
-        return instructorApplicationService.getApplicationByIdAdmin(id);
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<AdminInstructorApplicationResponseDto>>> getApplicationByUserIdAdmin(
+            @PathVariable String userId) {
+        return instructorApplicationService.getApplicationByUserIdAdmin(userId);
     }
 
     @PatchMapping("/applications/{id}/review")
