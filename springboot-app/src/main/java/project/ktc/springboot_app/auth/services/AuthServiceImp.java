@@ -29,6 +29,7 @@ import project.ktc.springboot_app.entity.RefreshToken;
 import project.ktc.springboot_app.entity.UserRole;
 import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
 import project.ktc.springboot_app.instructor_application.repositories.InstructorApplicationRepository;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 import project.ktc.springboot_app.refresh_token.repositories.RefreshTokenRepository;
 import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.services.FileValidationService;
@@ -64,6 +65,7 @@ public class AuthServiceImp implements AuthService {
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
     private final ObjectMapper objectMapper;
+    private final NotificationHelper notificationHelper;
 
     @Override
     @Transactional
@@ -215,6 +217,9 @@ public class AuthServiceImp implements AuthService {
                     // as the user account was created successfully
                 }
             }
+
+            notificationHelper.createAdminInstructorApplicationNotification(savedUser.getId(), savedUser.getName(),
+                    savedUser.getEmail());
 
             log.info("User registered successfully with role {}: {}", registerApplicationDto.getRole().name(),
                     savedUser.getEmail());

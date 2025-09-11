@@ -11,7 +11,6 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
-import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewFilterDto;
 import project.ktc.springboot_app.course.dto.CourseReviewResponseDto;
@@ -30,6 +29,7 @@ import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.entity.VideoContent;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.lesson.repositories.InstructorLessonRepository;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
 import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
@@ -65,6 +65,7 @@ public class AdminCourseServiceImp implements AdminCourseService {
     private final CourseReviewStatusHistoryRepository courseReviewStatusHistoryRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final NotificationHelper notificationHelper;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<CourseReviewResponseDto>>> getReviewCourses(
@@ -403,6 +404,9 @@ public class AdminCourseServiceImp implements AdminCourseService {
                 courseRejected.setIsPublished(false);
                 courseRejected.setUpdatedAt(LocalDateTime.now());
                 courseRepository.save(courseRejected);
+                notificationHelper.createInstructorCourseRejectedNotification(courseRejected.getInstructor().getId(),
+                        courseRejected.getId(), courseRejected.getTitle(),
+                        String.format("/instructor/courses/%s", courseRejected.getId()), updateDto.getReason());
             } else if ("APPROVED".equals(updateDto.getStatus())) {
                 Course courseApproved = courseRepository.findById(courseId)
                         .orElseThrow(() -> new ResourceNotFoundException(
@@ -411,6 +415,9 @@ public class AdminCourseServiceImp implements AdminCourseService {
                 courseApproved.setIsPublished(true);
                 courseApproved.setUpdatedAt(LocalDateTime.now());
                 courseRepository.save(courseApproved);
+                notificationHelper.createInstructorCourseApprovedNotification(courseApproved.getInstructor().getId(),
+                        courseApproved.getId(), courseApproved.getTitle(),
+                        String.format("/instructor/courses/%s", courseApproved.getId()));
             }
 
             CourseReviewStatusUpdateResponseDto responseDto = responseBuilder.build();

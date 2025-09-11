@@ -68,6 +68,16 @@ public class DiscountServiceImp implements DiscountService {
                     log.warn("Owner user not found with ID: {}", request.getOwnerUserId());
                     return ApiResponseUtil.notFound("Owner user not found");
                 }
+
+                // Check if user already has a REFERRAL discount
+                Optional<Discount> existingReferralDiscount = discountRepository.findByOwnerUserIdAndType(
+                        request.getOwnerUserId(), DiscountType.REFERRAL);
+
+                if (existingReferralDiscount.isPresent()) {
+                    log.warn("User already has a REFERRAL discount. Owner user ID: {}", request.getOwnerUserId());
+                    return ApiResponseUtil.conflict("User already has a referral discount. Cannot create another one.");
+                }
+
             } else {
                 // For GENERAL type, owner user should be null
                 if (request.getOwnerUserId() != null) {
