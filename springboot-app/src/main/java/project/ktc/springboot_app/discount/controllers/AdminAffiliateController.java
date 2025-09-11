@@ -16,8 +16,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
-import project.ktc.springboot_app.discount.dto.request.BulkPayoutActionRequestDto;
 import project.ktc.springboot_app.discount.dto.request.CancelPayoutRequestDto;
+import project.ktc.springboot_app.discount.dto.response.AffiliatePayoutDetailResponseDto;
 import project.ktc.springboot_app.discount.dto.response.AffiliatePayoutResponseDto;
 import project.ktc.springboot_app.discount.dto.response.AffiliateStatisticsResponseDto;
 import project.ktc.springboot_app.discount.enums.PayoutStatus;
@@ -126,6 +126,33 @@ public class AdminAffiliateController {
                 return ResponseEntity.ok(ApiResponse.success(payout, "Affiliate payout retrieved successfully"));
         }
 
+        @GetMapping("/payouts/{id}/detail")
+        @PreAuthorize("hasRole('ADMIN')")
+        @Operation(summary = "Get detailed affiliate payout information", description = """
+                        Retrieve comprehensive information about a specific affiliate payout including:
+                        - Referrer details (who gets the commission)
+                        - Course information with instructor details
+                        - Discount code information
+                        - Purchaser details (who used the discount)
+                        - Usage information with pricing breakdown
+
+                        **Permissions Required:**
+                        - ADMIN role
+                        """)
+        @ApiResponses({
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Detailed payout information retrieved successfully"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Payout not found"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<ApiResponse<AffiliatePayoutDetailResponseDto>> getPayoutDetailById(
+                        @Parameter(description = "Payout ID", required = true) @PathVariable String id) {
+                AffiliatePayoutDetailResponseDto payoutDetail = adminAffiliatePayoutService.getPayoutDetailById(id);
+                return ResponseEntity.ok(ApiResponse.success(payoutDetail,
+                                "Detailed affiliate payout information retrieved successfully"));
+        }
+
         @PatchMapping("/payouts/{id}/mark-paid")
         @PreAuthorize("hasRole('ADMIN')")
         @Operation(summary = "Mark payout as paid", description = """
@@ -180,36 +207,6 @@ public class AdminAffiliateController {
                 AffiliatePayoutResponseDto payout = adminAffiliatePayoutService.cancelPayout(id,
                                 cancelRequest.getReason());
                 return ResponseEntity.ok(ApiResponse.success(payout, "Payout cancelled successfully"));
-        }
-
-        @PostMapping("/payouts/bulk-action")
-        @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Perform bulk action on payouts", description = """
-                        Perform bulk actions (mark as paid, cancel) on multiple affiliate payouts.
-
-                        **Supported Actions:**
-                        - **MARK_PAID**: Mark multiple pending payouts as paid
-                        - **CANCEL**: Cancel multiple pending payouts (reason required)
-
-                        **Business Rules:**
-                        - Only PENDING payouts can be processed
-                        - Invalid payouts are skipped and reported in the response
-                        - Actions are logged for audit purposes
-
-                        **Permissions Required:**
-                        - ADMIN role
-                        """)
-        @ApiResponses({
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Bulk action completed"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad request - Invalid bulk action request"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<ApiResponse<String>> bulkActionPayouts(
-                        @RequestBody BulkPayoutActionRequestDto bulkRequest) {
-                String result = adminAffiliatePayoutService.bulkActionPayouts(bulkRequest);
-                return ResponseEntity.ok(ApiResponse.success(result, "Bulk action completed successfully"));
         }
 
         @GetMapping("/payouts/export")

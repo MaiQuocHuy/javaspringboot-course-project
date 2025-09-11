@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.ktc.springboot_app.course.entity.Course;
-import project.ktc.springboot_app.discount.dto.request.BulkPayoutActionRequestDto;
 import project.ktc.springboot_app.discount.dto.response.*;
 import project.ktc.springboot_app.discount.entity.AffiliatePayout;
 import project.ktc.springboot_app.discount.enums.PayoutStatus;
@@ -23,7 +22,6 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -144,6 +142,14 @@ public class AdminAffiliatePayoutServiceImpl implements AdminAffiliatePayoutServ
     }
 
     @Override
+    public AffiliatePayoutDetailResponseDto getPayoutDetailById(String id) {
+        AffiliatePayout payout = affiliatePayoutRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Affiliate payout not found with id: " + id));
+
+        return convertToDetailResponseDto(payout);
+    }
+
+    @Override
     @Transactional
     public AffiliatePayoutResponseDto markPayoutAsPaid(Long id) {
         AffiliatePayout payout = affiliatePayoutRepository.findById(id.toString())
@@ -177,75 +183,6 @@ public class AdminAffiliatePayoutServiceImpl implements AdminAffiliatePayoutServ
 
         log.info("Cancelled payout {} with reason: {}", id, reason);
         return convertToResponseDto(savedPayout);
-    }
-
-    @Override
-    @Transactional
-    public String bulkActionPayouts(BulkPayoutActionRequestDto bulkRequest) {
-        try {
-            List<String> payoutIds = bulkRequest.getPayoutIds(); // Use String as per DTO
-            BulkPayoutActionRequestDto.BulkPayoutAction action = bulkRequest.getAction();
-
-            int totalRequested = payoutIds.size();
-            int totalProcessed = 0;
-            int totalFailed = 0;
-            List<String> failedReasons = new ArrayList<>();
-
-            for (String payoutId : payoutIds) {
-                try {
-                    AffiliatePayout payout = affiliatePayoutRepository.findById(payoutId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Payout not found: " + payoutId));
-
-                    switch (action) {
-                        case MARK_PAID:
-                            if (payout.getPayoutStatus() == PayoutStatus.PENDING) {
-                                payout.markAsPaid();
-                                affiliatePayoutRepository.save(payout);
-                                totalProcessed++;
-                            } else {
-                                failedReasons.add("Payout " + payoutId + ": Not in pending status");
-                                totalFailed++;
-                            }
-                            break;
-
-                        case CANCEL:
-                            if (payout.getPayoutStatus() != PayoutStatus.PAID) {
-                                payout.markAsCancelled();
-                                affiliatePayoutRepository.save(payout);
-                                totalProcessed++;
-                            } else {
-                                failedReasons.add("Payout " + payoutId + ": Already paid, cannot cancel");
-                                totalFailed++;
-                            }
-                            break;
-
-                        default:
-                            failedReasons.add("Payout " + payoutId + ": Unknown action " + action);
-                            totalFailed++;
-                    }
-                } catch (Exception e) {
-                    failedReasons.add("Payout " + payoutId + ": " + e.getMessage());
-                    totalFailed++;
-                }
-            }
-
-            BulkPayoutActionResultDto result = BulkPayoutActionResultDto.builder()
-                    .action(action.toString())
-                    .totalRequested(totalRequested)
-                    .totalProcessed(totalProcessed)
-                    .totalFailed(totalFailed)
-                    .failedReasons(failedReasons)
-                    .summary(String.format("Bulk %s completed: %d processed, %d failed out of %d requested",
-                            action, totalProcessed, totalFailed, totalRequested))
-                    .build();
-
-            log.info("Bulk action {} completed: {}", action, result.getSummary());
-            return result.getSummary();
-
-        } catch (Exception e) {
-            log.error("Error performing bulk action on payouts", e);
-            throw new RuntimeException("Failed to perform bulk action: " + e.getMessage());
-        }
     }
 
     @Override
@@ -317,6 +254,71 @@ public class AdminAffiliatePayoutServiceImpl implements AdminAffiliatePayoutServ
                 .cancelledAt(payout.getCancelledAt())
                 .createdAt(payout.getCreatedAt())
                 .updatedAt(payout.getUpdatedAt())
+                .build();
+    }
+
+    private AffiliatePayoutDetailResponseDto convertToDetailResponseDto(AffiliatePayout payout) {
+        return AffiliatePayoutDetailResponseDto.builder()
+                .id(payout.getId())
+                .payoutStatus(payout.getPayoutStatus())
+                .commissionPercent(payout.getCommissionPercent())
+                .commissionAmount(payout.getCommissionAmount())
+                .createdAt(payout.getCreatedAt())
+                .paidAt(payout.getPaidAt())
+                .cancelledAt(payout.getCancelledAt())
+                .referrer(AffiliatePayoutDetailResponseDto.ReferrerInfo.builder()
+                        .id(payout.getReferredByUser().getId())
+                        .name(payout.getReferredByUser().getName())
+                        .email(payout.getReferredByUser().getEmail())
+                        .joinedAt(payout.getReferredByUser().getCreatedAt())
+                        .build())
+                .course(AffiliatePayoutDetailResponseDto.CourseInfo.builder()
+                        .id(payout.getCourse().getId())
+                        .title(payout.getCourse().getTitle())
+                        .description(payout.getCourse().getDescription())
+                        .price(payout.getCourse().getPrice())
+                        .instructorName(payout.getCourse().getInstructor() != null
+                                ? payout.getCourse().getInstructor().getName()
+                                : "Unknown")
+                        .instructorEmail(payout.getCourse().getInstructor() != null
+                                ? payout.getCourse().getInstructor().getEmail()
+                                : "Unknown")
+                        .courseCreatedAt(payout.getCourse().getCreatedAt())
+                        .isPublished(payout.getCourse().getIsPublished())
+                        .isApproved(payout.getCourse().getIsApproved())
+                        .build())
+                .discount(payout.getDiscountUsage() != null && payout.getDiscountUsage().getDiscount() != null
+                        ? AffiliatePayoutDetailResponseDto.DiscountInfo.builder()
+                                .id(payout.getDiscountUsage().getDiscount().getId())
+                                .code(payout.getDiscountUsage().getDiscount().getCode())
+                                .type(payout.getDiscountUsage().getDiscount().getType())
+                                .discountPercent(payout.getDiscountUsage().getDiscount().getDiscountPercent())
+                                .description(payout.getDiscountUsage().getDiscount().getDescription())
+                                .startDate(payout.getDiscountUsage().getDiscount().getStartDate())
+                                .endDate(payout.getDiscountUsage().getDiscount().getEndDate())
+                                .usageLimit(payout.getDiscountUsage().getDiscount().getUsageLimit())
+                                .perUserLimit(payout.getDiscountUsage().getDiscount().getPerUserLimit())
+                                .isActive(payout.getDiscountUsage().getDiscount().getIsActive())
+                                .discountCreatedAt(payout.getDiscountUsage().getDiscount().getCreatedAt())
+                                .build()
+                        : null)
+                .purchaser(payout.getDiscountUsage() != null && payout.getDiscountUsage().getUser() != null
+                        ? AffiliatePayoutDetailResponseDto.PurchaserInfo.builder()
+                                .id(payout.getDiscountUsage().getUser().getId())
+                                .name(payout.getDiscountUsage().getUser().getName())
+                                .email(payout.getDiscountUsage().getUser().getEmail())
+                                .joinedAt(payout.getDiscountUsage().getUser().getCreatedAt())
+                                .build()
+                        : null)
+                .usageInfo(payout.getDiscountUsage() != null ? AffiliatePayoutDetailResponseDto.UsageInfo.builder()
+                        .id(payout.getDiscountUsage().getId())
+                        .usedAt(payout.getDiscountUsage().getUsedAt())
+                        .discountPercent(payout.getDiscountUsage().getDiscountPercent())
+                        .discountAmount(payout.getDiscountUsage().getDiscountAmount())
+                        .originalCoursePrice(payout.getCourse().getPrice())
+                        .finalPrice(
+                                payout.getCourse().getPrice().subtract(payout.getDiscountUsage().getDiscountAmount()))
+                        .build() : null)
                 .build();
     }
 
