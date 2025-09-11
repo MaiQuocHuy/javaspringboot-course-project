@@ -31,6 +31,7 @@ public class InstructorDiscountUsageResponseDto {
         private String id;
         private String code;
         private String description;
+        private String type;
     }
 
     @Data
@@ -59,6 +60,7 @@ public class InstructorDiscountUsageResponseDto {
                 .id(usage.getDiscount().getId())
                 .code(usage.getDiscount().getCode())
                 .description(usage.getDiscount().getDescription())
+                .type(usage.getDiscount().getType().name())
                 .build();
         UserInfo userInfo = UserInfo.builder()
                 .name(usage.getUser().getName())
