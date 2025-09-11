@@ -26,7 +26,7 @@ public class StudentDiscountUsageResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class DiscountInfo {
+    public static class DiscountInfo {
         private String id;
         private String code;
         private String description;
@@ -36,16 +36,18 @@ public class StudentDiscountUsageResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class UserInfo {
+    public static class UserInfo {
+        private String id;
         private String name;
         private String email;
+        private String thumbnailUrl;
     }
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class CourseInfo {
+    public static class CourseInfo {
         private String id;
         private String title;
         private UserInfo instructor;

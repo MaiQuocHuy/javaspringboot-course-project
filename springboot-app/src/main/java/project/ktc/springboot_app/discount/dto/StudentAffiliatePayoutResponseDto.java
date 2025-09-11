@@ -29,7 +29,7 @@ public class StudentAffiliatePayoutResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class UserInfo {
+    public static class UserInfo {
         private String name;
         private String email;
     }
@@ -38,7 +38,7 @@ public class StudentAffiliatePayoutResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class CourseInfo {
+    public static class CourseInfo {
         private String id;
         private String title;
         private UserInfo instructor;
@@ -49,7 +49,7 @@ public class StudentAffiliatePayoutResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class DiscountUsageInfo {
+    public static class DiscountUsageInfo {
         private String id;
         private DiscountInfo discount;
         private UserInfo user;
@@ -62,7 +62,7 @@ public class StudentAffiliatePayoutResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class DiscountInfo {
+    public static class DiscountInfo {
         private String id;
         private String code;
         private String description;
