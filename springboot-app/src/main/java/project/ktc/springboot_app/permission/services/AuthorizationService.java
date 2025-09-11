@@ -119,6 +119,25 @@ public class AuthorizationService {
     }
 
     /**
+     * Check if user has a specific permission with ALL access (filter-type-001)
+     * This is used for admin notifications - only users with ALL access should
+     * receive them
+     * 
+     * @param user          the user
+     * @param permissionKey the permission key
+     * @return true if user has the permission with ALL access
+     */
+    public boolean hasPermissionWithAllAccess(User user, String permissionKey) {
+        log.debug("Checking if user: {} has permission: {} with ALL access", user.getEmail(), permissionKey);
+
+        AuthorizationResult result = evaluatePermission(user, permissionKey);
+        boolean hasAllAccess = result.isAllowed() && result.getEffectiveFilter() == FilterType.EffectiveFilterType.ALL;
+
+        log.debug("User: {} has permission: {} with ALL access: {}", user.getEmail(), permissionKey, hasAllAccess);
+        return hasAllAccess;
+    }
+
+    /**
      * Determine the most permissive filter type from multiple role permissions
      * Priority: ALL > OWN > DENIED
      * 

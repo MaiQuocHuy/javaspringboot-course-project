@@ -20,6 +20,7 @@ import project.ktc.springboot_app.enrollment.dto.MyEnrolledCourseDto;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.interfaces.EnrollmentService;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 import project.ktc.springboot_app.payment.repositories.PaymentRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
@@ -42,6 +43,7 @@ public class EnrollmentServiceImp implements EnrollmentService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
+    private final NotificationHelper notificationHelper;
 
     @Override
     public ResponseEntity<ApiResponse<EnrollmentResponseDto>> enroll(String courseId) {
@@ -248,6 +250,11 @@ public class EnrollmentServiceImp implements EnrollmentService {
             enrollment.setCompletionStatus(Enrollment.CompletionStatus.IN_PROGRESS);
 
             enrollmentRepository.save(enrollment);
+
+            notificationHelper.createInstructorNewStudentEnrollmentNotification(
+                    enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(),
+                    enrollment.getCourse().getTitle(), enrollment.getUser().getName(), enrollment.getUser().getId(),
+                    enrollment.getId());
 
             log.info("Enrollment successfully created for user {} in course {}", userId, courseId);
 

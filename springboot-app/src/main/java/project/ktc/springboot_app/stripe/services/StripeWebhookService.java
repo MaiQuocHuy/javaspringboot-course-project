@@ -13,11 +13,13 @@ import org.springframework.stereotype.Service;
 
 import project.ktc.springboot_app.email.interfaces.EmailService;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 import project.ktc.springboot_app.payment.services.PaymentServiceImp;
 import project.ktc.springboot_app.stripe.config.StripeConfig;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.user.repositories.UserRepository;
+import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.discount.interfaces.DiscountPriceService;
 import project.ktc.springboot_app.discount.interfaces.AffiliatePayoutService;
@@ -44,6 +46,7 @@ public class StripeWebhookService {
     private final DiscountPriceService discountPriceService;
     private final AffiliatePayoutService affiliatePayoutService;
     private final DiscountUsageRepository discountUsageRepository;
+    private final NotificationHelper notificationHelper;
 
     /**
      * Processes incoming webhook events from Stripe
@@ -261,6 +264,8 @@ public class StripeWebhookService {
 
             // Send payment confirmation email asynchronously
             sendPaymentConfirmationEmail(session, courseId, userId);
+            String userName = payment.getUser().getName();
+            notificationHelper.createAdminStudentPaymentNotification(userId, userName, courseId, payment.getAmount());
 
         } catch (Exception e) {
             log.error("Error processing checkout session completion: {}", e.getMessage(), e);
