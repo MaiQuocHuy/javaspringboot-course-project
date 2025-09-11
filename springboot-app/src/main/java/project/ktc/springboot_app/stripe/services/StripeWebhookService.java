@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import project.ktc.springboot_app.email.interfaces.EmailService;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
-import project.ktc.springboot_app.payment.service.PaymentServiceImp;
+import project.ktc.springboot_app.payment.services.PaymentServiceImp;
 import project.ktc.springboot_app.stripe.config.StripeConfig;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;

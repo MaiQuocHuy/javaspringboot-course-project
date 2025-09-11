@@ -113,4 +113,7 @@
     <!-- Discount and Affiliate System -->
     <include file="db/changelog/changes/154-add-discount-table.xml"/>
     <include file="db/changelog/changes/155-seed-discount.xml"/>
+    <include file="db/changelog/changes/156-update-affiliate_payouts.xml"/>
+    <include file="db/changelog/changes/157-add-notification-table.xml"/> 
+    <include file="db/changelog/changes/158-seed-notification.xml"/>
 </databaseChangeLog>
