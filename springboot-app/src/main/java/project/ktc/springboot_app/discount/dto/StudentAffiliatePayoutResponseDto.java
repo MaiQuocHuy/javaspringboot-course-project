@@ -78,21 +78,26 @@ public class StudentAffiliatePayoutResponseDto {
                         .build())
                 .price(affiliate.getCourse().getPrice())
                 .build();
-        DiscountUsageInfo discountUsageInfo = DiscountUsageInfo.builder()
-                .id(affiliate.getDiscountUsage().getId())
-                .discount(DiscountInfo.builder()
-                        .id(affiliate.getDiscountUsage().getDiscount().getId())
-                        .code(affiliate.getDiscountUsage().getDiscount().getCode())
-                        .description(affiliate.getDiscountUsage().getDiscount().getDescription())
-                        .build())
-                .user(UserInfo.builder()
-                        .name(affiliate.getDiscountUsage().getUser().getName())
-                        .email(affiliate.getDiscountUsage().getUser().getEmail())
-                        .build())
-                .usedAt(affiliate.getDiscountUsage().getUsedAt())
-                .discountPercent(affiliate.getDiscountUsage().getDiscountPercent())
-                .discountAmount(affiliate.getDiscountUsage().getDiscountAmount())
-                .build();
+
+        // Handle null discountUsage for direct referrals
+        DiscountUsageInfo discountUsageInfo = null;
+        if (affiliate.getDiscountUsage() != null) {
+            discountUsageInfo = DiscountUsageInfo.builder()
+                    .id(affiliate.getDiscountUsage().getId())
+                    .discount(DiscountInfo.builder()
+                            .id(affiliate.getDiscountUsage().getDiscount().getId())
+                            .code(affiliate.getDiscountUsage().getDiscount().getCode())
+                            .description(affiliate.getDiscountUsage().getDiscount().getDescription())
+                            .build())
+                    .user(UserInfo.builder()
+                            .name(affiliate.getDiscountUsage().getUser().getName())
+                            .email(affiliate.getDiscountUsage().getUser().getEmail())
+                            .build())
+                    .usedAt(affiliate.getDiscountUsage().getUsedAt())
+                    .discountPercent(affiliate.getDiscountUsage().getDiscountPercent())
+                    .discountAmount(affiliate.getDiscountUsage().getDiscountAmount())
+                    .build();
+        }
 
         return StudentAffiliatePayoutResponseDto.builder()
                 .id(affiliate.getId())

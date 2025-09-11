@@ -82,23 +82,28 @@ public class InstructorAffiliatePayoutResponseDto {
                 .title(affiliate.getCourse().getTitle())
                 .price(affiliate.getCourse().getPrice())
                 .build();
-        DiscountUsageInfo discountUsage = DiscountUsageInfo.builder()
-                .id(affiliate.getDiscountUsage().getId())
-                .discount(DiscountInfo.builder()
-                        .id(affiliate.getDiscountUsage().getDiscount().getId())
-                        .code(affiliate.getDiscountUsage().getDiscount().getCode())
-                        .description(affiliate.getDiscountUsage().getDiscount().getDescription())
-                        .build())
-                .user(UserInfo.builder()
-                        .name(affiliate.getDiscountUsage().getUser().getName())
-                        .email(affiliate.getDiscountUsage().getUser().getEmail())
-                        .bio(affiliate.getDiscountUsage().getUser().getBio())
-                        .thumbnailUrl(affiliate.getDiscountUsage().getUser().getThumbnailUrl())
-                        .build())
-                .usedAt(affiliate.getDiscountUsage().getUsedAt())
-                .discountPercent(affiliate.getDiscountUsage().getDiscountPercent())
-                .discountAmount(affiliate.getDiscountUsage().getDiscountAmount())
-                .build();
+
+        // Handle null discountUsage for direct referrals
+        DiscountUsageInfo discountUsage = null;
+        if (affiliate.getDiscountUsage() != null) {
+            discountUsage = DiscountUsageInfo.builder()
+                    .id(affiliate.getDiscountUsage().getId())
+                    .discount(DiscountInfo.builder()
+                            .id(affiliate.getDiscountUsage().getDiscount().getId())
+                            .code(affiliate.getDiscountUsage().getDiscount().getCode())
+                            .description(affiliate.getDiscountUsage().getDiscount().getDescription())
+                            .build())
+                    .user(UserInfo.builder()
+                            .name(affiliate.getDiscountUsage().getUser().getName())
+                            .email(affiliate.getDiscountUsage().getUser().getEmail())
+                            .bio(affiliate.getDiscountUsage().getUser().getBio())
+                            .thumbnailUrl(affiliate.getDiscountUsage().getUser().getThumbnailUrl())
+                            .build())
+                    .usedAt(affiliate.getDiscountUsage().getUsedAt())
+                    .discountPercent(affiliate.getDiscountUsage().getDiscountPercent())
+                    .discountAmount(affiliate.getDiscountUsage().getDiscountAmount())
+                    .build();
+        }
 
         return InstructorAffiliatePayoutResponseDto.builder()
                 .id(affiliate.getId())
