@@ -36,7 +36,7 @@ public class InstructorStudentController {
   })
   @GetMapping
   public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<InstructorStudentDto>>> getEnrolledStudents(
-      @PageableDefault(size = 10, sort = "completedAt,desc", page = 0) Pageable pageable) {
+      @PageableDefault(size = 10, sort = "createdAt,DESC", page = 0) Pageable pageable) {
     return instructorStudentService.getEnrolledStudents(pageable);
   }
 

@@ -10,6 +10,7 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
 import project.ktc.springboot_app.course.dto.CreateCourseDto;
+import project.ktc.springboot_app.course.dto.EnrolledStudentDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
@@ -57,5 +58,8 @@ public interface InstructorCourseService {
 
         ResponseEntity<ApiResponse<List<CourseDashboardResponseDto>>> getAllPublishedCourses(
                         String instructorId);
+
+        ResponseEntity<ApiResponse<PaginatedResponse<EnrolledStudentDto>>> getEnrolledStudents(
+                        String courseId, Pageable pageable);
 
 }

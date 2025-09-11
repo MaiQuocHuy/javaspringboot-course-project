@@ -1,6 +1,7 @@
 package project.ktc.springboot_app.course.services;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +24,11 @@ import project.ktc.springboot_app.category.entity.Category;
 import project.ktc.springboot_app.category.repositories.CategoryRepository;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse.PageInfo;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
 import project.ktc.springboot_app.course.dto.CreateCourseDto;
+import project.ktc.springboot_app.course.dto.EnrolledStudentDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto.CategoryInfo;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
@@ -40,6 +44,8 @@ import project.ktc.springboot_app.course.interfaces.InstructorCourseService;
 import project.ktc.springboot_app.course.dto.common.BaseCourseResponseDto;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
+import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
+import project.ktc.springboot_app.instructor_student.repositories.InstructorStudentRepository;
 import project.ktc.springboot_app.course.repositories.CourseReviewStatusRepository;
 import project.ktc.springboot_app.course.repositories.CourseReviewStatusHistoryRepository;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
@@ -72,6 +78,8 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final CourseReviewStatusRepository courseReviewStatusRepository;
     private final CourseReviewStatusHistoryRepository courseReviewStatusHistoryRepository;
     private final SystemLogHelper systemLogHelper;
+    private final InstructorStudentRepository instructorStudentRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     /**
      * Get instructor's courses with pagination and filtering
@@ -871,6 +879,82 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
         }
 
         return builder.build();
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<PaginatedResponse<EnrolledStudentDto>>> getEnrolledStudents(String courseId,
+            Pageable pageable) {
+        // Verify instructor id
+        String instructorId = SecurityUtil.getCurrentUserId();
+        if (instructorId == null) {
+            return ApiResponseUtil.unauthorized("Unauthorized");
+        }
+
+        // Verify course exists
+        Course course = courseRepository.findById(courseId).orElse(null);
+        if (course == null) {
+            return ApiResponseUtil.notFound("Course not found");
+        }
+
+        List<Object[]> enrolledStudents = instructorStudentRepository.getCourseEnrolledStudents(instructorId, courseId);
+        log.info("Found {} enrolled students for course {}", enrolledStudents.size(), courseId);
+        List<EnrolledStudentDto> processedEnrolledStudents = new ArrayList<>();
+        for (Object[] stu : enrolledStudents) {
+            String studentId = (String) stu[0];
+            EnrolledStudentDto studentDto = EnrolledStudentDto.builder()
+                    .id((String) stu[0])
+                    .name((String) stu[1])
+                    .email((String) stu[2])
+                    .thumbnailUrl((String) stu[3])
+                    .enrolledAt((LocalDateTime) stu[4])
+                    .build();
+
+            Double progress = calculateProgress(studentId, courseId);
+            studentDto.setProgress(progress);
+
+            processedEnrolledStudents.add(studentDto);
+        }
+
+        PaginatedResponse<EnrolledStudentDto> pagedEnrolledStudentsList = getPaginatedList(processedEnrolledStudents,
+                pageable);
+
+        return ApiResponseUtil.success(pagedEnrolledStudentsList, "Course's enrolled students retrieved successfully!");
+    }
+
+    private Double calculateProgress(String userId, String courseId) {
+        try {
+            Long completedLessons = enrollmentRepository.countCompletedLessonsByUserAndCourse(userId, courseId);
+            Long totalLessons = enrollmentRepository.countTotalLessonsByCourse(courseId);
+
+            if (totalLessons == null || totalLessons == 0) {
+                return 0.0;
+            }
+
+            double progress = (double) completedLessons / totalLessons;
+            return BigDecimal.valueOf(progress)
+                    .setScale(2, RoundingMode.HALF_UP)
+                    .doubleValue();
+        } catch (Exception e) {
+            log.warn("Failed to calculate progress for user {} and course {}: {}", userId, courseId, e.getMessage());
+            return 0.0;
+        }
+    }
+
+    public <T> PaginatedResponse<T> getPaginatedList(List<T> fullList, Pageable pageable) {
+        PagedListHolder<T> pagedListHolder = new PagedListHolder<>(fullList);
+        pagedListHolder.setPageSize(pageable.getPageSize());
+        pagedListHolder.setPage(pageable.getPageNumber());
+
+        List<T> pageContent = pagedListHolder.getPageList();
+        PageInfo pageInfo = PageInfo.builder()
+                .number(pagedListHolder.getPage())
+                .size(pagedListHolder.getPageSize())
+                .totalPages(pagedListHolder.getPageCount())
+                .totalElements(fullList.size())
+                .first(pagedListHolder.isFirstPage())
+                .last(pagedListHolder.isLastPage())
+                .build();
+        return new PaginatedResponse<>(pageContent, pageInfo);
     }
 
     /**
