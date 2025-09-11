@@ -62,6 +62,7 @@ import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.log.services.SystemLogHelper;
 import project.ktc.springboot_app.log.dto.CourseLogDto;
 import project.ktc.springboot_app.log.utils.CourseLogMapper;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 
 @Service
 @Slf4j
@@ -78,6 +79,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final CourseReviewStatusRepository courseReviewStatusRepository;
     private final CourseReviewStatusHistoryRepository courseReviewStatusHistoryRepository;
     private final SystemLogHelper systemLogHelper;
+    private final NotificationHelper notificationHelper;
     private final InstructorStudentRepository instructorStudentRepository;
     private final EnrollmentRepository enrollmentRepository;
 
@@ -1009,6 +1011,8 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                     .build();
 
             courseReviewStatusHistoryRepository.save(historyRecord);
+            notificationHelper.createAdminCourseApprovalNeededNotification(course.getId(), course.getTitle(),
+                    course.getInstructor().getName());
             log.info("Created new course review status history record for course: {} with action: {}", course.getId(),
                     action);
 

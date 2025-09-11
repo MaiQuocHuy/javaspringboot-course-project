@@ -1,4 +1,4 @@
-package project.ktc.springboot_app.payment.service;
+package project.ktc.springboot_app.payment.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
