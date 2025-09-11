@@ -116,4 +116,5 @@
     <include file="db/changelog/changes/156-update-affiliate_payouts.xml"/>
     <include file="db/changelog/changes/157-add-notification-table.xml"/> 
     <include file="db/changelog/changes/158-seed-notification.xml"/>
+    <include file="db/changelog/changes/159-seed-discount-user-002.xml"/>
 </databaseChangeLog>

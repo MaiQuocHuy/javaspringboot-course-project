@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Update affiliate payout statuses from PENDING and CANCELLED to PAID -->
+    <changeSet id="157-01" author="ktc">
+        
+        <!-- Update Ian's commission for referring Hannah (INVITE30) from PENDING to PAID -->
+        <update tableName="affiliate_payouts">
+            <column name="payout_status" value="PAID"/>
+            <column name="updated_at" value="2024-12-01 10:00:00"/>
+            <column name="paid_at" value="2024-12-01 10:00:00"/>
+            <where>id = 'ap3c4d5e-6f78-9012-3456-345sab'</where>
+        </update>
+        
+        <!-- Update Lisa's commission for referring Kevin (FAMILY25) from PENDING to PAID -->
+        <update tableName="affiliate_payouts">
+            <column name="payout_status" value="PAID"/>
+            <column name="updated_at" value="2024-12-01 10:15:00"/>
+            <column name="paid_at" value="2024-12-01 10:15:00"/>
+            <where>id = 'ap4d5e6f-7890-1234-5678-456c'</where>
+        </update>
+        
+        <!-- Update Diana's cancelled payout to PAID -->
+        <update tableName="affiliate_payouts">
+            <column name="payout_status" value="PAID"/>
+            <column name="updated_at" value="2024-12-01 10:30:00"/>
+            <column name="paid_at" value="2024-12-01 10:30:00"/>
+            <column name="cancelled_at"/>  <!-- Clear cancelled_at timestamp -->
+            <where>id = 'ap6f7890-1234-5678-9012-678de'</where>
+        </update>
+        
+        <!-- Update Fiona's pending payout for Advanced NodeJS to PAID -->
+        <update tableName="affiliate_payouts">
+            <column name="payout_status" value="PAID"/>
+            <column name="updated_at" value="2024-12-01 10:45:00"/>
+            <column name="paid_at" value="2024-12-01 10:45:00"/>
+            <where>id = 'ap7890123-4567-8901-2345-7890f'</where>
+        </update>
+        
+        <!-- Update Ian's pending payout for Vue.js Development to PAID -->
+        <update tableName="affiliate_payouts">
+            <column name="payout_status" value="PAID"/>
+            <column name="updated_at" value="2024-12-01 11:00:00"/>
+            <column name="paid_at" value="2024-12-01 11:00:00"/>
+            <where>id = 'ap890123-4567-8901-2345-89012'</where>
+        </update>
+        
+    </changeSet>
+
+</databaseChangeLog>

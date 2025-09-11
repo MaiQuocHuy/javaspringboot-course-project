@@ -180,4 +180,12 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
 
         boolean existsByIdAndInstructorId(String courseId, String instructorId);
 
+        /**
+         * Calculate total duration for a course by summing all video lesson durations
+         */
+        @Query("SELECT COALESCE(SUM(l.content.duration), 0) FROM Lesson l " +
+                        "JOIN l.section s " +
+                        "WHERE s.course.id = :courseId AND l.content IS NOT NULL")
+        Long getTotalDurationByCourseId(@Param("courseId") String courseId);
+
 }

@@ -3,6 +3,7 @@ package project.ktc.springboot_app.course.controllers;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +38,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.dto.CourseDashboardResponseDto;
 import project.ktc.springboot_app.course.dto.CreateCourseDto;
+import project.ktc.springboot_app.course.dto.EnrolledStudentDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseDto;
 import project.ktc.springboot_app.course.dto.CourseResponseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseStatusDto;
@@ -389,6 +391,37 @@ public class InstructorCourseController {
 
                 // Call service to get course details
                 return instructorCourseService.getCourseDetails(courseId, instructorId);
+        }
+
+        @GetMapping("/{id}/enrolled-students")
+        @Operation(summary = "Get enrolled students", description = """
+                        Retrieve paginated list of students enrolled in a specific course.
+
+                        **Permission Requirements:**
+                        - Only the course owner can access enrolled students
+                        - Requires INSTRUCTOR role
+
+                        **Response includes:**
+                        - Student information (id, name, email, enrollment date)
+                        - Course progress statistics
+
+                        **Business Rules:**
+                        - Course must exist and belong to the authenticated instructor
+                        - Returns empty list if no students are enrolled
+                        - Sorted by completion date by default (newest first)
+                        """, security = @SecurityRequirement(name = "bearerAuth"))
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Enrolled students retrieved successfully"),
+                        @ApiResponse(responseCode = "403", description = "You are not allowed to access this course's enrollment data"),
+                        @ApiResponse(responseCode = "404", description = "Course not found"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<EnrolledStudentDto>>> getEnrolledStudents(
+                        @Parameter(description = "Course ID", required = true) @PathVariable("id") String courseId,
+                        @Parameter(description = "Pagination information") @PageableDefault(size = 10, sort = "createdAt,DESC", page = 0) Pageable pageable) {
+
+                // Call service to get course's enrolled students
+                return instructorCourseService.getEnrolledStudents(courseId, pageable);
         }
 
         private Pageable createPageable(int page, int size, String sort) {
