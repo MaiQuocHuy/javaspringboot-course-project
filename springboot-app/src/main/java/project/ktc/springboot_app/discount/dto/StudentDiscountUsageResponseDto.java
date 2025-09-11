@@ -37,10 +37,8 @@ public class StudentDiscountUsageResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserInfo {
-        private String id;
         private String name;
         private String email;
-        private String thumbnailUrl;
     }
 
     @Data

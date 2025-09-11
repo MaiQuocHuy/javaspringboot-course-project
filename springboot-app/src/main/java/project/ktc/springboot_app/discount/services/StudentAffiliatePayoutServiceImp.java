@@ -42,7 +42,8 @@ public class StudentAffiliatePayoutServiceImp implements StudentAffiliatePayoutS
             Page<AffiliatePayout> affiliatePayoutPage = studentAffiliatePayoutRepository
                     .findByReferredByUserId(studentId, pageable);
 
-            Page<StudentAffiliatePayoutResponseDto> responsePage = affiliatePayoutPage.map(this::mapToResponseDto);
+            Page<StudentAffiliatePayoutResponseDto> responsePage = affiliatePayoutPage
+                    .map(StudentAffiliatePayoutResponseDto::fromEntity);
 
             PaginatedResponse<StudentAffiliatePayoutResponseDto> paginatedResponse = PaginatedResponse
                     .<StudentAffiliatePayoutResponseDto>builder()
@@ -116,36 +117,6 @@ public class StudentAffiliatePayoutServiceImp implements StudentAffiliatePayoutS
         } catch (Exception e) {
             log.error("Error retrieving affiliate payout statistics for student: {}", studentId, e);
             return ApiResponseUtil.internalServerError("Failed to retrieve affiliate payout statistics");
-        }
-    }
-
-    private StudentAffiliatePayoutResponseDto mapToResponseDto(AffiliatePayout affiliatePayout) {
-        try {
-            return StudentAffiliatePayoutResponseDto.fromEntity(affiliatePayout);
-        } catch (Exception e) {
-            // Handle case where discountUsage might be null
-            log.warn("Error mapping affiliate payout {}, will use basic mapping", affiliatePayout.getId(), e);
-
-            return StudentAffiliatePayoutResponseDto.builder()
-                    .id(affiliatePayout.getId())
-                    .course(StudentAffiliatePayoutResponseDto.CourseInfo.builder()
-                            .id(affiliatePayout.getCourse().getId())
-                            .title(affiliatePayout.getCourse().getTitle())
-                            .instructor(StudentAffiliatePayoutResponseDto.UserInfo.builder()
-                                    .name(affiliatePayout.getCourse().getInstructor().getName())
-                                    .email(affiliatePayout.getCourse().getInstructor().getEmail())
-                                    .build())
-                            .price(affiliatePayout.getCourse().getPrice())
-                            .build())
-                    .discountUsage(null) // Handle null case
-                    .commissionPercent(affiliatePayout.getCommissionPercent())
-                    .commissionAmount(affiliatePayout.getCommissionAmount())
-                    .payoutStatus(affiliatePayout.getPayoutStatus().name())
-                    .createdAt(affiliatePayout.getCreatedAt())
-                    .paidAt(affiliatePayout.getPaidAt())
-                    .updatedAt(affiliatePayout.getUpdatedAt())
-                    .cancelledAt(affiliatePayout.getCancelledAt())
-                    .build();
         }
     }
 }

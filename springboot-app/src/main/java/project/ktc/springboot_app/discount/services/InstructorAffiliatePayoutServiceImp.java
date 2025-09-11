@@ -38,7 +38,8 @@ public class InstructorAffiliatePayoutServiceImp implements InstructorAffiliateP
             Page<AffiliatePayout> affiliatePayoutPage = instructorAffiliatePayoutRepository
                     .findByCourseInstructorId(instructorId, pageable);
 
-            Page<InstructorAffiliatePayoutResponseDto> responsePage = affiliatePayoutPage.map(this::mapToResponseDto);
+            Page<InstructorAffiliatePayoutResponseDto> responsePage = affiliatePayoutPage
+                    .map(InstructorAffiliatePayoutResponseDto::fromEntity);
 
             PaginatedResponse<InstructorAffiliatePayoutResponseDto> paginatedResponse = PaginatedResponse
                     .<InstructorAffiliatePayoutResponseDto>builder()
@@ -63,10 +64,5 @@ public class InstructorAffiliatePayoutServiceImp implements InstructorAffiliateP
             log.error("Error retrieving affiliate payouts for instructor: {}", instructorId, e);
             return ApiResponseUtil.internalServerError("Failed to retrieve affiliate payouts");
         }
-    }
-
-    private InstructorAffiliatePayoutResponseDto mapToResponseDto(AffiliatePayout affiliatePayout) {
-        // Use the existing fromEntity method
-        return InstructorAffiliatePayoutResponseDto.fromEntity(affiliatePayout);
     }
 }

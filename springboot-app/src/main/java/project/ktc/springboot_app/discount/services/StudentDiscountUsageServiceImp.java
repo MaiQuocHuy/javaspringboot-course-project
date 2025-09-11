@@ -38,7 +38,8 @@ public class StudentDiscountUsageServiceImp implements StudentDiscountUsageServi
             Page<DiscountUsage> discountUsagePage = studentDiscountUsageRepository.findByReferredByUserId(studentId,
                     pageable);
 
-            Page<StudentDiscountUsageResponseDto> responsePage = discountUsagePage.map(this::mapToResponseDto);
+            Page<StudentDiscountUsageResponseDto> responsePage = discountUsagePage
+                    .map(StudentDiscountUsageResponseDto::fromEntity);
 
             PaginatedResponse<StudentDiscountUsageResponseDto> paginatedResponse = PaginatedResponse
                     .<StudentDiscountUsageResponseDto>builder()
@@ -63,36 +64,5 @@ public class StudentDiscountUsageServiceImp implements StudentDiscountUsageServi
             log.error("Error retrieving discount usages for student: {}", studentId, e);
             return ApiResponseUtil.internalServerError("Failed to retrieve discount usages");
         }
-    }
-
-    private StudentDiscountUsageResponseDto mapToResponseDto(DiscountUsage discountUsage) {
-        return StudentDiscountUsageResponseDto.builder()
-                .id(discountUsage.getId())
-                .discount(StudentDiscountUsageResponseDto.DiscountInfo.builder()
-                        .id(discountUsage.getDiscount().getId())
-                        .code(discountUsage.getDiscount().getCode())
-                        .description(discountUsage.getDiscount().getDescription())
-                        .build())
-                .user(StudentDiscountUsageResponseDto.UserInfo.builder()
-                        .id(discountUsage.getUser().getId())
-                        .name(discountUsage.getUser().getName())
-                        .email(discountUsage.getUser().getEmail())
-                        .thumbnailUrl(discountUsage.getUser().getThumbnailUrl())
-                        .build())
-                .course(StudentDiscountUsageResponseDto.CourseInfo.builder()
-                        .id(discountUsage.getCourse().getId())
-                        .title(discountUsage.getCourse().getTitle())
-                        .instructor(StudentDiscountUsageResponseDto.UserInfo.builder()
-                                .id(discountUsage.getCourse().getInstructor().getId())
-                                .name(discountUsage.getCourse().getInstructor().getName())
-                                .email(discountUsage.getCourse().getInstructor().getEmail())
-                                .thumbnailUrl(discountUsage.getCourse().getInstructor().getThumbnailUrl())
-                                .build())
-                        .price(discountUsage.getCourse().getPrice())
-                        .build())
-                .usedAt(discountUsage.getUsedAt())
-                .discountPercent(discountUsage.getDiscountPercent())
-                .discountAmount(discountUsage.getDiscountAmount())
-                .build();
     }
 }

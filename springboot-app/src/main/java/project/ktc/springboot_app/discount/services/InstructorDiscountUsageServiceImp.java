@@ -38,7 +38,8 @@ public class InstructorDiscountUsageServiceImp implements InstructorDiscountUsag
             Page<DiscountUsage> discountUsagePage = instructorDiscountUsageRepository
                     .findByCourseInstructorId(instructorId, pageable);
 
-            Page<InstructorDiscountUsageResponseDto> responsePage = discountUsagePage.map(this::mapToResponseDto);
+            Page<InstructorDiscountUsageResponseDto> responsePage = discountUsagePage
+                    .map(InstructorDiscountUsageResponseDto::fromEntity);
 
             PaginatedResponse<InstructorDiscountUsageResponseDto> paginatedResponse = PaginatedResponse
                     .<InstructorDiscountUsageResponseDto>builder()
@@ -63,10 +64,5 @@ public class InstructorDiscountUsageServiceImp implements InstructorDiscountUsag
             log.error("Error retrieving discount usages for instructor: {}", instructorId, e);
             return ApiResponseUtil.internalServerError("Failed to retrieve discount usages");
         }
-    }
-
-    private InstructorDiscountUsageResponseDto mapToResponseDto(DiscountUsage discountUsage) {
-        // Use the existing fromEntity method
-        return InstructorDiscountUsageResponseDto.fromEntity(discountUsage);
     }
 }
