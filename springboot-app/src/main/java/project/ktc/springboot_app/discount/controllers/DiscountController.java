@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,8 +19,11 @@ import org.springframework.web.bind.annotation.*;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.discount.dto.CreateDiscountRequest;
 import project.ktc.springboot_app.discount.dto.DiscountResponseDto;
+import project.ktc.springboot_app.discount.dto.DiscountEmailRequest;
+import project.ktc.springboot_app.discount.dto.DiscountEmailResponse;
 import project.ktc.springboot_app.discount.enums.DiscountType;
 import project.ktc.springboot_app.discount.interfaces.DiscountService;
+import project.ktc.springboot_app.email.interfaces.EmailService;
 
 /**
  * REST Controller for discount management operations
@@ -36,6 +38,7 @@ import project.ktc.springboot_app.discount.interfaces.DiscountService;
 public class DiscountController {
 
         private final DiscountService discountService;
+        private final EmailService emailService;
 
         /**
          * Create a new discount
@@ -264,5 +267,68 @@ public class DiscountController {
                 String message = isValid ? "Discount is valid for use" : "Discount is not valid for use";
 
                 return ResponseEntity.ok(project.ktc.springboot_app.common.dto.ApiResponse.success(isValid, message));
+        }
+
+        /**
+         * Send discount code email to all students
+         */
+        @PostMapping("/email")
+        @PreAuthorize("hasRole('ADMIN')")
+        @Operation(summary = "Send discount code email to all students", description = "Sends discount code email to all STUDENT users using discount ID. Backend will fetch discount details automatically. Only ADMIN users can access this endpoint.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Email sending initiated successfully"),
+                        @ApiResponse(responseCode = "400", description = "Bad request - Invalid request data"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing JWT token"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User does not have ADMIN role"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<DiscountEmailResponse>> sendDiscountEmail(
+                        @Valid @RequestBody DiscountEmailRequest request) {
+
+                log.info("Admin sending discount email - ID: {}, Subject: {}",
+                                request.getDiscountId(), request.getSubject());
+
+                try {
+                        // Get discount details first for response
+                        ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<DiscountResponseDto>> discountResponseEntity = discountService
+                                        .getDiscountById(request.getDiscountId());
+
+                        project.ktc.springboot_app.common.dto.ApiResponse<DiscountResponseDto> discountResponse = discountResponseEntity
+                                        .getBody();
+
+                        if (discountResponseEntity.getStatusCode().value() != 200 ||
+                                        discountResponse == null ||
+                                        discountResponse.getStatusCode() != 200 ||
+                                        discountResponse.getData() == null) {
+                                return ResponseEntity.badRequest()
+                                                .body(project.ktc.springboot_app.common.dto.ApiResponse.error(
+                                                                400, "Discount not found with ID: "
+                                                                                + request.getDiscountId()));
+                        }
+
+                        String discountCode = discountResponse.getData().getCode();
+
+                        // Count total students for response
+                        Long totalStudents = emailService.sendDiscountCodeToAllStudents(
+                                        request.getDiscountId(),
+                                        request.getSubject()).get(); // Wait for completion to get count
+
+                        DiscountEmailResponse response = DiscountEmailResponse.builder()
+                                        .estimatedRecipients(totalStudents)
+                                        .discountCode(discountCode)
+                                        .subject(request.getSubject())
+                                        .build();
+
+                        String message = String.format("Successfully sent discount emails to %d students",
+                                        totalStudents);
+                        return ResponseEntity.ok(
+                                        project.ktc.springboot_app.common.dto.ApiResponse.success(response, message));
+
+                } catch (Exception e) {
+                        log.error("Failed to send discount emails: {}", e.getMessage(), e);
+                        return ResponseEntity.internalServerError()
+                                        .body(project.ktc.springboot_app.common.dto.ApiResponse.error(
+                                                        500, "Failed to send discount emails: " + e.getMessage()));
+                }
         }
 }
