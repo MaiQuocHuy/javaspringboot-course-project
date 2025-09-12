@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.discount.dto.CreateDiscountRequest;
 import project.ktc.springboot_app.discount.dto.DiscountResponseDto;
 import project.ktc.springboot_app.discount.dto.DiscountEmailRequest;
@@ -270,11 +271,11 @@ public class DiscountController {
         }
 
         /**
-         * Send discount code email to all students
+         * Send discount code email to all students or specific user
          */
         @PostMapping("/email")
         @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Send discount code email to all students", description = "Sends discount code email to all STUDENT users using discount ID. Backend will fetch discount details automatically. Only ADMIN users can access this endpoint.")
+        @Operation(summary = "Send discount code email to all students or specific user", description = "Sends discount code email to all STUDENT users or a specific user using discount ID. If user_id is provided, sends to that specific user; otherwise sends to all students. Backend will fetch discount details automatically. Only ADMIN users can access this endpoint.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Email sending initiated successfully"),
                         @ApiResponse(responseCode = "400", description = "Bad request - Invalid request data"),
@@ -285,8 +286,13 @@ public class DiscountController {
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<DiscountEmailResponse>> sendDiscountEmail(
                         @Valid @RequestBody DiscountEmailRequest request) {
 
-                log.info("Admin sending discount email - ID: {}, Subject: {}",
-                                request.getDiscountId(), request.getSubject());
+                if (request.getUserId() != null && !request.getUserId().trim().isEmpty()) {
+                        log.info("Admin sending discount email to specific user - ID: {}, User: {}, Subject: {}",
+                                        request.getDiscountId(), request.getUserId(), request.getSubject());
+                } else {
+                        log.info("Admin sending discount email to all students - ID: {}, Subject: {}",
+                                        request.getDiscountId(), request.getSubject());
+                }
 
                 try {
                         // Get discount details first for response
@@ -300,35 +306,51 @@ public class DiscountController {
                                         discountResponse == null ||
                                         discountResponse.getStatusCode() != 200 ||
                                         discountResponse.getData() == null) {
-                                return ResponseEntity.badRequest()
-                                                .body(project.ktc.springboot_app.common.dto.ApiResponse.error(
-                                                                400, "Discount not found with ID: "
-                                                                                + request.getDiscountId()));
+                                return ApiResponseUtil
+                                                .badRequest("Discount not found with ID: " + request.getDiscountId());
                         }
 
                         String discountCode = discountResponse.getData().getCode();
 
-                        // Count total students for response
-                        Long totalStudents = emailService.sendDiscountCodeToAllStudents(
-                                        request.getDiscountId(),
-                                        request.getSubject()).get(); // Wait for completion to get count
+                        // Send to specific user or all students based on request
+                        Long totalRecipients;
+                        if (request.getUserId() != null && !request.getUserId().trim().isEmpty()) {
+                                // Send to specific user
+                                totalRecipients = emailService.sendDiscountCodeToSpecificUser(
+                                                request.getDiscountId(),
+                                                request.getSubject(),
+                                                request.getUserId()).get(); // Wait for completion to get count
+                        } else {
+                                // Send to all students
+                                totalRecipients = emailService.sendDiscountCodeToAllStudents(
+                                                request.getDiscountId(),
+                                                request.getSubject()).get(); // Wait for completion to get count
+                        }
 
                         DiscountEmailResponse response = DiscountEmailResponse.builder()
-                                        .estimatedRecipients(totalStudents)
+                                        .estimatedRecipients(totalRecipients)
                                         .discountCode(discountCode)
                                         .subject(request.getSubject())
                                         .build();
 
-                        String message = String.format("Successfully sent discount emails to %d students",
-                                        totalStudents);
-                        return ResponseEntity.ok(
-                                        project.ktc.springboot_app.common.dto.ApiResponse.success(response, message));
+                        String message;
+                        if (request.getUserId() != null && !request.getUserId().trim().isEmpty()) {
+                                message = totalRecipients > 0
+                                                ? String.format("Successfully sent discount email to user %s",
+                                                                request.getUserId())
+                                                : String.format("Failed to send discount email to user %s",
+                                                                request.getUserId());
+                        } else {
+                                message = String.format("Successfully sent discount emails to %d students",
+                                                totalRecipients);
+                        }
+
+                        return ApiResponseUtil.success(response, message);
 
                 } catch (Exception e) {
                         log.error("Failed to send discount emails: {}", e.getMessage(), e);
-                        return ResponseEntity.internalServerError()
-                                        .body(project.ktc.springboot_app.common.dto.ApiResponse.error(
-                                                        500, "Failed to send discount emails: " + e.getMessage()));
+                        return ApiResponseUtil
+                                        .internalServerError("Failed to send discount emails: " + e.getMessage());
                 }
         }
 }
