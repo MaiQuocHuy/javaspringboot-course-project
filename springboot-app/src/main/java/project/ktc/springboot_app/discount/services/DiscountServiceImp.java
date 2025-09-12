@@ -487,6 +487,11 @@ public class DiscountServiceImp implements DiscountService {
         return builder.build();
     }
 
+    @Override
+    public Discount getDiscountEntityById(String id) {
+        return discountRepository.findById(id).orElse(null);
+    }
+
     /**
      * Helper method to convert Spring Data Page to PaginatedResponse
      */

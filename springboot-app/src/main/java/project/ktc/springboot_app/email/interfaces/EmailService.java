@@ -124,4 +124,15 @@ public interface EmailService {
                         String certificateUrl,
                         java.time.LocalDateTime issueDate);
 
+        /**
+         * Send discount code email to all students using discount ID
+         *
+         * @param discountId The discount ID to fetch discount details
+         * @param subject    Email subject
+         * @return CompletableFuture with number of successful sends
+         */
+        CompletableFuture<Long> sendDiscountCodeToAllStudents(
+                        String discountId,
+                        String subject);
+
 }

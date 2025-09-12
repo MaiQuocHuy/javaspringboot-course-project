@@ -9,6 +9,10 @@ import project.ktc.springboot_app.email.dto.EmailRequest;
 import project.ktc.springboot_app.email.dto.EmailSendResult;
 import project.ktc.springboot_app.email.interfaces.EmailProvider;
 import project.ktc.springboot_app.email.interfaces.EmailService;
+import project.ktc.springboot_app.user.repositories.UserRepository;
+import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.discount.interfaces.DiscountService;
+import project.ktc.springboot_app.discount.entity.Discount;
 
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
@@ -16,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Main email service implementation
@@ -28,6 +33,8 @@ public class EmailServiceImp implements EmailService {
 
     private final List<EmailProvider> emailProviders;
     private final EmailConfig emailConfig;
+    private final UserRepository userRepository;
+    private final DiscountService discountService;
 
     @Override
     public EmailSendResult sendEmail(EmailRequest emailRequest) {
@@ -310,6 +317,93 @@ public class EmailServiceImp implements EmailService {
                     .errorMessage("Failed to send certificate notification email: " + e.getMessage())
                     .build();
             return CompletableFuture.completedFuture(errorResult);
+        }
+    }
+
+    @Override
+    @Async("emailTaskExecutor")
+    public CompletableFuture<Long> sendDiscountCodeToAllStudents(
+            String discountId,
+            String subject) {
+
+        log.info("Starting to send discount ID {} to all students", discountId);
+
+        try {
+            // Get discount details from database
+            Discount discount = discountService.getDiscountEntityById(discountId);
+            if (discount == null) {
+                log.error("Discount not found with ID: {}", discountId);
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            // Validate discount fields
+            if (discount.getCode() == null || discount.getStartDate() == null || discount.getEndDate() == null) {
+                log.error("Discount with ID {} has missing required fields", discountId);
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            log.info("Found discount: {} with code: {}", discount.getDescription(), discount.getCode());
+
+            // Get all students
+            List<User> students = userRepository.findUsersWithFilters(null, "STUDENT", true,
+                    org.springframework.data.domain.Pageable.unpaged()).getContent();
+            log.info("Found {} students to send discount emails", students.size());
+
+            if (students.isEmpty()) {
+                log.warn("No students found for discount email sending");
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            AtomicLong successCount = new AtomicLong(0);
+
+            // Send emails to all students
+            for (User student : students) {
+                try {
+                    // Create email variables
+                    Map<String, Object> variables = new HashMap<>();
+                    variables.put("studentName", student.getName());
+                    variables.put("discountCode", discount.getCode());
+                    variables.put("startDate",
+                            discount.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                    variables.put("endDate", discount.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                    variables.put("currentYear", Year.now().getValue());
+
+                    // Create email request
+                    EmailRequest emailRequest = EmailRequest.builder()
+                            .to(List.of(student.getEmail()))
+                            .subject(subject)
+                            .templateName("discount-code-template")
+                            .templateVariables(variables)
+                            .build();
+
+                    // Send email
+                    EmailSendResult result = doSendEmail(emailRequest);
+
+                    if (result.isSuccess()) {
+                        successCount.incrementAndGet();
+                        log.debug("Successfully sent discount email to {}", student.getEmail());
+                    } else {
+                        log.warn("Failed to send discount email to {}: {}",
+                                student.getEmail(), result.getErrorMessage());
+                    }
+
+                    // Small delay to avoid overwhelming email provider
+                    Thread.sleep(100);
+
+                } catch (Exception e) {
+                    log.error("Error sending discount email to {}: {}",
+                            student.getEmail(), e.getMessage(), e);
+                }
+            }
+
+            long totalSent = successCount.get();
+            log.info("Completed sending discount emails. Success: {}/{}", totalSent, students.size());
+
+            return CompletableFuture.completedFuture(totalSent);
+
+        } catch (Exception e) {
+            log.error("Failed to send discount emails: {}", e.getMessage(), e);
+            return CompletableFuture.completedFuture(0L);
         }
     }
 

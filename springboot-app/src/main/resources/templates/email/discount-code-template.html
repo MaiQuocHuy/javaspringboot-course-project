@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Special Discount Code</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f5f5;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        text-align: center;
+        padding: 40px 20px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .header p {
+        margin: 10px 0 0 0;
+        font-size: 16px;
+        opacity: 0.9;
+      }
+      .content {
+        padding: 40px 30px;
+      }
+      .greeting {
+        font-size: 18px;
+        color: #333333;
+        margin-bottom: 20px;
+      }
+      .discount-section {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        margin: 30px 0;
+        color: #ffffff;
+      }
+      .discount-code {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 15px 25px;
+        border-radius: 8px;
+        border: 2px dashed #ffffff;
+        margin: 20px 0;
+        display: inline-block;
+      }
+      .discount-text {
+        font-size: 18px;
+        margin: 15px 0;
+      }
+      .validity {
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 20px;
+        margin: 25px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      .validity h3 {
+        color: #007bff;
+        margin: 0 0 10px 0;
+        font-size: 16px;
+      }
+      .validity p {
+        margin: 5px 0;
+        color: #666666;
+      }
+      .cta-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        text-decoration: none;
+        padding: 15px 35px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 16px;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transition: transform 0.3s ease;
+      }
+      .cta-button:hover {
+        transform: translateY(-2px);
+      }
+      .instructions {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 25px 0;
+      }
+      .instructions h3 {
+        color: #856404;
+        margin: 0 0 10px 0;
+      }
+      .instructions ol {
+        color: #856404;
+        margin: 10px 0;
+      }
+      .footer {
+        background-color: #2c3e50;
+        color: #ffffff;
+        text-align: center;
+        padding: 30px 20px;
+      }
+      .footer p {
+        margin: 5px 0;
+        font-size: 14px;
+        opacity: 0.8;
+      }
+      .social-links {
+        margin: 20px 0;
+      }
+      .social-links a {
+        display: inline-block;
+        margin: 0 10px;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 14px;
+      }
+      @media (max-width: 600px) {
+        .container {
+          width: 100%;
+        }
+        .content {
+          padding: 20px 15px;
+        }
+        .discount-code {
+          font-size: 24px;
+          letter-spacing: 2px;
+          padding: 12px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <h1>🎉 Special Discount Code</h1>
+        <p>Exclusively for you - Our valued student!</p>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="greeting">
+          Hello <strong th:text="${studentName}">Student</strong>,
+        </div>
+
+        <p>
+          We are excited to send you a special offer! Use the discount code
+          below to save on your next courses.
+        </p>
+
+        <!-- Discount Section -->
+        <div class="discount-section">
+          <div class="discount-text">💝 YOUR DISCOUNT CODE</div>
+          <div class="discount-code" th:text="${discountCode}">DISCOUNT10</div>
+          <div class="discount-text">
+            Copy this code and apply it at checkout!
+          </div>
+        </div>
+
+        <!-- Validity Period -->
+        <div class="validity">
+          <h3>📅 Valid Period:</h3>
+          <p>
+            <strong>From:</strong>
+            <span th:text="${startDate}">01/01/2024</span>
+          </p>
+          <p>
+            <strong>To:</strong> <span th:text="${endDate}">31/12/2024</span>
+          </p>
+          <p><em>* Code is only valid during the above period</em></p>
+        </div>
+
+        <!-- Call to Action -->
+        <div style="text-align: center">
+          <a href="#" class="cta-button">🛒 Explore Courses Now</a>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+          <h3>🔖 How to use your discount code:</h3>
+          <ol>
+            <li>Choose the course you want to enroll in</li>
+            <li>Add the course to your cart</li>
+            <li>
+              At checkout, enter the code
+              <strong th:text="${discountCode}">DISCOUNT10</strong>
+            </li>
+            <li>Click "Apply" to receive your discount</li>
+            <li>Complete payment and start learning!</li>
+          </ol>
+        </div>
+
+        <p>
+          This is a great opportunity for you to continue your learning journey
+          at a discounted price. Don't miss out!
+        </p>
+
+        <p>
+          If you have any questions, don't hesitate to contact our support team.
+        </p>
+
+        <p style="margin-top: 30px">
+          Best regards,<br />
+          <strong>KTC Education Team</strong>
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <p><strong>KTC Education Platform</strong></p>
+        <p>Email: support@ktc.edu.vn | Hotline: 1900-xxxx</p>
+        <div class="social-links">
+          <a href="#">Facebook</a> | <a href="#">Website</a> |
+          <a href="#">YouTube</a>
+        </div>
+        <p>
+          &copy; <span th:text="${currentYear}">2024</span> KTC Education. All
+          rights reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

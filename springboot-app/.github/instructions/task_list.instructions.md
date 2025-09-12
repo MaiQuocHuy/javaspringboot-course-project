@@ -4751,3 +4751,71 @@ Only ADMIN users can call this API. -**Request**:
   - Only ADMIN users can create notifications.
   - User must exist.
   - Notification must have a message and action URL.
+
+### 7.14 `POST /api/discounts/email`
+
+- **Description**:  
+  Sends a discount code to all user's email address with role is STUDENT. Only users with the ADMIN role are authorized to call this API.
+
+- **Request**:
+
+  - **Method:** POST
+  - **Path:** /api/discounts/email
+  - **Headers**:
+  - **Body**:
+    ```json
+    {
+      "discount_code": "DISCOUNT10",
+      "start_date": "2024-01-01T00:00:00",
+      "end_date": "2024-12-31T23:59:59",
+      "subject": "Special Discount Just for You!",
+    }
+    ```
+
+- **Response**:
+
+  - **Status Code:** 200 OK
+  - **Body**:
+    ```json
+    {
+      "statusCode": 202,
+      "message": "Discount code sent to email successfully",
+      "data": {
+        "estimated_recipients": 250
+      }
+    }
+    ```
+
+- **Errors**:
+
+  - 400 Bad Request: Missing or invalid fields (`user_id`, `discount_code`)
+  - 401 Unauthorized: Missing or invalid JWT
+  - 403 Forbidden: Caller is not ADMIN
+  - 404 Not Found: No STUDENT users found
+  - 500 Internal Server Error: Failed to enqueue async job
+
+- **Controller Responsibilities**:
+
+  - Validate JWT and ensure ADMIN role.
+  - Parse and validate request body.
+  - Call `EmailService.sendDiscountCode(emailDto)`.
+  - Return service response with proper HTTP status and JSON structure.
+  - Validate JWT & ADMIN role
+  - Validate request body
+  - Fetch estimated student count
+  - Push job into async queue (no persistence of task ID)
+  - Return 202 Accepted immediately
+
+- **Service Responsibilities**:
+
+  - Check if user exists.
+  - Send email with discount code.
+  - Return email sending status.
+  - Worker consumes job from queue / thread pool
+  - Fetch all STUDENT users
+  - Send emails in batch mode
+  - Log results internally (system logs, not user-visible)
+
+- **Business Rules**:
+  - Only ADMIN users can send discount codes via email.
+  - User must exist.
