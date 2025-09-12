@@ -94,4 +94,9 @@ public interface DiscountService {
          * Convert entity to DTO
          */
         DiscountResponseDto convertToDto(Discount discount);
+
+        /**
+         * Get discount entity by ID (for internal use)
+         */
+        Discount getDiscountEntityById(String id);
 }
