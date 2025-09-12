@@ -73,12 +73,17 @@ public class InstructorDiscountUsageResponseDto {
                 .title(usage.getCourse().getTitle())
                 .price(usage.getCourse().getPrice())
                 .build();
-        UserInfo referredByUserInfo = UserInfo.builder()
-                .name(usage.getReferredByUser().getName())
-                .email(usage.getReferredByUser().getEmail())
-                .bio(usage.getReferredByUser().getBio())
-                .thumbnailUrl(usage.getReferredByUser().getThumbnailUrl())
-                .build();
+
+        // Handle null referredByUser for direct purchases without referral
+        UserInfo referredByUserInfo = null;
+        if (usage.getReferredByUser() != null) {
+            referredByUserInfo = UserInfo.builder()
+                    .name(usage.getReferredByUser().getName())
+                    .email(usage.getReferredByUser().getEmail())
+                    .bio(usage.getReferredByUser().getBio())
+                    .thumbnailUrl(usage.getReferredByUser().getThumbnailUrl())
+                    .build();
+        }
         return InstructorDiscountUsageResponseDto.builder()
                 .id(usage.getId())
                 .discount(discountInfo)
