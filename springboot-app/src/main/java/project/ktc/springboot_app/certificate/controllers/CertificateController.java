@@ -217,7 +217,7 @@ public class CertificateController {
         }
 
         @GetMapping("/course/{courseId}")
-        @PreAuthorize("hasRole('ADMIN') or @courseRepository.existsByIdAndInstructorId(#courseId, authentication.name)")
+        @PreAuthorize("hasRole('INSTRUCTOR') or hasRole('ADMIN') or @courseRepository.existsByIdAndInstructorId(#courseId, authentication.name)")
         @Operation(summary = "Get certificates by course ID", description = """
                         Retrieves paginated list of certificates for a specific course.
 

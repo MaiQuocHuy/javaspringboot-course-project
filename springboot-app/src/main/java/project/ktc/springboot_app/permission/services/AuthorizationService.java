@@ -8,6 +8,7 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.permission.entity.FilterType;
 import project.ktc.springboot_app.permission.entity.RolePermission;
 import project.ktc.springboot_app.permission.repositories.RolePermissionRepository;
+import project.ktc.springboot_app.permission.dto.UserPermissionsDto;
 
 import java.util.List;
 import java.util.Set;
@@ -210,6 +211,74 @@ public class AuthorizationService {
                     ", user=" + (user != null ? user.getEmail() : null) +
                     ", reason='" + reason + '\'' +
                     '}';
+        }
+    }
+
+    /**
+     * Get comprehensive user permissions information
+     * 
+     * @param user the user
+     * @return user permissions DTO with detailed information
+     */
+    public UserPermissionsDto getUserPermissionsDto(User user) {
+        log.debug("Getting comprehensive permissions for user: {}", user.getEmail());
+
+        try {
+            // Get all role permissions for the user
+            List<RolePermission> rolePermissions = rolePermissionRepository
+                    .findActiveByRoleId(user.getRole().getId());
+
+            // Extract permission keys
+            Set<String> permissions = rolePermissions.stream()
+                    .map(RolePermission::getPermissionKey)
+                    .collect(Collectors.toSet());
+
+            // Create detailed permission information
+            List<UserPermissionsDto.PermissionDetailDto> detailedPermissions = rolePermissions.stream()
+                    .map(rp -> UserPermissionsDto.PermissionDetailDto.builder()
+                            .permissionKey(rp.getPermissionKey())
+                            .description(rp.getPermission().getDescription())
+                            .resource(rp.getPermission().getResourceName())
+                            .action(rp.getPermission().getActionName())
+                            .filterType(rp.getFilterType().getName())
+                            .canAccessAll(rp.hasAllAccess())
+                            .canAccessOwn(rp.hasOwnAccess())
+                            .build())
+                    .collect(Collectors.toList());
+
+            // Create role info
+            UserPermissionsDto.RoleInfoDto roleInfo = UserPermissionsDto.RoleInfoDto.builder()
+                    .id(user.getRole().getId())
+                    .name(user.getRole().getRole())
+                    .build();
+
+            // Build final DTO
+            return UserPermissionsDto.builder()
+                    .userId(user.getId())
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .role(roleInfo)
+                    .permissions(permissions)
+                    .detailedPermissions(detailedPermissions)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error getting user permissions for user: {}", user.getEmail(), e);
+
+            // Return minimal permissions on error
+            UserPermissionsDto.RoleInfoDto roleInfo = UserPermissionsDto.RoleInfoDto.builder()
+                    .id(user.getRole().getId())
+                    .name(user.getRole().getRole())
+                    .build();
+
+            return UserPermissionsDto.builder()
+                    .userId(user.getId())
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .role(roleInfo)
+                    .permissions(Set.of())
+                    .detailedPermissions(List.of())
+                    .build();
         }
     }
 }

@@ -17,7 +17,16 @@ public class SimpleChatMessageResponse {
     @Schema(description = "Sender user ID", example = "45")
     private String senderId;
 
-    @Schema(description = "Message type", example = "text", allowableValues = { "text", "file" })
+    @Schema(description = "Sender user name", example = "John Doe")
+    private String senderName;
+
+    @Schema(description = "Sender thumbnail URL", example = "https://example.com/thumbnail.jpg")
+    private String senderThumbnailUrl;
+
+    @Schema(description = "Sender role", example = "STUDENT", allowableValues = { "STUDENT", "INSTRUCTOR" })
+    private String senderRole;
+
+    @Schema(description = "Message type", example = "TEXT", allowableValues = { "TEXT", "FILE" })
     private String type;
 
     @Schema(description = "Message content", example = "Hello world")

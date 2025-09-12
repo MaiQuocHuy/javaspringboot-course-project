@@ -34,6 +34,15 @@ public interface DiscountService {
         ResponseEntity<ApiResponse<DiscountResponseDto>> createUserInductionDiscount(String userId);
 
         /**
+         * Get user's induction discount (REFERRAL type)
+         * Returns the user's personal REFERRAL discount if it exists
+         * 
+         * @param userId The user ID to get induction discount for
+         * @return ResponseEntity with user's induction discount information
+         */
+        ResponseEntity<ApiResponse<DiscountResponseDto>> getUserInductionDiscount(String userId);
+
+        /**
          * Get all discounts with pagination
          */
         ResponseEntity<ApiResponse<PaginatedResponse<DiscountResponseDto>>> getAllDiscounts(Pageable pageable);
@@ -81,10 +90,10 @@ public interface DiscountService {
          */
         List<Discount> getCurrentlyValidDiscounts();
 
-        /**
-         * Convert entity to DTO
-         */
-        DiscountResponseDto convertToDto(Discount discount);
+            /**
+             * Convert entity to DTO
+             */
+            DiscountResponseDto convertToDto(Discount discount);
 
         /**
          * Get discount entity by ID (for internal use)

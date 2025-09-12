@@ -47,7 +47,7 @@ public class InstructorStudentServiceImpl implements InstructorStudentService {
   private final CourseRepository courseRepository;
 
   private List<String> getEnrolledStudentIds(String instructorId) {
-    return instructorStudentRepository.getEnrolledStudentsByInstructorId(instructorId);
+    return instructorStudentRepository.getEnrolledStudentIdsByInstructorId(instructorId);
   }
 
   private Double calculateProgress(String userId, String courseId) {
@@ -97,7 +97,7 @@ public class InstructorStudentServiceImpl implements InstructorStudentService {
       List<String> enrolledStudentIds = getEnrolledStudentIds(instructorId);
       // Get detailed information for each student
       List<InstructorStudentDto> studentsList = new ArrayList<>();
-      // Page<InstructorStudentDto> studentsList = new ArrayList<>();
+
       for (String studentId : enrolledStudentIds) {
         List<Object[]> studentInfo = instructorStudentRepository.getStudentById(studentId);
         if (studentInfo != null && !studentInfo.isEmpty()) {
@@ -110,7 +110,7 @@ public class InstructorStudentServiceImpl implements InstructorStudentService {
               .build();
 
           // Get student's enrolled courses
-          List<Object[]> studentCourses = instructorStudentRepository.getStudentCourses(studentId);
+          List<Object[]> studentCourses = instructorStudentRepository.getStudentCourses(instructorId, studentId);
           if (studentCourses != null && !studentCourses.isEmpty()) {
             List<EnrolledCourses> enrolledCourses = new ArrayList<>();
             for (Object[] course : studentCourses) {
@@ -137,7 +137,8 @@ public class InstructorStudentServiceImpl implements InstructorStudentService {
   }
 
   @Override
-  public ResponseEntity<ApiResponse<InstructorStudentDetailsDto>> getEnrolledStudentDetails(String studentId) {
+  public ResponseEntity<ApiResponse<InstructorStudentDetailsDto>> getEnrolledStudentDetails(String studentId,
+      Pageable pageable) {
     try {
       // Validate student ID
       if (studentId == null || studentId.trim().isEmpty()) {
@@ -166,7 +167,8 @@ public class InstructorStudentServiceImpl implements InstructorStudentService {
 
           // Get student's enrolled courses
           List<Object[]> enrolledCoursesData = instructorStudentRepository
-              .getStudentCoursesDetails(student.getId());
+              .getStudentCoursesDetails(instructorId, student.getId());
+
           List<EnrolledCoursesDetails> enrolledCoursesDetails = new ArrayList<>();
           Set<String> processedCourseIds = new HashSet<>();
 
@@ -219,7 +221,11 @@ public class InstructorStudentServiceImpl implements InstructorStudentService {
 
             enrolledCoursesDetails.add(details);
           }
-          studentDetails.setEnrolledCourses(enrolledCoursesDetails);
+
+          // Paginate enrolled courses
+          PaginatedResponse<EnrolledCoursesDetails> pagedEnrolledCourses = getPaginatedList(enrolledCoursesDetails,
+              pageable);
+          studentDetails.setEnrolledCourses(pagedEnrolledCourses);
 
           return ApiResponseUtil.success(studentDetails, "Get enrolled student details successfully");
         }

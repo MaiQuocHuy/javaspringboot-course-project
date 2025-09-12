@@ -1,13 +1,11 @@
 package project.ktc.springboot_app.discount.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import project.ktc.springboot_app.common.dto.ApiResponse;
-import project.ktc.springboot_app.discount.dto.CommonDiscountRequest;
 import project.ktc.springboot_app.discount.dto.DiscountResponseDto;
 import project.ktc.springboot_app.discount.interfaces.DiscountService;
 import project.ktc.springboot_app.utils.SecurityUtil;
@@ -59,5 +56,26 @@ public class CommonDiscountController {
                 log.info("Creating individual induction discount for user: {}", userId);
 
                 return discountService.createUserInductionDiscount(userId);
+        }
+
+        /**
+         * Get the induction discount code for the authenticated user
+         * Returns the user's personal REFERRAL discount if it exists
+         */
+        @GetMapping("/my-induction")
+        @PreAuthorize("hasRole('STUDENT') or hasRole('INSTRUCTOR')")
+        @Operation(summary = "Get user's induction discount code", description = "Retrieve the authenticated user's personal REFERRAL discount code if it exists.")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Induction discount found", content = @Content(schema = @Schema(implementation = DiscountResponseDto.class))),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found or no induction discount exists"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<ApiResponse<DiscountResponseDto>> getMyInductionDiscount(Authentication authentication) {
+
+                String userId = SecurityUtil.getCurrentUserId();
+                log.info("Getting induction discount for user: {}", userId);
+
+                return discountService.getUserInductionDiscount(userId);
         }
 }

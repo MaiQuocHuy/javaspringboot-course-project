@@ -31,7 +31,7 @@ public class ChatMessageResponse {
     private String type;
 
     @Schema(description = "Text content for TEXT type messages", example = "Hello everyone! How are you doing with the course?")
-    private String textContent;
+    private String content;
 
     @Schema(description = "File URL for FILE type messages", example = "https://example.com/files/document.pdf")
     private String fileUrl;
@@ -62,4 +62,7 @@ public class ChatMessageResponse {
 
     @Schema(description = "Message creation timestamp", example = "2025-08-26T10:30:00")
     private LocalDateTime createdAt;
+
+    @Schema(description = "Thumbnail URL of the sender", example = "https://example.com/profiles/johndoe.jpg")
+    private String senderThumbnailUrl;
 }

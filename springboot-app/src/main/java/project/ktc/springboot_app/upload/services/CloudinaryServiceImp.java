@@ -345,8 +345,8 @@ public class CloudinaryServiceImp implements CloudinaryService {
                     file.getBytes(),
                     ObjectUtils.asMap(
                             "public_id", publicId,
-                            "resource_type", "raw", // Use raw for documents
-                            "folder", "instructor-documents"));
+                            "resource_type", "raw" // Use raw for documents
+                    ));
 
             log.info("Document upload successful. Public ID: {}, URL: {}",
                     uploadResult.get("public_id"), uploadResult.get("secure_url"));

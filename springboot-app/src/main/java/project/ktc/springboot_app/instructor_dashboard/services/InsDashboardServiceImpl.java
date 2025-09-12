@@ -17,7 +17,6 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
-import project.ktc.springboot_app.earning.dto.MonthlyEarningsDto;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
 import project.ktc.springboot_app.instructor_dashboard.dto.InsDashboardDto;
 import project.ktc.springboot_app.instructor_dashboard.dto.StatisticItemDto;
@@ -59,7 +58,7 @@ public class InsDashboardServiceImpl implements InsDashboardService {
 
   private StatisticItemDto studentStatistics(String instructorId) {
     // Get total enrolled students
-    List<String> enrolledStudentIds = instructorStudentRepository.getEnrolledStudentsByInstructorId(instructorId);
+    List<String> enrolledStudentIds = instructorStudentRepository.getEnrolledStudentIdsByInstructorId(instructorId);
     // Get current and last month enrolled students
     Long totalCurrentEnrolledStudents = instructorStudentRepository.countStudentsEnrolledByMonth(
         LocalDate.now().getYear(),

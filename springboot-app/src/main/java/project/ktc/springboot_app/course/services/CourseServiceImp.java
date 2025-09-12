@@ -555,6 +555,11 @@ public class CourseServiceImp implements CourseService {
                 averageRating = MathUtil.roundToTwoDecimals(averageRating); // Consistent rounding
                 // Section Count
                 Long sectionCount = sectionRepository.countSectionsByCourseId(course.getId());
+
+                // Calculate total hours
+                Long totalDurationSeconds = courseRepository.getTotalDurationByCourseId(course.getId());
+                Integer totalHours = totalDurationSeconds != null ? (int) Math.ceil(totalDurationSeconds / 3600.0) : 0;
+
                 return CoursePublicResponseDto.builder()
                                 .id(course.getId())
                                 .title(course.getTitle())
@@ -566,6 +571,7 @@ public class CourseServiceImp implements CourseService {
                                 .enrollCount(enrollCount)
                                 .averageRating(averageRating)
                                 .sectionCount(sectionCount)
+                                .totalHours(totalHours)
                                 .isEnrolled(isEnrolled)
                                 .categories(categorySummaries)
                                 .instructor(instructorSum)

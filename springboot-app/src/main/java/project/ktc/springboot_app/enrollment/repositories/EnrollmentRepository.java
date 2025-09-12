@@ -34,6 +34,15 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
                         @Param("status") Enrollment.CompletionStatus status,
                         Pageable pageable);
 
+        @Query("SELECT e FROM Enrollment e " +
+                        "JOIN FETCH e.course c " +
+                        "JOIN FETCH c.instructor i " +
+                        "WHERE e.user.id = :userId " +
+                        "AND (:status IS NULL OR e.completionStatus = :status)")
+        List<Enrollment> findByUserIdWithCourseAndInstructor(
+                        @Param("userId") String userId,
+                        @Param("status") Enrollment.CompletionStatus status);
+
         @Query("SELECT COUNT(lc) FROM LessonCompletion lc " +
                         "JOIN lc.lesson l " +
                         "WHERE lc.user.id = :userId AND l.section.course.id = :courseId")

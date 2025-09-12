@@ -37,4 +37,6 @@ public interface UserService {
     ResponseEntity<ApiResponse<Void>> deleteUser(String id);
 
     ResponseEntity<ApiResponse<UserResponseDto>> createAdminUser(AdminCreateUserDto createUserDto);
+
+    ResponseEntity<ApiResponse<List<String>>> getAvailableRoles();
 }
