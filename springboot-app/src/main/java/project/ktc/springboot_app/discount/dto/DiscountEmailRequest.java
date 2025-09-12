@@ -10,14 +10,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Request DTO for sending discount codes via email to all students
+ * Request DTO for sending discount codes via email
+ * Can send to all students or a specific user based on userId parameter
  * Only requires subject and discount ID - backend will fetch discount details
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Request to send discount code via email to all students")
+@Schema(description = "Request to send discount code via email to all students or specific user")
 public class DiscountEmailRequest {
 
     @NotBlank(message = "Discount ID is required")
@@ -29,4 +30,8 @@ public class DiscountEmailRequest {
     @Size(min = 5, max = 200, message = "Subject must be between 5 and 200 characters")
     @Schema(description = "Email subject", example = "Special Discount Just for You!", required = true)
     private String subject;
+
+    @Schema(description = "Optional user ID to send email to specific user. If not provided, sends to all students", example = "user-uuid-456", required = false)
+    @JsonProperty("user_id")
+    private String userId;
 }

@@ -135,4 +135,18 @@ public interface EmailService {
                         String discountId,
                         String subject);
 
+        /**
+         * Send discount code to a specific user
+         * 
+         * @param discountId The discount ID to fetch discount details
+         * @param subject    Email subject
+         * @param userId     Specific user ID to send email to
+         * @return CompletableFuture with number of successful sends (1 if successful, 0
+         *         if failed)
+         */
+        CompletableFuture<Long> sendDiscountCodeToSpecificUser(
+                        String discountId,
+                        String subject,
+                        String userId);
+
 }
