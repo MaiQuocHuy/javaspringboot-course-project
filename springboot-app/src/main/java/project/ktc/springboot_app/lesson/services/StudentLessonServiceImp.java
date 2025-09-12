@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.certificate.dto.CreateCertificateDto;
+import project.ktc.springboot_app.certificate.interfaces.CertificateService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
@@ -50,6 +52,7 @@ public class StudentLessonServiceImp implements StudentService {
     private final QuizResultRepository quizResultRepository;
     private final QuizQuestionRepository quizQuestionRepository;
     private final ObjectMapper objectMapper;
+    private final CertificateService certificateService;
 
     /**
      * Mark a lesson as completed by the current student.
@@ -159,6 +162,12 @@ public class StudentLessonServiceImp implements StudentService {
                         enrollment.setCompletionStatus(Enrollment.CompletionStatus.COMPLETED);
                         enrollmentRepository.save(enrollment);
                         log.info("Updated enrollment status to COMPLETED for user {} in course {}", userId, courseId);
+
+                        CreateCertificateDto dto = new CreateCertificateDto();
+                        dto.setUserId(userId);
+                        dto.setCourseId(courseId);
+
+                        certificateService.createCertificateAsync(dto);
                     }
                 }
             }
