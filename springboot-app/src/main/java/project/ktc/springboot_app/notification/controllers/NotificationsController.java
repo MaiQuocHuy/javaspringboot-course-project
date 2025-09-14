@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,7 +14,6 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.notification.dto.NotificationDto;
 import project.ktc.springboot_app.notification.interfaces.NotificationService;
-import project.ktc.springboot_app.notification.utils.NotificationHelper;
 
 /**
  * Controller for notification operations

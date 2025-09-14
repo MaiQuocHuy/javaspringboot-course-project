@@ -22,9 +22,7 @@ import project.ktc.springboot_app.notification.repositories.NotificationReposito
 import project.ktc.springboot_app.user.repositories.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of NotificationService
