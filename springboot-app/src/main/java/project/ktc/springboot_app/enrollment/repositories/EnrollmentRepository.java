@@ -53,4 +53,43 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
         Long countTotalLessonsByCourse(@Param("courseId") String courseId);
 
         boolean existsByIdAndUserId(String enrollmentId, String userId);
+
+        @Query("SELECT e FROM Enrollment e " +
+                        "JOIN FETCH e.course c " +
+                        "JOIN FETCH c.instructor i " +
+                        "WHERE e.user.id = :userId " +
+                        "ORDER BY e.enrolledAt DESC")
+        List<Enrollment> findTop3RecentEnrollmentsByUserId(@Param("userId") String userId);
+
+        // Dashboard Statistics Methods
+        @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.user.id = :userId")
+        Long countTotalEnrollmentsByUserId(@Param("userId") String userId);
+
+        @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.user.id = :userId AND e.completionStatus = :status")
+        Long countEnrollmentsByUserIdAndStatus(@Param("userId") String userId,
+                        @Param("status") Enrollment.CompletionStatus status);
+
+        @Query("SELECT COUNT(lc) FROM LessonCompletion lc " +
+                        "JOIN lc.lesson l " +
+                        "JOIN l.section s " +
+                        "JOIN s.course c " +
+                        "JOIN c.enrollments e " +
+                        "WHERE lc.user.id = :userId AND e.user.id = :userId")
+        Long countTotalCompletedLessonsByUserId(@Param("userId") String userId);
+
+        @Query("SELECT COUNT(l) FROM Lesson l " +
+                        "JOIN l.section s " +
+                        "JOIN s.course c " +
+                        "JOIN c.enrollments e " +
+                        "WHERE e.user.id = :userId")
+        Long countTotalLessonsInEnrolledCoursesByUserId(@Param("userId") String userId);
+
+        // Recent Activities Methods
+        @Query("SELECT e FROM Enrollment e " +
+                        "JOIN FETCH e.course c " +
+                        "JOIN FETCH c.instructor i " +
+                        "WHERE e.user.id = :userId " +
+                        "ORDER BY e.enrolledAt DESC")
+        List<Enrollment> findRecentEnrollmentsByUserId(@Param("userId") String userId,
+                        org.springframework.data.domain.Pageable pageable);
 }

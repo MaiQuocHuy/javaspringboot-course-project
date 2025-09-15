@@ -26,6 +26,8 @@ import project.ktc.springboot_app.common.dto.ApiErrorResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.course.services.StudentCourseServiceImp;
 import project.ktc.springboot_app.enrollment.dto.MyEnrolledCourseDto;
+import project.ktc.springboot_app.enrollment.dto.StudentActivityDto;
+import project.ktc.springboot_app.enrollment.dto.StudentDashboardStatsDto;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
@@ -76,6 +78,43 @@ public class StudentCourseController {
 
                 log.info("Fetching enrolled courses with status filter: {}", status);
                 return enrollmentService.getMyCourses(status);
+        }
+
+        @GetMapping("/recent")
+        @Operation(summary = "Get 3 most recent enrolled courses", description = "Retrieve the 3 most recently enrolled courses for the currently authenticated student, ordered by enrollment date.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Recent courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User does not have STUDENT role", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<MyEnrolledCourseDto>>> getRecentCourses() {
+                log.info("Fetching 3 most recent enrolled courses for current student");
+                return enrollmentService.getRecentCourses();
+        }
+
+        @GetMapping("/dashboard-stats")
+        @Operation(summary = "Get student dashboard statistics", description = "Retrieve comprehensive dashboard statistics for the currently authenticated student including total courses, completed courses, in-progress courses, and lessons completed.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Dashboard statistics retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User does not have STUDENT role", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<StudentDashboardStatsDto>> getDashboardStats() {
+                log.info("Fetching dashboard statistics for current student");
+                return enrollmentService.getDashboardStats();
+        }
+
+        @GetMapping("/recent-activities")
+        @Operation(summary = "Get recent student activities", description = "Retrieve recent activities for the currently authenticated student including course enrollments, lesson completions, and quiz submissions.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Recent activities retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User does not have STUDENT role", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<StudentActivityDto>>> getRecentActivities(
+                        @Parameter(description = "Maximum number of activities to return (default: 20)") @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer limit) {
+                log.info("Fetching recent activities for current student with limit: {}", limit);
+                return enrollmentService.getRecentActivities(limit);
         }
 
         @GetMapping("/{id}")
