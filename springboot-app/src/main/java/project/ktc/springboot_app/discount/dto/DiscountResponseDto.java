@@ -50,6 +50,7 @@ public class DiscountResponseDto {
     @Schema(description = "Discount end date", example = "2024-12-31T23:59:59")
     private LocalDateTime endDate;
 
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     @Schema(description = "Maximum total usage limit", example = "1000")
     private Integer usageLimit;
 
@@ -61,6 +62,10 @@ public class DiscountResponseDto {
 
     @Schema(description = "Current usage count", example = "25")
     private Integer currentUsageCount;
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    @Schema(description = "Remaining usage count (-1 for unlimited, 0+ for limited)", example = "75")
+    private Integer remainingUsageCount;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Schema(description = "Creation timestamp", example = "2024-01-01T10:00:00")

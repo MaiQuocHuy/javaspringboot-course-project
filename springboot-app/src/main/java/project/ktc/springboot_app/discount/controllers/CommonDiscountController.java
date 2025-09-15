@@ -17,6 +17,8 @@ import project.ktc.springboot_app.discount.dto.DiscountResponseDto;
 import project.ktc.springboot_app.discount.interfaces.DiscountService;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
+import java.util.List;
+
 /**
  * REST Controller for common discount operations
  * Provides endpoints for creating discounts with flexible date requirements
@@ -77,5 +79,22 @@ public class CommonDiscountController {
                 log.info("Getting induction discount for user: {}", userId);
 
                 return discountService.getUserInductionDiscount(userId);
+        }
+
+        /**
+         * Get all active GENERAL discount codes available for public use
+         * Returns list of active GENERAL discounts with usage information
+         */
+        @GetMapping("/available")
+        @Operation(summary = "Get available public discount codes", description = "Retrieve all active GENERAL discount codes that are currently available for public use.")
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Available discounts retrieved successfully"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<ApiResponse<List<DiscountResponseDto>>> getAvailableDiscounts() {
+
+                log.info("Getting available public discount codes");
+
+                return discountService.getAvailablePublicDiscounts();
         }
 }
