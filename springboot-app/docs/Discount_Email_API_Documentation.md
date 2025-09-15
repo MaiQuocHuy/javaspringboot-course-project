@@ -4,7 +4,12 @@
 
 ### Description
 
-Sends discount code emails to all students in the system. Backend automatically fetches discount details (code, start date, end date) from database using discount ID. Only users with ADMIN role can access this endpoint.
+Sends discount code emails to all students or a specific user in the system. Backend automatically fetches discount details (code, start date, end date) from database using discount ID.
+
+- If `user_id` is provided: sends email to that specific user
+- If `user_id` is not provided or empty: sends email to all students with STUDENT role
+
+Only users with ADMIN role can access this endpoint.
 
 ### Authorization
 
@@ -13,6 +18,8 @@ Sends discount code emails to all students in the system. Backend automatically 
 
 ### Request Body
 
+#### Send to All Students
+
 ```json
 {
   "discount_id": "d1a2b3c4-e5f6-7890-abcd-ef1234567890",
@@ -20,14 +27,27 @@ Sends discount code emails to all students in the system. Backend automatically 
 }
 ```
 
+#### Send to Specific User
+
+```json
+{
+  "discount_id": "d1a2b3c4-e5f6-7890-abcd-ef1234567890",
+  "subject": "Special Discount Just for You!",
+  "user_id": "user-uuid-789"
+}
+```
+
 ### Request Fields
 
-| Field         | Type   | Required | Description                         | Example                                | Validation                |
-| ------------- | ------ | -------- | ----------------------------------- | -------------------------------------- | ------------------------- |
-| `discount_id` | String | Yes      | ID of existing discount in database | "d1a2b3c4-e5f6-7890-abcd-ef1234567890" | Must be valid discount ID |
-| `subject`     | String | Yes      | Email subject line                  | "Special Discount!"                    | 5-200 characters          |
+| Field         | Type   | Required | Description                          | Example                                | Validation                        |
+| ------------- | ------ | -------- | ------------------------------------ | -------------------------------------- | --------------------------------- |
+| `discount_id` | String | Yes      | ID of existing discount in database  | "d1a2b3c4-e5f6-7890-abcd-ef1234567890" | Must be valid discount ID         |
+| `subject`     | String | Yes      | Email subject line                   | "Special Discount!"                    | 5-200 characters                  |
+| `user_id`     | String | No       | ID of specific user to send email to | "user-uuid-789"                        | Must be valid user ID if provided |
 
 ### Response (Success - 200)
+
+#### Send to All Students
 
 ```json
 {
@@ -35,7 +55,35 @@ Sends discount code emails to all students in the system. Backend automatically 
   "message": "Successfully sent discount emails to 7 students",
   "data": {
     "estimatedRecipients": 7,
-    "discountCode": "",
+    "discountCode": "WELCOME10",
+    "subject": "Special Discount Just for You!"
+  }
+}
+```
+
+#### Send to Specific User (Success)
+
+```json
+{
+  "success": true,
+  "message": "Successfully sent discount email to user user-uuid-789",
+  "data": {
+    "estimatedRecipients": 1,
+    "discountCode": "WELCOME10",
+    "subject": "Special Discount Just for You!"
+  }
+}
+```
+
+#### Send to Specific User (Failed)
+
+```json
+{
+  "success": true,
+  "message": "Failed to send discount email to user user-uuid-789",
+  "data": {
+    "estimatedRecipients": 0,
+    "discountCode": "WELCOME10",
     "subject": "Special Discount Just for You!"
   }
 }

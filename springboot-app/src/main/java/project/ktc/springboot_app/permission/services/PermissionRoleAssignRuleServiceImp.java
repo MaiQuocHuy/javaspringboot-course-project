@@ -25,9 +25,9 @@ import project.ktc.springboot_app.user_role.repositories.UserRoleRepository;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class PermissionRoleAssignRuleServiceImpl implements PermissionRoleAssignRuleService {
+public class PermissionRoleAssignRuleServiceImp implements PermissionRoleAssignRuleService {
 
-    private static final Logger logger = LoggerFactory.getLogger(PermissionRoleAssignRuleServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(PermissionRoleAssignRuleServiceImp.class);
 
     private final PermissionRoleAssignRuleRepository assignRuleRepository;
     private final UserRoleRepository userRoleRepository;

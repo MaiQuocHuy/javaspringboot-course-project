@@ -17,6 +17,7 @@ import com.stripe.model.checkout.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.cache.services.infrastructure.CacheInvalidationService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
@@ -56,7 +57,7 @@ import java.time.Duration;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-public class AdminPaymentServiceImpl implements AdminPaymentService {
+public class AdminPaymentServiceImp implements AdminPaymentService {
 
     private final AdminPaymentRepository adminPaymentRepository;
     private final StripePaymentDetailsService stripePaymentDetailsService;
@@ -67,6 +68,7 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
     private final AffiliatePayoutService affiliatePayoutService;
     private final DiscountUsageRepository discountUsageRepository;
     private final NotificationHelper notificationHelper;
+    private final CacheInvalidationService cacheInvalidationService;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(Pageable pageable) {
@@ -503,6 +505,10 @@ public class AdminPaymentServiceImpl implements AdminPaymentService {
 
             // Create affiliate payout for referral discounts when payment is paid out
             createAffiliatePayoutForReferralDiscount(payment);
+
+            // Invalidate relevant caches
+            cacheInvalidationService
+                    .invalidateInstructorStatisticsOnPayment(payment.getCourse().getInstructor().getId());
 
             log.info(
                     "Payment {} successfully paid out. Instructor earning created: {}. Base amount used for calculation: {} ({})",

@@ -25,6 +25,9 @@ public interface UserRepository extends JpaRepository<User, String> {
         @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.email = :email")
         Optional<User> findByEmailWithRoles(@Param("email") String email);
 
+        @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.id = :id")
+        Optional<User> findByIdWithRoles(@Param("id") String id);
+
         @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE " +
                         "(:search IS NULL OR :search = '' OR LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))) AND "
                         +

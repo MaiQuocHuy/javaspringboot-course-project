@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.cache.services.domain.CoursesCacheService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
@@ -18,10 +19,13 @@ import project.ktc.springboot_app.course.dto.CourseAdminResponseDto;
 import project.ktc.springboot_app.course.dto.CourseApprovalResponseDto;
 import project.ktc.springboot_app.course.dto.CourseDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
+import project.ktc.springboot_app.course.dto.SharedCourseDataDto;
+import project.ktc.springboot_app.course.dto.cache.SharedCourseCacheDto;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.interfaces.CourseService;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
+import project.ktc.springboot_app.cache.mappers.CourseCacheMapper;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.lesson.entity.Lesson;
@@ -39,6 +43,7 @@ import project.ktc.springboot_app.utils.MathUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +59,17 @@ public class CourseServiceImp implements CourseService {
         private final InstructorSectionRepository sectionRepository;
         private final QuizQuestionRepository quizQuestionRepository;
         private final EnrollmentRepository enrollmentRepository;
+        private final CoursesCacheService coursesCacheService;
+
+        /**
+         * Get sort string from Pageable
+         */
+        private String getSortString(Pageable pageable) {
+                if (pageable.getSort().isSorted()) {
+                        return pageable.getSort().toString();
+                }
+                return "";
+        }
 
         @Override
         public ResponseEntity<ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(
@@ -73,23 +89,93 @@ public class CourseServiceImp implements CourseService {
                         throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
                 }
 
+                String currentUserId = SecurityUtil.getCurrentUserId();
+                log.debug("Current user ID: {}", currentUserId);
+
+                // ============ STEP 1: Get shared course data (check cache first) ============
+
+                SharedCourseDataDto sharedData = getSharedCourseData(
+                                pageable.getPageNumber(), pageable.getPageSize(), search, categoryId,
+                                minPrice, maxPrice, level, getSortString(pageable), pageable);
+
+                // ============ STEP 2: Get user-specific enrollment status ============
+
+                final Map<String, Boolean> enrollmentStatus = getUserEnrollmentStatus(currentUserId, sharedData);
+
+                // ============ STEP 3: Build response by merging shared + user-specific data
+                // ============
+
+                List<CoursePublicResponseDto> courseResponses = sharedData.getCoursesWithCategories().stream()
+                                .map(course -> mapToCoursePublicResponse(course,
+                                                sharedData.getEnrollmentCounts().getOrDefault(course.getId(), 0L),
+                                                enrollmentStatus.getOrDefault(course.getId(), false)))
+                                .collect(Collectors.toList());
+
+                // Create paginated response with full pagination info
+                PaginatedResponse<CoursePublicResponseDto> paginatedResponse = PaginatedResponse
+                                .<CoursePublicResponseDto>builder()
+                                .content(courseResponses)
+                                .page(PaginatedResponse.PageInfo.builder()
+                                                .number(sharedData.getPageNumber())
+                                                .size(sharedData.getPageSize())
+                                                .totalPages(sharedData.getTotalPages())
+                                                .totalElements(sharedData.getTotalElements())
+                                                .first(sharedData.isFirst())
+                                                .last(sharedData.isLast())
+                                                .build())
+                                .build();
+
+                log.info("✅ Successfully built response with {} courses", courseResponses.size());
+
+                return ApiResponseUtil.success(paginatedResponse, "Public courses retrieved successfully");
+        }
+
+        /**
+         * Gets shared course data, checking cache first, then falling back to database
+         */
+        private SharedCourseDataDto getSharedCourseData(int pageNumber, int pageSize, String search,
+                        String categoryId, BigDecimal minPrice, BigDecimal maxPrice, CourseLevel level,
+                        String sortString, Pageable pageable) {
+
+                // Try cache first
+                SharedCourseCacheDto cachedData = null;
+                try {
+                        cachedData = coursesCacheService.getSharedCourseData(
+                                        pageNumber, pageSize, search, categoryId,
+                                        minPrice, maxPrice, level, sortString);
+
+                        if (cachedData != null) {
+                                log.info("✅ Shared cache HIT - Found cached course data (courses + categories + enrollmentCounts)");
+                                // Convert cache DTO back to service DTO
+                                return CourseCacheMapper.fromSharedCacheDto(cachedData);
+                        }
+                } catch (Exception e) {
+                        log.warn("⚠️ Failed to check shared cache", e);
+                }
+
+                // Cache miss - query database
+                log.info("❌ Shared cache MISS - Querying database for course data");
+
+                // Query courses with pagination
                 Page<Course> coursePage = courseRepository.findPublishedCoursesWithFilters(
                                 search, categoryId, minPrice, maxPrice, level, pageable);
-                log.info("Found {} public courses", coursePage);
-                // Load categories separately for each course to avoid N+1 problem
+                log.info("Found {} courses from database", coursePage.getTotalElements());
+
+                // Batch load categories to avoid N+1 problem
                 List<Course> coursesWithCategories = coursePage.getContent().stream()
                                 .map(course -> {
                                         Optional<Course> courseWithCats = courseRepository
                                                         .findCourseWithCategories(course.getId());
-                                        log.info("Found categories for course {}: {}", course.getId(),
-                                                        courseWithCats.get().getCategories());
+                                        log.debug("Loaded categories for course {}: {}", course.getId(),
+                                                        courseWithCats.map(c -> c.getCategories().size()).orElse(0));
                                         if (courseWithCats.isPresent()) {
                                                 course.setCategories(courseWithCats.get().getCategories());
                                         }
                                         return course;
                                 })
                                 .collect(Collectors.toList());
-                // Get enrollment counts for all courses in this page
+
+                // Batch load enrollment counts to avoid N+1 problem
                 List<String> courseIds = coursesWithCategories.stream()
                                 .map(Course::getId)
                                 .collect(Collectors.toList());
@@ -102,46 +188,88 @@ public class CourseServiceImp implements CourseService {
                                                         data -> (String) data[0], // courseId
                                                         data -> (Long) data[1] // enrollmentCount
                                         ));
+                        log.debug("Loaded enrollment counts for {} courses", enrollmentCounts.size());
                 } else {
                         enrollmentCounts = new HashMap<>();
                 }
 
-                // Get current user ID for enrollment check
-                String currentUserId = SecurityUtil.getCurrentUserId();
-
-                // Get enrollment status for current user if logged in
-                final Map<String, Boolean> enrollmentStatus;
-                if (currentUserId != null && !courseIds.isEmpty()) {
-                        enrollmentStatus = courseIds.stream()
-                                        .collect(Collectors.toMap(
-                                                        courseId -> courseId,
-                                                        courseId -> enrollmentRepository.existsByUserIdAndCourseId(
-                                                                        currentUserId, courseId)));
-                } else {
-                        enrollmentStatus = new HashMap<>();
-                }
-
-                List<CoursePublicResponseDto> courseResponses = coursesWithCategories.stream()
-                                .map(course -> mapToCoursePublicResponse(course,
-                                                enrollmentCounts.getOrDefault(course.getId(), 0L),
-                                                enrollmentStatus.getOrDefault(course.getId(), false)))
-                                .collect(Collectors.toList());
-
-                // Create paginated response
-                PaginatedResponse<CoursePublicResponseDto> paginatedResponse = PaginatedResponse
-                                .<CoursePublicResponseDto>builder()
-                                .content(courseResponses)
-                                .page(PaginatedResponse.PageInfo.builder()
-                                                .number(coursePage.getNumber())
-                                                .size(coursePage.getSize())
-                                                .totalPages(coursePage.getTotalPages())
-                                                .totalElements(coursePage.getTotalElements())
-                                                .first(coursePage.isFirst())
-                                                .last(coursePage.isLast())
-                                                .build())
+                // Build shared data DTO for service layer
+                SharedCourseDataDto sharedData = SharedCourseDataDto.builder()
+                                .coursesWithCategories(coursesWithCategories)
+                                .enrollmentCounts(enrollmentCounts)
+                                .totalPages(coursePage.getTotalPages())
+                                .totalElements(coursePage.getTotalElements())
+                                .pageNumber(coursePage.getNumber())
+                                .pageSize(coursePage.getSize())
+                                .first(coursePage.isFirst())
+                                .last(coursePage.isLast())
                                 .build();
 
-                return ApiResponseUtil.success(paginatedResponse, "Public courses retrieved successfully");
+                // Convert to cache DTO for storage
+                SharedCourseCacheDto cacheDto = CourseCacheMapper.toSharedCacheDto(sharedData);
+
+                // Store in shared cache (30 minutes TTL)
+                try {
+                        coursesCacheService.storeSharedCourseData(
+                                        pageNumber, pageSize, search, categoryId,
+                                        minPrice, maxPrice, level, sortString, cacheDto);
+                        log.info("✅ Stored shared course data in cache (30 min TTL)");
+                } catch (Exception e) {
+                        log.warn("⚠️ Failed to cache shared course data", e);
+                }
+
+                return sharedData;
+        }
+
+        /**
+         * Gets user-specific enrollment status, checking cache first
+         */
+        private Map<String, Boolean> getUserEnrollmentStatus(String currentUserId, SharedCourseDataDto sharedData) {
+                if (currentUserId == null || sharedData.getCoursesWithCategories().isEmpty()) {
+                        log.debug("No user logged in or no courses found - empty enrollment status");
+                        return new HashMap<>();
+                }
+
+                // Generate sorted course IDs key for cache consistency
+                List<String> courseIds = sharedData.getCoursesWithCategories().stream()
+                                .map(Course::getId)
+                                .sorted()
+                                .collect(Collectors.toList());
+                String courseIdsKey = String.join(",", courseIds);
+
+                // Check user-specific enrollment status cache
+                Map<String, Boolean> cachedEnrollmentStatus = null;
+                try {
+                        cachedEnrollmentStatus = coursesCacheService.getUserEnrollmentStatus(currentUserId,
+                                        courseIdsKey);
+
+                        if (cachedEnrollmentStatus != null) {
+                                log.info("✅ User enrollment cache HIT for user: {}", currentUserId);
+                                return cachedEnrollmentStatus;
+                        }
+                } catch (Exception e) {
+                        log.warn("⚠️ Failed to check user enrollment cache for user: {}", currentUserId, e);
+                }
+
+                // Cache miss - query database
+                log.info("❌ User enrollment cache MISS - Querying database for user: {}", currentUserId);
+
+                Map<String, Boolean> enrollmentStatus = courseIds.stream()
+                                .collect(Collectors.toMap(
+                                                courseId -> courseId,
+                                                courseId -> enrollmentRepository.existsByUserIdAndCourseId(
+                                                                currentUserId, courseId)));
+                log.debug("Loaded enrollment status for {} courses for user: {}", courseIds.size(), currentUserId);
+
+                // Store in user-specific cache (5 minutes TTL)
+                try {
+                        coursesCacheService.storeUserEnrollmentStatus(currentUserId, courseIdsKey, enrollmentStatus);
+                        log.info("✅ Stored user enrollment status in cache (5 min TTL) for user: {}", currentUserId);
+                } catch (Exception e) {
+                        log.warn("⚠️ Failed to cache user enrollment status for user: {}", currentUserId, e);
+                }
+
+                return enrollmentStatus;
         }
 
         @Override
@@ -193,7 +321,17 @@ public class CourseServiceImp implements CourseService {
 
         @Override
         public ResponseEntity<ApiResponse<CourseDetailResponseDto>> findOneBySlug(String slug) {
-                log.info("Finding course details for slug: {}", slug);
+                log.info("🎯 Finding course details for slug: {}", slug);
+
+                // Check cache first
+                CourseDetailResponseDto cachedCourse = coursesCacheService.getCourseDetailsBySlug(slug,
+                                CourseDetailResponseDto.class);
+                if (cachedCourse != null) {
+                        log.info("📋 Cache hit for course slug: {}", slug);
+                        return ApiResponseUtil.success(cachedCourse, "Course details retrieved successfully");
+                }
+
+                log.info("🔍 Cache miss for course slug: {}, fetching from database", slug);
 
                 // Step 1: Find the course with instructor by slug
                 Course course = courseRepository.findPublishedCourseBySlugWithDetails(slug)
@@ -231,6 +369,10 @@ public class CourseServiceImp implements CourseService {
                                 course, ratingSummary, lessonCount.intValue(), quizCount.intValue(),
                                 questionCount.intValue(),
                                 isEnrolled, sampleVideoUrl, slug, enrollMentCount.intValue());
+
+                // Store in cache
+                coursesCacheService.storeCourseDetailsBySlug(slug, responseDto);
+                log.info("💾 Stored course details in cache for slug: {}", slug);
 
                 return ApiResponseUtil.success(responseDto, "Course details retrieved successfully");
         }
@@ -656,6 +798,9 @@ public class CourseServiceImp implements CourseService {
                 course.setUpdatedAt(LocalDateTime.now());
 
                 Course savedCourse = courseRepository.save(course);
+
+                // Invalidate course cache since approved courses are now visible to public
+                coursesCacheService.invalidateAllCoursesCache();
 
                 log.info("Course {} approved successfully", courseId);
 

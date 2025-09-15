@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import project.ktc.springboot_app.entity.UserRole;
 import project.ktc.springboot_app.permission.dto.*;
 import project.ktc.springboot_app.permission.interfaces.RoleService;
@@ -25,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Admin Role API", description = "API for managing roles and permissions")
 public class AdminRoleController {
 
     private final RoleService roleService;

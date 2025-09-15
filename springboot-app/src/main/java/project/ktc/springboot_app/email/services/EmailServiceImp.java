@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -403,6 +404,88 @@ public class EmailServiceImp implements EmailService {
 
         } catch (Exception e) {
             log.error("Failed to send discount emails: {}", e.getMessage(), e);
+            return CompletableFuture.completedFuture(0L);
+        }
+    }
+
+    @Override
+    @Async("emailTaskExecutor")
+    public CompletableFuture<Long> sendDiscountCodeToSpecificUser(
+            String discountId,
+            String subject,
+            String userId) {
+
+        log.info("Starting to send discount ID {} to user {}", discountId, userId);
+
+        try {
+            // Get discount details from database
+            Discount discount = discountService.getDiscountEntityById(discountId);
+            if (discount == null) {
+                log.error("Discount not found with ID: {}", discountId);
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            // Validate discount fields
+            if (discount.getCode() == null || discount.getStartDate() == null || discount.getEndDate() == null) {
+                log.error("Discount with ID {} has missing required fields", discountId);
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            log.info("Found discount: {} with code: {}", discount.getDescription(), discount.getCode());
+
+            // Get specific user
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isEmpty()) {
+                log.error("User not found with ID: {}", userId);
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            User user = userOptional.get();
+            if (!user.getIsActive()) {
+                log.error("User with ID {} is not active", userId);
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            log.info("Found user: {} ({})", user.getName(), user.getEmail());
+
+            try {
+                // Create email variables
+                Map<String, Object> variables = new HashMap<>();
+                variables.put("studentName", user.getName());
+                variables.put("discountCode", discount.getCode());
+                variables.put("startDate",
+                        discount.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                variables.put("endDate", discount.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                variables.put("currentYear", Year.now().getValue());
+
+                // Create email request
+                EmailRequest emailRequest = EmailRequest.builder()
+                        .to(List.of(user.getEmail()))
+                        .subject(subject)
+                        .templateName("discount-code-template")
+                        .templateVariables(variables)
+                        .build();
+
+                // Send email
+                EmailSendResult result = doSendEmail(emailRequest);
+
+                if (result.isSuccess()) {
+                    log.info("Successfully sent discount email to {}", user.getEmail());
+                    return CompletableFuture.completedFuture(1L);
+                } else {
+                    log.error("Failed to send discount email to {}: {}",
+                            user.getEmail(), result.getErrorMessage());
+                    return CompletableFuture.completedFuture(0L);
+                }
+
+            } catch (Exception e) {
+                log.error("Error sending discount email to {}: {}",
+                        user.getEmail(), e.getMessage(), e);
+                return CompletableFuture.completedFuture(0L);
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to send discount email to user {}: {}", userId, e.getMessage(), e);
             return CompletableFuture.completedFuture(0L);
         }
     }

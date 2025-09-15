@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AdminAffiliatePayoutServiceImpl implements AdminAffiliatePayoutService {
+public class AdminAffiliatePayoutServiceImp implements AdminAffiliatePayoutService {
 
     private final AffiliatePayoutRepository affiliatePayoutRepository;
 
