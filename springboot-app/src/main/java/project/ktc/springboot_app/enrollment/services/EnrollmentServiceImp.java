@@ -19,6 +19,7 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.enrollment.dto.EnrollmentResponseDto;
 import project.ktc.springboot_app.enrollment.dto.MyEnrolledCourseDto;
+import project.ktc.springboot_app.enrollment.dto.StudentDashboardStatsDto;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.interfaces.EnrollmentService;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
@@ -179,6 +180,59 @@ public class EnrollmentServiceImp implements EnrollmentService {
             log.error("Error fetching recent courses for current user: {}", e.getMessage());
             return ApiResponseUtil.error(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
                     "Failed to fetch recent courses");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<StudentDashboardStatsDto>> getDashboardStats() {
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            log.info("Fetching dashboard statistics for user: {}", currentUserId);
+
+            // Get total courses enrolled
+            Long totalCourses = enrollmentRepository.countTotalEnrollmentsByUserId(currentUserId);
+
+            // Get completed courses
+            Long completedCourses = enrollmentRepository.countEnrollmentsByUserIdAndStatus(
+                    currentUserId, Enrollment.CompletionStatus.COMPLETED);
+
+            // Get in-progress courses
+            Long inProgressCourses = enrollmentRepository.countEnrollmentsByUserIdAndStatus(
+                    currentUserId, Enrollment.CompletionStatus.IN_PROGRESS);
+
+            // Get total lessons completed across all enrolled courses
+            Long lessonsCompleted = enrollmentRepository.countTotalCompletedLessonsByUserId(currentUserId);
+
+            // Get total lessons in all enrolled courses
+            Long totalLessons = enrollmentRepository.countTotalLessonsInEnrolledCoursesByUserId(currentUserId);
+
+            // Calculate overall progress
+            Double overallProgress = 0.0;
+            if (totalLessons != null && totalLessons > 0 && lessonsCompleted != null) {
+                overallProgress = BigDecimal.valueOf((double) lessonsCompleted / totalLessons)
+                        .setScale(4, RoundingMode.HALF_UP)
+                        .doubleValue();
+            }
+
+            StudentDashboardStatsDto stats = StudentDashboardStatsDto.builder()
+                    .totalCourses(totalCourses != null ? totalCourses : 0L)
+                    .completedCourses(completedCourses != null ? completedCourses : 0L)
+                    .inProgressCourses(inProgressCourses != null ? inProgressCourses : 0L)
+                    .lessonsCompleted(lessonsCompleted != null ? lessonsCompleted : 0L)
+                    .totalLessons(totalLessons != null ? totalLessons : 0L)
+                    .build();
+
+            log.info(
+                    "Successfully fetched dashboard statistics for user: {} - {} total courses, {} completed, {} in progress, {} lessons completed out of {}",
+                    currentUserId, stats.getTotalCourses(), stats.getCompletedCourses(),
+                    stats.getInProgressCourses(), stats.getLessonsCompleted(), stats.getTotalLessons());
+
+            return ApiResponseUtil.success(stats, "Dashboard statistics retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error fetching dashboard statistics for current user: {}", e.getMessage());
+            return ApiResponseUtil.error(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to fetch dashboard statistics");
         }
     }
 

@@ -9,6 +9,7 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.enrollment.dto.EnrollmentResponseDto;
 import project.ktc.springboot_app.enrollment.dto.MyEnrolledCourseDto;
+import project.ktc.springboot_app.enrollment.dto.StudentDashboardStatsDto;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 
 public interface EnrollmentService {
@@ -20,6 +21,8 @@ public interface EnrollmentService {
     ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(Enrollment.CompletionStatus status);
 
     ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getRecentCourses();
+
+    ResponseEntity<ApiResponse<StudentDashboardStatsDto>> getDashboardStats();
 
     /**
      * Creates enrollment from webhook (bypassing authentication)
