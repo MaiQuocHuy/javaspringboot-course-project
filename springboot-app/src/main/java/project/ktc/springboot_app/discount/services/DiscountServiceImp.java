@@ -385,7 +385,7 @@ public class DiscountServiceImp implements DiscountService {
                     .ownerUser(user)
                     .startDate(null) // No time restriction - always valid
                     .endDate(null) // No time restriction - always valid
-                    .usageLimit(null) // Unlimited usage by others
+                    .usageLimit(20) // Maximum 20 total uses
                     .perUserLimit(1) // Each user can only use once
                     .isActive(true)
                     .build();
