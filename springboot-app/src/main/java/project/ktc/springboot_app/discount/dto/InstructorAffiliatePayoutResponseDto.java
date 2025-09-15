@@ -45,6 +45,7 @@ public class InstructorAffiliatePayoutResponseDto {
         private String id;
         private String title;
         private BigDecimal price;
+        private String level;
     }
 
     @Data
@@ -82,6 +83,7 @@ public class InstructorAffiliatePayoutResponseDto {
                 .id(affiliate.getCourse().getId())
                 .title(affiliate.getCourse().getTitle())
                 .price(affiliate.getCourse().getPrice())
+                .level(affiliate.getCourse().getLevel().name())
                 .build();
 
         // Handle null discountUsage for direct referrals

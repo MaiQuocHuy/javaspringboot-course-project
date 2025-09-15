@@ -31,6 +31,20 @@ public interface InstructorDiscountUsageRepository extends JpaRepository<Discoun
     Page<DiscountUsage> findByCourseInstructorId(@Param("instructorId") String instructorId, Pageable pageable);
 
     /**
+     * Find a specific discount usage by ID that belongs to instructor's courses
+     */
+    @Query("""
+            SELECT du FROM DiscountUsage du
+            JOIN FETCH du.discount d
+            JOIN FETCH du.user u
+            JOIN FETCH du.course c
+            LEFT JOIN FETCH du.referredByUser rbu
+            WHERE du.id = :discountUsageId AND c.instructor.id = :instructorId
+            """)
+    DiscountUsage findByIdAndCourseInstructorId(@Param("discountUsageId") String discountUsageId,
+            @Param("instructorId") String instructorId);
+
+    /**
      * Count total discount usages for instructor's courses
      */
     @Query("SELECT COUNT(du) FROM DiscountUsage du WHERE du.course.instructor.id = :instructorId")

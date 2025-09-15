@@ -53,6 +53,7 @@ public class InstructorDiscountUsageResponseDto {
         private String id;
         private String title;
         private BigDecimal price;
+        private String level;
     }
 
     public static InstructorDiscountUsageResponseDto fromEntity(DiscountUsage usage) {
@@ -72,6 +73,7 @@ public class InstructorDiscountUsageResponseDto {
                 .id(usage.getCourse().getId())
                 .title(usage.getCourse().getTitle())
                 .price(usage.getCourse().getPrice())
+                .level(usage.getCourse().getLevel().name())
                 .build();
 
         // Handle null referredByUser for direct purchases without referral

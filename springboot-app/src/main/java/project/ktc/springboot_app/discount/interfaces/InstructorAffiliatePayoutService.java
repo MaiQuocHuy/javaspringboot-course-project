@@ -21,4 +21,12 @@ public interface InstructorAffiliatePayoutService {
      */
     ResponseEntity<ApiResponse<PaginatedResponse<InstructorAffiliatePayoutResponseDto>>> getAffiliatePayouts(
             Pageable pageable);
+
+    /**
+     * Get a specific affiliate payout by ID for courses owned by the instructor
+     * 
+     * @param affiliatePayoutId The ID of the affiliate payout
+     * @return ResponseEntity containing the affiliate payout details
+     */
+    ResponseEntity<ApiResponse<InstructorAffiliatePayoutResponseDto>> getAffiliatePayoutById(String affiliatePayoutId);
 }
