@@ -157,6 +157,31 @@ public class EnrollmentServiceImp implements EnrollmentService {
         return ApiResponseUtil.success(enrolledCourses, "Enrolled courses retrieved successfully");
     }
 
+    @Override
+    public ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getRecentCourses() {
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            log.info("Fetching 3 most recent enrolled courses for user: {}", currentUserId);
+
+            List<Enrollment> recentEnrollments = enrollmentRepository.findTop3RecentEnrollmentsByUserId(currentUserId)
+                    .stream()
+                    .limit(3)
+                    .collect(Collectors.toList());
+
+            List<MyEnrolledCourseDto> recentCourses = recentEnrollments.stream()
+                    .map(this::mapToMyEnrolledCourseDto)
+                    .collect(Collectors.toList());
+
+            log.info("Successfully fetched {} recent courses for user: {}", recentCourses.size(), currentUserId);
+            return ApiResponseUtil.success(recentCourses, "Recent courses retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error fetching recent courses for current user: {}", e.getMessage());
+            return ApiResponseUtil.error(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to fetch recent courses");
+        }
+    }
+
     private MyEnrolledCourseDto mapToMyEnrolledCourseDto(Enrollment enrollment) {
         Course course = enrollment.getCourse();
 

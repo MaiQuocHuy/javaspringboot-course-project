@@ -53,4 +53,11 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
         Long countTotalLessonsByCourse(@Param("courseId") String courseId);
 
         boolean existsByIdAndUserId(String enrollmentId, String userId);
+
+        @Query("SELECT e FROM Enrollment e " +
+                        "JOIN FETCH e.course c " +
+                        "JOIN FETCH c.instructor i " +
+                        "WHERE e.user.id = :userId " +
+                        "ORDER BY e.enrolledAt DESC")
+        List<Enrollment> findTop3RecentEnrollmentsByUserId(@Param("userId") String userId);
 }

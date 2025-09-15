@@ -78,6 +78,18 @@ public class StudentCourseController {
                 return enrollmentService.getMyCourses(status);
         }
 
+        @GetMapping("/recent")
+        @Operation(summary = "Get 3 most recent enrolled courses", description = "Retrieve the 3 most recently enrolled courses for the currently authenticated student, ordered by enrollment date.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Recent courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User does not have STUDENT role", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<MyEnrolledCourseDto>>> getRecentCourses() {
+                log.info("Fetching 3 most recent enrolled courses for current student");
+                return enrollmentService.getRecentCourses();
+        }
+
         @GetMapping("/{id}")
         @Operation(summary = "Get course sections and lessons", description = "Retrieve all sections and lessons of a specific course for the enrolled student.")
         @ApiResponses(value = {

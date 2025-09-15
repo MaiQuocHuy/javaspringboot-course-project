@@ -19,6 +19,8 @@ public interface EnrollmentService {
 
     ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(Enrollment.CompletionStatus status);
 
+    ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getRecentCourses();
+
     /**
      * Creates enrollment from webhook (bypassing authentication)
      * 
