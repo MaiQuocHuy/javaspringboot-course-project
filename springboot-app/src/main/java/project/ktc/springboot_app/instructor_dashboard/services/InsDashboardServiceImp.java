@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.cache.services.domain.InstructorStatisticsCacheService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
@@ -26,12 +27,13 @@ import project.ktc.springboot_app.instructor_student.repositories.InstructorStud
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class InsDashboardServiceImpl implements InsDashboardService {
+public class InsDashboardServiceImp implements InsDashboardService {
 
   private final InstructorStudentRepository instructorStudentRepository;
   private final InstructorCourseRepository instructorCourseRepository;
   private final InstructorEarningRepository instructorEarningRepository;
   private final CourseRepository courseRepository;
+  private final InstructorStatisticsCacheService instructorStatisticsCacheService;
 
   private StatisticItemDto courseStatistics(String instructorId) {
     // Get total instructor's courses and active courses
@@ -126,6 +128,18 @@ public class InsDashboardServiceImpl implements InsDashboardService {
       User currentUser = (User) authentication.getPrincipal();
       String instructorId = currentUser.getId();
 
+      log.debug("Fetching instructor dashboard statistics for instructor: {}", instructorId);
+
+      // Try to get from cache first
+      InsDashboardDto cachedStatistics = instructorStatisticsCacheService.getInstructorStatistics(instructorId);
+      if (cachedStatistics != null) {
+        log.debug("Returning cached instructor statistics for instructor: {}", instructorId);
+        return ApiResponseUtil.success(cachedStatistics, "Get instructor dashboard statistics successfully (cached)");
+      }
+
+      // Cache miss - fetch from database
+      log.debug("Cache miss - fetching instructor statistics from database for instructor: {}", instructorId);
+
       // Get course statistics
       StatisticItemDto courseStatistics = courseStatistics(instructorId);
       // Get student statistics
@@ -141,8 +155,14 @@ public class InsDashboardServiceImpl implements InsDashboardService {
           .revenueStatistics(revenueStatistics)
           .ratingStatistics(ratingStatistics)
           .build();
+
+      // Store in cache for future requests
+      instructorStatisticsCacheService.storeInstructorStatistics(instructorId, dashboardDto);
+      log.debug("Stored instructor statistics in cache for instructor: {}", instructorId);
+
       return ApiResponseUtil.success(dashboardDto, "Get instructor dashboard statistics successfully");
     } catch (Exception e) {
+      log.error("Error fetching instructor dashboard statistics", e);
       return ApiResponseUtil.internalServerError(e.getMessage());
     }
   }

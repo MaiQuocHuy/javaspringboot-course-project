@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.cache.services.domain.CoursesCacheService;
+import project.ktc.springboot_app.cache.services.infrastructure.CacheInvalidationService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
@@ -44,6 +46,8 @@ public class EnrollmentServiceImp implements EnrollmentService {
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
     private final NotificationHelper notificationHelper;
+    private final CoursesCacheService coursesCacheService;
+    private final CacheInvalidationService cacheInvalidationService;
 
     @Override
     public ResponseEntity<ApiResponse<EnrollmentResponseDto>> enroll(String courseId) {
@@ -85,6 +89,14 @@ public class EnrollmentServiceImp implements EnrollmentService {
 
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
         log.info("Successfully enrolled user {} in course {}", currentUserId, courseId);
+
+        // Check and invalidate cache if enrollment changes exceed 5%
+        long previousEnrollmentCount = enrollmentRepository.countByCourseId(courseId) - 1; // Subtract the current
+                                                                                           // enrollment
+        long currentEnrollmentCount = enrollmentRepository.countByCourseId(courseId);
+        coursesCacheService.checkAndInvalidateForEnrollmentChange(courseId, course.getSlug(),
+                previousEnrollmentCount, currentEnrollmentCount);
+
         EnrollmentResponseDto enrollmentResponse = EnrollmentResponseDto.builder()
                 .courseId(course.getId())
                 .title(course.getTitle())
@@ -250,6 +262,13 @@ public class EnrollmentServiceImp implements EnrollmentService {
             enrollment.setCompletionStatus(Enrollment.CompletionStatus.IN_PROGRESS);
 
             enrollmentRepository.save(enrollment);
+            long previousEnrollmentCount = enrollmentRepository.countByCourseId(courseId) - 1; // Subtract the current
+            // enrollment
+            long currentEnrollmentCount = enrollmentRepository.countByCourseId(courseId);
+
+            coursesCacheService.checkAndInvalidateForEnrollmentChange(courseId, course.getSlug(),
+                    previousEnrollmentCount, currentEnrollmentCount);
+            cacheInvalidationService.invalidateInstructorStatisticsOnEnrollment(course.getInstructor().getId());
 
             notificationHelper.createInstructorNewStudentEnrollmentNotification(
                     enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(),

@@ -40,56 +40,56 @@ import java.util.List;
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('STUDENT')")
 public class StudentCourseController {
-    private final EnrollmentServiceImp enrollmentService;
-    private final StudentCourseServiceImp studentCourseService;
+        private final EnrollmentServiceImp enrollmentService;
+        private final StudentCourseServiceImp studentCourseService;
 
-    @GetMapping()
-    @Operation(summary = "Get my enrolled courses", description = "Retrieve a paginated list of all courses the currently authenticated student is enrolled in, including course metadata and progress status.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Enrolled courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden - User does not have STUDENT role", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
-    })
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(
-            @Parameter(description = "Filter by enrollment status (IN_PROGRESS, COMPLETED)", example = "IN_PROGRESS") @RequestParam(required = false) Enrollment.CompletionStatus status,
+        @GetMapping()
+        @Operation(summary = "Get my enrolled courses", description = "Retrieve a paginated list of all courses the currently authenticated student is enrolled in, including course metadata and progress status.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Enrolled courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User does not have STUDENT role", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(
+                        @Parameter(description = "Filter by enrollment status (IN_PROGRESS, COMPLETED)", example = "IN_PROGRESS") @RequestParam(required = false) Enrollment.CompletionStatus status,
 
-            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
+                        @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
 
-            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size) {
+                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size) {
 
-        Pageable pageable = PageRequest.of(page, size);
-        log.info("Fetching enrolled courses with status filter: {} and pagination: {}", status, pageable);
-        return enrollmentService.getMyCourses(status, pageable);
-    }
+                Pageable pageable = PageRequest.of(page, size);
+                log.info("Fetching enrolled courses with status filter: {} and pagination: {}", status, pageable);
+                return enrollmentService.getMyCourses(status, pageable);
+        }
 
-    @GetMapping("/all")
-    @Operation(summary = "Get my enrolled courses without pagination", description = "Retrieve a list of all courses the currently authenticated student is enrolled in, including course metadata and progress status.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Enrolled courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden - User does not have STUDENT role", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
-    })
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(
-            @Parameter(description = "Filter by enrollment status (IN_PROGRESS, COMPLETED)", example = "IN_PROGRESS") @RequestParam(required = false) Enrollment.CompletionStatus status
+        @GetMapping("/all")
+        @Operation(summary = "Get my enrolled courses without pagination", description = "Retrieve a list of all courses the currently authenticated student is enrolled in, including course metadata and progress status.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Enrolled courses retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User does not have STUDENT role", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(
+                        @Parameter(description = "Filter by enrollment status (IN_PROGRESS, COMPLETED)", example = "IN_PROGRESS") @RequestParam(required = false) Enrollment.CompletionStatus status
 
-    ) {
+        ) {
 
-        log.info("Fetching enrolled courses with status filter: {}", status);
-        return enrollmentService.getMyCourses(status);
-    }
+                log.info("Fetching enrolled courses with status filter: {}", status);
+                return enrollmentService.getMyCourses(status);
+        }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Get course sections and lessons", description = "Retrieve all sections and lessons of a specific course for the enrolled student.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Sections retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "Forbidden - User is not enrolled in this course", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Course not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
-    })
-    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<SectionWithLessonsDto>>> getCourseSections(
-            @Parameter(description = "Course ID", required = true) @PathVariable String id) {
+        @GetMapping("/{id}")
+        @Operation(summary = "Get course sections and lessons", description = "Retrieve all sections and lessons of a specific course for the enrolled student.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Sections retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User is not enrolled in this course", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "404", description = "Course not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<SectionWithLessonsDto>>> getCourseSections(
+                        @Parameter(description = "Course ID", required = true) @PathVariable String id) {
 
-        log.info("Fetching sections for course: {}", id);
-        return studentCourseService.getCourseSections(id);
-    }
+                log.info("Fetching sections for course: {}", id);
+                return studentCourseService.getCourseSections(id);
+        }
 }

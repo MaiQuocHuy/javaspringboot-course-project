@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import project.ktc.springboot_app.cache.services.domain.CategoryCacheService;
 import project.ktc.springboot_app.category.dto.CategoryRequestDto;
 import project.ktc.springboot_app.category.dto.CategoryResponseDto;
 import project.ktc.springboot_app.category.entity.Category;
@@ -26,18 +27,33 @@ import java.util.stream.Collectors;
 public class CategoryServiceImp implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryCacheService categoryCacheService;
 
     @Override
     public ResponseEntity<ApiResponse<List<CategoryResponseDto>>> findAll() {
-        log.info("Retrieving all categories with course count");
+        log.info("🎯 Retrieving all categories with course count");
 
+        // Check cache first
+        List<CategoryResponseDto> cachedCategories = categoryCacheService.getCategoriesList();
+
+        if (cachedCategories != null) {
+            log.info("🎯 Cache HIT for categories list");
+            return ApiResponseUtil.success(cachedCategories, "Categories retrieved successfully");
+        }
+
+        log.info("🔍 Cache MISS - Fetching categories from database");
         List<CategoryRepository.CategoryProjection> projections = categoryRepository.findAllWithCourseCount();
 
         List<CategoryResponseDto> categories = projections.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
 
-        log.info("Retrieved {} categories", categories.size());
+        log.info("📊 Retrieved {} categories from database", categories.size());
+
+        // Store in cache using clean DTO pattern
+        categoryCacheService.storeCategoriesList(categories);
+        log.info("💾 Cached categories list for future requests");
+
         return ApiResponseUtil.success(categories, "Categories retrieved successfully");
     }
 
@@ -89,6 +105,10 @@ public class CategoryServiceImp implements CategoryService {
         Category savedCategory = categoryRepository.save(category);
         CategoryResponseDto responseDto = mapToFullResponseDto(savedCategory);
 
+        // Invalidate cache after creating new category
+        categoryCacheService.invalidateAllCategoriesCache();
+        log.info("🔄 Cache invalidated after creating category");
+
         log.info("Successfully created category with id: {}", savedCategory.getId());
         return ApiResponseUtil.success(responseDto, "Category created successfully");
     }
@@ -121,6 +141,10 @@ public class CategoryServiceImp implements CategoryService {
         Category updatedCategory = categoryRepository.save(category);
         CategoryResponseDto responseDto = mapToFullResponseDto(updatedCategory);
 
+        // Invalidate cache after updating category
+        categoryCacheService.invalidateAllCategoriesCache();
+        log.info("🔄 Cache invalidated after updating category");
+
         log.info("Successfully updated category: {}", updatedCategory.getName());
         return ApiResponseUtil.success(responseDto, "Category updated successfully");
     }
@@ -146,6 +170,11 @@ public class CategoryServiceImp implements CategoryService {
         }
 
         categoryRepository.delete(category);
+
+        // Invalidate cache after deleting category
+        categoryCacheService.invalidateAllCategoriesCache();
+        log.info("🔄 Cache invalidated after deleting category");
+
         log.info("Successfully deleted category: {}", category.getName());
 
         return ApiResponseUtil.success(null, "Category deleted successfully");

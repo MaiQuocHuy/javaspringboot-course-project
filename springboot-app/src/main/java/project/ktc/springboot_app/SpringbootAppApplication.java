@@ -2,12 +2,14 @@ package project.ktc.springboot_app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 @SpringBootApplication
 @EnableAsync
+@EnableCaching
 public class SpringbootAppApplication {
 
 	public static void main(String[] args) {
@@ -34,7 +36,9 @@ public class SpringbootAppApplication {
 		System.setProperty("EMAIL_SMTP_PASSWORD", dotenv.get("EMAIL_SMTP_PASSWORD"));
 		System.setProperty("EMAIL_FROM", dotenv.get("EMAIL_FROM"));
 		System.setProperty("EMAIL_FROM_NAME", dotenv.get("EMAIL_FROM_NAME"));
-
+		System.setProperty("REDIS_HOST", dotenv.get("REDIS_HOST", "localhost"));
+		System.setProperty("REDIS_PORT", dotenv.get("REDIS_PORT", "6380"));
+		System.setProperty("REDIS_PASSWORD", dotenv.get("REDIS_PASSWORD", "123456789"));
 		SpringApplication.run(SpringbootAppApplication.class, args);
 	}
 }

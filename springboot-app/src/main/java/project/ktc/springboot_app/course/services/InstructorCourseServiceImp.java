@@ -5,6 +5,8 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -20,6 +22,11 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.cache.services.infrastructure.CacheInvalidationService;
+import project.ktc.springboot_app.cache.services.domain.InstructorCacheService;
+import project.ktc.springboot_app.cache.mappers.InstructorCoursesCacheMapper;
+import project.ktc.springboot_app.course.dto.cache.InstructorCourseBaseCacheDto;
+import project.ktc.springboot_app.course.dto.cache.InstructorCourseDynamicCacheDto;
 import project.ktc.springboot_app.category.entity.Category;
 import project.ktc.springboot_app.category.repositories.CategoryRepository;
 import project.ktc.springboot_app.common.dto.ApiResponse;
@@ -82,6 +89,8 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final NotificationHelper notificationHelper;
     private final InstructorStudentRepository instructorStudentRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final CacheInvalidationService cacheInvalidationService;
+    private final InstructorCacheService instructorCacheService;
 
     /**
      * Get instructor's courses with pagination and filtering
@@ -94,23 +103,198 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             Integer rating, CourseLevel level, Boolean isPublished, Pageable pageable) {
         try {
             log.info(
-                    "Finding courses for instructor: {} with filters: search={}, status={}, categoryIds={},minPrice={}, maxPrice={}, rating={}, level={}, isPublished={}, page={}",
+                    "Finding courses for instructor with filters: search={}, status={}, categoryIds={}, minPrice={}, maxPrice={}, rating={}, level={}, isPublished={}, page={}",
                     search, status, categoryIds, minPrice, maxPrice, rating, level, isPublished,
                     pageable.getPageNumber());
 
             String instructorId = SecurityUtil.getCurrentUserId();
-            Page<Course> coursePage = instructorCourseRepository.findByInstructorIdWithFilters(
-                    instructorId, search, status, categoryIds, minPrice, maxPrice, rating, level, isPublished,
-                    pageable);
 
-            List<CourseDashboardResponseDto> courseResponses = coursePage.getContent().stream()
-                    .map(this::mapToCourseDashboard)
-                    .collect(Collectors.toList());
+            // Try to get base info from cache first
+            PaginatedResponse<InstructorCourseBaseCacheDto> cachedBaseInfo = instructorCacheService
+                    .getInstructorCoursesBaseInfo(
+                            instructorId, pageable, search, status, categoryIds,
+                            minPrice, maxPrice, rating, level, isPublished);
+
+            List<CourseDashboardResponseDto> courseResponses;
+            PageInfo pageInfo;
+
+            if (cachedBaseInfo != null) {
+                log.debug("Cache hit for instructor courses base info - {} courses found",
+                        cachedBaseInfo.getContent().size());
+
+                // Get course IDs for dynamic info lookup (filter out null IDs)
+                int originalSize = cachedBaseInfo.getContent().size();
+                List<String> courseIds = cachedBaseInfo.getContent().stream()
+                        .map(InstructorCourseBaseCacheDto::getId)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+                
+                if (courseIds.size() != originalSize) {
+                    log.warn("Filtered out {} course entries with null IDs from cache", 
+                            originalSize - courseIds.size());
+                }
+
+                // Try to get dynamic info from cache
+                Map<String, InstructorCourseDynamicCacheDto> dynamicInfoMap = instructorCacheService
+                        .getInstructorCoursesDynamicInfo(
+                                courseIds.stream().collect(Collectors.toSet()));
+
+                // Merge cached data (filter out null base info and those with null IDs)
+                int beforeMergeSize = cachedBaseInfo.getContent().size();
+                courseResponses = cachedBaseInfo.getContent().stream()
+                        .filter(Objects::nonNull)
+                        .filter(baseInfo -> baseInfo.getId() != null)
+                        .map(baseInfo -> {
+                            InstructorCourseDynamicCacheDto dynamicInfo = dynamicInfoMap.get(baseInfo.getId());
+                            return InstructorCoursesCacheMapper.mergeCacheData(baseInfo, dynamicInfo);
+                        })
+                        .collect(Collectors.toList());
+
+                if (courseResponses.size() != beforeMergeSize) {
+                    log.warn("Filtered out {} invalid course entries during merge", 
+                            beforeMergeSize - courseResponses.size());
+                }
+
+                // For courses without dynamic cache, fetch from DB and cache
+                List<String> missingDynamicIds = courseIds.stream()
+                        .filter(id -> !dynamicInfoMap.containsKey(id))
+                        .collect(Collectors.toList());
+
+                if (!missingDynamicIds.isEmpty()) {
+                    log.debug("Fetching dynamic info for {} courses missing from cache", missingDynamicIds.size());
+
+                    // Update course responses with fresh dynamic data
+                    for (int i = 0; i < courseResponses.size(); i++) {
+                        CourseDashboardResponseDto course = courseResponses.get(i);
+                        if (missingDynamicIds.contains(course.getId())) {
+                            // Fetch fresh dynamic data from DB
+                            CourseDashboardResponseDto freshCourse = fetchCourseDynamicData(course);
+                            courseResponses.set(i, freshCourse);
+
+                            // Cache the dynamic info
+                            InstructorCourseDynamicCacheDto dynamicDto = InstructorCoursesCacheMapper
+                                    .toDynamicCacheDto(freshCourse);
+                            instructorCacheService.storeCourseDynamicInfo(course.getId(), dynamicDto);
+                        }
+                    }
+                }
+
+                pageInfo = cachedBaseInfo.getPage();
+
+            } else {
+                log.debug("Cache miss for instructor courses - fetching from database");
+
+                // Fetch from database
+                Page<Course> coursePage = instructorCourseRepository.findByInstructorIdWithFilters(
+                        instructorId, search, status, categoryIds, minPrice, maxPrice, rating, level, isPublished,
+                        pageable);
+
+                courseResponses = coursePage.getContent().stream()
+                        .map(this::mapToCourseDashboard)
+                        .collect(Collectors.toList());
+
+                pageInfo = PageInfo.builder()
+                        .number(coursePage.getNumber())
+                        .size(coursePage.getSize())
+                        .totalElements(coursePage.getTotalElements())
+                        .totalPages(coursePage.getTotalPages())
+                        .first(coursePage.isFirst())
+                        .last(coursePage.isLast())
+                        .build();
+
+                // Cache the results
+                cacheInstructorCoursesData(instructorId, pageable, search, status, categoryIds,
+                        minPrice, maxPrice, rating, level, isPublished, coursePage, courseResponses);
+            }
 
             PaginatedResponse<CourseDashboardResponseDto> paginatedResponse = PaginatedResponse
                     .<CourseDashboardResponseDto>builder()
                     .content(courseResponses)
-                    .page(PaginatedResponse.PageInfo.builder()
+                    .page(pageInfo)
+                    .build();
+
+            return ApiResponseUtil.success(paginatedResponse, "Instructor courses retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Failed to retrieve instructor courses", e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve courses. Please try again later!");
+        }
+    }
+
+    /**
+     * Fetches fresh dynamic data for a course from database
+     */
+    private CourseDashboardResponseDto fetchCourseDynamicData(CourseDashboardResponseDto existingCourse) {
+        // Get enrollment count
+        Long enrollmentCount = instructorCourseRepository.countEnrollmentsByCourseId(existingCourse.getId());
+
+        // Get average rating
+        Double averageRating = courseRepository.findAverageRatingByCourseId(existingCourse.getId()).orElse(0.0);
+        averageRating = MathUtil.roundToTwoDecimals(averageRating);
+
+        // Get section count
+        Long sectionCount = sectionRepository.countSectionsByCourseId(existingCourse.getId());
+
+        // Get total revenue
+        BigDecimal revenue = instructorCourseRepository.getTotalRevenueByCourseId(existingCourse.getId());
+        if (revenue == null) {
+            revenue = BigDecimal.ZERO;
+        }
+
+        // Get last content update
+        Optional<LocalDateTime> lastContentUpdate = instructorCourseRepository
+                .getLastContentUpdateByCourseId(existingCourse.getId());
+
+        // Update the existing course with fresh dynamic data
+        return CourseDashboardResponseDto.dashboardBuilder()
+                // Copy all existing base fields
+                .id(existingCourse.getId())
+                .title(existingCourse.getTitle())
+                .price(existingCourse.getPrice())
+                .description(existingCourse.getDescription())
+                .level(existingCourse.getLevel())
+                .thumbnailUrl(existingCourse.getThumbnailUrl())
+                .categories(existingCourse.getCategories())
+                .status(existingCourse.getStatus())
+                .isApproved(existingCourse.isApproved())
+                .createdAt(existingCourse.getCreatedAt())
+                .updatedAt(existingCourse.getUpdatedAt())
+                // Update dynamic fields
+                .lastContentUpdate(lastContentUpdate.orElse(existingCourse.getUpdatedAt()))
+                .totalStudents(enrollmentCount.intValue())
+                .averageRating(averageRating)
+                .sectionCount(sectionCount.intValue())
+                .revenue(revenue)
+                // Recompute permissions based on current data
+                .canEdit(!existingCourse.isApproved())
+                .canDelete(!existingCourse.isApproved() && enrollmentCount == 0)
+                .canPublish(true) // Would need business logic
+                .canUnpublish(existingCourse.isApproved())
+                .statusReview(existingCourse.getStatusReview())
+                .reason(existingCourse.getReason())
+                .build();
+    }
+
+    /**
+     * Caches instructor courses data in two-tier strategy
+     */
+    private void cacheInstructorCoursesData(String instructorId, Pageable pageable,
+            String search, ReviewStatus status, List<String> categoryIds,
+            Double minPrice, Double maxPrice, Integer rating, CourseLevel level,
+            Boolean isPublished, Page<Course> coursePage,
+            List<CourseDashboardResponseDto> courseResponses) {
+
+        try {
+            // Convert courses to base cache DTOs
+            List<InstructorCourseBaseCacheDto> baseCacheDtos = coursePage.getContent().stream()
+                    .map(InstructorCoursesCacheMapper::toBaseCacheDto)
+                    .collect(Collectors.toList());
+
+            // Create paginated base response
+            PaginatedResponse<InstructorCourseBaseCacheDto> basePaginatedResponse = PaginatedResponse
+                    .<InstructorCourseBaseCacheDto>builder()
+                    .content(baseCacheDtos)
+                    .page(PageInfo.builder()
                             .number(coursePage.getNumber())
                             .size(coursePage.getSize())
                             .totalElements(coursePage.getTotalElements())
@@ -120,11 +304,25 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                             .build())
                     .build();
 
-            return ApiResponseUtil.success(paginatedResponse, "Instructor courses retrieved successfully");
-        } catch (Exception e) {
-            return ApiResponseUtil.internalServerError("Failed to retrieve courses. Please try again later!");
-        }
+            // Cache base info
+            instructorCacheService.storeInstructorCoursesBaseInfo(
+                    instructorId, pageable, search, status, categoryIds,
+                    minPrice, maxPrice, rating, level, isPublished, basePaginatedResponse);
 
+            // Cache dynamic info for each course
+            Map<String, InstructorCourseDynamicCacheDto> dynamicInfoMap = courseResponses.stream()
+                    .collect(Collectors.toMap(
+                            CourseDashboardResponseDto::getId,
+                            InstructorCoursesCacheMapper::toDynamicCacheDto));
+
+            instructorCacheService.storeCoursesDynamicInfo(dynamicInfoMap);
+
+            log.debug("Successfully cached instructor courses data: {} base entries, {} dynamic entries",
+                    baseCacheDtos.size(), dynamicInfoMap.size());
+
+        } catch (Exception e) {
+            log.error("Failed to cache instructor courses data for instructor: {}", instructorId, e);
+        }
     }
 
     private CourseDashboardResponseDto mapToCourseDashboard(Course course) {
@@ -222,18 +420,6 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                 return ApiResponseUtil.notFound("Instructor not found");
             }
 
-            // TODO: Remove this comment when going to production
-
-            // Optional<ApplicationStatus> latestStatus = applicationRepository
-            // .findLatestApplicationStatusByUserId(instructorId);
-            // if (latestStatus.filter(status -> status ==
-            // ApplicationStatus.APPROVED).isEmpty()) {
-            // return ApiResponseUtil
-            // .badRequest(
-            // "Your application to become an instructor is not approved yet. You cannot
-            // create courses.");
-            // }
-
             // Check slug for uniqueness with normalization and case-insensitive comparison
             String normalizedSlug = StringUtil.normalizeSlugForComparison(createCourseDto.getSlug());
             if (courseRepository.existsBySlugIgnoreCase(normalizedSlug)) {
@@ -329,6 +515,11 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                     .createdAt(savedCourse.getCreatedAt())
                     .updatedAt(savedCourse.getUpdatedAt())
                     .build();
+
+            cacheInvalidationService.invalidateInstructorStatisticsOnCourse(instructorId);
+
+            // Invalidate instructor courses cache
+            instructorCacheService.invalidateInstructorCoursesCache(instructorId);
 
             return ApiResponseUtil.created(responseDto, "Course created successfully");
 
@@ -486,6 +677,10 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                     .updatedAt(updatedCourse.getUpdatedAt())
                     .build();
 
+            // Invalidate instructor courses cache when course is updated
+            instructorCacheService.invalidateInstructorCoursesCache(instructorId);
+            instructorCacheService.invalidateCourseDynamicCache(courseId);
+
             return ApiResponseUtil.success(responseDto, "Course updated successfully");
 
         } catch (Exception e) {
@@ -556,6 +751,9 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             }
 
             log.info("Course {} deleted successfully by instructor {}", courseId, instructorId);
+            instructorCacheService.invalidateInstructorCoursesCache(instructorId);
+            instructorCacheService.invalidateCourseDynamicCache(courseId);
+
             return ApiResponseUtil.success(null, "Course deleted successfully");
 
         } catch (Exception e) {
@@ -645,6 +843,9 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
 
             log.info("Course {} status updated successfully from {} to {}",
                     courseId, currentStatus, newStatus);
+
+            instructorCacheService.invalidateInstructorCoursesCache(instructorId);
+            instructorCacheService.invalidateCourseDynamicCache(courseId);
 
             return ApiResponseUtil.success(response, "Course status updated successfully");
 
