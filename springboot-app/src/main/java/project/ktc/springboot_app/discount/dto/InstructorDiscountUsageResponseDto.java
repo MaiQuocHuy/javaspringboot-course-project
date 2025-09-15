@@ -31,6 +31,7 @@ public class InstructorDiscountUsageResponseDto {
         private String id;
         private String code;
         private String description;
+        private String type;
     }
 
     @Data
@@ -52,6 +53,7 @@ public class InstructorDiscountUsageResponseDto {
         private String id;
         private String title;
         private BigDecimal price;
+        private String level;
     }
 
     public static InstructorDiscountUsageResponseDto fromEntity(DiscountUsage usage) {
@@ -59,6 +61,7 @@ public class InstructorDiscountUsageResponseDto {
                 .id(usage.getDiscount().getId())
                 .code(usage.getDiscount().getCode())
                 .description(usage.getDiscount().getDescription())
+                .type(usage.getDiscount().getType().name())
                 .build();
         UserInfo userInfo = UserInfo.builder()
                 .name(usage.getUser().getName())
@@ -70,13 +73,19 @@ public class InstructorDiscountUsageResponseDto {
                 .id(usage.getCourse().getId())
                 .title(usage.getCourse().getTitle())
                 .price(usage.getCourse().getPrice())
+                .level(usage.getCourse().getLevel().name())
                 .build();
-        UserInfo referredByUserInfo = UserInfo.builder()
-                .name(usage.getReferredByUser().getName())
-                .email(usage.getReferredByUser().getEmail())
-                .bio(usage.getReferredByUser().getBio())
-                .thumbnailUrl(usage.getReferredByUser().getThumbnailUrl())
-                .build();
+
+        // Handle null referredByUser for direct purchases without referral
+        UserInfo referredByUserInfo = null;
+        if (usage.getReferredByUser() != null) {
+            referredByUserInfo = UserInfo.builder()
+                    .name(usage.getReferredByUser().getName())
+                    .email(usage.getReferredByUser().getEmail())
+                    .bio(usage.getReferredByUser().getBio())
+                    .thumbnailUrl(usage.getReferredByUser().getThumbnailUrl())
+                    .build();
+        }
         return InstructorDiscountUsageResponseDto.builder()
                 .id(usage.getId())
                 .discount(discountInfo)

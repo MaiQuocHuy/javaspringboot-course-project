@@ -187,6 +187,7 @@ public class StripeCheckoutService {
                                 .setSuccessUrl(frontendUrl + "/subscription/success?session_id={CHECKOUT_SESSION_ID}")
                                 .setCancelUrl(frontendUrl + "/subscription/cancel")
                                 .putAllMetadata(metadata)
+                                .setLocale(SessionCreateParams.Locale.EN)
                                 .addLineItem(
                                                 SessionCreateParams.LineItem.builder()
                                                                 .setQuantity(1L)

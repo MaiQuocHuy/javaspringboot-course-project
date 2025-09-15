@@ -39,4 +39,16 @@ public interface LessonCompletionRepository extends JpaRepository<LessonCompleti
         @Query("SELECT lc FROM LessonCompletion lc WHERE lc.user.id = :userId AND lc.lesson.id = :lessonId")
         Optional<LessonCompletion> findByUserIdAndLessonId(@Param("userId") String userId,
                         @Param("lessonId") String lessonId);
+
+        /**
+         * Find recent lesson completions for activities
+         */
+        @Query("SELECT lc FROM LessonCompletion lc " +
+                        "JOIN FETCH lc.lesson l " +
+                        "JOIN FETCH l.section s " +
+                        "JOIN FETCH s.course c " +
+                        "WHERE lc.user.id = :userId " +
+                        "ORDER BY lc.completedAt DESC")
+        List<LessonCompletion> findRecentCompletionsByUserId(@Param("userId") String userId,
+                        org.springframework.data.domain.Pageable pageable);
 }

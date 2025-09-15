@@ -20,4 +20,12 @@ public interface InstructorDiscountUsageService {
      */
     ResponseEntity<ApiResponse<PaginatedResponse<InstructorDiscountUsageResponseDto>>> getDiscountUsages(
             Pageable pageable);
+
+    /**
+     * Get a specific discount usage by ID for courses owned by the instructor
+     * 
+     * @param discountUsageId The ID of the discount usage
+     * @return ResponseEntity containing the discount usage details
+     */
+    ResponseEntity<ApiResponse<InstructorDiscountUsageResponseDto>> getDiscountUsageById(String discountUsageId);
 }

@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class NotificationServiceImpl implements NotificationService {
+public class NotificationServiceImp implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;

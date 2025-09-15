@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.cache.services.domain.ReviewsCacheService;
+import project.ktc.springboot_app.cache.services.infrastructure.CacheInvalidationService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.CreateReviewDto;
@@ -40,6 +42,8 @@ public class ReviewServiceImp implements ReviewService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final ReviewsCacheService reviewsCacheService;
+    private final CacheInvalidationService cacheInvalidationService;
 
     @Override
     public ResponseEntity<ApiResponse<ReviewResponseDto>> createReview(String courseId, CreateReviewDto reviewDto) {
@@ -86,6 +90,10 @@ public class ReviewServiceImp implements ReviewService {
         Review savedReview = reviewRepository.save(review);
         log.info("Successfully created review {} for course {} by user {}", savedReview.getId(), courseId,
                 currentUserId);
+
+        // Invalidate cached reviews for this course
+        reviewsCacheService.invalidateCourseReviews(courseId);
+        cacheInvalidationService.invalidateInstructorStatisticsOnReview(course.getInstructor().getId());
 
         // 6. Convert to DTO and return
         ReviewResponseDto responseDto = mapToResponseDto(savedReview);
@@ -253,12 +261,33 @@ public class ReviewServiceImp implements ReviewService {
             Pageable pageable) {
         log.info("Fetching reviews for course {} with pagination: {}", courseSlug, pageable);
 
-        // Validate course exists
-        if (!courseRepository.existsBySlug(courseSlug)) {
+        // Validate course exists and get course details
+        Optional<Course> courseOpt = courseRepository.findPublishedCourseBySlugWithDetails(courseSlug);
+        if (courseOpt.isEmpty()) {
             return ApiResponseUtil.notFound("Course not found");
         }
 
-        // Fetch reviews with pagination
+        Course course = courseOpt.get();
+        String courseId = course.getId();
+
+        try {
+            // Try to get from cache first
+            PaginatedResponse<ReviewResponseDto> cachedResponse = reviewsCacheService.getCourseReviews(courseId,
+                    pageable);
+
+            if (cachedResponse != null) {
+                log.debug("Cache hit for reviews for course: {}", courseId);
+                return ApiResponseUtil.success(cachedResponse, "Course reviews retrieved successfully");
+            }
+
+            log.debug("Cache miss for reviews for course: {}", courseId);
+
+        } catch (Exception e) {
+            log.warn("Error accessing cache for course {}: {}", courseId, e.getMessage());
+            // Continue with database query if cache fails
+        }
+
+        // Cache miss or error - fetch from database
         Page<Review> reviewsPage = reviewRepository.findByCourseSlugWithUser(courseSlug, pageable);
 
         // Convert to DTOs
@@ -278,6 +307,9 @@ public class ReviewServiceImp implements ReviewService {
                         .last(reviewsPage.isLast())
                         .build())
                 .build();
+
+        // Store in cache for future requests
+        reviewsCacheService.storeCourseReviews(courseId, pageable, paginatedResponse);
 
         return ApiResponseUtil.success(paginatedResponse, "Course reviews retrieved successfully");
     }

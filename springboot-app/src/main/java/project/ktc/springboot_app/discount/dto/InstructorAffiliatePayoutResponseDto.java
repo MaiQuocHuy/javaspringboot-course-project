@@ -45,6 +45,7 @@ public class InstructorAffiliatePayoutResponseDto {
         private String id;
         private String title;
         private BigDecimal price;
+        private String level;
     }
 
     @Data
@@ -68,6 +69,7 @@ public class InstructorAffiliatePayoutResponseDto {
         private String id;
         private String code;
         private String description;
+        private String type;
     }
 
     public static InstructorAffiliatePayoutResponseDto fromEntity(AffiliatePayout affiliate) {
@@ -81,6 +83,7 @@ public class InstructorAffiliatePayoutResponseDto {
                 .id(affiliate.getCourse().getId())
                 .title(affiliate.getCourse().getTitle())
                 .price(affiliate.getCourse().getPrice())
+                .level(affiliate.getCourse().getLevel().name())
                 .build();
 
         // Handle null discountUsage for direct referrals
@@ -92,6 +95,7 @@ public class InstructorAffiliatePayoutResponseDto {
                             .id(affiliate.getDiscountUsage().getDiscount().getId())
                             .code(affiliate.getDiscountUsage().getDiscount().getCode())
                             .description(affiliate.getDiscountUsage().getDiscount().getDescription())
+                            .type(affiliate.getDiscountUsage().getDiscount().getType().name())
                             .build())
                     .user(UserInfo.builder()
                             .name(affiliate.getDiscountUsage().getUser().getName())

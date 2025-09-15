@@ -1,0 +1,8 @@
+{
+  "name": "Redis Dev Container",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "redis",
+  "forwardPorts": [6380],
+  "overrideCommand": false,
+  "workspaceFolder": "/workspace"
+}

@@ -24,6 +24,7 @@ import project.ktc.springboot_app.user.repositories.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Optional;
 
 /**
@@ -385,7 +386,7 @@ public class DiscountServiceImp implements DiscountService {
                     .ownerUser(user)
                     .startDate(null) // No time restriction - always valid
                     .endDate(null) // No time restriction - always valid
-                    .usageLimit(null) // Unlimited usage by others
+                    .usageLimit(20) // Maximum 20 total uses
                     .perUserLimit(1) // Each user can only use once
                     .isActive(true)
                     .build();
@@ -440,6 +441,36 @@ public class DiscountServiceImp implements DiscountService {
         }
     }
 
+    @Override
+    public ResponseEntity<ApiResponse<List<DiscountResponseDto>>> getAvailablePublicDiscounts() {
+        try {
+            log.info("Getting available public discount codes");
+
+            // Find all active GENERAL discounts that are currently valid (not expired)
+            List<Discount> availableDiscounts = discountRepository.findByTypeAndIsActiveAndCurrentlyValid(
+                    DiscountType.GENERAL, true, LocalDateTime.now());
+
+            // Convert to DTOs with usage information
+            List<DiscountResponseDto> responseDtos = availableDiscounts.stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+
+            // Log details for each discount
+            responseDtos.forEach(dto -> {
+                log.info("Available discount: code={}, usageLimit={}, currentUsage={}, remaining={}",
+                        dto.getCode(), dto.getUsageLimit(), dto.getCurrentUsageCount(), dto.getRemainingUsageCount());
+            });
+
+            log.info("Found {} available public discount codes", responseDtos.size());
+            return ApiResponseUtil.success(responseDtos, "Available public discounts retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error getting available public discounts: {}", e.getMessage(), e);
+            return ApiResponseUtil
+                    .internalServerError("Failed to retrieve available discounts. Please try again later.");
+        }
+    }
+
     /**
      * Generates a unique discount code for a user based on their name and timestamp
      */
@@ -458,6 +489,22 @@ public class DiscountServiceImp implements DiscountService {
             return null;
         }
 
+        // Count actual usage from database instead of relying on collection
+        int currentUsageCount = (int) discountUsageRepository.countByDiscountId(discount.getId());
+        Integer remainingUsageCount;
+
+        if (discount.getUsageLimit() != null) {
+            // Limited usage discount
+            remainingUsageCount = Math.max(0, discount.getUsageLimit() - currentUsageCount);
+            log.info("Discount {}: usageLimit={}, currentUsage={}, remaining={}",
+                    discount.getCode(), discount.getUsageLimit(), currentUsageCount, remainingUsageCount);
+        } else {
+            // Unlimited usage discount - set to -1 to indicate unlimited
+            remainingUsageCount = -1;
+            log.info("Discount {}: unlimited usage (usageLimit=null), currentUsage={}, remaining=-1 (unlimited)",
+                    discount.getCode(), currentUsageCount);
+        }
+
         DiscountResponseDto.DiscountResponseDtoBuilder builder = DiscountResponseDto.builder()
                 .id(discount.getId())
                 .code(discount.getCode())
@@ -469,7 +516,8 @@ public class DiscountServiceImp implements DiscountService {
                 .usageLimit(discount.getUsageLimit())
                 .perUserLimit(discount.getPerUserLimit())
                 .isActive(discount.getIsActive())
-                .currentUsageCount(discount.getDiscountUsages().size())
+                .currentUsageCount(currentUsageCount)
+                .remainingUsageCount(remainingUsageCount)
                 .createdAt(discount.getCreatedAt())
                 .updatedAt(discount.getUpdatedAt());
 

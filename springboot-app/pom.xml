@@ -205,6 +205,25 @@
 			<artifactId>sendgrid-java</artifactId>
 			<version>4.10.2</version>
 		</dependency>
+
+		<!-- Redis Dependencies -->
+		<!-- Spring Data Redis with Lettuce -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		
+		<!-- Spring Cache Abstraction -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		
+		<!-- Lettuce Connection Pool -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-pool2</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

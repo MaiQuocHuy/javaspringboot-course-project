@@ -30,6 +30,21 @@ public interface InstructorAffiliatePayoutRepository extends JpaRepository<Affil
     Page<AffiliatePayout> findByCourseInstructorId(@Param("instructorId") String instructorId, Pageable pageable);
 
     /**
+     * Find a specific affiliate payout by ID that belongs to instructor's courses
+     */
+    @Query("""
+            SELECT ap FROM AffiliatePayout ap
+            JOIN FETCH ap.referredByUser u
+            JOIN FETCH ap.course c
+            LEFT JOIN FETCH ap.discountUsage du
+            LEFT JOIN FETCH du.discount d
+            LEFT JOIN FETCH du.user du_user
+            WHERE ap.id = :affiliatePayoutId AND c.instructor.id = :instructorId
+            """)
+    AffiliatePayout findByIdAndCourseInstructorId(@Param("affiliatePayoutId") String affiliatePayoutId,
+            @Param("instructorId") String instructorId);
+
+    /**
      * Count total affiliate payouts for instructor's courses
      */
     @Query("SELECT COUNT(ap) FROM AffiliatePayout ap WHERE ap.course.instructor.id = :instructorId")

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import project.ktc.springboot_app.auth.dto.UserResponseDto;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.auth.enums.UserRoleEnum;
+import project.ktc.springboot_app.cache.services.domain.UserCacheService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.entity.UserRole;
@@ -48,6 +49,7 @@ public class UserServiceImp implements UserService {
     private final FileValidationService fileValidationService;
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserCacheService userCacheService;
 
     @Override
     public ResponseEntity<ApiResponse<UserResponseDto>> getProfile() {
@@ -68,6 +70,16 @@ public class UserServiceImp implements UserService {
                 return ApiResponseUtil.unauthorized("User not authenticated");
             }
 
+            // Try to get from cache first
+            UserResponseDto cachedProfile = userCacheService.getUserProfile(userEmail);
+            if (cachedProfile != null) {
+                log.debug("User profile retrieved from cache for user: {}", userEmail);
+                return ApiResponseUtil.success(cachedProfile, "Profile retrieved successfully");
+            }
+
+            // Cache miss - fetch from database
+            log.debug("Cache miss for user profile: {}, fetching from database", userEmail);
+
             // Find the user by email (with role information)
             User user = userRepository.findByEmailWithRoles(userEmail)
                     .orElse(null);
@@ -79,6 +91,9 @@ public class UserServiceImp implements UserService {
 
             // Create user response DTO (role information comes from the user entity)
             UserResponseDto userResponseDto = new UserResponseDto(user);
+
+            // Cache the result for future requests
+            userCacheService.storeUserProfile(userResponseDto);
 
             log.info("Profile retrieved successfully for user: {} with role: {}", userEmail,
                     user.getRole() != null ? user.getRole().getRole() : "No role");
@@ -167,6 +182,9 @@ public class UserServiceImp implements UserService {
 
             // Save updated user
             User updatedUser = userRepository.save(user);
+
+            // Invalidate user profile cache since the profile was updated
+            userCacheService.invalidateUserProfile(updatedUser.getEmail());
 
             // Create response DTO
             UserResponseDto updatedUserResponseDto = new UserResponseDto(updatedUser);
@@ -484,6 +502,9 @@ public class UserServiceImp implements UserService {
 
             // Save updated user
             User updatedUser = userRepository.save(user);
+
+            // Invalidate user profile cache since the profile was updated
+            userCacheService.invalidateUserProfile(updatedUser.getEmail());
 
             // Create response DTO
             UserResponseDto userResponseDto = new UserResponseDto(updatedUser);

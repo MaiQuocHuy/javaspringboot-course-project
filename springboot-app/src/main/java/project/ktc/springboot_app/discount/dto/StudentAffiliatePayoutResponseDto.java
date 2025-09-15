@@ -66,6 +66,7 @@ public class StudentAffiliatePayoutResponseDto {
         private String id;
         private String code;
         private String description;
+        private String type;
     }
 
     public static StudentAffiliatePayoutResponseDto fromEntity(AffiliatePayout affiliate) {
@@ -88,6 +89,7 @@ public class StudentAffiliatePayoutResponseDto {
                             .id(affiliate.getDiscountUsage().getDiscount().getId())
                             .code(affiliate.getDiscountUsage().getDiscount().getCode())
                             .description(affiliate.getDiscountUsage().getDiscount().getDescription())
+                            .type(affiliate.getDiscountUsage().getDiscount().getType().name())
                             .build())
                     .user(UserInfo.builder()
                             .name(affiliate.getDiscountUsage().getUser().getName())

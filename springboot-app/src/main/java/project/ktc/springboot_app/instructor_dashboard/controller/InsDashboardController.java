@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import project.ktc.springboot_app.instructor_dashboard.dto.InsDashboardDto;
 import project.ktc.springboot_app.instructor_dashboard.interfaces.InsDashboardService;
@@ -15,6 +16,7 @@ import project.ktc.springboot_app.instructor_dashboard.interfaces.InsDashboardSe
 @RestController
 @RequestMapping("/api/instructor")
 @RequiredArgsConstructor
+@Tag(name = "Instructor Dashboard API", description = "API for instructor dashboard functionalities")
 public class InsDashboardController {
 
   private final InsDashboardService insDashboardService;
