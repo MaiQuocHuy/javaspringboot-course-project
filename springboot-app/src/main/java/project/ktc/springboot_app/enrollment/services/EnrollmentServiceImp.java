@@ -19,6 +19,7 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.enrollment.dto.EnrollmentResponseDto;
 import project.ktc.springboot_app.enrollment.dto.MyEnrolledCourseDto;
+import project.ktc.springboot_app.enrollment.dto.StudentActivityDto;
 import project.ktc.springboot_app.enrollment.dto.StudentDashboardStatsDto;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.interfaces.EnrollmentService;
@@ -28,6 +29,10 @@ import project.ktc.springboot_app.payment.repositories.PaymentRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.utils.StringUtil;
+import project.ktc.springboot_app.lesson.repositories.LessonCompletionRepository;
+import project.ktc.springboot_app.quiz.repositories.QuizResultRepository;
+import project.ktc.springboot_app.entity.LessonCompletion;
+import project.ktc.springboot_app.entity.QuizResult;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -49,6 +54,8 @@ public class EnrollmentServiceImp implements EnrollmentService {
     private final NotificationHelper notificationHelper;
     private final CoursesCacheService coursesCacheService;
     private final CacheInvalidationService cacheInvalidationService;
+    private final LessonCompletionRepository lessonCompletionRepository;
+    private final QuizResultRepository quizResultRepository;
 
     @Override
     public ResponseEntity<ApiResponse<EnrollmentResponseDto>> enroll(String courseId) {
@@ -234,6 +241,100 @@ public class EnrollmentServiceImp implements EnrollmentService {
             return ApiResponseUtil.error(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
                     "Failed to fetch dashboard statistics");
         }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<StudentActivityDto>>> getRecentActivities(Integer limit) {
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            log.info("Fetching recent activities for user: {} with limit: {}", currentUserId, limit);
+
+            int activityLimit = limit != null && limit > 0 ? limit : 20; // Default to 20 activities
+            int perTypeLimit = Math.max(1, activityLimit / 3); // Distribute equally among 3 activity types
+
+            org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0,
+                    perTypeLimit);
+
+            // Fetch recent enrollments
+            List<Enrollment> recentEnrollments = enrollmentRepository.findRecentEnrollmentsByUserId(currentUserId,
+                    pageable);
+            List<StudentActivityDto> enrollmentActivities = recentEnrollments.stream()
+                    .map(this::mapEnrollmentToActivity)
+                    .collect(Collectors.toList());
+
+            // Fetch recent lesson completions
+            List<LessonCompletion> recentCompletions = lessonCompletionRepository
+                    .findRecentCompletionsByUserId(currentUserId, pageable);
+            List<StudentActivityDto> completionActivities = recentCompletions.stream()
+                    .map(this::mapLessonCompletionToActivity)
+                    .collect(Collectors.toList());
+
+            // Fetch recent quiz submissions
+            List<QuizResult> recentSubmissions = quizResultRepository.findRecentSubmissionsByUserId(currentUserId,
+                    pageable);
+            List<StudentActivityDto> submissionActivities = recentSubmissions.stream()
+                    .map(this::mapQuizResultToActivity)
+                    .collect(Collectors.toList());
+
+            // Combine all activities
+            List<StudentActivityDto> allActivities = new java.util.ArrayList<>();
+            allActivities.addAll(enrollmentActivities);
+            allActivities.addAll(completionActivities);
+            allActivities.addAll(submissionActivities);
+
+            // Sort by timestamp (most recent first) and limit
+            List<StudentActivityDto> sortedActivities = allActivities.stream()
+                    .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()))
+                    .limit(activityLimit)
+                    .collect(Collectors.toList());
+
+            log.info("Successfully fetched {} recent activities for user: {}", sortedActivities.size(), currentUserId);
+            return ApiResponseUtil.success(sortedActivities, "Recent activities retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error fetching recent activities for current user: {}", e.getMessage());
+            return ApiResponseUtil.error(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to fetch recent activities");
+        }
+    }
+
+    private StudentActivityDto mapEnrollmentToActivity(Enrollment enrollment) {
+        return StudentActivityDto.builder()
+                .activityType(StudentActivityDto.ActivityType.ENROLLMENT.name())
+                .title(StudentActivityDto.ActivityType.ENROLLMENT.getDisplayName())
+                .description("Enrolled in " + enrollment.getCourse().getTitle())
+                .timestamp(enrollment.getEnrolledAt())
+                .courseId(enrollment.getCourse().getId())
+                .courseTitle(enrollment.getCourse().getTitle())
+                .build();
+    }
+
+    private StudentActivityDto mapLessonCompletionToActivity(LessonCompletion completion) {
+        return StudentActivityDto.builder()
+                .activityType(StudentActivityDto.ActivityType.LESSON_COMPLETION.name())
+                .title(StudentActivityDto.ActivityType.LESSON_COMPLETION.getDisplayName())
+                .description("Completed lesson: " + completion.getLesson().getTitle())
+                .timestamp(completion.getCompletedAt())
+                .courseId(completion.getLesson().getSection().getCourse().getId())
+                .courseTitle(completion.getLesson().getSection().getCourse().getTitle())
+                .lessonId(completion.getLesson().getId())
+                .lessonTitle(completion.getLesson().getTitle())
+                .build();
+    }
+
+    private StudentActivityDto mapQuizResultToActivity(QuizResult quizResult) {
+        double scorePercentage = quizResult.getScore() != null ? quizResult.getScore().doubleValue() : 0.0;
+        return StudentActivityDto.builder()
+                .activityType(StudentActivityDto.ActivityType.QUIZ_SUBMISSION.name())
+                .title(StudentActivityDto.ActivityType.QUIZ_SUBMISSION.getDisplayName())
+                .description("Submitted quiz for lesson: " + quizResult.getLesson().getTitle())
+                .timestamp(quizResult.getCompletedAt())
+                .courseId(quizResult.getLesson().getSection().getCourse().getId())
+                .courseTitle(quizResult.getLesson().getSection().getCourse().getTitle())
+                .lessonId(quizResult.getLesson().getId())
+                .lessonTitle(quizResult.getLesson().getTitle())
+                .score(scorePercentage)
+                .build();
     }
 
     private MyEnrolledCourseDto mapToMyEnrolledCourseDto(Enrollment enrollment) {

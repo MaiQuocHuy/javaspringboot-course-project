@@ -83,4 +83,13 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
                         "JOIN c.enrollments e " +
                         "WHERE e.user.id = :userId")
         Long countTotalLessonsInEnrolledCoursesByUserId(@Param("userId") String userId);
+
+        // Recent Activities Methods
+        @Query("SELECT e FROM Enrollment e " +
+                        "JOIN FETCH e.course c " +
+                        "JOIN FETCH c.instructor i " +
+                        "WHERE e.user.id = :userId " +
+                        "ORDER BY e.enrolledAt DESC")
+        List<Enrollment> findRecentEnrollmentsByUserId(@Param("userId") String userId,
+                        org.springframework.data.domain.Pageable pageable);
 }
