@@ -4768,7 +4768,7 @@ Only ADMIN users can call this API. -**Request**:
       "discount_code": "DISCOUNT10",
       "start_date": "2024-01-01T00:00:00",
       "end_date": "2024-12-31T23:59:59",
-      "subject": "Special Discount Just for You!",
+      "subject": "Special Discount Just for You!"
     }
     ```
 
@@ -4819,3 +4819,62 @@ Only ADMIN users can call this API. -**Request**:
 - **Business Rules**:
   - Only ADMIN users can send discount codes via email.
   - User must exist.
+
+### 7.15 `POST /api/student/reviews`
+
+- **Description**:  
+  Allows a student to submit a review for a course they have completed. Each student can only submit one review per course. The review includes a rating (1-5 stars) and an optional text comment.
+
+- **Request**:
+
+  - **Method:** POST
+  - **Path:** /api/student/reviews
+  - **Headers**:
+    - Authorization: Bearer <accessToken
+  - **Body**:
+    ```json
+    {
+      "course_id": "course-123",
+      "rating": 5,
+      "comment": "Great course! Learned a lot."
+    }
+    ```
+
+- **Response**:
+  - **Status Code:** 201 Created
+  - **Body:**
+    ```json
+    {
+      "statusCode": 201,
+      "message": "Review submitted successfully",
+      "data": {
+        "id": "review_id",
+        "course_id": "course-123",
+        "user_id": "user-001",
+        "rating": 5,
+        "comment": "Great course! Learned a lot.",
+        "created_at": "2025-09-02T12:30:00",
+        "updated_at": "2025-09-02T12:30:00"
+      },
+      "timestamps": "2025-09-02T12:30:00"
+    }
+    ```
+- **Errors**:
+  - 400 Bad Request: Missing or invalid fields (`course_id`, `rating`)
+  - 401 Unauthorized: Missing or invalid JWT
+  - 403 Forbidden: User is not enrolled in the course or has not completed it
+  - 409 Conflict: User has already submitted a review for this course
+  - 422 Unprocessable Entity: Rating is out of range (not between 1 and 5)
+- **Controller Responsibilities**:
+
+  - Validate JWT and ensure STUDENT role.
+  - Parse and validate request body.
+  - Call `ReviewService.submitReview(reviewDto)`.
+  - Return service response with proper HTTP status and JSON structure.
+
+- **Service Responsibilities**:
+  - Check if user is enrolled in the course and has completed it.
+  - Ensure user has not already submitted a review for the course.
+  - Validate rating is between 1 and 5.
+  - Save review to database.
+  - Return created review details.

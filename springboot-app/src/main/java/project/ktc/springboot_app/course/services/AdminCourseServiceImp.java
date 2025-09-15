@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import project.ktc.springboot_app.cache.services.domain.CoursesCacheService;
+import project.ktc.springboot_app.cache.services.domain.InstructorCacheService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
@@ -47,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -66,6 +69,43 @@ public class AdminCourseServiceImp implements AdminCourseService {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final NotificationHelper notificationHelper;
+    private final CoursesCacheService coursesCacheService;
+    private final InstructorCacheService instructorCacheService;
+
+    /**
+     * Invalidates all course cache entries when course approval status changes
+     */
+    private void invalidateCoursesCache() {
+        try {
+            log.info("🧹 Invalidating course cache due to course approval status change");
+
+            // Use the CoursesCacheService to invalidate all course-related cache entries
+            coursesCacheService.invalidateAllCoursesCache();
+
+        } catch (Exception e) {
+            log.error("❌ Failed to invalidate course cache: {}", e.getMessage(), e);
+            // Don't throw exception as cache invalidation failure shouldn't break the
+            // approval process
+        }
+    }
+
+    /**
+     * Invalidates specific course cache entries including slug-based cache
+     */
+    private void invalidateSpecificCourseCache(String courseId, String courseSlug) {
+        try {
+            log.info("🧹 Invalidating cache for course ID: {} and slug: {}", courseId, courseSlug);
+
+            // Invalidate both course ID and slug-based cache entries
+            coursesCacheService.invalidateCourseByIdAndSlug(courseId, courseSlug);
+
+        } catch (Exception e) {
+            log.error("❌ Failed to invalidate specific course cache for ID: {} and slug: {}: {}",
+                    courseId, courseSlug, e.getMessage(), e);
+            // Don't throw exception as cache invalidation failure shouldn't break the
+            // approval process
+        }
+    }
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<CourseReviewResponseDto>>> getReviewCourses(
@@ -404,6 +444,10 @@ public class AdminCourseServiceImp implements AdminCourseService {
                 courseRejected.setIsPublished(false);
                 courseRejected.setUpdatedAt(LocalDateTime.now());
                 courseRepository.save(courseRejected);
+
+                // Note: No cache invalidation for rejected courses as they won't be publicly
+                // accessible
+
                 notificationHelper.createInstructorCourseRejectedNotification(courseRejected.getInstructor().getId(),
                         courseRejected.getId(), courseRejected.getTitle(),
                         String.format("/instructor/courses/%s", courseRejected.getId()), updateDto.getReason());
@@ -415,10 +459,20 @@ public class AdminCourseServiceImp implements AdminCourseService {
                 courseApproved.setIsPublished(true);
                 courseApproved.setUpdatedAt(LocalDateTime.now());
                 courseRepository.save(courseApproved);
+
+                // Invalidate course cache since approved courses are now visible to public
+                invalidateCoursesCache();
+
+                // Also invalidate cache for this specific course
+                invalidateSpecificCourseCache(courseApproved.getId(), courseApproved.getSlug());
+
                 notificationHelper.createInstructorCourseApprovedNotification(courseApproved.getInstructor().getId(),
                         courseApproved.getId(), courseApproved.getTitle(),
                         String.format("/instructor/courses/%s", courseApproved.getId()));
             }
+
+            instructorCacheService.invalidateInstructorCoursesCache(course.getInstructor().getId());
+            instructorCacheService.invalidateCourseDynamicCache(course.getId());
 
             CourseReviewStatusUpdateResponseDto responseDto = responseBuilder.build();
 

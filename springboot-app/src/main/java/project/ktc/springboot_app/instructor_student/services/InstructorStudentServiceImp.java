@@ -40,7 +40,7 @@ import project.ktc.springboot_app.utils.SecurityUtil;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class InstructorStudentServiceImpl implements InstructorStudentService {
+public class InstructorStudentServiceImp implements InstructorStudentService {
   private final InstructorStudentRepository instructorStudentRepository;
   private final EnrollmentRepository enrollmentRepository;
   private final UserRepository userRepository;
