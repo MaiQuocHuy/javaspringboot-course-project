@@ -123,20 +123,21 @@ public class InstructorCacheService {
      * lastContentUpdate, permissions (canEdit, canDelete, etc.)
      */
     public Map<String, InstructorCourseDynamicCacheDto> getInstructorCoursesDynamicInfo(Set<String> courseIds) {
-        // Filter out null course IDs to prevent NullPointerException in Collectors.toMap
+        // Filter out null course IDs to prevent NullPointerException in
+        // Collectors.toMap
         Set<String> validCourseIds = courseIds.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        
+
         if (validCourseIds.size() != courseIds.size()) {
-            log.warn("Filtered out {} null course IDs from dynamic info lookup", 
+            log.warn("Filtered out {} null course IDs from dynamic info lookup",
                     courseIds.size() - validCourseIds.size());
         }
-        
+
         // Create a map by filtering out null values from getSingleCourseDynamicInfo
         Map<String, InstructorCourseDynamicCacheDto> dynamicInfoMap = new HashMap<>();
         int nullValueCount = 0;
-        
+
         for (String courseId : validCourseIds) {
             InstructorCourseDynamicCacheDto dynamicInfo = getSingleCourseDynamicInfo(courseId);
             if (dynamicInfo != null) {
@@ -145,11 +146,11 @@ public class InstructorCacheService {
                 nullValueCount++;
             }
         }
-        
+
         if (nullValueCount > 0) {
             log.warn("Filtered out {} courses with null dynamic info from cache lookup", nullValueCount);
         }
-        
+
         return dynamicInfoMap;
     }
 

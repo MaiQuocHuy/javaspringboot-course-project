@@ -106,6 +106,19 @@ public class CacheKeyBuilder {
     }
 
     /**
+     * Builds cache key for course structure
+     * 
+     * @param courseId course identifier
+     * @return formatted cache key
+     */
+    public String buildCourseStructureKey(String courseId) {
+        String key = String.format(CacheConstants.COURSE_STRUCTURE_PATTERN,
+                sanitizeValue(courseId));
+        log.debug("Built course structure cache key: {}", key);
+        return key;
+    }
+
+    /**
      * Builds cache key for instructor course listing
      * 
      * @param instructorId instructor identifier

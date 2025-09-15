@@ -77,6 +77,12 @@ public final class CacheConstants {
         public static final Duration COURSE_DETAILS_TTL = Duration.ofMinutes(10);
 
         /**
+         * TTL for course structure cache (30 minutes)
+         * Course structure includes sections, lessons, videos, and quiz questions
+         */
+        public static final Duration COURSE_STRUCTURE_TTL = Duration.ofMinutes(30);
+
+        /**
          * TTL for user profile cache (15 minutes)
          */
         public static final Duration USER_PROFILE_TTL = Duration.ofMinutes(15);
@@ -160,6 +166,12 @@ public final class CacheConstants {
          * Format: courses:slug:course-slug
          */
         public static final String COURSE_SLUG_PATTERN = COURSES_CACHE_PREFIX + ":slug:%s";
+
+        /**
+         * Pattern for course structure cache
+         * Format: courses:structure:course-id
+         */
+        public static final String COURSE_STRUCTURE_PATTERN = COURSES_CACHE_PREFIX + ":structure:%s";
 
         /**
          * Pattern for instructor course listing

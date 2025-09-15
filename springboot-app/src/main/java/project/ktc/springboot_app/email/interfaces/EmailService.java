@@ -149,4 +149,17 @@ public interface EmailService {
                         String subject,
                         String userId);
 
+        /**
+         * Send discount code to multiple specific users
+         * 
+         * @param discountId The discount ID to fetch discount details
+         * @param subject    Email subject
+         * @param userIds    List of user IDs to send email to
+         * @return CompletableFuture with number of successful sends
+         */
+        CompletableFuture<Long> sendDiscountCodeToMultipleUsers(
+                        String discountId,
+                        String subject,
+                        java.util.List<String> userIds);
+
 }
