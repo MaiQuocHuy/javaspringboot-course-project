@@ -205,6 +205,10 @@ public class CoursesCacheService {
             String detailKey = cacheKeyBuilder.buildCourseDetailKey(courseId);
             cacheService.remove(detailKey);
 
+            // Invalidate course structure
+            String structureKey = cacheKeyBuilder.buildCourseStructureKey(courseId);
+            cacheService.remove(structureKey);
+
             // Invalidate all courses list cache (since course might appear in lists)
             invalidateAllCoursesCaches();
 
@@ -254,6 +258,50 @@ public class CoursesCacheService {
 
         } catch (Exception e) {
             log.error("Failed to get courses cache statistics", e);
+        }
+    }
+
+    /**
+     * Stores course structure in cache
+     */
+    public void storeCourseStructure(String courseId, Object courseStructure) {
+        try {
+            String cacheKey = cacheKeyBuilder.buildCourseStructureKey(courseId);
+            log.debug("Caching course structure with key: {}", cacheKey);
+            cacheService.store(cacheKey, courseStructure, CacheConstants.COURSE_STRUCTURE_TTL);
+
+        } catch (Exception e) {
+            log.error("Failed to cache course structure for course: {}", courseId, e);
+        }
+    }
+
+    /**
+     * Retrieves course structure from cache
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getCourseStructure(String courseId) {
+        try {
+            String cacheKey = cacheKeyBuilder.buildCourseStructureKey(courseId);
+            log.debug("Retrieving course structure from cache with key: {}", cacheKey);
+            return (T) cacheService.get(cacheKey);
+
+        } catch (Exception e) {
+            log.error("Failed to retrieve course structure from cache for course: {}", courseId, e);
+            return null;
+        }
+    }
+
+    /**
+     * Invalidates course structure cache
+     */
+    public void invalidateCourseStructure(String courseId) {
+        try {
+            String cacheKey = cacheKeyBuilder.buildCourseStructureKey(courseId);
+            log.debug("Invalidating course structure cache for course: {}", courseId);
+            cacheService.remove(cacheKey);
+
+        } catch (Exception e) {
+            log.error("Failed to invalidate course structure cache for course: {}", courseId, e);
         }
     }
 

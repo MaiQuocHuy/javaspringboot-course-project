@@ -128,9 +128,9 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                         .map(InstructorCourseBaseCacheDto::getId)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
-                
+
                 if (courseIds.size() != originalSize) {
-                    log.warn("Filtered out {} course entries with null IDs from cache", 
+                    log.warn("Filtered out {} course entries with null IDs from cache",
                             originalSize - courseIds.size());
                 }
 
@@ -151,7 +151,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
                         .collect(Collectors.toList());
 
                 if (courseResponses.size() != beforeMergeSize) {
-                    log.warn("Filtered out {} invalid course entries during merge", 
+                    log.warn("Filtered out {} invalid course entries during merge",
                             beforeMergeSize - courseResponses.size());
                 }
 

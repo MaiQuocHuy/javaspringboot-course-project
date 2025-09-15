@@ -490,6 +490,100 @@ public class EmailServiceImp implements EmailService {
         }
     }
 
+    @Override
+    @Async("emailTaskExecutor")
+    public CompletableFuture<Long> sendDiscountCodeToMultipleUsers(
+            String discountId,
+            String subject,
+            List<String> userIds) {
+
+        log.info("Starting to send discount ID {} to {} users", discountId, userIds.size());
+
+        try {
+            // Get discount details from database
+            Discount discount = discountService.getDiscountEntityById(discountId);
+            if (discount == null) {
+                log.error("Discount not found with ID: {}", discountId);
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            // Validate discount fields
+            if (discount.getCode() == null || discount.getStartDate() == null || discount.getEndDate() == null) {
+                log.error("Discount with ID {} has missing required fields", discountId);
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            log.info("Found discount: {} with code: {}", discount.getDescription(), discount.getCode());
+
+            // Get users by IDs
+            List<User> users = userRepository.findAllById(userIds).stream()
+                    .filter(user -> user.getIsActive())
+                    .collect(java.util.stream.Collectors.toList());
+
+            if (users.isEmpty()) {
+                log.warn("No active users found from provided user IDs");
+                return CompletableFuture.completedFuture(0L);
+            }
+
+            log.info("Found {} active users out of {} requested", users.size(), userIds.size());
+
+            // Send emails in parallel
+            AtomicLong successCount = new AtomicLong(0);
+            List<CompletableFuture<Void>> emailTasks = users.stream()
+                    .<CompletableFuture<Void>>map(user -> CompletableFuture.runAsync(() -> {
+                        try {
+                            // Create email variables
+                            Map<String, Object> variables = new HashMap<>();
+                            variables.put("studentName", user.getName());
+                            variables.put("discountCode", discount.getCode());
+                            variables.put("startDate",
+                                    discount.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                            variables.put("endDate",
+                                    discount.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                            variables.put("currentYear", Year.now().getValue());
+
+                            // Create email request
+                            EmailRequest emailRequest = EmailRequest.builder()
+                                    .to(List.of(user.getEmail()))
+                                    .subject(subject)
+                                    .templateName("discount-code-template")
+                                    .templateVariables(variables)
+                                    .build();
+
+                            // Send email
+                            EmailSendResult result = doSendEmail(emailRequest);
+
+                            if (result.isSuccess()) {
+                                successCount.incrementAndGet();
+                                log.debug("Successfully sent discount email to {}", user.getEmail());
+                            } else {
+                                log.error("Failed to send discount email to {}: {}",
+                                        user.getEmail(), result.getErrorMessage());
+                            }
+
+                        } catch (Exception e) {
+                            log.error("Error sending discount email to {}: {}",
+                                    user.getEmail(), e.getMessage(), e);
+                        }
+                    }))
+                    .collect(java.util.stream.Collectors.toList());
+
+            // Wait for all tasks to complete
+            CompletableFuture<Void> allTasks = CompletableFuture.allOf(
+                    emailTasks.toArray(new CompletableFuture[0]));
+            allTasks.join();
+
+            long totalSent = successCount.get();
+            log.info("Completed sending discount emails to multiple users. Success: {}/{}", totalSent, users.size());
+
+            return CompletableFuture.completedFuture(totalSent);
+
+        } catch (Exception e) {
+            log.error("Failed to send discount emails to multiple users: {}", e.getMessage(), e);
+            return CompletableFuture.completedFuture(0L);
+        }
+    }
+
     /**
      * Get provider by name
      */

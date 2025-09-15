@@ -4878,3 +4878,193 @@ Only ADMIN users can call this API. -**Request**:
   - Validate rating is between 1 and 5.
   - Save review to database.
   - Return created review details.
+
+### 7.16 `GET /api/student/courses/{courseId}/structure`
+
+- **Description**:  
+  Allows a student to retrieve the proposed course structure for a course they are enrolled in. The structure includes sections and lessons. Each section can have multiple lessons.
+- **Request**:
+  - **Method:** GET
+  - **Path:** /api/student/courses/{courseId}/structure
+  - **Headers**:
+    - Authorization: Bearer <accessToken>
+  - **Path Params**:
+    - `courseId`: The ID of the course to retrieve the structure for
+- **Response**:
+
+  - **Status Code:** 200 OK
+  - **Body:**
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Course structure retrieved successfully",
+      "data": [
+        {
+          "id": "section-001",
+          "title": "Getting Started with React",
+          "order": 0,
+          "lessonCount": 2,
+          "lessons": [
+            {
+              "id": "lesson-001",
+              "title": "Introduction to React",
+              "type": "VIDEO",
+              "order": 0,
+              "video": {
+                "id": "video-001",
+                "url": "https://res.cloudinary.com/.../intro.mp4",
+                "duration": 1800,
+                "title": "Introduction to Cloudinary",
+                "thumbnail": "https://res.cloudinary.com/.../intro.jpg"
+              },
+              "quiz": null
+            },
+            {
+              "id": "lesson-002",
+              "title": "React Basics Quiz",
+              "type": "QUIZ",
+              "order": 1,
+              "video": null,
+              "quiz": {
+                "questions": [
+                  {
+                    "id": "question-004",
+                    "questionText": "What hook is used to manage local state in functional components?",
+                    "options": {
+                      "A": "useEffect",
+                      "B": "useState",
+                      "C": "useContext",
+                      "D": "useReducer"
+                    },
+                    "correctAnswer": "B",
+                    "explanation": "useState is the React hook used to add state to functional components."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "timestamp": "2025-09-15T10:21:35.858+07:00"
+    }
+    ```
+
+- **Errors**:
+
+  - 400 Bad Request: Invalid `courseId`.
+  - 401 Unauthorized: Missing or invalid JWT.
+  - 403 Forbidden: User is not enrolled in the course.
+  - 404 Not Found: Course not found.
+
+- **Controller Responsibilities**:
+
+  - Validate JWT and ensure STUDENT role.
+  - Parse and validate `courseId` from path.
+  - Call `CourseService.getCourseStructureForStudent(courseId, userId)`.
+  - Return structured response with correct HTTP status.
+
+- **Service Responsibilities**:
+
+  - Verify the student is enrolled in the course.
+  - Retrieve course structure (sections, lessons) from DB.
+  - For `VIDEO` lessons → include video details.
+  - For `QUIZ` lessons → include quiz metadata and **all quiz questions**.
+  - Ensure sections and lessons are ordered by `order`.
+
+- **Business Rules**:
+  - Only STUDENT users can access this API.
+  - Student must be enrolled in the course.
+  - Course structure must include all sections and lessons.
+  - Full quiz questions are returned.
+  - Payload can be large → consider pagination or lazy loading in the future.
+
+### 7.17 `GET /api/student/courses/{courseId}/progress`
+
+- **Description**:  
+  Allows a student to retrieve their real-time progress in a specific course they are enrolled in. The progress includes the percentage of lessons completed, overall summary stats, and the completion/unlock status of each lesson.
+- **Request**:
+  - **Method:** GET
+  - **Path:** /api/student/courses/{courseId}/progress
+  - **Headers**:
+    - Authorization: Bearer <accessToken>
+  - **Path Params**:
+    - `courseId`: The ID of the course to retrieve progress
+- **Response**:
+
+  - **Status Code:** 200 OK
+  - **Body:**
+
+    ```json
+    {
+      "statusCode": 200,
+      "message": "Progress retrieved successfully",
+      "data": {
+        "summary": {
+          "completedCount": 3,
+          "totalLessons": 10,
+          "percentage": 30
+        },
+        "lessons": [
+          {
+            "lessonId": "lesson-001",
+            "order": 0,
+            "status": "COMPLETED",
+            "completedAt": "2025-01-15T11:30:00"
+          },
+          {
+            "lessonId": "lesson-002",
+            "order": 1,
+            "status": "COMPLETED",
+            "completedAt": "2025-01-15T12:15:00"
+          },
+          {
+            "lessonId": "lesson-003",
+            "order": 2,
+            "status": "UNLOCKED"
+          },
+          {
+            "lessonId": "lesson-004",
+            "order": 3,
+            "status": "LOCKED"
+          }
+        ]
+      },
+      "timestamp": "2025-09-15T10:21:35.858+07:00"
+    }
+    ```
+
+- **Errors**:
+  - 400 Bad Request: Invalid `courseId`.
+  - 401 Unauthorized: Missing or invalid JWT.
+  - 403 Forbidden: User is not enrolled in the course.
+  - 404 Not Found: Course not found.
+- **Controller Responsibilities**:
+  - Validate JWT and ensure STUDENT role.
+  - Parse and validate `courseId` from path.
+  - Call `CourseService.getCourseProgressForStudent(courseId, userId)`.
+  - Return structured response with correct HTTP status.
+- **Service Responsibilities**:
+  - Verify the student is enrolled in the course.
+  - Retrieve completed lessons for the student in the course.
+  - Retrieve unlocked but not yet completed lessons.
+  - Return progress details including completedLessons and unlockedLessons.
+  - Verify the student is enrolled in the course.
+  - Retrieve all lessons for the course.
+  - Mark each lesson with one of:
+    - COMPLETED → student finished lesson (include completedAt).
+    - UNLOCKED → available but not completed.
+    - LOCKED → not available yet (due to prerequisites or scheduling).
+  - Calculate overall progress summary (completed count, total lessons, percentage).
+
+- **Business Rules**:
+  - Only STUDENT users can access this API.
+  - Student must be enrolled in the course.
+  - completedLessons includes lessons with completion timestamps.
+  - unlockedLessons includes lessons available to the student but not yet completed.
+  - Only STUDENT users can access this API.
+  - Student must be enrolled in the course.
+  - Lessons are marked completed based on defined rules get Lesson Completed in table lessonCompletion
+  - Unlock rules depend on course settings (sequential completion).
+  - Response must always include all lessons with their current status.
+  - Progress summary is recalculated on every request (real-time).

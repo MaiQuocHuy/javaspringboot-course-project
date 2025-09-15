@@ -271,11 +271,11 @@ public class DiscountController {
         }
 
         /**
-         * Send discount code email to all students or specific user
+         * Send discount code email to all students, specific users, or single user
          */
         @PostMapping("/email")
         @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Send discount code email to all students or specific user", description = "Sends discount code email to all STUDENT users or a specific user using discount ID. If user_id is provided, sends to that specific user; otherwise sends to all students. Backend will fetch discount details automatically. Only ADMIN users can access this endpoint.")
+        @Operation(summary = "Send discount code email to all students, specific users, or single user", description = "Sends discount code email to all STUDENT users, specific users, or a single user using discount ID. Priority: userIds > userId > all students. Backend will fetch discount details automatically. Only ADMIN users can access this endpoint.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Email sending initiated successfully"),
                         @ApiResponse(responseCode = "400", description = "Bad request - Invalid request data"),
@@ -286,7 +286,11 @@ public class DiscountController {
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<DiscountEmailResponse>> sendDiscountEmail(
                         @Valid @RequestBody DiscountEmailRequest request) {
 
-                if (request.getUserId() != null && !request.getUserId().trim().isEmpty()) {
+                // Log request details
+                if (request.getUserIds() != null && !request.getUserIds().isEmpty()) {
+                        log.info("Admin sending discount email to {} specific users - ID: {}, Subject: {}",
+                                        request.getUserIds().size(), request.getDiscountId(), request.getSubject());
+                } else if (request.getUserId() != null && !request.getUserId().trim().isEmpty()) {
                         log.info("Admin sending discount email to specific user - ID: {}, User: {}, Subject: {}",
                                         request.getDiscountId(), request.getUserId(), request.getSubject());
                 } else {
@@ -312,16 +316,23 @@ public class DiscountController {
 
                         String discountCode = discountResponse.getData().getCode();
 
-                        // Send to specific user or all students based on request
+                        // Send emails based on priority: userIds > userId > all students
                         Long totalRecipients;
-                        if (request.getUserId() != null && !request.getUserId().trim().isEmpty()) {
-                                // Send to specific user
+
+                        if (request.getUserIds() != null && !request.getUserIds().isEmpty()) {
+                                // Send to multiple specific users (highest priority)
+                                totalRecipients = emailService.sendDiscountCodeToMultipleUsers(
+                                                request.getDiscountId(),
+                                                request.getSubject(),
+                                                request.getUserIds()).get(); // Wait for completion to get count
+                        } else if (request.getUserId() != null && !request.getUserId().trim().isEmpty()) {
+                                // Send to single specific user (medium priority)
                                 totalRecipients = emailService.sendDiscountCodeToSpecificUser(
                                                 request.getDiscountId(),
                                                 request.getSubject(),
                                                 request.getUserId()).get(); // Wait for completion to get count
                         } else {
-                                // Send to all students
+                                // Send to all students (lowest priority)
                                 totalRecipients = emailService.sendDiscountCodeToAllStudents(
                                                 request.getDiscountId(),
                                                 request.getSubject()).get(); // Wait for completion to get count
@@ -334,7 +345,11 @@ public class DiscountController {
                                         .build();
 
                         String message;
-                        if (request.getUserId() != null && !request.getUserId().trim().isEmpty()) {
+                        if (request.getUserIds() != null && !request.getUserIds().isEmpty()) {
+                                message = String.format(
+                                                "Successfully sent discount emails to %d out of %d requested users",
+                                                totalRecipients, request.getUserIds().size());
+                        } else if (request.getUserId() != null && !request.getUserId().trim().isEmpty()) {
                                 message = totalRecipients > 0
                                                 ? String.format("Successfully sent discount email to user %s",
                                                                 request.getUserId())
