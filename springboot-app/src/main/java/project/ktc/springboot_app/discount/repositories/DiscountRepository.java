@@ -104,4 +104,13 @@ public interface DiscountRepository extends JpaRepository<Discount, String> {
          */
         @Query("SELECT COUNT(d) > 0 FROM Discount d WHERE d.ownerUser.id = :ownerUserId AND d.type = :type")
         boolean existsByOwnerUserIdAndType(@Param("ownerUserId") String ownerUserId, @Param("type") DiscountType type);
+
+        /**
+         * Find active GENERAL discounts that are currently valid (for public use)
+         */
+        @Query("SELECT d FROM Discount d WHERE d.type = :type AND d.isActive = :isActive " +
+                        "AND (d.startDate IS NULL OR d.startDate <= :now) " +
+                        "AND (d.endDate IS NULL OR d.endDate >= :now)")
+        List<Discount> findByTypeAndIsActiveAndCurrentlyValid(@Param("type") DiscountType type,
+                        @Param("isActive") boolean isActive, @Param("now") LocalDateTime now);
 }
