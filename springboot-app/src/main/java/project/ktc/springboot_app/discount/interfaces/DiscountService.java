@@ -43,6 +43,15 @@ public interface DiscountService {
         ResponseEntity<ApiResponse<DiscountResponseDto>> getUserInductionDiscount(String userId);
 
         /**
+         * Get available public discount codes (GENERAL type)
+         * Returns all active GENERAL discounts that are currently available for public
+         * use
+         * 
+         * @return ResponseEntity with list of available public discounts
+         */
+        ResponseEntity<ApiResponse<List<DiscountResponseDto>>> getAvailablePublicDiscounts();
+
+        /**
          * Get all discounts with pagination
          */
         ResponseEntity<ApiResponse<PaginatedResponse<DiscountResponseDto>>> getAllDiscounts(Pageable pageable);
