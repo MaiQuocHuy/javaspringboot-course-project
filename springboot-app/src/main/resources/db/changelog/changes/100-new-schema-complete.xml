@@ -453,6 +453,9 @@
             <column name="submitted_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="reviewed_at" type="TIMESTAMP"/>
             <column name="rejection_reason" type="TEXT"/>
+            <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
         <addUniqueConstraint tableName="instructor_applications" columnNames="user_id" constraintName="unique_app_user"/>
         <createIndex tableName="instructor_applications" indexName="idx_app_status">

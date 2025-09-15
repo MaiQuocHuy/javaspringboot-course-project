@@ -59,7 +59,7 @@
             <column name="resource_id" value="res-user-001"/>
             <column name="entity_id" value="app-001"/>
             <column name="message" value="Đơn đăng ký instructor từ David Wilson cần được xem xét và duyệt"/>
-            <column name="action_url" value="/admin/instructor-applications/instructor-app-001"/>
+            <column name="action_url" value="/admin/applications/user-004"/>
             <column name="priority" value="HIGH"/>
             <column name="is_read" valueBoolean="true"/>
             <column name="created_at" value="2025-01-14 16:20:00"/>
