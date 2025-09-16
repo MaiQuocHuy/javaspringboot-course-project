@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.payment.dto.PaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.StudentPaymentStatsDto;
 import project.ktc.springboot_app.payment.interfaces.PaymentService;
 import project.ktc.springboot_app.payment.dto.PaymentDetailResponseDto;
 
@@ -112,5 +113,36 @@ public class StudentPaymentController {
         })
         public ResponseEntity<ApiResponse<PaymentDetailResponseDto>> getPaymentDetail(@PathVariable String id) {
                 return paymentService.getStudentPaymentDetail(id);
+        }
+
+        /**
+         * Retrieve payment statistics for the currently authenticated student
+         * 
+         * @return ResponseEntity containing student payment statistics
+         */
+        @GetMapping("/payment-stats")
+        @Operation(summary = "Get student payment statistics", description = """
+                        Retrieves comprehensive payment statistics for the currently authenticated student.
+
+                        **Statistics Included:**
+                        - Total number of payment transactions
+                        - Total amount spent (sum of completed payments only)
+                        - Number of successful/completed payments
+                        - Number of failed payments
+
+                        **Features:**
+                        - Only includes data for the authenticated student
+                        - Amount calculations consider only COMPLETED payments
+                        - All monetary amounts are in the configured currency
+                        - Real-time data reflecting current payment status
+                        """)
+        @ApiResponses(value = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Payment statistics retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied - STUDENT role required", content = @Content(mediaType = "application/json")),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Server error during statistics retrieval", content = @Content(mediaType = "application/json"))
+        })
+        public ResponseEntity<ApiResponse<StudentPaymentStatsDto>> getPaymentStats() {
+                return paymentService.getStudentPaymentStats();
         }
 }

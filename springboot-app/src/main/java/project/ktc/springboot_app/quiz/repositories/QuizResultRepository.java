@@ -154,4 +154,32 @@ public interface QuizResultRepository extends JpaRepository<QuizResult, String> 
                         "ORDER BY qr.completedAt DESC")
         java.util.List<QuizResult> findRecentSubmissionsByUserId(@Param("userId") String userId,
                         org.springframework.data.domain.Pageable pageable);
+
+        /**
+         * Quiz Statistics Methods
+         */
+
+        /**
+         * Count total quiz submissions by user ID
+         */
+        @Query("SELECT COUNT(qr) FROM QuizResult qr WHERE qr.user.id = :userId")
+        Long countTotalQuizzesByUserId(@Param("userId") String userId);
+
+        /**
+         * Count passed quiz submissions (score >= 80) by user ID
+         */
+        @Query("SELECT COUNT(qr) FROM QuizResult qr WHERE qr.user.id = :userId AND qr.score >= 80")
+        Long countPassedQuizzesByUserId(@Param("userId") String userId);
+
+        /**
+         * Count failed quiz submissions (score < 80) by user ID
+         */
+        @Query("SELECT COUNT(qr) FROM QuizResult qr WHERE qr.user.id = :userId AND qr.score < 80")
+        Long countFailedQuizzesByUserId(@Param("userId") String userId);
+
+        /**
+         * Calculate average score for all quiz submissions by user ID
+         */
+        @Query("SELECT AVG(qr.score) FROM QuizResult qr WHERE qr.user.id = :userId")
+        Double calculateAverageScoreByUserId(@Param("userId") String userId);
 }

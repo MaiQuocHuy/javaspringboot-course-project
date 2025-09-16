@@ -20,6 +20,7 @@ import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.review.dto.ReviewResponseDto;
 import project.ktc.springboot_app.review.dto.StudentReviewResponseDto;
+import project.ktc.springboot_app.review.dto.StudentReviewStatsDto;
 import project.ktc.springboot_app.review.dto.UpdateReviewDto;
 import project.ktc.springboot_app.review.entity.Review;
 import project.ktc.springboot_app.review.interfaces.ReviewService;
@@ -326,5 +327,39 @@ public class ReviewServiceImp implements ReviewService {
                         .avatar(review.getUser().getThumbnailUrl())
                         .build())
                 .build();
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<StudentReviewStatsDto>> getStudentReviewStats() {
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            log.info("Fetching review statistics for user: {}", currentUserId);
+
+            // Get review statistics using repository methods
+            Long totalReviews = reviewRepository.countTotalReviewsByUserId(currentUserId);
+            Double averageRating = reviewRepository.calculateAverageRatingByUserId(currentUserId);
+
+            // Handle null values
+            long totalReviewsValue = totalReviews != null ? totalReviews : 0L;
+            double averageRatingValue = averageRating != null ? averageRating : 0.0;
+
+            // Round average rating to 2 decimal places
+            java.math.BigDecimal roundedAverage = java.math.BigDecimal.valueOf(averageRatingValue)
+                    .setScale(2, java.math.RoundingMode.HALF_UP);
+
+            StudentReviewStatsDto stats = StudentReviewStatsDto.builder()
+                    .totalReviews(totalReviewsValue)
+                    .averageRating(roundedAverage.doubleValue())
+                    .build();
+
+            log.info("Review statistics retrieved successfully for user {}: Total={}, Average={}",
+                    currentUserId, totalReviewsValue, roundedAverage);
+
+            return ApiResponseUtil.success(stats, "Review statistics retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving review statistics: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve review statistics");
+        }
     }
 }

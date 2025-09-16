@@ -1,6 +1,8 @@
 package project.ktc.springboot_app.quiz.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,9 +17,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.common.dto.ApiErrorResponse;
 import project.ktc.springboot_app.quiz.dto.QuizScoreResponseDto;
 import project.ktc.springboot_app.quiz.dto.QuizScoreDetailResponseDto;
+import project.ktc.springboot_app.quiz.dto.StudentQuizStatsDto;
 import project.ktc.springboot_app.quiz.services.StudentQuizServiceImp;
+import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 
 @Tag(name = "Student Quiz", description = "Student quiz management APIs")
 @RestController
@@ -79,5 +84,18 @@ public class StudentQuizController {
         log.info("Getting quiz score detail for quiz result ID: {}", id);
 
         return studentQuizService.getQuizScoreDetail(id);
+    }
+
+    @Operation(summary = "Get quiz statistics", description = "Retrieve comprehensive quiz performance statistics for the authenticated student, including total quizzes taken, passed quizzes (score >= 80), failed quizzes, and average score across all quizzes.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Quiz statistics retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping("/quiz-stats")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<StudentQuizStatsDto>> getQuizStats() {
+        log.info("Fetching quiz statistics for authenticated student");
+        return studentQuizService.getQuizStats();
     }
 }
