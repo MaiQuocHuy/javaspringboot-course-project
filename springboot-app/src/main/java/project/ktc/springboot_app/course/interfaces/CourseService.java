@@ -11,6 +11,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.course.dto.CourseAdminResponseDto;
 import project.ktc.springboot_app.course.dto.CourseApprovalResponseDto;
 import project.ktc.springboot_app.course.dto.CourseDetailResponseDto;
+import project.ktc.springboot_app.course.dto.CourseFilterMetadataResponseDto;
 import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
@@ -41,4 +42,6 @@ public interface CourseService {
         ResponseEntity<ApiResponse<CourseApprovalResponseDto>> approveCourse(String courseId);
 
         ResponseEntity<ApiResponse<List<SectionWithLessonsDto>>> getCourseDetailsForAdmin(String courseId);
+
+        ResponseEntity<ApiResponse<CourseFilterMetadataResponseDto>> getCourseFilterMetadata();
 }

@@ -7,21 +7,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Propagation;
 import project.ktc.springboot_app.cache.services.domain.CoursesCacheService;
 import project.ktc.springboot_app.cache.services.domain.InstructorCacheService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
-import project.ktc.springboot_app.course.dto.CourseFilterMetadataResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewFilterDto;
 import project.ktc.springboot_app.course.dto.CourseReviewResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewStatusUpdateResponseDto;
 import project.ktc.springboot_app.course.dto.UpdateCourseReviewStatusDto;
 import project.ktc.springboot_app.course.dto.projection.CourseReviewProjection;
-import project.ktc.springboot_app.course.dto.projection.PriceRange;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.entity.CourseReviewStatus;
 import project.ktc.springboot_app.course.entity.CourseReviewStatusHistory;
@@ -45,7 +42,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.lang.Collections;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -487,28 +483,6 @@ public class AdminCourseServiceImp implements AdminCourseService {
         } catch (Exception e) {
             log.error("Error updating course review status for courseId: {}", courseId, e);
             return ApiResponseUtil.internalServerError("Failed to update course review status");
-        }
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public ResponseEntity<ApiResponse<CourseFilterMetadataResponseDto>> getCourseFilterMetadata() {
-        try {
-            PriceRange priceRange = adminCourseRepository.findMinAndMaxPrice();
-            // log.info("Retrieved course price metadata: minPrice={}, maxPrice={}",
-            // priceRange.getMinPrice(), priceRange.getMaxPrice());
-
-            CourseFilterMetadataResponseDto metadata = CourseFilterMetadataResponseDto.builder()
-                    .minPrice(priceRange.getMinPrice() != null ? priceRange.getMinPrice()
-                            : new java.math.BigDecimal("0.0"))
-                    .maxPrice(priceRange.getMaxPrice() != null ? priceRange.getMaxPrice()
-                            : new java.math.BigDecimal("999.99"))
-                    .build();
-
-            return ApiResponseUtil.success(metadata, "Course filter metadata retrieved successfully");
-        } catch (Exception e) {
-            log.error("Error retrieving course filter metadata", e);
-            return ApiResponseUtil.internalServerError("Failed to retrieve course filter metadata");
         }
     }
 }

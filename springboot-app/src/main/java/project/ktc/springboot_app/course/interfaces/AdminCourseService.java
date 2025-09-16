@@ -4,7 +4,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
-import project.ktc.springboot_app.course.dto.CourseFilterMetadataResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewFilterDto;
 import project.ktc.springboot_app.course.dto.CourseReviewResponseDto;
@@ -19,6 +18,4 @@ public interface AdminCourseService {
 
         ResponseEntity<ApiResponse<CourseReviewStatusUpdateResponseDto>> updateCourseReviewStatus(
                         String courseId, UpdateCourseReviewStatusDto updateDto, String reviewerEmail);
-
-        ResponseEntity<ApiResponse<CourseFilterMetadataResponseDto>> getCourseFilterMetadata();
 }

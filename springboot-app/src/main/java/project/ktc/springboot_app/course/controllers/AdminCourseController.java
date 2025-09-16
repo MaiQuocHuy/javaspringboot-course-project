@@ -289,7 +289,7 @@ public class AdminCourseController {
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseFilterMetadataResponseDto>> getCourseFilterMetadata() {
                 log.info("Admin requesting course filter metadata");
-                return adminCourseService.getCourseFilterMetadata();
+                return courseService.getCourseFilterMetadata();
         }
 
 }
