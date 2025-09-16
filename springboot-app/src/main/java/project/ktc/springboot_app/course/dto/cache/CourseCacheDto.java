@@ -25,10 +25,12 @@ public class CourseCacheDto implements Serializable {
 
     private String id;
     private String title;
+    private String slug;
     private String description;
     private BigDecimal price;
     private CourseLevel level;
     private String thumbnailUrl;
+    private String thumbnailId;
     private Boolean isApproved;
     private Boolean isPublished;
     private Boolean isDeleted;
@@ -40,6 +42,7 @@ public class CourseCacheDto implements Serializable {
     private String instructorName;
     private String instructorBio;
     private String instructorThumbnailUrl;
+    private String instructorThumbnailId;
 
     // Categories (simplified)
     private List<CategoryCacheDto> categories;
