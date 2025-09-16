@@ -348,7 +348,9 @@ public class StudentCourseServiceImp implements StudentCourseService {
             // 5. Calculate progress for each lesson with global sequential ordering
             List<CourseProgressLessonDto> progressLessons = new ArrayList<>();
             for (int i = 0; i < allLessons.size(); i++) {
-                progressLessons.add(mapToProgressLessonDto(allLessons.get(i), completionMap, i));
+                // Check if previous lesson is completed (for sequential unlocking)
+                boolean isPreviousCompleted = i == 0 || completionMap.containsKey(allLessons.get(i - 1).getId());
+                progressLessons.add(mapToProgressLessonDto(allLessons.get(i), completionMap, i, isPreviousCompleted));
             }
 
             // 6. Calculate summary statistics
@@ -381,7 +383,7 @@ public class StudentCourseServiceImp implements StudentCourseService {
     }
 
     private CourseProgressLessonDto mapToProgressLessonDto(Lesson lesson, Map<String, LessonCompletion> completionMap,
-            int globalOrder) {
+            int globalOrder, boolean isPreviousCompleted) {
         LessonCompletion completion = completionMap.get(lesson.getId());
 
         // Determine lesson status based on completion and sequential rules
@@ -389,12 +391,15 @@ public class StudentCourseServiceImp implements StudentCourseService {
         LocalDateTime completedAt = null;
 
         if (completion != null) {
+            // Lesson is completed
             status = "COMPLETED";
             completedAt = completion.getCompletedAt();
-        } else {
-            // For now, implement simple rule: all lessons are UNLOCKED if not completed
-            // In future, this could be enhanced with sequential prerequisite logic
+        } else if (globalOrder == 0 || isPreviousCompleted) {
+            // First lesson or previous lesson is completed - UNLOCKED
             status = "UNLOCKED";
+        } else {
+            // Previous lesson not completed - LOCKED
+            status = "LOCKED";
         }
 
         return CourseProgressLessonDto.builder()
