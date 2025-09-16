@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
+import project.ktc.springboot_app.cache.services.domain.CoursesCacheService;
 import project.ktc.springboot_app.certificate.dto.CreateCertificateDto;
 import project.ktc.springboot_app.certificate.interfaces.CertificateService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
@@ -53,6 +54,7 @@ public class StudentLessonServiceImp implements StudentService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final ObjectMapper objectMapper;
     private final CertificateService certificateService;
+    private final CoursesCacheService coursesCacheService;
 
     /**
      * Mark a lesson as completed by the current student.
@@ -129,6 +131,17 @@ public class StudentLessonServiceImp implements StudentService {
 
             lessonCompletionRepository.save(completion);
             log.info("Successfully recorded lesson completion for student {} on lesson {}", currentUserId, lessonId);
+
+            // Invalidate course structure cache since lesson completion affects course
+            // progress
+            try {
+                coursesCacheService.invalidateCourseStructure(courseId);
+                log.debug("Invalidated course structure cache for course: {}", courseId);
+            } catch (Exception e) {
+                log.warn("Failed to invalidate course structure cache for course: {}, error: {}", courseId,
+                        e.getMessage());
+                // Don't fail the request if cache invalidation fails
+            }
 
             // Check if all lessons in the course are completed and update enrollment status
             checkAndUpdateCourseCompletion(currentUserId, courseId);

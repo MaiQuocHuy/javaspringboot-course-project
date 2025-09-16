@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.ApiErrorResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
+import project.ktc.springboot_app.course.dto.CourseProgressDto;
 import project.ktc.springboot_app.course.services.StudentCourseServiceImp;
 import project.ktc.springboot_app.enrollment.dto.MyEnrolledCourseDto;
 import project.ktc.springboot_app.enrollment.dto.StudentActivityDto;
@@ -130,5 +131,35 @@ public class StudentCourseController {
 
                 log.info("Fetching sections for course: {}", id);
                 return studentCourseService.getCourseSections(id);
+        }
+
+        @GetMapping("/{courseId}/structure")
+        @Operation(summary = "Get course structure", description = "Retrieve the complete structure of a specific course for the enrolled student, including all sections, lessons, videos, and quiz questions.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Course structure retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User is not enrolled in this course", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "404", description = "Course not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<project.ktc.springboot_app.course.dto.CourseStructureSectionDto>>> getCourseStructure(
+                        @Parameter(description = "Course ID", required = true) @PathVariable String courseId) {
+
+                log.info("Fetching course structure for course: {}", courseId);
+                return studentCourseService.getCourseStructureForStudent(courseId);
+        }
+
+        @GetMapping("/{courseId}/progress")
+        @Operation(summary = "Get course progress", description = "Retrieve the real-time progress of a specific course for the enrolled student, including completion status and summary statistics.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Progress retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - User is not enrolled in this course", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+                        @ApiResponse(responseCode = "404", description = "Course not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseProgressDto>> getCourseProgress(
+                        @Parameter(description = "Course ID", required = true) @PathVariable String courseId) {
+
+                log.info("Fetching course progress for course: {}", courseId);
+                return studentCourseService.getCourseProgressForStudent(courseId);
         }
 }
