@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import project.ktc.springboot_app.course.dto.projection.CourseReviewProjection;
+import project.ktc.springboot_app.course.dto.projection.PriceRange;
 import project.ktc.springboot_app.course.entity.Course;
 
 import java.time.LocalDateTime;
@@ -61,4 +62,8 @@ public interface AdminCourseRepository extends JpaRepository<Course, String> {
             @Param("dateFrom") LocalDateTime dateFrom,
             @Param("dateTo") LocalDateTime dateTo,
             Pageable pageable);
+
+    @Query("SELECT MIN(c.price) AS minPrice, MAX(c.price) AS maxPrice FROM Course c " +
+            "WHERE c.isDeleted = false AND c.isApproved = true")
+    PriceRange findMinAndMaxPrice();
 }

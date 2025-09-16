@@ -35,6 +35,7 @@ public interface CourseService {
                         BigDecimal minPrice,
                         BigDecimal maxPrice,
                         CourseLevel level,
+                        Double averageRating,
                         Pageable pageable);
 
         ResponseEntity<ApiResponse<CourseApprovalResponseDto>> approveCourse(String courseId);

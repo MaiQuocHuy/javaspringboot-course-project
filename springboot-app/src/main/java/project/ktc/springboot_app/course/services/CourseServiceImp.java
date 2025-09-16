@@ -385,6 +385,7 @@ public class CourseServiceImp implements CourseService {
                         BigDecimal minPrice,
                         BigDecimal maxPrice,
                         CourseLevel level,
+                        Double averageRating,
                         Pageable pageable) {
 
                 log.info(
@@ -432,6 +433,18 @@ public class CourseServiceImp implements CourseService {
                                 .map(course -> mapToCourseAdminResponse(course,
                                                 enrollmentCounts.getOrDefault(course.getId(), 0L)))
                                 .collect(Collectors.toList());
+
+                // If averageRating filter is applied, filter results in-memory
+                if (averageRating != null) {
+                        // Check if averageRating is within valid range
+                        if (averageRating < 1.0 || averageRating > 5.0) {
+                                ApiResponseUtil.badRequest("Average rating filter must be between 1.0 and 5.0");
+                        }
+                        courseResponses = courseResponses.stream()
+                                        .filter(course -> course.getAverageRating() != null
+                                                        && course.getAverageRating() >= averageRating)
+                                        .collect(Collectors.toList());
+                }
 
                 // Create paginated response
                 PaginatedResponse<CourseAdminResponseDto> paginatedResponse = PaginatedResponse

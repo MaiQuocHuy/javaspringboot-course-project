@@ -28,6 +28,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.dto.CourseAdminResponseDto;
 import project.ktc.springboot_app.course.dto.CourseApprovalResponseDto;
+import project.ktc.springboot_app.course.dto.CourseFilterMetadataResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewDetailResponseDto;
 import project.ktc.springboot_app.course.dto.CourseReviewFilterDto;
 import project.ktc.springboot_app.course.dto.CourseReviewResponseDto;
@@ -88,10 +89,12 @@ public class AdminCourseController {
 
                         @Parameter(description = "Maximum course price", example = "999.99") @RequestParam(required = false) @DecimalMin(value = "0.0", inclusive = true) BigDecimal maxPrice,
 
-                        @Parameter(description = "Filter by course level", example = "") @RequestParam(required = false) CourseLevel level) {
+                        @Parameter(description = "Filter by course level", example = "") @RequestParam(required = false) CourseLevel level,
+
+                        @Parameter(description = "Filter by course averageRating (1.0 - 5.0)", example = "") @RequestParam(required = false) Double averageRating) {
                 log.info(
-                                "Admin retrieving courses with filters: status={}, categoryId={}, search={}, minPrice={}, maxPrice={}, level={}, page={}, size={}",
-                                status, categoryId, search, minPrice, maxPrice, level, page, size);
+                                "Admin retrieving courses with filters: status={}, categoryId={}, search={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}, size={}",
+                                status, categoryId, search, minPrice, maxPrice, level, averageRating, page, size);
 
                 // Parse sort parameter
                 String[] sortParts = sort.split(",");
@@ -105,6 +108,7 @@ public class AdminCourseController {
                 Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
 
                 return courseService.findCoursesForAdmin(status, categoryId, search, minPrice, maxPrice, level,
+                                averageRating,
                                 pageable);
         }
 
@@ -271,6 +275,21 @@ public class AdminCourseController {
                         log.error("Error creating role: {}", request.getName(), e);
                         return ApiResponseUtil.internalServerError("Internal server error while creating role");
                 }
+        }
+
+        // Get min and max price of all courses for filter range
+        @GetMapping("/filter-metadata")
+        @PreAuthorize("hasRole('ADMIN')")
+        @Operation(summary = "Get course filter metadata", description = "Retrieves metadata for course filtering including minimum and maximum prices of all courses. Only ADMIN users can call this API.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Course filter metadata retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = project.ktc.springboot_app.common.dto.ApiResponse.class))),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required"),
+                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseFilterMetadataResponseDto>> getCourseFilterMetadata() {
+                log.info("Admin requesting course filter metadata");
+                return adminCourseService.getCourseFilterMetadata();
         }
 
 }
