@@ -8,6 +8,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.CreateReviewDto;
 import project.ktc.springboot_app.review.dto.ReviewResponseDto;
 import project.ktc.springboot_app.review.dto.StudentReviewResponseDto;
+import project.ktc.springboot_app.review.dto.StudentReviewStatsDto;
 import project.ktc.springboot_app.review.dto.UpdateReviewDto;
 
 public interface ReviewService {
@@ -65,4 +66,11 @@ public interface ReviewService {
          */
         ResponseEntity<ApiResponse<PaginatedResponse<ReviewResponseDto>>> getCourseReviewsBySlug(String courseSlug,
                         Pageable pageable);
+
+        /**
+         * Gets review statistics for the currently authenticated student
+         *
+         * @return ResponseEntity with student review statistics
+         */
+        ResponseEntity<ApiResponse<StudentReviewStatsDto>> getStudentReviewStats();
 }

@@ -265,7 +265,8 @@ public class StripeWebhookService {
             // Send payment confirmation email asynchronously
             sendPaymentConfirmationEmail(session, courseId, userId);
             String userName = payment.getUser().getName();
-            notificationHelper.createAdminStudentPaymentNotification(userId, userName, courseId, payment.getAmount());
+            notificationHelper.createAdminStudentPaymentNotification(payment.getId(), userName, courseId,
+                    payment.getAmount());
 
         } catch (Exception e) {
             log.error("Error processing checkout session completion: {}", e.getMessage(), e);

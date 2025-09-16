@@ -1,5 +1,7 @@
 package project.ktc.springboot_app.notification.repositories;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,7 +23,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
      * @param userId the user ID
      * @return list of notifications
      */
-    List<Notification> findByUserIdOrderByCreatedAtDesc(String userId);
+    Page<Notification> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
+
+    boolean existsByIdAndUserId(String id, String userId);
 
     /**
      * Find unread notifications for a specific user

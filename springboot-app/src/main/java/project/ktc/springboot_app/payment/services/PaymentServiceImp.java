@@ -15,6 +15,7 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.payment.dto.PaymentResponseDto;
 import project.ktc.springboot_app.payment.dto.PaymentDetailResponseDto;
+import project.ktc.springboot_app.payment.dto.StudentPaymentStatsDto;
 import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.payment.repositories.PaymentRepository;
 import project.ktc.springboot_app.log.services.SystemLogHelper;
@@ -392,5 +393,43 @@ public class PaymentServiceImp implements PaymentService {
     public Optional<Payment> findCompletedPaymentByCourseIdAndUserId(String courseId, String userId) {
         log.info("Finding completed payment by course ID {} and user ID {}", courseId, userId);
         return paymentRepository.findCompletedPaymentByCourseIdAndUserId(courseId, userId);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<StudentPaymentStatsDto>> getStudentPaymentStats() {
+        try {
+            String currentUserId = SecurityUtil.getCurrentUserId();
+            log.info("Fetching payment statistics for user: {}", currentUserId);
+
+            // Get payment statistics using repository methods
+            Long totalPayments = paymentRepository.countTotalPaymentsByUserId(currentUserId);
+            BigDecimal totalAmountSpent = paymentRepository.calculateTotalAmountSpentByUserId(currentUserId);
+            Long completedPayments = paymentRepository.countCompletedPaymentsByUserId(currentUserId);
+            Long failedPayments = paymentRepository.countFailedPaymentsByUserId(currentUserId);
+
+            // Handle null values
+            long totalPaymentsValue = totalPayments != null ? totalPayments : 0L;
+            BigDecimal totalAmountSpentValue = totalAmountSpent != null ? totalAmountSpent : BigDecimal.ZERO;
+            long completedPaymentsValue = completedPayments != null ? completedPayments : 0L;
+            long failedPaymentsValue = failedPayments != null ? failedPayments : 0L;
+
+            StudentPaymentStatsDto stats = StudentPaymentStatsDto.builder()
+                    .totalPayments(totalPaymentsValue)
+                    .totalAmountSpent(totalAmountSpentValue)
+                    .completedPayments(completedPaymentsValue)
+                    .failedPayments(failedPaymentsValue)
+                    .build();
+
+            log.info(
+                    "Payment statistics retrieved successfully for user {}: Total={}, Amount=${}, Completed={}, Failed={}",
+                    currentUserId, totalPaymentsValue, totalAmountSpentValue, completedPaymentsValue,
+                    failedPaymentsValue);
+
+            return ApiResponseUtil.success(stats, "Payment statistics retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving payment statistics: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve payment statistics");
+        }
     }
 }

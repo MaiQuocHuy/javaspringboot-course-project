@@ -82,4 +82,16 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
         Page<Review> findByCourseSlugWithUser(@Param("courseSlug") String courseSlug, Pageable pageable);
 
         boolean existsByIdAndUserId(String reviewId, String userId);
+
+        /**
+         * Count total reviews by a specific user
+         */
+        @Query("SELECT COUNT(r) FROM Review r WHERE r.user.id = :userId")
+        Long countTotalReviewsByUserId(@Param("userId") String userId);
+
+        /**
+         * Calculate average rating given by a specific user
+         */
+        @Query("SELECT AVG(r.rating) FROM Review r WHERE r.user.id = :userId")
+        Double calculateAverageRatingByUserId(@Param("userId") String userId);
 }

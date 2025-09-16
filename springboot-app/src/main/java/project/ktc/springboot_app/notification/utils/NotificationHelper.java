@@ -328,14 +328,15 @@ public class NotificationHelper {
 
     /**
      * Admin Notification 4: Có đơn đăng ký instructor cần duyệt (HIGH priority)
-     * Notify users with user:READ permission when a new instructor application
+     * Notify users with instructor_application:READ permission when a new
+     * instructor application
      * needs approval
      */
-    public void createAdminInstructorApplicationNotification(String applicationId, String applicantName,
+    public void createAdminInstructorApplicationNotification(String userId, String applicantName,
             String applicantEmail) {
         // Validate inputs
-        if (applicationId == null || applicationId.trim().isEmpty()) {
-            log.error("Cannot create admin instructor application notification: applicationId is null or empty");
+        if (userId == null || userId.trim().isEmpty()) {
+            log.error("Cannot create admin instructor application notification: userId is null or empty");
             return;
         }
         if (applicantName == null || applicantName.trim().isEmpty()) {
@@ -347,19 +348,19 @@ public class NotificationHelper {
 
         String message = String.format("Đơn đăng ký giảng viên mới từ %s (%s) cần được duyệt",
                 applicantName, applicantEmail);
-        String actionUrl = "/admin/applications/" + applicationId;
+        String actionUrl = "/admin/applications/" + userId;
 
         createNotificationsForUsersWithPermission(
                 "instructor_application:READ",
                 "res-instructor-application-001",
-                applicationId,
+                userId,
                 message,
                 actionUrl,
                 NotificationPriority.HIGH);
 
         log.info(
-                "Instructor application notification created for application: {} - sent to users with user:READ permission",
-                applicationId);
+                "Instructor application notification created for user: {} - sent to users with instructor_application:READ permission",
+                userId);
     }
 
     // ===================== INSTRUCTOR NOTIFICATION METHODS =====================

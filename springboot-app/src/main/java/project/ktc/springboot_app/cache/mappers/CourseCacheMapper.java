@@ -27,10 +27,12 @@ public class CourseCacheMapper {
         CourseCacheDto.CourseCacheDtoBuilder builder = CourseCacheDto.builder()
                 .id(course.getId())
                 .title(course.getTitle())
+                .slug(course.getSlug())
                 .description(course.getDescription())
                 .price(course.getPrice())
                 .level(course.getLevel())
                 .thumbnailUrl(course.getThumbnailUrl())
+                .thumbnailId(course.getThumbnailId())
                 .isApproved(course.getIsApproved())
                 .isPublished(course.getIsPublished())
                 .isDeleted(course.getIsDeleted())
@@ -42,7 +44,8 @@ public class CourseCacheMapper {
             builder.instructorId(course.getInstructor().getId())
                     .instructorName(course.getInstructor().getName())
                     .instructorBio(course.getInstructor().getBio())
-                    .instructorThumbnailUrl(course.getInstructor().getThumbnailUrl());
+                    .instructorThumbnailUrl(course.getInstructor().getThumbnailUrl())
+                    .instructorThumbnailId(course.getInstructor().getThumbnailId());
         }
 
         // Map categories (simplified)
@@ -83,10 +86,12 @@ public class CourseCacheMapper {
         Course course = new Course();
         course.setId(cacheDto.getId());
         course.setTitle(cacheDto.getTitle());
+        course.setSlug(cacheDto.getSlug());
         course.setDescription(cacheDto.getDescription());
         course.setPrice(cacheDto.getPrice());
         course.setLevel(cacheDto.getLevel());
         course.setThumbnailUrl(cacheDto.getThumbnailUrl());
+        course.setThumbnailId(cacheDto.getThumbnailId());
         course.setIsApproved(cacheDto.getIsApproved());
         course.setIsPublished(cacheDto.getIsPublished());
         course.setIsDeleted(cacheDto.getIsDeleted());
@@ -100,6 +105,7 @@ public class CourseCacheMapper {
             instructor.setName(cacheDto.getInstructorName());
             instructor.setBio(cacheDto.getInstructorBio());
             instructor.setThumbnailUrl(cacheDto.getInstructorThumbnailUrl());
+            instructor.setThumbnailId(cacheDto.getInstructorThumbnailId());
             course.setInstructor(instructor);
         }
 
