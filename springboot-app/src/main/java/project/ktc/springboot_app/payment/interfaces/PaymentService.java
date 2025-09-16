@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.payment.dto.PaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.dto.PaymentResponseDto;
+import project.ktc.springboot_app.payment.dto.StudentPaymentStatsDto;
 import project.ktc.springboot_app.payment.entity.Payment;
 
 /**
@@ -94,4 +95,11 @@ public interface PaymentService {
      * @return
      */
     Optional<Payment> findCompletedPaymentByCourseIdAndUserId(String courseId, String userId);
+
+    /**
+     * Retrieves payment statistics for the currently authenticated student
+     * 
+     * @return ResponseEntity containing student payment statistics
+     */
+    ResponseEntity<ApiResponse<StudentPaymentStatsDto>> getStudentPaymentStats();
 }

@@ -78,5 +78,30 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
                         "WHERE p.course.id = :courseId AND p.user.id = :userId " +
                         "AND p.status = 'COMPLETED' " +
                         "ORDER BY p.createdAt DESC")
-        Optional<Payment> findCompletedPaymentByCourseIdAndUserId(@Param("courseId") String courseId, @Param("userId") String userId);
+        Optional<Payment> findCompletedPaymentByCourseIdAndUserId(@Param("courseId") String courseId,
+                        @Param("userId") String userId);
+
+        /**
+         * Count total payments made by a specific user
+         */
+        @Query("SELECT COUNT(p) FROM Payment p WHERE p.user.id = :userId")
+        Long countTotalPaymentsByUserId(@Param("userId") String userId);
+
+        /**
+         * Calculate total amount spent by a specific user (only completed payments)
+         */
+        @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.user.id = :userId AND p.status = 'COMPLETED'")
+        BigDecimal calculateTotalAmountSpentByUserId(@Param("userId") String userId);
+
+        /**
+         * Count completed payments by a specific user
+         */
+        @Query("SELECT COUNT(p) FROM Payment p WHERE p.user.id = :userId AND p.status = 'COMPLETED'")
+        Long countCompletedPaymentsByUserId(@Param("userId") String userId);
+
+        /**
+         * Count failed payments by a specific user
+         */
+        @Query("SELECT COUNT(p) FROM Payment p WHERE p.user.id = :userId AND p.status = 'FAILED'")
+        Long countFailedPaymentsByUserId(@Param("userId") String userId);
 }
