@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.user.repositories.UserRepository;
+import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
@@ -23,6 +24,7 @@ import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.entity.QuizQuestion;
 import project.ktc.springboot_app.entity.QuizResult;
 import project.ktc.springboot_app.quiz.dto.QuizScoreResponseDto;
+import project.ktc.springboot_app.quiz.dto.StudentQuizStatsDto;
 import project.ktc.springboot_app.quiz.dto.QuizScoreDetailResponseDto;
 import project.ktc.springboot_app.quiz.interfaces.StudentQuizService;
 import project.ktc.springboot_app.quiz.repositories.QuizResultRepository;
@@ -255,5 +257,46 @@ public class StudentQuizServiceImp implements StudentQuizService {
                         throw new ResourceNotFoundException("No authenticated user found");
                 }
                 return authentication.getName();
+        }
+
+        @Override
+        public ResponseEntity<ApiResponse<StudentQuizStatsDto>> getQuizStats() {
+                try {
+                        String currentUserId = SecurityUtil.getCurrentUserId();
+                        log.info("Fetching quiz statistics for user: {}", currentUserId);
+
+                        // Get quiz statistics using repository methods
+                        Long totalQuizzes = quizResultRepository.countTotalQuizzesByUserId(currentUserId);
+                        Long passedQuizzes = quizResultRepository.countPassedQuizzesByUserId(currentUserId);
+                        Long failedQuizzes = quizResultRepository.countFailedQuizzesByUserId(currentUserId);
+                        Double averageScore = quizResultRepository.calculateAverageScoreByUserId(currentUserId);
+
+                        // Handle null values
+                        long totalQuizzesValue = totalQuizzes != null ? totalQuizzes : 0L;
+                        long passedQuizzesValue = passedQuizzes != null ? passedQuizzes : 0L;
+                        long failedQuizzesValue = failedQuizzes != null ? failedQuizzes : 0L;
+                        double averageScoreValue = averageScore != null ? averageScore : 0.0;
+
+                        // Round average score to 2 decimal places
+                        BigDecimal roundedAverage = BigDecimal.valueOf(averageScoreValue)
+                                        .setScale(2, RoundingMode.HALF_UP);
+
+                        StudentQuizStatsDto stats = StudentQuizStatsDto.builder()
+                                        .totalQuizzes(totalQuizzesValue)
+                                        .passedQuizzes(passedQuizzesValue)
+                                        .failedQuizzes(failedQuizzesValue)
+                                        .averageScore(roundedAverage.doubleValue())
+                                        .build();
+
+                        log.info("Quiz statistics retrieved successfully for user {}: Total={}, Passed={}, Failed={}, Average={}",
+                                        currentUserId, totalQuizzesValue, passedQuizzesValue, failedQuizzesValue,
+                                        roundedAverage);
+
+                        return ApiResponseUtil.success(stats, "Quiz statistics retrieved successfully");
+
+                } catch (Exception e) {
+                        log.error("Error retrieving quiz statistics: {}", e.getMessage(), e);
+                        return ApiResponseUtil.internalServerError("Failed to retrieve quiz statistics");
+                }
         }
 }

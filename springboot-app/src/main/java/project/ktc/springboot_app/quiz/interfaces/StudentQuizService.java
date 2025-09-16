@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.quiz.dto.QuizScoreResponseDto;
+import project.ktc.springboot_app.quiz.dto.StudentQuizStatsDto;
 import project.ktc.springboot_app.quiz.dto.QuizScoreDetailResponseDto;
 
 public interface StudentQuizService {
@@ -26,4 +27,6 @@ public interface StudentQuizService {
      * @return Detailed quiz score with questions and answers
      */
     ResponseEntity<ApiResponse<QuizScoreDetailResponseDto>> getQuizScoreDetail(String quizResultId);
+
+    ResponseEntity<ApiResponse<StudentQuizStatsDto>> getQuizStats();
 }
