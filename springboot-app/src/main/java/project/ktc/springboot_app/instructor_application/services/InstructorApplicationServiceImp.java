@@ -87,6 +87,16 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             // Save or update instructor application
             saveInstructorApplication(currentUserId, documentUrls);
 
+            // Get user details for notification
+            User applicant = userRepository.findById(currentUserId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + currentUserId));
+
+            // Notify admin about new instructor application
+            notificationHelper.createAdminInstructorApplicationNotification(
+                    currentUserId,
+                    applicant.getName(),
+                    applicant.getEmail());
+
             // Build response
             DocumentUploadResponseDto response = DocumentUploadResponseDto.builder()
                     .userId(currentUserId)

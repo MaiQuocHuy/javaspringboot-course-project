@@ -1,6 +1,5 @@
 package project.ktc.springboot_app.notification.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import project.ktc.springboot_app.notification.entity.NotificationPriority;
 
