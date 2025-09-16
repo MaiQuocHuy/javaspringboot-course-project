@@ -180,7 +180,8 @@ public class StudentLessonServiceImp implements StudentService {
                         dto.setUserId(userId);
                         dto.setCourseId(courseId);
 
-                        certificateService.createCertificateAsync(dto);
+                        // certificateService.createCertificateAsync(dto);
+                        certificateService.createCertificate(dto);
                     }
                 }
             }
