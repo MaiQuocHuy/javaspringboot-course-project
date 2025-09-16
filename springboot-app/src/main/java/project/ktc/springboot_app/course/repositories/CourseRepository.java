@@ -116,8 +116,8 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "AND (:minPrice IS NULL OR c.price >= :minPrice) " +
                         "AND (:maxPrice IS NULL OR c.price <= :maxPrice) " +
                         "AND (:level IS NULL OR c.level = :level) " +
-                        "AND (:averageRating IS NULL OR " +
-                        "     (SELECT AVG(r.rating) FROM Review r WHERE r.course.id = c.id) >= :averageRating)")
+                        "AND (:averageRating IS NULL OR c.id IN " +
+                        "(SELECT r.course.id FROM Review r GROUP BY r.course.id HAVING AVG(r.rating) >= :averageRating))")
         Page<Course> findCoursesForAdmin(
                         @Param("isApproved") Boolean isApproved,
                         @Param("categoryId") String categoryId,

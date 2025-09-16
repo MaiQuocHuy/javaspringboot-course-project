@@ -393,8 +393,9 @@ public class CourseServiceImp implements CourseService {
                         Pageable pageable) {
 
                 log.info(
-                                "Finding courses for admin with filters: isApproved={}, categoryId={}, search={}, minPrice={}, maxPrice={}, level={}, page={}",
-                                isApproved, categoryId, search, minPrice, maxPrice, level, pageable.getPageNumber());
+                                "Finding courses for admin with filters: isApproved={}, categoryId={}, search={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}",
+                                isApproved, categoryId, search, minPrice, maxPrice, level, averageRating,
+                                pageable.getPageNumber());
 
                 // Validate price range
                 if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
