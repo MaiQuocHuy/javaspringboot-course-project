@@ -2,22 +2,31 @@ package project.ktc.springboot_app.notification.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import project.ktc.springboot_app.common.dto.ApiResponse;
+import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.exception.ResourceNotFoundException;
 import project.ktc.springboot_app.notification.dto.CreateNotificationDto;
+import project.ktc.springboot_app.notification.dto.NotificationDto;
 import project.ktc.springboot_app.notification.dto.NotificationResponseDto;
 import project.ktc.springboot_app.notification.entity.Notification;
 import project.ktc.springboot_app.notification.interfaces.NotificationService;
 import project.ktc.springboot_app.notification.repositories.NotificationRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Implementation of NotificationService
-*/
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -76,6 +85,63 @@ public class NotificationServiceImp implements NotificationService {
         return mapToResponseDto(savedNotification);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<ApiResponse<PaginatedResponse<NotificationDto>>> getNotificationsByUserId(String userId,
+            Pageable pageable) {
+
+        log.debug("Fetching notifications for userId: {} with pagination: {}", userId, pageable);
+
+        Page<Notification> notificationPage = notificationRepository
+                .findByUserIdOrderByCreatedAtDesc(userId, pageable);
+
+        // Convert Page<Notification> thành Page<NotificationDto>
+        Page<NotificationDto> notificationDtoPage = notificationPage.map(this::mapToDto);
+
+        // Sử dụng static method of() để tạo PaginatedResponse
+        PaginatedResponse<NotificationDto> paginatedResponse = PaginatedResponse.of(notificationDtoPage);
+
+        // Sử dụng static method success() để tạo ApiResponse
+        ApiResponse<PaginatedResponse<NotificationDto>> response = ApiResponse.success(
+                paginatedResponse,
+                "Notifications retrieved successfully");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> markNotificationAsRead(String id) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found with ID: " + id));
+
+        if (!notification.getIsRead()) {
+            notification.setIsRead(true);
+            notification.setReadAt(LocalDateTime.now());
+            notificationRepository.save(notification);
+            log.info("Notification with ID: {} marked as read", id);
+        } else {
+            log.info("Notification with ID: {} is already marked as read", id);
+        }
+
+        ApiResponse<Void> response = ApiResponse.success("Notification marked as read successfully");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(String id) {
+        if (!notificationRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Notification not found with ID: " + id);
+        }
+        notificationRepository.deleteById(id);
+        log.info("Notification with ID: {} deleted successfully", id);
+
+        ApiResponse<Void> response = ApiResponse.success("Notification deleted successfully");
+        return ResponseEntity.ok(response);
+    }
+
     /**
      * Map Notification entity to response DTO
      */
@@ -92,6 +158,23 @@ public class NotificationServiceImp implements NotificationService {
                 .created_at(notification.getCreatedAt())
                 .updated_at(notification.getUpdatedAt())
                 .expired_at(notification.getExpiredAt())
+                .build();
+    }
+
+    private NotificationDto mapToDto(Notification notification) {
+        return NotificationDto.builder()
+                .id(notification.getId())
+                .userId(notification.getUserId())
+                .resourceId(notification.getResourceId())
+                .entityId(notification.getEntityId())
+                .message(notification.getMessage())
+                .actionUrl(notification.getActionUrl())
+                .priority(notification.getPriority())
+                .isRead(notification.getIsRead())
+                .readAt(notification.getReadAt())
+                .expiredAt(notification.getExpiredAt())
+                .createdAt(notification.getCreatedAt())
+                .updatedAt(notification.getUpdatedAt())
                 .build();
     }
 }

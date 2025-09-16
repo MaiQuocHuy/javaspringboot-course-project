@@ -6,8 +6,6 @@ import project.ktc.springboot_app.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 /**
  * Notification entity representing system notifications for users
  */
