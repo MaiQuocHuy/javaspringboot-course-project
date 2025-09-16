@@ -30,6 +30,7 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.review.dto.ReviewResponseDto;
 import project.ktc.springboot_app.review.dto.StudentReviewResponseDto;
+import project.ktc.springboot_app.review.dto.StudentReviewStatsDto;
 import project.ktc.springboot_app.review.dto.UpdateReviewDto;
 import project.ktc.springboot_app.review.services.ReviewServiceImp;
 
@@ -153,5 +154,21 @@ public class StudentReviewController {
         log.info("=======================================");
 
         return reviewService.updateReview(reviewId, reviewDto);
+    }
+
+    /**
+     * Get review statistics for the currently authenticated student
+     */
+    @GetMapping("/review-stats")
+    @Operation(summary = "Get student review statistics", description = "Retrieve comprehensive review statistics for the authenticated student, including total reviews submitted and average rating given.")
+    @SecurityRequirement(name = "bearerAuth")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Review statistics retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or expired token"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<StudentReviewStatsDto>> getReviewStats() {
+        log.info("Fetching review statistics for authenticated student");
+        return reviewService.getStudentReviewStats();
     }
 }
