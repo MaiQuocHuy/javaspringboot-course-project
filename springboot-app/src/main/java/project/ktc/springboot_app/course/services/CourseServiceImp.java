@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +20,11 @@ import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.course.dto.CourseAdminResponseDto;
 import project.ktc.springboot_app.course.dto.CourseApprovalResponseDto;
 import project.ktc.springboot_app.course.dto.CourseDetailResponseDto;
+import project.ktc.springboot_app.course.dto.CourseFilterMetadataResponseDto;
 import project.ktc.springboot_app.course.dto.CoursePublicResponseDto;
 import project.ktc.springboot_app.course.dto.SharedCourseDataDto;
 import project.ktc.springboot_app.course.dto.cache.SharedCourseCacheDto;
+import project.ktc.springboot_app.course.dto.projection.PriceRange;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.course.interfaces.CourseService;
@@ -385,11 +389,13 @@ public class CourseServiceImp implements CourseService {
                         BigDecimal minPrice,
                         BigDecimal maxPrice,
                         CourseLevel level,
+                        Double averageRating,
                         Pageable pageable) {
 
                 log.info(
-                                "Finding courses for admin with filters: isApproved={}, categoryId={}, search={}, minPrice={}, maxPrice={}, level={}, page={}",
-                                isApproved, categoryId, search, minPrice, maxPrice, level, pageable.getPageNumber());
+                                "Finding courses for admin with filters: isApproved={}, categoryId={}, search={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}",
+                                isApproved, categoryId, search, minPrice, maxPrice, level, averageRating,
+                                pageable.getPageNumber());
 
                 // Validate price range
                 if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
@@ -397,7 +403,7 @@ public class CourseServiceImp implements CourseService {
                 }
 
                 Page<Course> coursePage = courseRepository.findCoursesForAdmin(
-                                isApproved, categoryId, search, minPrice, maxPrice, level, pageable);
+                                isApproved, categoryId, search, minPrice, maxPrice, level, averageRating, pageable);
 
                 // Load categories separately for each course to avoid N+1 problem
                 List<Course> coursesWithCategories = coursePage.getContent().stream()
@@ -920,5 +926,36 @@ public class CourseServiceImp implements CourseService {
                                 .correctAnswer(question.getCorrectAnswer())
                                 .explanation(question.getExplanation())
                                 .build();
+        }
+
+        @Override
+        @Transactional(propagation = Propagation.NOT_SUPPORTED)
+        public ResponseEntity<ApiResponse<CourseFilterMetadataResponseDto>> getCourseFilterMetadata() {
+                try {
+                        PriceRange priceRange = courseRepository.findMinAndMaxPrice();
+
+                        BigDecimal minPrice;
+                        BigDecimal maxPrice;
+
+                        if (priceRange != null) {
+                                minPrice = priceRange.getMinPrice() != null ? priceRange.getMinPrice()
+                                                : new java.math.BigDecimal("0.0");
+                                maxPrice = priceRange.getMaxPrice() != null ? priceRange.getMaxPrice()
+                                                : new java.math.BigDecimal("999.99");
+                        } else {
+                                minPrice = new java.math.BigDecimal("0.0");
+                                maxPrice = new java.math.BigDecimal("999.99");
+                        }
+
+                        CourseFilterMetadataResponseDto metadata = CourseFilterMetadataResponseDto.builder()
+                                        .minPrice(minPrice)
+                                        .maxPrice(maxPrice)
+                                        .build();
+
+                        return ApiResponseUtil.success(metadata, "Course filter metadata retrieved successfully");
+                } catch (Exception e) {
+                        log.error("Error retrieving course filter metadata", e);
+                        return ApiResponseUtil.internalServerError("Failed to retrieve course filter metadata");
+                }
         }
 }

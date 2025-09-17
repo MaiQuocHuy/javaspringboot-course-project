@@ -42,7 +42,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.lang.Collections;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.ArrayList;

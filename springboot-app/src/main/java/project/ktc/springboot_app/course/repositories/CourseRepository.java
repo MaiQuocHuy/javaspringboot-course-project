@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import project.ktc.springboot_app.course.dto.projection.PriceRange;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 import project.ktc.springboot_app.review.entity.Review;
@@ -114,7 +115,9 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "     LOWER(i.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
                         "AND (:minPrice IS NULL OR c.price >= :minPrice) " +
                         "AND (:maxPrice IS NULL OR c.price <= :maxPrice) " +
-                        "AND (:level IS NULL OR c.level = :level)")
+                        "AND (:level IS NULL OR c.level = :level) " +
+                        "AND (:averageRating IS NULL OR c.id IN " +
+                        "(SELECT r.course.id FROM Review r GROUP BY r.course.id HAVING AVG(r.rating) >= :averageRating))")
         Page<Course> findCoursesForAdmin(
                         @Param("isApproved") Boolean isApproved,
                         @Param("categoryId") String categoryId,
@@ -122,6 +125,7 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         @Param("minPrice") BigDecimal minPrice,
                         @Param("maxPrice") BigDecimal maxPrice,
                         @Param("level") CourseLevel level,
+                        @Param("averageRating") Double averageRating,
                         Pageable pageable);
 
         @Query("SELECT r FROM Review r " +
@@ -187,5 +191,9 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "JOIN l.section s " +
                         "WHERE s.course.id = :courseId AND l.content IS NOT NULL")
         Long getTotalDurationByCourseId(@Param("courseId") String courseId);
+
+        @Query("SELECT MIN(c.price) AS minPrice, MAX(c.price) AS maxPrice FROM Course c " +
+                        "WHERE c.isDeleted = false AND c.isApproved = true")
+        PriceRange findMinAndMaxPrice();
 
 }
