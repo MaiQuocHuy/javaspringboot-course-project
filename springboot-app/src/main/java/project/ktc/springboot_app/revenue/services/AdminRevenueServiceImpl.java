@@ -202,6 +202,13 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
                 .transactions(transactions)
                 .build());
           }
+        } else {
+          recentRevenues.add(MonthlyRevenueDTO.MonthlyData.builder()
+              .month(getMonthName(month))
+              .year(year)
+              .revenue(0.0)
+              .transactions(0L)
+              .build());
         }
       }
 
@@ -210,10 +217,10 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       Double latestRevenue = 0.0;
       Double previousRevenue = 0.0;
 
-      if (recentRevenues.get(2).getRevenue() != null) {
+      if (recentRevenues.size() >= 3 && recentRevenues.get(2).getRevenue() != null) {
         latestRevenue = recentRevenues.get(2).getRevenue();
       }
-      if (recentRevenues.get(1).getRevenue() != null) {
+      if (recentRevenues.size() >= 2 && recentRevenues.get(1).getRevenue() != null) {
         previousRevenue = recentRevenues.get(1).getRevenue();
       }
       growth = calculateGrowthPercentage(latestRevenue, previousRevenue);
