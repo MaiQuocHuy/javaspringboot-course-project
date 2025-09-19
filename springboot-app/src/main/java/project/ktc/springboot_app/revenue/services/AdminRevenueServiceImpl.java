@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.revenue.dto.*;
@@ -14,7 +15,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,8 +53,11 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       }
 
       // Get monthly comparison for monthly growth
+      Double monthlyGrowth = 0.0;
       List<Object[]> monthlyComparison = adminRevenueRepository.getMonthlyGrowthComparison(currentYear, previousYear);
-      Double monthlyGrowth = calculateMonthlyGrowthFromComparison(monthlyComparison);
+      if (monthlyComparison != null && !monthlyComparison.isEmpty()) {
+        monthlyGrowth = calculateMonthlyGrowthFromComparison(monthlyComparison);
+      }
 
       // Calculate yearly growth
       Double yearlyGrowth = calculateGrowthPercentage(currentYearRevenue,
@@ -305,18 +308,21 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
             .sum();
 
         for (Object[] row : categoryData) {
-          if (row == null || row.length < 4)
+          if (row == null || row.length < 4) {
             continue;
+          }
+
+          Double revenue = safeGetDouble(row[1]);
+
+          // Skip categories with no revenue
+          if (revenue == null || revenue <= 0) {
+            continue;
+          }
 
           String categoryName = (String) row[0];
-          Double revenue = safeGetDouble(row[1]);
           Long studentsCount = safeGetLong(row[2]);
           Long coursesCount = safeGetLong(row[3]);
           Double percentage = totalRevenue > 0 ? (Math.round((revenue / totalRevenue) * 100 * 100.0) / 100.0) : 0.0;
-
-          // Skip categories with no revenue
-          if (revenue <= 0)
-            continue;
 
           categories.add(PerformanceMetricsDTO.CategoryRevenue.builder()
               .category(categoryName != null ? categoryName : "Unknown")
@@ -334,35 +340,33 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
       if (isValidDataList(instructorData)) {
         for (Object[] row : instructorData) {
-          if (row == null || row.length < 6)
+          if (row == null || row.length < 6) {
             continue;
+          }
+
+          // Skip instructors with no revenue
+          Double revenue = safeGetDouble(row[4]);
+          if (revenue == null || revenue <= 0) {
+            continue;
+          }
 
           String instructorId = (String) row[0];
           String instructorName = (String) row[1];
           String instructorEmail = (String) row[2];
           Long coursesCount = safeGetLong(row[3]);
-          Double revenue = safeGetDouble(row[4]);
           Long studentsCount = safeGetLong(row[5]);
-
-          // Skip instructors with no revenue
-          if (revenue <= 0)
-            continue;
 
           instructors.add(PerformanceMetricsDTO.InstructorPerformance.builder()
               .id(instructorId != null ? instructorId : "")
               .name(instructorName != null ? instructorName : "Unknown")
               .email(instructorEmail != null ? instructorEmail : "")
-              .coursesCount(coursesCount.intValue())
+              .coursesCount(coursesCount != null ? coursesCount.intValue() : 0)
               .totalRevenue(revenue)
               .averageRating(null)
-              .totalStudents(studentsCount.intValue())
+              .totalStudents(studentsCount != null ? studentsCount.intValue() : 0)
               .build());
         }
       }
-
-      // Get safe values from repository
-      // Double avgRevenuePerUser = adminRevenueRepository.getAverageRevenuePerUser();
-      // Long totalActiveUsers = adminRevenueRepository.getTotalActiveUsers();
 
       PerformanceMetricsDTO result = PerformanceMetricsDTO.builder()
           .categoryRevenues(categories)
@@ -370,8 +374,6 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
           .topPerformingCategory(!categories.isEmpty() ? categories.get(0).getCategory() : "No Data")
           .worstPerformingCategory(
               !categories.isEmpty() ? categories.get(categories.size() - 1).getCategory() : "No Data")
-          // .averageRevenuePerUser(avgRevenuePerUser != null ? avgRevenuePerUser : 0.0)
-          // .totalActiveUsers(totalActiveUsers != null ? totalActiveUsers : 0L)
           .build();
 
       return ApiResponseUtil.success(result, "Performance metrics retrieved successfully");
@@ -387,6 +389,12 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
     log.info("Getting comparative analysis for type: {} and year: {}", comparisonType, year);
 
     try {
+      // Check if data exists for the requested year
+      if (!hasDataForYear(year)) {
+        log.warn("No data found for year: {}", year);
+        return ApiResponseUtil.notFound("No data found for year " + year);
+      }
+
       List<ComparativeAnalysisDTO.ComparisonData> comparisons = new ArrayList<>();
 
       switch (comparisonType.toLowerCase()) {
@@ -404,8 +412,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       }
 
       if (isValidDataList(comparisons)) {
-        List<ComparativeAnalysisDTO.BestWorstPeriod> bestWorstPeriods = new ArrayList<>();
-        bestWorstPeriods = getBestWorstPeriods(comparisons);
+        List<ComparativeAnalysisDTO.BestWorstPeriod> bestWorstPeriods = getBestWorstPeriods(comparisons);
 
         ComparativeAnalysisDTO result = ComparativeAnalysisDTO.builder()
             .comparisonType(comparisonType)
@@ -437,8 +444,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       // Check if data exists for the requested year
       if (!hasDataForYear(year)) {
         log.warn("No data found for year: {}", year);
-        SeasonalHeatmapDTO emptyHeatmap = createEmptySeasonalHeatmap(year);
-        return ApiResponseUtil.success(emptyHeatmap, "No data found for year " + year);
+        return ApiResponseUtil.notFound("No data found for year " + year);
       }
 
       List<Object[]> seasonalData = adminRevenueRepository.getSeasonalDailyRevenue(year);
@@ -480,25 +486,8 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       return ApiResponseUtil.success(result, "Seasonal heatmap data retrieved successfully");
     } catch (Exception e) {
       log.error("Error getting seasonal heatmap for year {}: {}", year, e.getMessage(), e);
-      SeasonalHeatmapDTO emptyHeatmap = createEmptySeasonalHeatmap(year);
-      return ApiResponseUtil.success(emptyHeatmap, "Error retrieving seasonal heatmap: " + e.getMessage());
+      return ApiResponseUtil.internalServerError("Error retrieving seasonal heatmap: " + e.getMessage());
     }
-  }
-
-  /**
-   * Create empty seasonal heatmap when no data is available
-   */
-  private SeasonalHeatmapDTO createEmptySeasonalHeatmap(Integer year) {
-    List<SeasonalHeatmapDTO.SeasonalData> seasons = new ArrayList<>();
-    seasons.add(createSeasonData("Spring", "March-May", 0.0));
-    seasons.add(createSeasonData("Summer", "June-August", 0.0));
-    seasons.add(createSeasonData("Fall", "September-November", 0.0));
-    seasons.add(createSeasonData("Winter", "December-February", 0.0));
-
-    return SeasonalHeatmapDTO.builder()
-        .year(year)
-        .dailyData(seasons)
-        .build();
   }
 
   @Override
@@ -515,28 +504,17 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
     }
   }
 
-  /**
-   * Get available months with data for a specific year
-   * 
-   * @param year the year to check for available months
-   * @return list of month numbers (1-12) that have data
-   */
-  public List<Integer> getAvailableMonths(Integer year) {
-    log.info("Getting available months with revenue data for year: {}", year);
-
-    try {
-      return getAvailableMonthsForYear(year);
-    } catch (Exception e) {
-      log.error("Error getting available months for year {}: {}", year, e.getMessage(), e);
-      throw new RuntimeException("Failed to get available months", e);
-    }
-  }
-
   @Override
   public ResponseEntity<ApiResponse<Object>> getRevenueSummary(Integer year) {
     Map<String, Object> summary = new HashMap<>();
 
     try {
+      // Check if data exists for the requested year
+      if (!hasDataForYear(year)) {
+        log.warn("No data found for year: {}", year);
+        return ApiResponseUtil.notFound("No data found for year " + year);
+      }
+
       // Get quick stats for overview
       ResponseEntity<ApiResponse<StatisticsDTO>> statisticsResponse = getStatistics();
       ApiResponse<StatisticsDTO> statisticsBody = statisticsResponse.getBody();
@@ -580,26 +558,6 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
   private boolean hasDataForYear(Integer year) {
     List<Integer> availableYears = adminRevenueRepository.getDistinctPaymentYears();
     return availableYears != null && availableYears.contains(year);
-  }
-
-  /**
-   * Get available months with data for a specific year
-   */
-  private List<Integer> getAvailableMonthsForYear(Integer year) {
-    if (!hasDataForYear(year)) {
-      return new ArrayList<>();
-    }
-
-    List<Object[]> monthlyData = adminRevenueRepository.getMonthlyRevenueForYear(year);
-    if (monthlyData == null || monthlyData.isEmpty()) {
-      return new ArrayList<>();
-    }
-
-    return monthlyData.stream()
-        .map(row -> (Integer) row[1]) // month is at index 1
-        .distinct()
-        .sorted()
-        .collect(Collectors.toList());
   }
 
   /**
@@ -648,6 +606,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
     return data != null && !data.isEmpty();
   }
 
+  // Get monthly comparison data for a specific year
   private List<ComparativeAnalysisDTO.ComparisonData> getMonthlyComparison(Integer year) {
     try {
       // Check if data exists for both years
@@ -656,7 +615,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
       if (!currentYearExists && !previousYearExists) {
         log.warn("No data found for years {} or {}", year, year - 1);
-        return createEmptyMonthlyComparison();
+        return Collections.emptyList();
       }
 
       List<Object[]> currentYearData = currentYearExists ? adminRevenueRepository.getMonthlyRevenueForYear(year)
@@ -725,28 +684,11 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       return comparisons;
     } catch (Exception e) {
       log.error("Error getting monthly comparison for year {}: {}", year, e.getMessage(), e);
-      return createEmptyMonthlyComparison();
+      return Collections.emptyList();
     }
   }
 
-  /**
-   * Create empty monthly comparison when no data is available
-   */
-  private List<ComparativeAnalysisDTO.ComparisonData> createEmptyMonthlyComparison() {
-    List<ComparativeAnalysisDTO.ComparisonData> comparisons = new ArrayList<>();
-    for (int month = 1; month <= 12; month++) {
-      comparisons.add(ComparativeAnalysisDTO.ComparisonData.builder()
-          .period(getMonthName(month))
-          .current(0.0)
-          .previous(0.0)
-          .growth(0.0)
-          // .transactions(0L)
-          // .previousTransactions(0L)
-          .build());
-    }
-    return comparisons;
-  }
-
+  // Get quarterly comparison data for a specific year
   private List<ComparativeAnalysisDTO.ComparisonData> getQuarterlyComparison(Integer year) {
     try {
       // Check if data exists for both years
@@ -755,7 +697,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
       if (!currentYearExists && !previousYearExists) {
         log.warn("No data found for years {} or {}", year, year - 1);
-        return createEmptyQuarterlyComparison();
+        return Collections.emptyList();
       }
 
       List<Object[]> currentYearData = currentYearExists ? adminRevenueRepository.getQuarterlyRevenueForYear(year)
@@ -823,43 +765,24 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       return comparisons;
     } catch (Exception e) {
       log.error("Error getting quarterly comparison for year {}: {}", year, e.getMessage(), e);
-      return createEmptyQuarterlyComparison();
+      return Collections.emptyList();
     }
   }
 
-  /**
-   * Create empty quarterly comparison when no data is available
-   */
-  private List<ComparativeAnalysisDTO.ComparisonData> createEmptyQuarterlyComparison() {
-    List<ComparativeAnalysisDTO.ComparisonData> comparisons = new ArrayList<>();
-    for (int quarter = 1; quarter <= 4; quarter++) {
-      comparisons.add(ComparativeAnalysisDTO.ComparisonData.builder()
-          .period("Q" + quarter)
-          .current(0.0)
-          .previous(0.0)
-          .growth(0.0)
-          // .transactions(0L)
-          // .previousTransactions(0L)
-          .build());
-    }
-    return comparisons;
-  }
-
+  // Get yearly comparison data
   private List<ComparativeAnalysisDTO.ComparisonData> getYearlyComparison() {
     try {
       List<ComparativeAnalysisDTO.ComparisonData> yearly = new ArrayList<>();
       List<Integer> availableYears = adminRevenueRepository.getDistinctPaymentYears();
 
-      int actualCurrentYear = Year.now().getValue();
-
       if (!isValidDataList(availableYears)) {
         log.warn("No available years with payment data found");
-        return createEmptyYearlyComparison(actualCurrentYear);
+        return Collections.emptyList();
       }
 
-      int maxYear = availableYears.size();
-      for (int i = maxYear; i > 0; i--) {
-        int currentYear = actualCurrentYear - i + 1;
+      int numOfYears = availableYears.size();
+      for (int i = numOfYears; i > 0; i--) {
+        int currentYear = availableYears.get(i - 1);
         int previousYear = currentYear - 1;
 
         Double currentYearRevenue = 0.0;
@@ -886,8 +809,6 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
             .current(currentYearRevenue)
             .previous(previousYearRevenue)
             .growth(growth)
-            // .transactions(0L)
-            // .previousTransactions(0L)
             .build());
       }
 
@@ -895,27 +816,8 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
     } catch (Exception e) {
       int currentYear = Year.now().getValue();
       log.error("Error getting yearly comparison for year {}: {}", currentYear, e.getMessage(), e);
-      return createEmptyYearlyComparison(currentYear);
+      return Collections.emptyList();
     }
-  }
-
-  /**
-   * Create empty yearly comparison when no data is available
-   */
-  private List<ComparativeAnalysisDTO.ComparisonData> createEmptyYearlyComparison(Integer startYear) {
-    List<ComparativeAnalysisDTO.ComparisonData> yearly = new ArrayList<>();
-    for (int i = 0; i < 5; i++) {
-      int currentYear = startYear - i;
-      yearly.add(ComparativeAnalysisDTO.ComparisonData.builder()
-          .period(String.valueOf(currentYear))
-          .current(0.0)
-          .previous(0.0)
-          .growth(0.0)
-          // .transactions(0L)
-          // .previousTransactions(0L)
-          .build());
-    }
-    return yearly;
   }
 
   // Get best and worst performing periods from comparisons
@@ -979,10 +881,6 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
   }
 
   private Double calculateMonthlyGrowthFromComparison(List<Object[]> monthlyComparison) {
-    if (!isValidDataList(monthlyComparison)) {
-      return 0.0;
-    }
-
     // Get the latest month with data for comparison
     int currentMonth = LocalDate.now().getMonthValue();
     Double currentMonthRevenue = 0.0;

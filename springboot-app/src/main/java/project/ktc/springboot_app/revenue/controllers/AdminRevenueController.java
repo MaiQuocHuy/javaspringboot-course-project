@@ -56,7 +56,7 @@ public class AdminRevenueController {
       @ApiResponse(responseCode = "500", description = "Internal server error")
   })
   public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<MonthlyRevenueDTO>> getMonthlyRevenue(
-      @Parameter(description = "Year for revenue data (e.g., 2025)", example = "2025") @RequestParam(required = false, defaultValue = "2024") Integer year) {
+      @Parameter(description = "Year for revenue data (e.g., 2025)", example = "2025") @RequestParam(required = false, defaultValue = "2025") Integer year) {
     return adminRevenueService.getMonthlyRevenue(year);
   }
 
@@ -121,7 +121,7 @@ public class AdminRevenueController {
       @ApiResponse(responseCode = "500", description = "Internal server error")
   })
   public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<SeasonalHeatmapDTO>> getSeasonalHeatmap(
-      @Parameter(description = "Year for seasonal analysis", example = "2024") @RequestParam(required = false, defaultValue = "2024") Integer year) {
+      @Parameter(description = "Year for seasonal analysis", example = "2025") @RequestParam(required = false, defaultValue = "2025") Integer year) {
     return adminRevenueService.getSeasonalHeatmap(year);
   }
 
@@ -145,7 +145,7 @@ public class AdminRevenueController {
       @ApiResponse(responseCode = "500", description = "Internal server error")
   })
   public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Object>> getRevenueSummary(
-      @Parameter(description = "Year for summary data", example = "2024") @RequestParam(required = false, defaultValue = "2024") Integer year) {
+      @Parameter(description = "Year for summary data", example = "2025") @RequestParam(required = false, defaultValue = "2025") Integer year) {
     return adminRevenueService.getRevenueSummary(year);
   }
 
