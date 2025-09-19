@@ -226,7 +226,7 @@ public class PaymentDataGenerationServiceImpl implements PaymentDataGenerationSe
     payment.setStatus(Payment.PaymentStatus.COMPLETED);
     payment.setPaymentMethod("stripe");
     payment.setPaidAt(paymentDateTime);
-    payment.setSessionId(System.nanoTime() + "_" + random.nextInt(10000));
+    payment.setSessionId(java.util.UUID.randomUUID().toString());
 
     return payment;
   }

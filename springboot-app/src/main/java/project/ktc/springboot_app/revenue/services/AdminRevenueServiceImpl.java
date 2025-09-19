@@ -753,7 +753,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
         prevTransactions = prevTransactions != null ? prevTransactions : 0L;
 
         comparisons.add(ComparativeAnalysisDTO.ComparisonData.builder()
-            .period("Quater" + quarter)
+            .period("Quarter" + quarter)
             .current(current)
             .previous(previous)
             .growth(growth)

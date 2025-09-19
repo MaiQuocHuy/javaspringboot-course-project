@@ -165,7 +165,8 @@ public class AdminRevenueController {
           "Sample payment data generated successfully"));
     } else {
       return ResponseEntity
-          .ok(project.ktc.springboot_app.common.dto.ApiResponse.success(response, response.getMessage()));
+          .internalServerError()
+          .body(project.ktc.springboot_app.common.dto.ApiResponse.error(500, response.getMessage()));
     }
   }
 
