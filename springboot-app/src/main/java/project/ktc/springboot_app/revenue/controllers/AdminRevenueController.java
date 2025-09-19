@@ -60,6 +60,18 @@ public class AdminRevenueController {
     return adminRevenueService.getMonthlyRevenue(year);
   }
 
+  @GetMapping("/recent")
+  @Operation(summary = "Get recent revenue data", description = "Retrieves detailed the most recent 3 months revenue breakdown for a specific year. Includes monthly totals, growth rates, and daily breakdowns.", security = @SecurityRequirement(name = "bearerAuth"))
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Successfully retrieved recent revenue data"),
+      @ApiResponse(responseCode = "400", description = "Invalid year parameter"),
+      @ApiResponse(responseCode = "403", description = "Access denied - Admin role required"),
+      @ApiResponse(responseCode = "500", description = "Internal server error")
+  })
+  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<MonthlyRevenueDTO.RecentMonthlyData>> getRecentRevenue() {
+    return adminRevenueService.getRecentRevenues();
+  }
+
   @GetMapping("/daily")
   @Operation(summary = "Get daily revenue data", description = "Retrieves detailed daily revenue breakdown for a specific month and year. Provides granular day-by-day revenue analysis.", security = @SecurityRequirement(name = "bearerAuth"))
   @ApiResponses(value = {

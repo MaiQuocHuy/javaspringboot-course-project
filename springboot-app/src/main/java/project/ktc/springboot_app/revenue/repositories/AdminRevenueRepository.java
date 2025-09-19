@@ -131,6 +131,19 @@ public interface AdminRevenueRepository extends JpaRepository<Payment, String> {
         List<Object[]> getMonthlyRevenueForYear(@Param("year") Integer year);
 
         /**
+         * Get monthly revenue data for a specific year
+         */
+        @Query("SELECT YEAR(p.paidAt) as year, MONTH(p.paidAt) as month, " +
+                        "COALESCE(SUM(p.amount * 0.3), 0.0) as revenue, " +
+                        "COUNT(p) as transactions " +
+                        "FROM Payment p " +
+                        "WHERE p.status = 'COMPLETED' " +
+                        "AND YEAR(p.paidAt) = :year AND MONTH(p.paidAt) = :month " +
+                        "GROUP BY YEAR(p.paidAt), MONTH(p.paidAt) " +
+                        "ORDER BY MONTH(p.paidAt)")
+        List<Object[]> getRecentRevenueForYear(@Param("year") Integer year, @Param("month") Integer month);
+
+        /**
          * Get daily revenue data for a specific month and year
          */
         @Query("SELECT DATE(p.paidAt) as date, " +
