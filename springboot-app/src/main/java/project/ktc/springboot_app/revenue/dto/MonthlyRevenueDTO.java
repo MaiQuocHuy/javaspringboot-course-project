@@ -28,6 +28,15 @@ public class MonthlyRevenueDTO {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  public static class RecentMonthlyData {
+    private List<MonthlyData> recentRevenues;
+    private Double growth;
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
   public static class DailyData {
     private String date;
     private Double revenue;

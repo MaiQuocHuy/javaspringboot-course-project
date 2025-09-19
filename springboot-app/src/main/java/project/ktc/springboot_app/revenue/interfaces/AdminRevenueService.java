@@ -18,6 +18,11 @@ public interface AdminRevenueService {
   ResponseEntity<ApiResponse<MonthlyRevenueDTO>> getMonthlyRevenue(Integer year);
 
   /**
+   * Get recent revenue (last 3 months) data for a specific year
+   */
+  ResponseEntity<ApiResponse<MonthlyRevenueDTO.RecentMonthlyData>> getRecentRevenues();
+
+  /**
    * Get daily revenue data for a specific month and year
    */
   ResponseEntity<ApiResponse<List<MonthlyRevenueDTO.DailyData>>> getDailysRevenue(Integer year, Integer month);

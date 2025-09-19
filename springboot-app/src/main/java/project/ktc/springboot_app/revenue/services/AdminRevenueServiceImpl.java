@@ -164,6 +164,72 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
     }
   }
 
+  // Get recent revenue data for a specific year
+  @Override
+  public ResponseEntity<ApiResponse<MonthlyRevenueDTO.RecentMonthlyData>> getRecentRevenues() {
+    try {
+      int currentYear = LocalDate.now().getYear();
+      int currentMonth = LocalDate.now().getMonthValue();
+
+      List<MonthlyRevenueDTO.MonthlyData> recentRevenues = new ArrayList<>();
+
+      // Calculate recent 3 months including current month
+      for (int i = 3; i > 0; i--) {
+        int month = currentMonth - i + 1;
+        int year = currentYear;
+
+        if (month <= 0) {
+          month += 12;
+          year -= 1;
+        }
+
+        List<Object[]> recentRevenueData = adminRevenueRepository.getRecentRevenueForYear(year, month);
+
+        if (isValidDataList(recentRevenueData)) {
+          for (Object[] row : recentRevenueData) {
+            if (row == null || row.length < 4)
+              continue;
+
+            Integer yearVal = safeGetInteger(row[0]);
+            Integer monthVal = safeGetInteger(row[1]);
+            Double revenue = safeGetDouble(row[2]);
+            Long transactions = safeGetLong(row[3]);
+
+            recentRevenues.add(MonthlyRevenueDTO.MonthlyData.builder()
+                .month(getMonthName(monthVal))
+                .year(yearVal)
+                .revenue(revenue)
+                .transactions(transactions)
+                .build());
+          }
+        }
+      }
+
+      // Calculate growth between the most recent month and the previous month
+      Double growth = 0.0;
+      Double latestRevenue = 0.0;
+      Double previousRevenue = 0.0;
+
+      if (recentRevenues.get(2).getRevenue() != null) {
+        latestRevenue = recentRevenues.get(2).getRevenue();
+      }
+      if (recentRevenues.get(1).getRevenue() != null) {
+        previousRevenue = recentRevenues.get(1).getRevenue();
+      }
+      growth = calculateGrowthPercentage(latestRevenue, previousRevenue);
+
+      MonthlyRevenueDTO.RecentMonthlyData recentMonthlyData = MonthlyRevenueDTO.RecentMonthlyData.builder()
+          .recentRevenues(recentRevenues)
+          .growth(growth)
+          .build();
+
+      return ApiResponseUtil.success(recentMonthlyData, "Recent monthly revenue data retrieved successfully");
+    } catch (Exception e) {
+      log.error("Error getting recent revenues: {}", e.getMessage(), e);
+      return ApiResponseUtil.internalServerError("Failed to get recent revenues: " + e.getMessage());
+    }
+  }
+
   @Override
   public ResponseEntity<ApiResponse<List<MonthlyRevenueDTO.DailyData>>> getDailysRevenue(Integer year, Integer month) {
     log.info("Getting daily revenue for {}/{}", month, year);
