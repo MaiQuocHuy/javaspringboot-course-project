@@ -20,7 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@Tag(name = "Instructor's Enrolled Student Management API", description = "Manage students enrolled in instructor's courses")
+@Tag(name = "Instructor's Enrolled Student Management", description = "Manage students enrolled in instructor's courses")
 @RestController
 @PreAuthorize("hasRole('INSTRUCTOR')")
 @RequiredArgsConstructor
@@ -32,7 +32,8 @@ public class InstructorStudentController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Quiz scores retrieved successfully"),
       @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-      @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+      @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+      @ApiResponse(responseCode = "500", description = "Internal server error")
   })
   @GetMapping
   public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<InstructorStudentDto>>> getEnrolledStudents(
@@ -42,6 +43,12 @@ public class InstructorStudentController {
 
   @GetMapping("/{studentId}")
   @Operation(summary = "Get student details", description = "Retrieve details of a specific student", security = @SecurityRequirement(name = "bearerAuth"))
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Quiz scores retrieved successfully"),
+      @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+      @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+      @ApiResponse(responseCode = "500", description = "Internal server error")
+  })
   public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<InstructorStudentDetailsDto>> getEnrolledStudentDetails(
       @PathVariable String studentId,
       @PageableDefault(size = 10, sort = "completedAt,desc", page = 0) Pageable pageable) {

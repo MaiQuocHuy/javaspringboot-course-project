@@ -18,7 +18,7 @@ import project.ktc.springboot_app.quiz.dto.QuizScoreDetailResponseDto;
 import project.ktc.springboot_app.quiz.dto.QuizScoreResponseDto;
 import project.ktc.springboot_app.quiz.interfaces.InstructorQuizService;
 
-@Tag(name = "Instructor's Enrolled Student's Quiz Scores Management API", description = "Get quiz scores for students enrolled in instructor's courses")
+@Tag(name = "Instructor's Enrolled Student's Quiz Scores Management", description = "Get quiz scores for students enrolled in instructor's courses")
 @RestController
 @PreAuthorize("hasRole('INSTRUCTOR')")
 @RequestMapping("/api/instructor/enrolled-students/{studentId}")
@@ -27,13 +27,14 @@ public class InstructorQuizController {
 
     private final InstructorQuizService instructorQuizService;
 
+    @GetMapping("/quiz-scores")
     @Operation(summary = "Get enrolled student's quiz scores", description = "Retrieves the quiz scores for all completed quizzes in courses the student is enrolled in")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Quiz scores retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/quiz-scores")
     public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<QuizScoreResponseDto>>> getQuizScores(
             @PathVariable String studentId,
             @RequestParam(defaultValue = "0") int page,
@@ -61,15 +62,15 @@ public class InstructorQuizController {
         return Sort.by(direction, property);
     }
 
+    @GetMapping("/quiz-scores/{quizResultId}")
     @Operation(summary = "Get quiz score details", description = "Retrieves detailed information about a specific quiz score for enrolled student")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Quiz score details retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
             @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
-            @ApiResponse(responseCode = "404", description = "Quiz result not found or access denied")
+            @ApiResponse(responseCode = "404", description = "Quiz result not found or access denied"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-
-    @GetMapping("/quiz-scores/{quizResultId}")
     public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<QuizScoreDetailResponseDto>> getQuizScoreDetail(
             @PathVariable String studentId, @PathVariable String quizResultId) {
 
