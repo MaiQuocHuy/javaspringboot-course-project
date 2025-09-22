@@ -265,7 +265,8 @@ public class StripeWebhookService {
             // Send payment confirmation email asynchronously
             sendPaymentConfirmationEmail(session, courseId, userId);
             String userName = payment.getUser().getName();
-            notificationHelper.createAdminStudentPaymentNotification(payment.getId(), userName, courseId,
+            notificationHelper.createAdminStudentPaymentNotification(payment.getId(), userName,
+                    payment.getCourse().getTitle(),
                     payment.getAmount());
 
         } catch (Exception e) {
