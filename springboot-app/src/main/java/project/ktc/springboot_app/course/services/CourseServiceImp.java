@@ -339,6 +339,11 @@ public class CourseServiceImp implements CourseService {
                                 CourseDetailResponseDto.class);
                 if (cachedCourse != null) {
                         log.info("📋 Cache hit for course slug: {}", slug);
+                        // Always recalculate user-specific enrollment status
+                        Boolean isEnrolled = getCurrentUserEnrollmentStatus(cachedCourse.getId());
+                        cachedCourse.setIsEnrolled(isEnrolled);
+                        log.info("🔄 Updated enrollment status for cached course: {} -> isEnrolled: {}",
+                                        cachedCourse.getId(), isEnrolled);
                         return ApiResponseUtil.success(cachedCourse, "Course details retrieved successfully");
                 }
 
@@ -513,7 +518,15 @@ public class CourseServiceImp implements CourseService {
                                         && !"anonymousUser".equals(authentication.getPrincipal())) {
 
                                 User currentUser = (User) authentication.getPrincipal();
-                                return courseRepository.isUserEnrolledInCourse(courseId, currentUser.getId());
+                                log.info("Checking enrollment status - Course ID: {}, User ID: {}", courseId,
+                                                currentUser.getId());
+                                // Use EnrollmentRepository for consistency with enrollment logic
+                                Boolean isEnrolled = enrollmentRepository.existsByUserIdAndCourseId(currentUser.getId(),
+                                                courseId);
+                                log.info("Enrollment status result: {}", isEnrolled);
+                                return isEnrolled;
+                        } else {
+                                log.warn("User not authenticated or anonymous user");
                         }
                 } catch (Exception e) {
                         log.warn("Could not determine enrollment status: {}", e.getMessage());
