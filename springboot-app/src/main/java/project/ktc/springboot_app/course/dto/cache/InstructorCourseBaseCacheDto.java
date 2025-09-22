@@ -38,6 +38,8 @@ public class InstructorCourseBaseCacheDto implements Serializable {
 
     // Review status information
     private CourseReviewStatus.ReviewStatus status;
+    private String statusReview; // From course_review_status_history
+    private String reason; // From course_review_status_history
 
     // Categories (simplified for cache)
     private List<CategoryCacheDto> categories;

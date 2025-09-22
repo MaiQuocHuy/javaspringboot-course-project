@@ -285,9 +285,14 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             List<CourseDashboardResponseDto> courseResponses) {
 
         try {
-            // Convert courses to base cache DTOs
+            // Convert courses to base cache DTOs with review status information
             List<InstructorCourseBaseCacheDto> baseCacheDtos = coursePage.getContent().stream()
-                    .map(InstructorCoursesCacheMapper::toBaseCacheDto)
+                    .map(course -> {
+                        // Get review status info for each course
+                        ReviewStatusInfo reviewInfo = getReviewStatusInfo(course.getId());
+                        return InstructorCoursesCacheMapper.toBaseCacheDtoWithReviewInfo(
+                                course, reviewInfo.getStatusReview(), reviewInfo.getReason());
+                    })
                     .collect(Collectors.toList());
 
             // Create paginated base response
