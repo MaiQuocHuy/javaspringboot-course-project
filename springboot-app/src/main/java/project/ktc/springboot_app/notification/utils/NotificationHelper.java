@@ -42,7 +42,7 @@ public class NotificationHelper {
                 .user_id(userId)
                 .resource_id("res-payment-001")
                 .entity_id(paymentId)
-                .message("Thanh toán thành công cho khóa học '" + courseName + "'")
+                .message("Payment successful for course '" + courseName + "'")
                 .action_url(courseUrl)
                 .priority(NotificationPriority.HIGH)
                 .expired_at(LocalDateTime.now().plusDays(30))
@@ -61,7 +61,7 @@ public class NotificationHelper {
                 .user_id(userId)
                 .resource_id("res-enrollment-001")
                 .entity_id(enrollmentId)
-                .message("Bạn đã đăng ký thành công khóa học '" + courseName + "'")
+                .message("You have successfully enrolled in course '" + courseName + "'")
                 .action_url(courseUrl)
                 .priority(NotificationPriority.MEDIUM)
                 .expired_at(LocalDateTime.now().plusDays(30))
@@ -80,7 +80,7 @@ public class NotificationHelper {
                 .user_id(userId)
                 .resource_id("res-course-001")
                 .entity_id(certificateId)
-                .message("Chúc mừng! Bạn đã hoàn thành khóa học '" + courseName + "' và nhận được chứng chỉ")
+                .message("Congratulations! You have completed course '" + courseName + "' and received a certificate")
                 .action_url(certificateUrl)
                 .priority(NotificationPriority.HIGH)
                 .expired_at(LocalDateTime.now().plusDays(90))
@@ -96,8 +96,8 @@ public class NotificationHelper {
             String instructorId, String courseId, String courseName, String courseUrl, boolean approved) {
 
         String message = approved
-                ? "Khóa học '" + courseName + "' của bạn đã được phê duyệt"
-                : "Khóa học '" + courseName + "' của bạn cần chỉnh sửa thêm";
+                ? "Your course '" + courseName + "' has been approved"
+                : "Your course '" + courseName + "' needs additional modifications";
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
                 .user_id(instructorId)
@@ -119,9 +119,9 @@ public class NotificationHelper {
             String userId, String refundId, String courseName, String refundUrl, String status) {
 
         String message = switch (status.toLowerCase()) {
-            case "approved" -> "Yêu cầu hoàn tiền cho khóa học '" + courseName + "' đã được chấp nhận";
-            case "rejected" -> "Yêu cầu hoàn tiền cho khóa học '" + courseName + "' đã bị từ chối";
-            default -> "Trạng thái yêu cầu hoàn tiền cho khóa học '" + courseName + "' đã được cập nhật";
+            case "approved" -> "Refund request for course '" + courseName + "' has been approved";
+            case "rejected" -> "Refund request for course '" + courseName + "' has been rejected";
+            default -> "Refund request status for course '" + courseName + "' has been updated";
         };
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
@@ -233,7 +233,7 @@ public class NotificationHelper {
             courseName = "Unknown Course";
         }
 
-        String message = String.format("Sinh viên %s đã thanh toán thành công %s cho khóa học '%s'",
+        String message = String.format("Student %s has successfully paid %s for course '%s'",
                 studentName, amount, courseName);
         String actionUrl = "/admin/payments/" + paymentId;
 
@@ -275,7 +275,7 @@ public class NotificationHelper {
             newStatus = "Unknown";
         }
 
-        String message = String.format("Thanh toán của sinh viên %s cho khóa học '%s' đã thay đổi từ %s thành %s",
+        String message = String.format("Payment for student %s for course '%s' has changed from %s to %s",
                 studentName, courseName, oldStatus, newStatus);
         String actionUrl = "/admin/payments/" + paymentId;
 
@@ -310,7 +310,7 @@ public class NotificationHelper {
             instructorName = "Unknown Instructor";
         }
 
-        String message = String.format("Khóa học mới '%s' của giảng viên %s cần được duyệt",
+        String message = String.format("New course '%s' by instructor %s needs approval",
                 courseName, instructorName);
         String actionUrl = "/admin/courses/review-course/" + courseId;
 
@@ -346,7 +346,7 @@ public class NotificationHelper {
             applicantEmail = "unknown@email.com";
         }
 
-        String message = String.format("Đơn đăng ký giảng viên mới từ %s (%s) cần được duyệt",
+        String message = String.format("New instructor application from %s (%s) needs approval",
                 applicantName, applicantEmail);
         String actionUrl = "/admin/applications/" + userId;
 
@@ -388,7 +388,7 @@ public class NotificationHelper {
             courseUrl = "/instructor/courses/" + courseId;
         }
 
-        String message = String.format("🎉 Chúc mừng! Khóa học '%s' của bạn đã được phê duyệt và có thể xuất bản",
+        String message = String.format("🎉 Congratulations! Your course '%s' has been approved and can be published",
                 courseName);
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
@@ -428,10 +428,11 @@ public class NotificationHelper {
             courseUrl = "/instructor/courses/" + courseId;
         }
         if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
-            rejectionReason = "Vui lòng xem chi tiết trong hệ thống";
+            rejectionReason = "Please check details in the system";
         }
 
-        String message = String.format("❌ Khóa học '%s' của bạn cần chỉnh sửa. Lý do: %s", courseName, rejectionReason);
+        String message = String.format("❌ Your course '%s' needs modifications. Reason: %s", courseName,
+                rejectionReason);
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
                 .user_id(instructorId)
@@ -468,13 +469,13 @@ public class NotificationHelper {
             courseName = "Unknown Course";
         }
         if (studentName == null || studentName.trim().isEmpty()) {
-            studentName = "Một học viên";
+            studentName = "A student";
         }
         if (enrollmentId == null || enrollmentId.trim().isEmpty()) {
             enrollmentId = "unknown";
         }
 
-        String message = String.format("📚 %s vừa đăng ký khóa học '%s' của bạn", studentName, courseName);
+        String message = String.format("📚 %s has just enrolled in your course '%s'", studentName, courseName);
         String actionUrl = "/instructor/students/" + studentId;
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
@@ -513,7 +514,7 @@ public class NotificationHelper {
                     .failedFuture(new IllegalArgumentException("Application ID cannot be null or empty"));
         }
 
-        String message = "🎉 Chúc mừng! Đơn đăng ký làm giảng viên của bạn đã được phê duyệt. Bây giờ bạn có thể tạo và quản lý khóa học.";
+        String message = "🎉 Congratulations! Your instructor application has been approved. You can now create and manage courses.";
         String actionUrl = "/settings?tab=application";
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
@@ -550,11 +551,11 @@ public class NotificationHelper {
                     .failedFuture(new IllegalArgumentException("Application ID cannot be null or empty"));
         }
         if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
-            rejectionReason = "Vui lòng xem chi tiết trong hệ thống hoặc liên hệ admin để biết thêm thông tin";
+            rejectionReason = "Please check details in the system or contact admin for more information";
         }
 
         String message = String.format(
-                "❌ Đơn đăng ký làm giảng viên của bạn đã bị từ chối. Lý do: %s. Bạn có thể nộp đơn mới sau 3 ngày.",
+                "❌ Your instructor application has been rejected. Reason: %s. You can submit a new application after 3 days.",
                 rejectionReason);
         String actionUrl = "/settings?tab=application";
 
