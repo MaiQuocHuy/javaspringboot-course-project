@@ -19,6 +19,8 @@ public class InstructorCoursesCacheMapper {
 
     /**
      * Converts Course entity to InstructorCourseBaseCacheDto for Redis storage
+     * Note: statusReview and reason should be set separately via
+     * updateCacheWithReviewInfo()
      */
     public static InstructorCourseBaseCacheDto toBaseCacheDto(Course course) {
         if (course == null) {
@@ -36,7 +38,9 @@ public class InstructorCoursesCacheMapper {
                 .isApproved(course.getIsApproved())
                 .isPublished(course.getIsPublished())
                 .createdAt(course.getCreatedAt())
-                .updatedAt(course.getUpdatedAt());
+                .updatedAt(course.getUpdatedAt())
+                .statusReview(null) // Will be set by service from course_review_status_history
+                .reason(null); // Will be set by service from course_review_status_history
 
         // Map categories (simplified for cache)
         if (course.getCategories() != null) {
@@ -47,6 +51,20 @@ public class InstructorCoursesCacheMapper {
         }
 
         return builder.build();
+    }
+
+    /**
+     * Converts Course entity to InstructorCourseBaseCacheDto for Redis storage
+     * with review status information
+     */
+    public static InstructorCourseBaseCacheDto toBaseCacheDtoWithReviewInfo(Course course, String statusReview,
+            String reason) {
+        InstructorCourseBaseCacheDto baseDto = toBaseCacheDto(course);
+        if (baseDto != null) {
+            baseDto.setStatusReview(statusReview);
+            baseDto.setReason(reason);
+        }
+        return baseDto;
     }
 
     /**
@@ -116,8 +134,8 @@ public class InstructorCoursesCacheMapper {
                 .canUnpublish(dynamicInfo != null ? dynamicInfo.getCanUnpublish() : false)
                 .canDelete(dynamicInfo != null ? dynamicInfo.getCanDelete() : true)
                 .canPublish(dynamicInfo != null ? dynamicInfo.getCanResubmit() : true)
-                .statusReview(null) // Set by service if needed
-                .reason(null) // Set by service if needed
+                .statusReview(baseInfo.getStatusReview()) // Now from cache
+                .reason(baseInfo.getReason()) // Now from cache
                 .build();
     }
 
