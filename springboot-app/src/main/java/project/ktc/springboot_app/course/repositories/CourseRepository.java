@@ -24,6 +24,7 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
         @Query("SELECT DISTINCT c FROM Course c " +
                         "LEFT JOIN FETCH c.instructor i " +
                         "LEFT JOIN c.categories cat " +
+                        "LEFT JOIN Review r ON r.course.id = c.id " +
                         "WHERE c.isPublished = true AND c.isApproved = true AND c.isDeleted = false " +
                         "AND (:search IS NULL OR " +
                         "     LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
@@ -32,13 +33,16 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "AND (:categoryId IS NULL OR cat.id = :categoryId) " +
                         "AND (:minPrice IS NULL OR c.price >= :minPrice) " +
                         "AND (:maxPrice IS NULL OR c.price <= :maxPrice) " +
-                        "AND (:level IS NULL OR c.level = :level)")
+                        "AND (:level IS NULL OR c.level = :level) " +
+                        "AND (:averageRating IS NULL OR " +
+                        "     (SELECT AVG(rev.rating) FROM Review rev WHERE rev.course.id = c.id) >= :averageRating)")
         Page<Course> findPublishedCoursesWithFilters(
                         @Param("search") String search,
                         @Param("categoryId") String categoryId,
                         @Param("minPrice") BigDecimal minPrice,
                         @Param("maxPrice") BigDecimal maxPrice,
                         @Param("level") CourseLevel level,
+                        @Param("averageRating") Double averageRating,
                         Pageable pageable);
 
         @Query("SELECT c FROM Course c " +

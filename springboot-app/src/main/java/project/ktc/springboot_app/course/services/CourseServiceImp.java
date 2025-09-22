@@ -82,11 +82,16 @@ public class CourseServiceImp implements CourseService {
                         BigDecimal minPrice,
                         BigDecimal maxPrice,
                         CourseLevel level,
+                        Double averageRating,
                         Pageable pageable) {
 
                 log.info(
-                                "Finding public courses with filters: search={}, categoryId={}, minPrice={}, maxPrice={}, level={}, page={}",
-                                search, categoryId, minPrice, maxPrice, level, pageable.getPageNumber());
+                                "Finding public courses with filters: search={}, categoryId={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}",
+                                search, categoryId, minPrice, maxPrice, level, averageRating, pageable.getPageNumber());
+
+                if (averageRating != null) {
+                        log.info("RATING FILTER APPLIED: averageRating >= {}", averageRating);
+                }
 
                 // Validate price range
                 if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
@@ -100,7 +105,7 @@ public class CourseServiceImp implements CourseService {
 
                 SharedCourseDataDto sharedData = getSharedCourseData(
                                 pageable.getPageNumber(), pageable.getPageSize(), search, categoryId,
-                                minPrice, maxPrice, level, getSortString(pageable), pageable);
+                                minPrice, maxPrice, level, averageRating, getSortString(pageable), pageable);
 
                 // ============ STEP 2: Get user-specific enrollment status ============
 
@@ -139,22 +144,24 @@ public class CourseServiceImp implements CourseService {
          */
         private SharedCourseDataDto getSharedCourseData(int pageNumber, int pageSize, String search,
                         String categoryId, BigDecimal minPrice, BigDecimal maxPrice, CourseLevel level,
-                        String sortString, Pageable pageable) {
+                        Double averageRating, String sortString, Pageable pageable) {
 
-                // Try cache first
+                // Try cache first (skip cache when averageRating filter is applied for now)
                 SharedCourseCacheDto cachedData = null;
-                try {
-                        cachedData = coursesCacheService.getSharedCourseData(
-                                        pageNumber, pageSize, search, categoryId,
-                                        minPrice, maxPrice, level, sortString);
+                if (averageRating == null) {
+                        try {
+                                cachedData = coursesCacheService.getSharedCourseData(
+                                                pageNumber, pageSize, search, categoryId,
+                                                minPrice, maxPrice, level, sortString);
 
-                        if (cachedData != null) {
-                                log.info("✅ Shared cache HIT - Found cached course data (courses + categories + enrollmentCounts)");
-                                // Convert cache DTO back to service DTO
-                                return CourseCacheMapper.fromSharedCacheDto(cachedData);
+                                if (cachedData != null) {
+                                        log.info("✅ Shared cache HIT - Found cached course data (courses + categories + enrollmentCounts)");
+                                        // Convert cache DTO back to service DTO
+                                        return CourseCacheMapper.fromSharedCacheDto(cachedData);
+                                }
+                        } catch (Exception e) {
+                                log.warn("⚠️ Failed to check shared cache", e);
                         }
-                } catch (Exception e) {
-                        log.warn("⚠️ Failed to check shared cache", e);
                 }
 
                 // Cache miss - query database
@@ -162,7 +169,7 @@ public class CourseServiceImp implements CourseService {
 
                 // Query courses with pagination
                 Page<Course> coursePage = courseRepository.findPublishedCoursesWithFilters(
-                                search, categoryId, minPrice, maxPrice, level, pageable);
+                                search, categoryId, minPrice, maxPrice, level, averageRating, pageable);
                 log.info("Found {} courses from database", coursePage.getTotalElements());
 
                 // Batch load categories to avoid N+1 problem
@@ -332,6 +339,11 @@ public class CourseServiceImp implements CourseService {
                                 CourseDetailResponseDto.class);
                 if (cachedCourse != null) {
                         log.info("📋 Cache hit for course slug: {}", slug);
+                        // Always recalculate user-specific enrollment status
+                        Boolean isEnrolled = getCurrentUserEnrollmentStatus(cachedCourse.getId());
+                        cachedCourse.setIsEnrolled(isEnrolled);
+                        log.info("🔄 Updated enrollment status for cached course: {} -> isEnrolled: {}",
+                                        cachedCourse.getId(), isEnrolled);
                         return ApiResponseUtil.success(cachedCourse, "Course details retrieved successfully");
                 }
 
@@ -506,7 +518,15 @@ public class CourseServiceImp implements CourseService {
                                         && !"anonymousUser".equals(authentication.getPrincipal())) {
 
                                 User currentUser = (User) authentication.getPrincipal();
-                                return courseRepository.isUserEnrolledInCourse(courseId, currentUser.getId());
+                                log.info("Checking enrollment status - Course ID: {}, User ID: {}", courseId,
+                                                currentUser.getId());
+                                // Use EnrollmentRepository for consistency with enrollment logic
+                                Boolean isEnrolled = enrollmentRepository.existsByUserIdAndCourseId(currentUser.getId(),
+                                                courseId);
+                                log.info("Enrollment status result: {}", isEnrolled);
+                                return isEnrolled;
+                        } else {
+                                log.warn("User not authenticated or anonymous user");
                         }
                 } catch (Exception e) {
                         log.warn("Could not determine enrollment status: {}", e.getMessage());
