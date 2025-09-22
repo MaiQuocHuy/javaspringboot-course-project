@@ -56,11 +56,11 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 # Environment variables với default values
-ENV SPRING_PROFILES_ACTIVE=docker
+ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
 ENV JVM_OPTS="-Xmx512m -Xms256m"
-ENV DB_URL="jdbc:mysql://localhost:3306/course_management"
-ENV DB_USERNAME="course_user"
-ENV DB_PASSWORD="password"
+ENV DB_URL=${DB_URL}
+ENV DB_USERNAME=${DB_USERNAME}
+ENV DB_PASSWORD=${DB_PASSWORD}
 
 # Entry point với JVM tuning
 ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar app.jar"]
