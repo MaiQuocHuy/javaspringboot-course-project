@@ -109,7 +109,7 @@ public class InstructorCoursesCacheMapper {
                 .averageRating(dynamicInfo != null ? dynamicInfo.getAverageRating() : 0.0)
                 .sectionCount(dynamicInfo != null ? dynamicInfo.getSectionCount() : 0)
                 // Dashboard-specific fields
-                .status(baseInfo.getStatus() != null ? baseInfo.getStatus().name() : "DRAFT")
+                .status(determineStatusFromCache(baseInfo))
                 .lastContentUpdate(dynamicInfo != null ? dynamicInfo.getLastContentUpdate() : baseInfo.getUpdatedAt())
                 .revenue(dynamicInfo != null ? dynamicInfo.getRevenue() : null)
                 .canEdit(dynamicInfo != null ? dynamicInfo.getCanEdit() : true)
@@ -147,6 +147,25 @@ public class InstructorCoursesCacheMapper {
         return courses.stream()
                 .map(InstructorCoursesCacheMapper::toBaseCacheDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Determines course status from cache data based on isPublished field
+     * This logic mirrors the determineStatus method in InstructorCourseServiceImp
+     * but includes null checks since cache DTOs may have null values after
+     * deserialization
+     */
+    private static String determineStatusFromCache(InstructorCourseBaseCacheDto baseInfo) {
+        if (baseInfo == null) {
+            return "DRAFT";
+        }
+
+        if (baseInfo.getIsPublished() != null && baseInfo.getIsPublished()) {
+            return "PUBLISHED";
+        } else if (baseInfo.getIsPublished() != null && !baseInfo.getIsPublished()) {
+            return "UNPUBLISHED";
+        }
+        return "DRAFT";
     }
 
     /**

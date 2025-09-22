@@ -334,61 +334,86 @@ public class CourseServiceImp implements CourseService {
         public ResponseEntity<ApiResponse<CourseDetailResponseDto>> findOneBySlug(String slug) {
                 log.info("🎯 Finding course details for slug: {}", slug);
 
-                // Check cache first
+                // ============ STEP 1: Get shared course data (check cache first) ============
                 CourseDetailResponseDto cachedCourse = coursesCacheService.getCourseDetailsBySlug(slug,
                                 CourseDetailResponseDto.class);
+
+                CourseDetailResponseDto baseResponseDto;
                 if (cachedCourse != null) {
                         log.info("📋 Cache hit for course slug: {}", slug);
-                        // Always recalculate user-specific enrollment status
-                        Boolean isEnrolled = getCurrentUserEnrollmentStatus(cachedCourse.getId());
-                        cachedCourse.setIsEnrolled(isEnrolled);
-                        log.info("🔄 Updated enrollment status for cached course: {} -> isEnrolled: {}",
-                                        cachedCourse.getId(), isEnrolled);
-                        return ApiResponseUtil.success(cachedCourse, "Course details retrieved successfully");
+                        baseResponseDto = cachedCourse;
+                } else {
+                        log.info("🔍 Cache miss for course slug: {}, fetching from database", slug);
+
+                        // Step 1: Find the course with instructor by slug
+                        Course course = courseRepository.findPublishedCourseBySlugWithDetails(slug)
+                                        .orElseThrow(() -> new ResourceNotFoundException(
+                                                        "Course not found with slug: " + slug));
+
+                        // Step 2: Fetch categories separately to avoid MultipleBagFetchException
+                        Optional<Course> courseWithCategories = courseRepository
+                                        .findCourseWithCategories(course.getId());
+                        if (courseWithCategories.isPresent()) {
+                                course.setCategories(courseWithCategories.get().getCategories());
+                        }
+
+                        // Step 3: Fetch sections with lessons separately
+                        List<Section> sectionsWithLessons = courseRepository
+                                        .findSectionsWithLessonsByCourseId(course.getId());
+                        course.setSections(sectionsWithLessons);
+
+                        // Get rating information
+                        CourseDetailResponseDto.RatingSummary ratingSummary = getRatingSummary(course.getId());
+
+                        // Get lesson and quiz counts
+                        Long lessonCount = courseRepository.countLessonsByCourseId(course.getId());
+                        Long quizCount = courseRepository.countQuizLessonsByCourseId(course.getId());
+                        Long questionCount = courseRepository.countQuizQuestionsByCourseId(course.getId());
+
+                        Long enrollMentCount = courseRepository.countUserEnrolledInCourse(course.getId());
+
+                        // Get sample video URL (first video lesson if available)
+                        String sampleVideoUrl = getSampleVideoUrl(course);
+
+                        // Map to DTO WITHOUT user-specific data (isEnrolled = false for caching)
+                        baseResponseDto = mapToCourseDetailResponse(
+                                        course, ratingSummary, lessonCount.intValue(), quizCount.intValue(),
+                                        questionCount.intValue(),
+                                        false, sampleVideoUrl, slug, enrollMentCount.intValue()); // Always false for
+                                                                                                  // cache
+
+                        // Store in cache (without user-specific enrollment status)
+                        coursesCacheService.storeCourseDetailsBySlug(slug, baseResponseDto);
+                        log.info("💾 Stored course details in cache for slug: {}", slug);
                 }
 
-                log.info("🔍 Cache miss for course slug: {}, fetching from database", slug);
+                // ============ STEP 2: Get user-specific enrollment status ============
+                Boolean isEnrolled = getCurrentUserEnrollmentStatus(baseResponseDto.getId());
+                log.info("Is current user enrolled in course {}: {}", baseResponseDto.getId(), isEnrolled);
 
-                // Step 1: Find the course with instructor by slug
-                Course course = courseRepository.findPublishedCourseBySlugWithDetails(slug)
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Course not found with slug: " + slug));
-
-                // Step 2: Fetch categories separately to avoid MultipleBagFetchException
-                Optional<Course> courseWithCategories = courseRepository.findCourseWithCategories(course.getId());
-                if (courseWithCategories.isPresent()) {
-                        course.setCategories(courseWithCategories.get().getCategories());
-                }
-
-                // Step 3: Fetch sections with lessons separately
-                List<Section> sectionsWithLessons = courseRepository.findSectionsWithLessonsByCourseId(course.getId());
-                course.setSections(sectionsWithLessons);
-
-                // Get rating information
-                CourseDetailResponseDto.RatingSummary ratingSummary = getRatingSummary(course.getId());
-
-                // Get lesson and quiz counts
-                Long lessonCount = courseRepository.countLessonsByCourseId(course.getId());
-                Long quizCount = courseRepository.countQuizLessonsByCourseId(course.getId());
-                Long questionCount = courseRepository.countQuizQuestionsByCourseId(course.getId());
-
-                Long enrollMentCount = courseRepository.countUserEnrolledInCourse(course.getId());
-
-                // Check if current user is enrolled
-                Boolean isEnrolled = getCurrentUserEnrollmentStatus(course.getId());
-
-                // Get sample video URL (first video lesson if available)
-                String sampleVideoUrl = getSampleVideoUrl(course);
-
-                // Map to DTO with quiz count
-                CourseDetailResponseDto responseDto = mapToCourseDetailResponse(
-                                course, ratingSummary, lessonCount.intValue(), quizCount.intValue(),
-                                questionCount.intValue(),
-                                isEnrolled, sampleVideoUrl, slug, enrollMentCount.intValue());
-
-                // Store in cache
-                coursesCacheService.storeCourseDetailsBySlug(slug, responseDto);
-                log.info("💾 Stored course details in cache for slug: {}", slug);
+                // ============ STEP 3: Merge shared + user-specific data ============
+                // ALWAYS build new DTO with correct user-specific enrollment status
+                // Never return cached DTO directly to prevent cross-user data leakage
+                CourseDetailResponseDto responseDto = CourseDetailResponseDto.builder()
+                                .id(baseResponseDto.getId())
+                                .slug(baseResponseDto.getSlug())
+                                .title(baseResponseDto.getTitle())
+                                .description(baseResponseDto.getDescription())
+                                .price(baseResponseDto.getPrice())
+                                .level(baseResponseDto.getLevel())
+                                .thumbnailUrl(baseResponseDto.getThumbnailUrl())
+                                .lessonCount(baseResponseDto.getLessonCount())
+                                .quizCount(baseResponseDto.getQuizCount())
+                                .questionCount(baseResponseDto.getQuestionCount())
+                                .enrollCount(baseResponseDto.getEnrollCount())
+                                .sampleVideoUrl(baseResponseDto.getSampleVideoUrl())
+                                .totalDuration(baseResponseDto.getTotalDuration())
+                                .rating(baseResponseDto.getRating())
+                                .isEnrolled(isEnrolled) // ALWAYS use current user's enrollment status
+                                .instructor(baseResponseDto.getInstructor())
+                                .overViewInstructorSummary(baseResponseDto.getOverViewInstructorSummary())
+                                .sections(baseResponseDto.getSections())
+                                .build();
 
                 return ApiResponseUtil.success(responseDto, "Course details retrieved successfully");
         }
@@ -517,16 +542,9 @@ public class CourseServiceImp implements CourseService {
                         if (authentication != null && authentication.isAuthenticated()
                                         && !"anonymousUser".equals(authentication.getPrincipal())) {
 
-                                User currentUser = (User) authentication.getPrincipal();
-                                log.info("Checking enrollment status - Course ID: {}, User ID: {}", courseId,
-                                                currentUser.getId());
-                                // Use EnrollmentRepository for consistency with enrollment logic
-                                Boolean isEnrolled = enrollmentRepository.existsByUserIdAndCourseId(currentUser.getId(),
-                                                courseId);
-                                log.info("Enrollment status result: {}", isEnrolled);
-                                return isEnrolled;
-                        } else {
-                                log.warn("User not authenticated or anonymous user");
+                                // User currentUser = (User) authentication.getPrincipal();
+                                String userId = SecurityUtil.getCurrentUserId();
+                                return courseRepository.isUserEnrolledInCourse(courseId, userId);
                         }
                 } catch (Exception e) {
                         log.warn("Could not determine enrollment status: {}", e.getMessage());
