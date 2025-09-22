@@ -6,17 +6,21 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
 
     <changeSet id="160-add-is-deleted-instructor-applications" author="system">
-        <comment>Add is_deleted column to instructor_applications table</comment>
+    <preConditions onFail="MARK_RAN">
+        <not>
+            <columnExists tableName="instructor_applications" columnName="is_deleted"/>
+        </not>
+    </preConditions>
 
-        <addColumn tableName="instructor_applications">
-            <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
-        
-        <rollback>
-            <dropColumn tableName="instructor_applications" columnName="is_deleted"/>
-        </rollback>
-    </changeSet>
+    <addColumn tableName="instructor_applications">
+        <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false">
+            <constraints nullable="false"/>
+        </column>
+    </addColumn>
+
+    <rollback>
+        <dropColumn tableName="instructor_applications" columnName="is_deleted"/>
+    </rollback>
+</changeSet>
 
 </databaseChangeLog>
