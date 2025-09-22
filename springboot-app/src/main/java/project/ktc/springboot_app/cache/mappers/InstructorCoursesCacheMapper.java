@@ -152,13 +152,14 @@ public class InstructorCoursesCacheMapper {
     /**
      * Determines course status from cache data based on isPublished field
      * This logic mirrors the determineStatus method in InstructorCourseServiceImp
-     * but includes null checks since cache DTOs may have null values after deserialization
+     * but includes null checks since cache DTOs may have null values after
+     * deserialization
      */
     private static String determineStatusFromCache(InstructorCourseBaseCacheDto baseInfo) {
         if (baseInfo == null) {
             return "DRAFT";
         }
-        
+
         if (baseInfo.getIsPublished() != null && baseInfo.getIsPublished()) {
             return "PUBLISHED";
         } else if (baseInfo.getIsPublished() != null && !baseInfo.getIsPublished()) {
