@@ -64,7 +64,8 @@ public class InstructorRefundServiceImp implements InstructorRefundService {
                             .last(refunds.isLast())
                             .build())
                     .build();
-            log.info("User ID: {}, Refund DTOs: {}, Paginated Response: {}", userId, refundDtos, paginatedResponse);
+            // log.info("User ID: {}, Refund DTOs: {}, Paginated Response: {}", userId,
+            // refundDtos, paginatedResponse);
             return ApiResponseUtil.success(paginatedResponse, "Fetched all refunds for instructor");
         } catch (Exception e) {
             log.error("Error fetching refunds for instructor: {}", e.getMessage(), e);

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import project.ktc.springboot_app.earning.dto.MonthlyEarningsDto;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 
 import java.math.BigDecimal;
@@ -70,7 +69,7 @@ public interface InstructorEarningRepository extends JpaRepository<InstructorEar
 
         @Query("SELECT COALESCE(SUM(ie.amount), 0) as revenue FROM InstructorEarning ie "
                         +
-                        "WHERE ie.instructor.id = :instructorId AND YEAR(ie.paidAt) = :year AND MONTH(ie.paidAt) = :month")
+                        "WHERE ie.instructor.id = :instructorId AND YEAR(ie.createdAt) = :year AND MONTH(ie.createdAt) = :month")
         BigDecimal getTotalEarningsByMonth(@Param("instructorId") String instructorId, @Param("year") int year,
                         @Param("month") int month);
 
