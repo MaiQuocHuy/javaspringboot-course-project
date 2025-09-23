@@ -57,7 +57,7 @@ public interface InstructorCourseRepository extends JpaRepository<Course, String
                         "AND (:search IS NULL  OR LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%'))" +
                         " OR LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%'))) " +
                         "AND (:reviewStatus IS NULL OR crvs.status = :reviewStatus) " +
-                        "AND (:isPublished IS NULL OR c.isPublished = :isPublished) " +
+                        "AND (:isPublished IS NULL OR (c.isPublished = :isPublished AND crvs.status IS NULL)) " +
                         "AND (:categoryIds IS NULL OR cat.id IN :categoryIds) " +
                         "AND (:minPrice IS NULL OR c.price >= :minPrice) " +
                         "AND (:maxPrice IS NULL OR c.price <= :maxPrice) " +
