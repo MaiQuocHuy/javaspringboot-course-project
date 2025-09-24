@@ -60,19 +60,18 @@ public class SpringbootAppApplication {
 		setSystemPropertyIfNotNull("CLOUDINARY_API_SECRET", getEnv.apply("CLOUDINARY_API_SECRET"));
 		setSystemPropertyIfNotNull("STRIPE_SECRET_KEY", getEnv.apply("STRIPE_SECRET_KEY"));
 		setSystemPropertyIfNotNull("STRIPE_PUBLISHABLE_KEY", getEnv.apply("STRIPE_PUBLISHABLE_KEY"));
-		System.setProperty("STRIPE_WEBHOOK_SECRET", getEnvWithDefault.apply("STRIPE_WEBHOOK_SECRET", ""));
-		System.setProperty("FRONTEND_URL",
-				getEnvWithDefault.apply("FRONTEND_URL", "https://sybau-education.vercel.app"));
+		setSystemPropertyIfNotNull("STRIPE_WEBHOOK_SECRET", getEnvWithDefault.apply("STRIPE_WEBHOOK_SECRET", ""));
+		setSystemPropertyIfNotNull("FRONTEND_URL", getEnvWithDefault.apply("FRONTEND_URL", ""));
 		setSystemPropertyIfNotNull("EMAIL_SMTP_HOST", getEnv.apply("EMAIL_SMTP_HOST"));
 		setSystemPropertyIfNotNull("EMAIL_SMTP_PORT", getEnv.apply("EMAIL_SMTP_PORT"));
 		setSystemPropertyIfNotNull("EMAIL_SMTP_USERNAME", getEnv.apply("EMAIL_SMTP_USERNAME"));
 		setSystemPropertyIfNotNull("EMAIL_SMTP_PASSWORD", getEnv.apply("EMAIL_SMTP_PASSWORD"));
 		setSystemPropertyIfNotNull("EMAIL_FROM", getEnv.apply("EMAIL_FROM"));
 		setSystemPropertyIfNotNull("EMAIL_FROM_NAME", getEnv.apply("EMAIL_FROM_NAME"));
-		System.setProperty("REDIS_HOST", getEnvWithDefault.apply("REDIS_HOST", "clever-locust-8368.upstash.io"));
-		System.setProperty("REDIS_PORT", getEnvWithDefault.apply("REDIS_PORT", "6380"));
+		setSystemPropertyIfNotNull("REDIS_HOST", getEnvWithDefault.apply("REDIS_HOST", ""));
+		setSystemPropertyIfNotNull("REDIS_PORT", getEnvWithDefault.apply("REDIS_PORT", ""));
 		setSystemPropertyIfNotNull("REDIS_PASSWORD", getEnv.apply("REDIS_PASSWORD"));
-		System.setProperty("REDIS_SSL_ENABLED", getEnvWithDefault.apply("REDIS_SSL_ENABLED", "true"));
+		setSystemPropertyIfNotNull("REDIS_SSL_ENABLED", getEnvWithDefault.apply("REDIS_SSL_ENABLED", "true"));
 		setSystemPropertyIfNotNull("UPSTASH_REDIS_REST_URL", getEnv.apply("UPSTASH_REDIS_REST_URL"));
 		setSystemPropertyIfNotNull("UPSTASH_REDIS_REST_TOKEN", getEnv.apply("UPSTASH_REDIS_REST_TOKEN"));
 
