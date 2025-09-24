@@ -277,7 +277,7 @@ public class AdminPaymentServiceImp implements AdminPaymentService {
             if (paymentStatus == PaymentStatus.COMPLETED) {
                 String userName = payment.getUser().getName();
                 notificationHelper.createAdminStudentPaymentNotification(payment.getId(), userName,
-                        payment.getCourse().getId(), payment.getAmount());
+                        payment.getCourse().getTitle(), payment.getAmount());
             }
 
             log.info("Successfully updated payment status for payment: {} from {} to {}",

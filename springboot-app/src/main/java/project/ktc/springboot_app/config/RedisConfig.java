@@ -16,6 +16,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration.LettucePoolingClientConfigurationBuilder;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -67,13 +68,17 @@ public class RedisConfig {
         @Value("${spring.cache.redis.cache-null-values:false}")
         private boolean cacheNullValues;
 
+        @Value("${spring.data.redis.ssl.enabled:false}")
+        private boolean sslEnabled;
+
         /**
          * Redis Connection Factory using Lettuce with connection pooling
          */
         @Bean
         @Primary
         public RedisConnectionFactory redisConnectionFactory() {
-                log.info("Configuring Redis connection to {}:{} with database {}", redisHost, redisPort, database);
+                log.info("Configuring Redis connection to {}:{} with database {} (SSL: {})", redisHost, redisPort,
+                                database, sslEnabled);
 
                 // Redis standalone configuration
                 RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
@@ -82,11 +87,18 @@ public class RedisConfig {
                 redisConfig.setPassword(redisPassword);
                 redisConfig.setDatabase(database);
 
-                // Lettuce connection pooling configuration
-                LettucePoolingClientConfiguration poolConfig = LettucePoolingClientConfiguration.builder()
+                // Lettuce connection pooling configuration with SSL support
+                LettucePoolingClientConfigurationBuilder poolConfigBuilder = LettucePoolingClientConfiguration.builder()
                                 .commandTimeout(timeout)
-                                .shutdownTimeout(shutdownTimeout)
-                                .build();
+                                .shutdownTimeout(shutdownTimeout);
+
+                // Enable SSL if configured
+                if (sslEnabled) {
+                        poolConfigBuilder.useSsl();
+                        log.info("SSL enabled for Redis connection");
+                }
+
+                LettucePoolingClientConfiguration poolConfig = poolConfigBuilder.build();
 
                 LettuceConnectionFactory factory = new LettuceConnectionFactory(redisConfig, poolConfig);
                 factory.setValidateConnection(true);
