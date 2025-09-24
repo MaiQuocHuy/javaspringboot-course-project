@@ -10,8 +10,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # Spring profiles
-      SPRING_PROFILES_ACTIVE: docker
+      # Spring profiles - using default profile instead of docker
+      # SPRING_PROFILES_ACTIVE: docker
 
       # Database connection
       DB_URL: jdbc:mysql://server.aptech.io:3307/sybau
