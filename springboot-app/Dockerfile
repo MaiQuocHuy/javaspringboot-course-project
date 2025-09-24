@@ -56,7 +56,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 # Environment variables với default values
-ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
+# ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
 ENV JVM_OPTS="-Xmx512m -Xms256m"
 ENV DB_URL=${DB_URL}
 ENV DB_USERNAME=${DB_USERNAME}
