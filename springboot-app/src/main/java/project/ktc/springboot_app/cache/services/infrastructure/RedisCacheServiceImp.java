@@ -3,11 +3,11 @@ package project.ktc.springboot_app.cache.services.infrastructure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
 import project.ktc.springboot_app.cache.interfaces.CacheService;
 import project.ktc.springboot_app.cache.services.CacheStats;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author KTC Team
  */
-@Service
 @Slf4j
 @RequiredArgsConstructor
 public class RedisCacheServiceImp implements CacheService {
@@ -212,6 +211,28 @@ public class RedisCacheServiceImp implements CacheService {
                     .expirations(0L)
                     .since(null)
                     .build();
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getList(String key, Class<T> elementClass) {
+        try {
+            Object value = redisTemplate.opsForValue().get(key);
+            if (value != null && value instanceof List) {
+                log.debug("Cache hit for list key: {} with element type: {}", key, elementClass.getSimpleName());
+                return (List<T>) value;
+            } else if (value != null) {
+                log.warn("Cache value type mismatch for key: {}. Expected: List<{}>, Got: {}",
+                        key, elementClass.getSimpleName(), value.getClass().getSimpleName());
+            } else {
+                log.debug("Cache miss for list key: {}", key);
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("Error retrieving list from cache with key: {} and element type: {}",
+                    key, elementClass.getSimpleName(), e);
+            return null;
         }
     }
 }
