@@ -1,7 +1,6 @@
 # ================================
 # Docker Compose for KTC Learning Platform
 # ================================
-version: "3.8"
 
 services:
   # Spring Boot Application
