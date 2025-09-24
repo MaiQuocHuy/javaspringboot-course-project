@@ -22,7 +22,7 @@ public interface InstructorStudentRepository extends JpaRepository<Enrollment, S
         List<String> getEnrolledStudentsByInstructorId(String instructorId, String courseId);
 
         // Get student information
-        @Query(value = "SELECT u.id, u.name, u.email, u.thumbnail_url FROM Users u" +
+        @Query(value = "SELECT u.id, u.name, u.email, u.thumbnail_url FROM users u" +
                         " WHERE u.id = :studentId", nativeQuery = true)
         List<Object[]> getStudentById(String studentId);
 
