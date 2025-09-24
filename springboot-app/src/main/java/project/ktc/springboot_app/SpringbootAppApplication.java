@@ -29,16 +29,20 @@ public class SpringbootAppApplication {
 		System.setProperty("STRIPE_SECRET_KEY", dotenv.get("STRIPE_SECRET_KEY"));
 		System.setProperty("STRIPE_PUBLISHABLE_KEY", dotenv.get("STRIPE_PUBLISHABLE_KEY"));
 		System.setProperty("STRIPE_WEBHOOK_SECRET", dotenv.get("STRIPE_WEBHOOK_SECRET", ""));
-		System.setProperty("FRONTEND_URL", dotenv.get("FRONTEND_URL", "http://localhost:3000"));
+		System.setProperty("FRONTEND_URL", dotenv.get("FRONTEND_URL", "https://sybau-education.vercel.app"));
 		System.setProperty("EMAIL_SMTP_HOST", dotenv.get("EMAIL_SMTP_HOST"));
 		System.setProperty("EMAIL_SMTP_PORT", dotenv.get("EMAIL_SMTP_PORT"));
 		System.setProperty("EMAIL_SMTP_USERNAME", dotenv.get("EMAIL_SMTP_USERNAME"));
 		System.setProperty("EMAIL_SMTP_PASSWORD", dotenv.get("EMAIL_SMTP_PASSWORD"));
 		System.setProperty("EMAIL_FROM", dotenv.get("EMAIL_FROM"));
 		System.setProperty("EMAIL_FROM_NAME", dotenv.get("EMAIL_FROM_NAME"));
-		System.setProperty("REDIS_HOST", dotenv.get("REDIS_HOST", "localhost"));
+		System.setProperty("REDIS_HOST", dotenv.get("REDIS_HOST", "clever-locust-8368.upstash.io"));
 		System.setProperty("REDIS_PORT", dotenv.get("REDIS_PORT", "6380"));
-		System.setProperty("REDIS_PASSWORD", dotenv.get("REDIS_PASSWORD", "123456789"));
+		System.setProperty("REDIS_PASSWORD", dotenv.get("REDIS_PASSWORD"));
+		System.setProperty("REDIS_SSL_ENABLED", dotenv.get("REDIS_SSL_ENABLED", "true"));
+		System.setProperty("UPSTASH_REDIS_REST_URL", dotenv.get("UPSTASH_REDIS_REST_URL"));
+		System.setProperty("UPSTASH_REDIS_REST_TOKEN", dotenv.get("UPSTASH_REDIS_REST_TOKEN"));
+
 		SpringApplication.run(SpringbootAppApplication.class, args);
 	}
 }
