@@ -59,6 +59,8 @@ public class CourseController {
 
                         @Parameter(description = "Filter by course level") @RequestParam(required = false) CourseLevel level,
 
+                        @Parameter(description = "Filter by minimum average rating (0.0-5.0)") @RequestParam(required = false) Double averageRating,
+
                         @Parameter(description = "Sort field and direction (e.g., 'price,asc', 'title,desc')") @RequestParam(defaultValue = "createdAt,desc") String sort) {
                 // Create Pageable with sorting
                 Sort.Direction sortDirection = Sort.Direction.ASC;
@@ -77,7 +79,7 @@ public class CourseController {
                 // Call service method to get filtered courses
                 ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> result = courseService
                                 .findAllPublic(
-                                                search, categoryId, minPrice, maxPrice, level, pageable);
+                                                search, categoryId, minPrice, maxPrice, level, averageRating, pageable);
 
                 return result;
         }

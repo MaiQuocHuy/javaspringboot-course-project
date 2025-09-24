@@ -205,7 +205,6 @@ public class InstructorEarningServiceImp implements InstructorEarningService {
                 String instructorId = SecurityUtil.getCurrentUserId();
 
                 BigDecimal revenue = instructorEarningRepository.getTotalEarningsByMonth(instructorId, year, month);
-
                 MonthlyEarningsDto monthlyEarningsDto = MonthlyEarningsDto.builder()
                         .year(year)
                         .month(month)

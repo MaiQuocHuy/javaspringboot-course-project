@@ -23,6 +23,7 @@ public interface CourseService {
                         BigDecimal minPrice,
                         BigDecimal maxPrice,
                         CourseLevel level,
+                        Double averageRating,
                         Pageable pageable);
 
         ResponseEntity<ApiResponse<CourseDetailResponseDto>> findOnePublic(String courseId);

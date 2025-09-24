@@ -13,10 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.common.dto.ApiErrorResponse;
 import project.ktc.springboot_app.enrollment.dto.EnrollmentResponseDto;
+import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 
 @RestController
@@ -27,6 +31,7 @@ import project.ktc.springboot_app.enrollment.services.EnrollmentServiceImp;
 public class EnrollmentController {
 
     private final EnrollmentServiceImp enrollmentService;
+    private final EnrollmentRepository enrollmentRepository;
 
     @PostMapping("/api/courses/{id}/enroll")
     @Operation(summary = "Enroll in a course", description = "Enrolls the authenticated student into a specified course (free or paid). For paid courses, payment must be completed before enrollment.")
@@ -40,5 +45,35 @@ public class EnrollmentController {
     public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<EnrollmentResponseDto>> enroll(
             @Parameter(description = "Course ID", required = true) @PathVariable String id) {
         return enrollmentService.enroll(id);
+    }
+
+    @GetMapping("/api/courses/{id}/enrollment-debug")
+    @Operation(summary = "Debug enrollment status", description = "Temporary debug endpoint to check enrollment status")
+    public ResponseEntity<Object> debugEnrollmentStatus(@PathVariable String id) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()
+                    && !"anonymousUser".equals(authentication.getPrincipal())) {
+
+                User currentUser = (User) authentication.getPrincipal();
+                Boolean isEnrolled = enrollmentRepository.existsByUserIdAndCourseId(currentUser.getId(), id);
+
+                return ResponseEntity.ok(java.util.Map.of(
+                        "courseId", id,
+                        "userId", currentUser.getId(),
+                        "username", currentUser.getUsername(),
+                        "isEnrolled", isEnrolled,
+                        "timestamp", java.time.LocalDateTime.now()));
+            } else {
+                return ResponseEntity.ok(java.util.Map.of(
+                        "error", "User not authenticated",
+                        "principal", authentication != null ? authentication.getPrincipal() : "null"));
+            }
+        } catch (Exception e) {
+            log.error("Debug enrollment error", e);
+            return ResponseEntity.ok(java.util.Map.of(
+                    "error", e.getMessage(),
+                    "exception", e.getClass().getSimpleName()));
+        }
     }
 }

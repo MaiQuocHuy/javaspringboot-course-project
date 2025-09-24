@@ -19,6 +19,8 @@ public class InstructorCoursesCacheMapper {
 
     /**
      * Converts Course entity to InstructorCourseBaseCacheDto for Redis storage
+     * Note: statusReview and reason should be set separately via
+     * updateCacheWithReviewInfo()
      */
     public static InstructorCourseBaseCacheDto toBaseCacheDto(Course course) {
         if (course == null) {
@@ -36,7 +38,9 @@ public class InstructorCoursesCacheMapper {
                 .isApproved(course.getIsApproved())
                 .isPublished(course.getIsPublished())
                 .createdAt(course.getCreatedAt())
-                .updatedAt(course.getUpdatedAt());
+                .updatedAt(course.getUpdatedAt())
+                .statusReview(null) // Will be set by service from course_review_status_history
+                .reason(null); // Will be set by service from course_review_status_history
 
         // Map categories (simplified for cache)
         if (course.getCategories() != null) {
@@ -47,6 +51,20 @@ public class InstructorCoursesCacheMapper {
         }
 
         return builder.build();
+    }
+
+    /**
+     * Converts Course entity to InstructorCourseBaseCacheDto for Redis storage
+     * with review status information
+     */
+    public static InstructorCourseBaseCacheDto toBaseCacheDtoWithReviewInfo(Course course, String statusReview,
+            String reason) {
+        InstructorCourseBaseCacheDto baseDto = toBaseCacheDto(course);
+        if (baseDto != null) {
+            baseDto.setStatusReview(statusReview);
+            baseDto.setReason(reason);
+        }
+        return baseDto;
     }
 
     /**
@@ -109,15 +127,15 @@ public class InstructorCoursesCacheMapper {
                 .averageRating(dynamicInfo != null ? dynamicInfo.getAverageRating() : 0.0)
                 .sectionCount(dynamicInfo != null ? dynamicInfo.getSectionCount() : 0)
                 // Dashboard-specific fields
-                .status(baseInfo.getStatus() != null ? baseInfo.getStatus().name() : "DRAFT")
+                .status(determineStatusFromCache(baseInfo))
                 .lastContentUpdate(dynamicInfo != null ? dynamicInfo.getLastContentUpdate() : baseInfo.getUpdatedAt())
                 .revenue(dynamicInfo != null ? dynamicInfo.getRevenue() : null)
                 .canEdit(dynamicInfo != null ? dynamicInfo.getCanEdit() : true)
                 .canUnpublish(dynamicInfo != null ? dynamicInfo.getCanUnpublish() : false)
                 .canDelete(dynamicInfo != null ? dynamicInfo.getCanDelete() : true)
                 .canPublish(dynamicInfo != null ? dynamicInfo.getCanResubmit() : true)
-                .statusReview(null) // Set by service if needed
-                .reason(null) // Set by service if needed
+                .statusReview(baseInfo.getStatusReview()) // Now from cache
+                .reason(baseInfo.getReason()) // Now from cache
                 .build();
     }
 
@@ -147,6 +165,25 @@ public class InstructorCoursesCacheMapper {
         return courses.stream()
                 .map(InstructorCoursesCacheMapper::toBaseCacheDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Determines course status from cache data based on isPublished field
+     * This logic mirrors the determineStatus method in InstructorCourseServiceImp
+     * but includes null checks since cache DTOs may have null values after
+     * deserialization
+     */
+    private static String determineStatusFromCache(InstructorCourseBaseCacheDto baseInfo) {
+        if (baseInfo == null) {
+            return "DRAFT";
+        }
+
+        if (baseInfo.getIsPublished() != null && baseInfo.getIsPublished()) {
+            return "PUBLISHED";
+        } else if (baseInfo.getIsPublished() != null && !baseInfo.getIsPublished()) {
+            return "UNPUBLISHED";
+        }
+        return "DRAFT";
     }
 
     /**
