@@ -1,6 +1,7 @@
 package project.ktc.springboot_app.cache.interfaces;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Set;
 
 import project.ktc.springboot_app.cache.services.CacheStats;
@@ -48,6 +49,16 @@ public interface CacheService {
      * @return cached data or null if not found
      */
     <T> T get(String key, Class<T> clazz);
+
+    /**
+     * Retrieve and cast data from cache as a List
+     * 
+     * @param key          cache key
+     * @param elementClass expected element type in the list
+     * @param <T>          element type
+     * @return cached list or null if not found
+     */
+    <T> List<T> getList(String key, Class<T> elementClass);
 
     /**
      * Remove data from cache
