@@ -1,12 +1,11 @@
 # ================================
 # Docker Compose for KTC Learning Platform
 # ================================
-version: "3.8"
 
 services:
   # Spring Boot Application
   app:
-    image: ktc-learning-platform:latest
+    image: vitdien126748/ktc-learning-platform:latest
     container_name: ktc-learning-platform-app
     ports:
       - "8080:8080"
@@ -15,10 +14,10 @@ services:
       SPRING_PROFILES_ACTIVE: docker
 
       # Database connection
-      DB_URL: jdbc:mysql://db:3306/course_management
-      DB_USERNAME: course_user
-      DB_PASSWORD: course_password
-
+      DB_URL: jdbc:mysql://server.aptech.io:3307/sybau
+      DB_USERNAME: sybau_user
+      DB_PASSWORD: sybau_password
+      DB_DRIVER: com.mysql.cj.jdbc.Driver
       # JVM settings
       JVM_OPTS: "-Xmx512m -Xms256m"
     depends_on:
@@ -41,12 +40,12 @@ services:
     image: mysql:8.0
     container_name: ktc-learning-platform-db
     environment:
-      MYSQL_DATABASE: course_management
-      MYSQL_USER: course_user
-      MYSQL_PASSWORD: course_password
+      MYSQL_DATABASE: sybau
+      MYSQL_USER: sybau_user
+      MYSQL_PASSWORD: sybau_password
       MYSQL_ROOT_PASSWORD: root_password
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - db-data:/var/lib/mysql
       - ./db-init:/docker-entrypoint-initdb.d
@@ -71,6 +70,21 @@ services:
     networks:
       - ktc-network
     restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    container_name: ktc-learning-platform-redis
+    ports:
+      - "6380:6379"
+    networks:
+      - ktc-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 # Networks
 networks:
