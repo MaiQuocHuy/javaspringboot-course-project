@@ -66,7 +66,7 @@ public class AdminCourseServiceImp implements AdminCourseService {
     private final CourseReviewStatusRepository courseReviewStatusRepository;
     private final CourseReviewStatusHistoryRepository courseReviewStatusHistoryRepository;
     private final UserRepository userRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     private final NotificationHelper notificationHelper;
     private final CoursesCacheService coursesCacheService;
     private final InstructorCacheService instructorCacheService;

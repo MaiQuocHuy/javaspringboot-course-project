@@ -52,6 +52,9 @@ import project.ktc.springboot_app.course.dto.common.BaseCourseResponseDto;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.course.repositories.InstructorCourseRepository;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
+import project.ktc.springboot_app.instructor_application.entity.InstructorApplication;
+import project.ktc.springboot_app.instructor_application.entity.InstructorApplication.ApplicationStatus;
+import project.ktc.springboot_app.instructor_application.repositories.InstructorApplicationRepository;
 import project.ktc.springboot_app.instructor_student.repositories.InstructorStudentRepository;
 import project.ktc.springboot_app.course.repositories.CourseReviewStatusRepository;
 import project.ktc.springboot_app.course.repositories.CourseReviewStatusHistoryRepository;
@@ -79,6 +82,7 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final InstructorApplicationRepository instructorApplicationRepository;
     private final CloudinaryServiceImp cloudinaryService;
     private final FileValidationService fileValidationService;
     private final InstructorSectionRepository sectionRepository;
@@ -423,6 +427,18 @@ public class InstructorCourseServiceImp implements InstructorCourseService {
             if (instructor == null) {
                 log.warn("Instructor not found with ID: {}", instructorId);
                 return ApiResponseUtil.notFound("Instructor not found");
+            }
+
+            // Check if instructor application has been approved
+            Optional<ApplicationStatus> application = instructorApplicationRepository
+                    .findLatestApplicationStatusByUserId(instructorId);
+
+            if (application.isPresent() &&
+                    (application.get().equals(ApplicationStatus.REJECTED)
+                            || application.get().equals(ApplicationStatus.PENDING))) {
+
+                log.warn("Instructor application not approved for ID: {}", instructorId);
+                return ApiResponseUtil.forbidden("Instructor application not approved");
             }
 
             // Check slug for uniqueness with normalization and case-insensitive comparison

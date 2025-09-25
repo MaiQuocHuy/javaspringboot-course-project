@@ -60,7 +60,11 @@ public class SecurityConfig {
                                                                 "/api/stripe/webhook",
                                                                 "/api/ws-chat/**", // STOMP handshake + SockJS
                                                                 "/api/ws-chat", // direct endpoint
-                                                                "/error")
+                                                                "/error",
+                                                                "/health",
+                                                                "/actuator/health",
+                                                                "/actuator/info",
+                                                                "/actuator/**")
                                                 .permitAll()
                                                 // Admin
                                                 // .requestMatchers("/api/admin/**").hasRole("ADMIN")

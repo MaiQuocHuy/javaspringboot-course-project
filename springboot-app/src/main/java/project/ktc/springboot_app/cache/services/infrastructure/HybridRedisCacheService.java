@@ -2,9 +2,7 @@ package project.ktc.springboot_app.cache.services.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
 import project.ktc.springboot_app.cache.interfaces.CacheService;
 import project.ktc.springboot_app.cache.services.CacheStats;
 
@@ -12,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.util.Set;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,8 +22,6 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author KTC Team
  */
-@Service
-@Primary
 @Slf4j
 @RequiredArgsConstructor
 public class HybridRedisCacheService implements CacheService {
@@ -37,6 +34,7 @@ public class HybridRedisCacheService implements CacheService {
     private volatile boolean directConnectionAvailable = true;
     private volatile long lastDirectConnectionCheck = 0;
     private static final long CONNECTION_CHECK_INTERVAL = 30000; // 30 seconds
+    private volatile boolean initialized = false;
 
     @Override
     public void store(String key, Object value) {
@@ -163,6 +161,52 @@ public class HybridRedisCacheService implements CacheService {
         } catch (Exception e) {
             log.error("Error retrieving data from cache with key: {} and type: {} via both direct and REST",
                     key, clazz.getSimpleName(), e);
+            return null;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getList(String key, Class<T> elementClass) {
+        if (tryDirectConnection()) {
+            try {
+                Object value = redisTemplate.opsForValue().get(key);
+                if (value != null && value instanceof List) {
+                    log.debug("Cache hit via direct connection for list key: {} with element type: {}",
+                            key, elementClass.getSimpleName());
+                    markDirectConnectionWorking();
+                    return (List<T>) value;
+                } else if (value != null) {
+                    log.warn("Cache value type mismatch via direct connection for key: {}. Expected: List<{}>, Got: {}",
+                            key, elementClass.getSimpleName(), value.getClass().getSimpleName());
+                } else {
+                    log.debug("Cache miss via direct connection for list key: {}", key);
+                }
+                markDirectConnectionWorking();
+                return null;
+            } catch (Exception e) {
+                log.warn("Direct Redis connection failed for list get, falling back to REST API: {}", e.getMessage());
+                markDirectConnectionFailed();
+            }
+        }
+
+        // Fallback to REST API
+        try {
+            String jsonValue = restService.get(key);
+            if (jsonValue != null) {
+                // Use Jackson TypeFactory to create the correct List<T> type
+                List<T> value = objectMapper.readValue(jsonValue,
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, elementClass));
+                log.debug("Cache hit via REST API for list key: {} with element type: {}",
+                        key, elementClass.getSimpleName());
+                return value;
+            } else {
+                log.debug("Cache miss via REST API for list key: {}", key);
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Error retrieving list from cache with key: {} and element type: {} via both direct and REST",
+                    key, elementClass.getSimpleName(), e);
             return null;
         }
     }
@@ -416,9 +460,37 @@ public class HybridRedisCacheService implements CacheService {
     }
 
     /**
+     * Initialize and test Redis connection at startup
+     */
+    private void initializeConnection() {
+        if (initialized) {
+            return;
+        }
+
+        initialized = true;
+        log.info("Initializing Redis connection test...");
+
+        try {
+            // Test direct connection
+            redisTemplate.hasKey("startup-connection-test");
+            log.info("Direct Redis connection available at startup");
+            directConnectionAvailable = true;
+        } catch (Exception e) {
+            log.warn("Direct Redis connection failed at startup, will use REST API fallback: {}", e.getMessage());
+            directConnectionAvailable = false;
+            lastDirectConnectionCheck = System.currentTimeMillis();
+        }
+    }
+
+    /**
      * Check if we should try the direct connection
      */
     private boolean tryDirectConnection() {
+        // Initialize connection on first use
+        if (!initialized) {
+            initializeConnection();
+        }
+
         if (directConnectionAvailable) {
             return true;
         }
@@ -428,7 +500,17 @@ public class HybridRedisCacheService implements CacheService {
         if (now - lastDirectConnectionCheck > CONNECTION_CHECK_INTERVAL) {
             lastDirectConnectionCheck = now;
             log.debug("Retrying direct Redis connection check...");
-            return true;
+
+            // Test the connection before marking it as available
+            try {
+                redisTemplate.hasKey("connection-test");
+                log.info("Direct Redis connection test successful, marking as available");
+                directConnectionAvailable = true;
+                return true;
+            } catch (Exception e) {
+                log.debug("Direct Redis connection test failed: {}", e.getMessage());
+                return false;
+            }
         }
 
         return false;
@@ -454,4 +536,5 @@ public class HybridRedisCacheService implements CacheService {
             lastDirectConnectionCheck = System.currentTimeMillis();
         }
     }
+
 }

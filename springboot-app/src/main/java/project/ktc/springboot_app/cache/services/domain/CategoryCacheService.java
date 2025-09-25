@@ -59,13 +59,12 @@ public class CategoryCacheService {
      * 
      * @return cached category list or null if not found
      */
-    @SuppressWarnings("unchecked")
     public List<CategoryResponseDto> getCategories() {
         try {
             String cacheKey = cacheKeyBuilder.buildCategoriesListKey();
             log.debug("Retrieving categories list from cache with key: {}", cacheKey);
 
-            List<CategoryCacheDto> cacheDtos = (List<CategoryCacheDto>) cacheService.get(cacheKey);
+            List<CategoryCacheDto> cacheDtos = cacheService.getList(cacheKey, CategoryCacheDto.class);
 
             if (cacheDtos != null) {
                 log.debug("Cache hit for categories - {} categories found", cacheDtos.size());
