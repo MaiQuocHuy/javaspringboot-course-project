@@ -84,7 +84,7 @@ public class StripeController {
 
             // Check if payment with courseId and user has exists
             Optional<Payment> paymentOpt = paymentService.findPaymentByCourseIdAndUserId(course.getId(), currentUserId);
-            if (paymentOpt.isPresent()) {
+            if (paymentOpt.isPresent() && !(paymentOpt.get().getStatus() == Payment.PaymentStatus.FAILED)) {
                 return ApiResponseUtil.badRequest("Payment with courseId and user has already exists");
             }
 
