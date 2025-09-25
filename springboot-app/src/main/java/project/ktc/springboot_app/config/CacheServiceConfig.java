@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import project.ktc.springboot_app.cache.interfaces.CacheService;
 import project.ktc.springboot_app.cache.services.infrastructure.HybridRedisCacheService;
@@ -22,7 +22,6 @@ import project.ktc.springboot_app.cache.services.infrastructure.UpstashRedisRest
 public class CacheServiceConfig {
 
     @Bean
-    @Primary
     public CacheService hybridCacheService(
             RedisTemplate<String, Object> redisTemplate,
             UpstashRedisRestService upstashRedisRestService,
@@ -33,7 +32,7 @@ public class CacheServiceConfig {
     }
 
     @Bean
-    @Primary
+    @Qualifier("cacheObjectMapper")
     public ObjectMapper cacheObjectMapper() {
         log.info("Configuring ObjectMapper for cache serialization");
         ObjectMapper mapper = new ObjectMapper();
