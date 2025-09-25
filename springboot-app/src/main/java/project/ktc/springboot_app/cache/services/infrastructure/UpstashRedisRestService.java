@@ -3,6 +3,7 @@ package project.ktc.springboot_app.cache.services.infrastructure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -20,15 +21,17 @@ import java.nio.charset.StandardCharsets;
  * 
  * This service provides Redis functionality using Upstash REST API
  * as an alternative when direct TCP connection to Redis is blocked.
+ * Only available in production profile.
  * 
  * @author KTC Team
  */
 @Slf4j
 @Service
+@Profile("prod")
 @RequiredArgsConstructor
 public class UpstashRedisRestService {
 
-    @Value("${upstash.redis.rest.url}")
+    @Value("${upstash.redis.rest.url:localhost}")
     private String restUrl;
 
     @Value("${upstash.redis.rest.token}")

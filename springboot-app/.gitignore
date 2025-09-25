@@ -40,3 +40,6 @@ build/
 .github/prompts/
 .qoder/rules/
 .qoder/quests/
+
+.env.dev
+.env.prod
