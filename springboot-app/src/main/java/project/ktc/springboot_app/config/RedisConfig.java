@@ -125,7 +125,7 @@ public class RedisConfig {
                 log.info("Configuring LOCAL Redis connection to {}:{} with database {} (Profile: dev)",
                                 redisHost, redisPort, database);
 
-                // Redis standalone configuration
+                // Redis standalone configuration for remote
                 RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
                 redisConfig.setHostName(redisHost);
                 redisConfig.setPort(redisPort);
