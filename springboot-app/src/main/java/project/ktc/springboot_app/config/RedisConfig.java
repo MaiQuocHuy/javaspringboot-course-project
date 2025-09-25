@@ -19,6 +19,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -81,30 +82,67 @@ public class RedisConfig {
         private boolean sslEnabled;
 
         /**
-         * Redis Connection Factory using Lettuce with connection pooling
+         * Local Redis Connection Factory for development profile
+         * - Uses local Redis server without SSL
+         * - Optimized for development with shorter timeouts
          */
-        @Bean
-        @Primary
-        public RedisConnectionFactory redisConnectionFactory() {
-                log.info("Configuring Redis connection to {}:{} with database {} (SSL: {})", redisHost, redisPort,
-                                database, sslEnabled);
+        @Bean("redisConnectionFactory")
+        @Profile("dev")
+        public RedisConnectionFactory localRedisConnectionFactory() {
+                log.info("Configuring LOCAL Redis connection to {}:{} with database {} (Profile: dev)",
+                                redisHost, redisPort, database);
 
-                // Redis standalone configuration
+                // Redis standalone configuration for local
+                RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
+                redisConfig.setHostName(redisHost);
+                redisConfig.setPort(redisPort);
+
+                // For local dev, password might be empty or simple
+                if (redisPassword != null && !redisPassword.trim().isEmpty()) {
+                        redisConfig.setPassword(redisPassword);
+                }
+                redisConfig.setDatabase(database);
+
+                // Local development configuration - shorter timeouts for faster feedback
+                LettucePoolingClientConfiguration poolConfig = LettucePoolingClientConfiguration.builder()
+                                .commandTimeout(Duration.ofSeconds(1)) // Shorter timeout for local
+                                .shutdownTimeout(Duration.ofMillis(100))
+                                .build();
+
+                LettuceConnectionFactory factory = new LettuceConnectionFactory(redisConfig, poolConfig);
+                factory.setValidateConnection(true);
+
+                log.info("Local Redis connection factory configured successfully");
+                return factory;
+        }
+
+        /**
+         * Remote Redis Connection Factory for production profile
+         * - Uses remote Redis server with SSL support
+         * - Optimized for production with longer timeouts and SSL
+         */
+        @Bean("redisConnectionFactory")
+        @Profile("prod")
+        public RedisConnectionFactory remoteRedisConnectionFactory() {
+                log.info("Configuring REMOTE Redis connection to {}:{} with database {} (SSL: {}) (Profile: prod)",
+                                redisHost, redisPort, database, sslEnabled);
+
+                // Redis standalone configuration for remote
                 RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
                 redisConfig.setHostName(redisHost);
                 redisConfig.setPort(redisPort);
                 redisConfig.setPassword(redisPassword);
                 redisConfig.setDatabase(database);
 
-                // Lettuce connection pooling configuration with SSL support
+                // Production configuration with SSL support
                 LettucePoolingClientConfigurationBuilder poolConfigBuilder = LettucePoolingClientConfiguration.builder()
-                                .commandTimeout(timeout)
+                                .commandTimeout(timeout) // Use configured timeout
                                 .shutdownTimeout(shutdownTimeout);
 
-                // Enable SSL if configured
+                // Enable SSL for production
                 if (sslEnabled) {
                         poolConfigBuilder.useSsl();
-                        log.info("SSL enabled for Redis connection");
+                        log.info("SSL enabled for remote Redis connection");
                 }
 
                 LettucePoolingClientConfiguration poolConfig = poolConfigBuilder.build();
@@ -112,6 +150,7 @@ public class RedisConfig {
                 LettuceConnectionFactory factory = new LettuceConnectionFactory(redisConfig, poolConfig);
                 factory.setValidateConnection(true);
 
+                log.info("Remote Redis connection factory configured successfully");
                 return factory;
         }
 
