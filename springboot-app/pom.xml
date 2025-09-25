@@ -73,6 +73,12 @@
 			<scope>test</scope>
 		</dependency>
 		
+		<!-- Spring Boot Actuator for health checks -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		
 		<!-- H2 Database for testing -->
 		<dependency>
 			<groupId>com.h2database</groupId>
