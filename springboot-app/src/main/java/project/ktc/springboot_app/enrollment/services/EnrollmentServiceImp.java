@@ -448,7 +448,10 @@ public class EnrollmentServiceImp implements EnrollmentService {
 
             coursesCacheService.checkAndInvalidateForEnrollmentChange(courseId, course.getSlug(),
                     previousEnrollmentCount, currentEnrollmentCount);
+
             cacheInvalidationService.invalidateInstructorStatisticsOnEnrollment(course.getInstructor().getId());
+
+            coursesCacheService.invalidateCourseCache(courseId);
 
             notificationHelper.createInstructorNewStudentEnrollmentNotification(
                     enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(),

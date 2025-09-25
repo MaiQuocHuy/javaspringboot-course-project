@@ -16,9 +16,19 @@ public class SpringbootAppApplication {
 
 		// Environment configuration - check for .env file first, then fall back to
 		// system environment variables
+		// String profile = System.getProperty("spring.profiles.active", "dev");
+		String profile = System.getenv("SPRING_PROFILES_ACTIVE");
+
+		// DEBUG: In ra để kiểm tra
+		System.out.println("=== DEBUG INFO ===");
+		System.out.println("Current profile: " + profile);
+		System.out.println("SPRING_PROFILES_ACTIVE from env: " + System.getenv("SPRING_PROFILES_ACTIVE"));
+		System.out.println("SPRING_PROFILES_ACTIVE from property: " + System.getProperty("SPRING_PROFILES_ACTIVE"));
+
 		Dotenv tempDotenv = null;
 		try {
 			tempDotenv = Dotenv.configure()
+					.filename(".env." + profile)
 					.ignoreIfMissing()
 					.load();
 			System.out.println("Loaded .env file successfully");
@@ -49,6 +59,7 @@ public class SpringbootAppApplication {
 		};
 
 		// Set system properties from environment variables
+		setSystemPropertyIfNotNull("SPRING_PROFILES_ACTIVE", getEnv.apply("SPRING_PROFILES_ACTIVE"));
 		setSystemPropertyIfNotNull("DB_URL", getEnv.apply("DB_URL"));
 		setSystemPropertyIfNotNull("DB_USERNAME", getEnv.apply("DB_USERNAME"));
 		setSystemPropertyIfNotNull("DB_PASSWORD", getEnv.apply("DB_PASSWORD"));
@@ -72,8 +83,10 @@ public class SpringbootAppApplication {
 		setSystemPropertyIfNotNull("REDIS_PORT", getEnvWithDefault.apply("REDIS_PORT", ""));
 		setSystemPropertyIfNotNull("REDIS_PASSWORD", getEnv.apply("REDIS_PASSWORD"));
 		setSystemPropertyIfNotNull("REDIS_SSL_ENABLED", getEnvWithDefault.apply("REDIS_SSL_ENABLED", "true"));
-		setSystemPropertyIfNotNull("UPSTASH_REDIS_REST_URL", getEnv.apply("UPSTASH_REDIS_REST_URL"));
-		setSystemPropertyIfNotNull("UPSTASH_REDIS_REST_TOKEN", getEnv.apply("UPSTASH_REDIS_REST_TOKEN"));
+		setSystemPropertyIfNotNull("UPSTASH_REDIS_REST_URL",
+				getEnvWithDefault.apply("UPSTASH_REDIS_REST_URL", "localhost"));
+		setSystemPropertyIfNotNull("UPSTASH_REDIS_REST_TOKEN", getEnvWithDefault.apply("UPSTASH_REDIS_REST_TOKEN",
+				"ASCwAAImcDI0ODYwOTVhODMwZWE0NmRhOTAzMTFkZmM4YjVjZWZjN3AyODM2OA"));
 
 		SpringApplication.run(SpringbootAppApplication.class, args);
 	}
