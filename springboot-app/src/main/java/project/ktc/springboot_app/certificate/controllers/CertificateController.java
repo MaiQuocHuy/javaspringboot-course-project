@@ -289,9 +289,9 @@ public class CertificateController {
         // Test endpoints for PDF generation
         @GetMapping("/test-pdf")
         @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Test PDF generation", description = "Test endpoint to verify HTML-to-PDF API integration")
+        @Operation(summary = "Test PDF generation", description = "Test endpoint to verify html-to-image API integration")
         public ResponseEntity<byte[]> testPdfGeneration() {
-                log.info("Testing PDF generation via HTML-to-PDF API");
+                log.info("Testing PDF generation via html-to-image API");
 
                 try {
                         byte[] pdfBytes = certificatePdfService.testSimplePdf();

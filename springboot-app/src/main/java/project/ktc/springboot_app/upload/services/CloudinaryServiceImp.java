@@ -78,6 +78,51 @@ public class CloudinaryServiceImp implements CloudinaryService {
     }
 
     /**
+     * Upload certificate image to Cloudinary
+     * 
+     * @param imageData Image file as byte array
+     * @param filename  Name of the image file
+     * @return Image upload response with URL
+     * @throws IOException if upload fails
+     */
+    @Override
+    public ImageUploadResponseDto uploadCertificateImage(byte[] imageData, String filename) throws IOException {
+        log.info("Starting certificate image upload for file: {}", filename);
+
+        try {
+            // Generate unique public ID
+            String publicId = generatePublicId(filename);
+
+            // Upload to Cloudinary
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                    imageData,
+                    ObjectUtils.asMap(
+                            "public_id", publicId,
+                            "folder", "certificates", // Organize uploads in certificates folder
+                            "resource_type", "image",
+                            "quality", "auto:good", // Optimize image quality
+                            "fetch_format", "auto" // Auto-optimize format
+                    ));
+
+            // Extract response data
+            ImageUploadResponseDto response = buildResponseDto(uploadResult, filename);
+
+            log.info("Certificate image uploaded successfully. URL: {}, Public ID: {}",
+                    response.getUrl(), response.getPublicId());
+
+            return response;
+
+        } catch (IOException e) {
+            log.error("Failed to upload certificate image: {}", filename, e);
+            throw new IOException("Failed to upload certificate image: " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Unexpected error during certificate image upload: {}", filename, e);
+            throw new IOException("Unexpected error occurred during certificate image upload", e);
+        }
+    }
+
+    /**
      * Delete image from Cloudinary
      * 
      * @param publicId The public ID of the image to delete
@@ -116,16 +161,14 @@ public class CloudinaryServiceImp implements CloudinaryService {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String uuid = UUID.randomUUID().toString().substring(0, 8);
         String filename = originalFilename != null ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_") : "image";
-        String extension = "";
 
         // Remove file extension as Cloudinary handles it
         int lastDotIndex = filename.lastIndexOf('.');
         if (lastDotIndex > 0) {
-            extension = filename.substring(lastDotIndex);
             filename = filename.substring(0, lastDotIndex);
         }
 
-        return String.format("%s_%s_%s%s", filename, timestamp, uuid, extension);
+        return String.format("%s_%s_%s", filename, timestamp, uuid);
     }
 
     /**
@@ -202,6 +245,18 @@ public class CloudinaryServiceImp implements CloudinaryService {
                 .publicId((String) uploadResult.get("public_id"))
                 .originalFilename(file.getOriginalFilename())
                 .size(file.getSize())
+                .format((String) uploadResult.get("format"))
+                .width((Integer) uploadResult.get("width"))
+                .height((Integer) uploadResult.get("height"))
+                .build();
+    }
+
+    private ImageUploadResponseDto buildResponseDto(Map<String, Object> uploadResult, String filename) {
+        return ImageUploadResponseDto.builder()
+                .url((String) uploadResult.get("secure_url"))
+                .publicId((String) uploadResult.get("public_id"))
+                .originalFilename(filename)
+                .size(((Number) uploadResult.get("bytes")).longValue()) // Get file size from upload result
                 .format((String) uploadResult.get("format"))
                 .width((Integer) uploadResult.get("width"))
                 .height((Integer) uploadResult.get("height"))

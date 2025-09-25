@@ -39,6 +39,8 @@ import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -55,6 +57,7 @@ public class StudentLessonServiceImp implements StudentService {
     private final ObjectMapper objectMapper;
     private final CertificateService certificateService;
     private final CoursesCacheService coursesCacheService;
+    private final Executor taskExecutor;
 
     /**
      * Mark a lesson as completed by the current student.
@@ -176,12 +179,21 @@ public class StudentLessonServiceImp implements StudentService {
                         enrollmentRepository.save(enrollment);
                         log.info("Updated enrollment status to COMPLETED for user {} in course {}", userId, courseId);
 
-                        CreateCertificateDto dto = new CreateCertificateDto();
-                        dto.setUserId(userId);
-                        dto.setCourseId(courseId);
+                        // Create certificate asynchronously to avoid blocking lesson completion
+                        CompletableFuture.runAsync(() -> {
+                            try {
+                                CreateCertificateDto dto = new CreateCertificateDto();
+                                dto.setUserId(userId);
+                                dto.setCourseId(courseId);
 
-                        // certificateService.createCertificateAsync(dto);
-                        certificateService.createCertificate(dto);
+                                certificateService.createCertificate(dto);
+                                log.info("Certificate created successfully for user {} and course {}", userId,
+                                        courseId);
+                            } catch (Exception e) {
+                                log.error("Failed to create certificate for user {} and course {}: {}", userId,
+                                        courseId, e.getMessage(), e);
+                            }
+                        }, taskExecutor);
                     }
                 }
             }
