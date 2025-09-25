@@ -13,13 +13,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * Service for generating PDF certificates using HTML-to-PDF API
+ * Service for generating PDF certificates using html-to-image API
  * Converts HTML templates to high-quality PDF certificates
  * 
  * Features:
  * - Loads HTML template from resources
  * - Replaces placeholders with dynamic data
- * - Uses external HTML-to-PDF API for professional PDF conversion
+ * - Uses external html-to-image API for professional PDF conversion
  * - Comprehensive error handling and logging
  */
 @Service
@@ -30,7 +30,7 @@ public class CertificatePdfService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.ENGLISH);
 
     // HTML to PDF API endpoint (configurable via application.properties)
-    @Value("${certificate.pdf.api.url:http://localhost:1234/html-to-pdf}")
+    @Value("${certificate.pdf.api.url:http://localhost:1234/html-to-image}")
     private String pdfApiUrl;
 
     private final RestTemplate restTemplate;
@@ -38,25 +38,25 @@ public class CertificatePdfService {
     // Constructor to initialize RestTemplate with timeout configurations
     public CertificatePdfService() {
         this.restTemplate = new RestTemplate();
-        log.info("RestTemplate initialized for HTML-to-PDF API calls");
+        log.info("RestTemplate initialized for html-to-image API calls");
     }
 
     /**
-     * Generate PDF certificate using HTML-to-PDF API
+     * Generate PDF certificate using html-to-image API
      * 
      * @param certificateData Certificate information
      * @return PDF as byte array
      * @throws IOException if PDF generation fails
      */
     public byte[] generateCertificatePdf(CertificateDataDto certificateData) throws IOException {
-        log.info("Generating PDF certificate using HTML-to-PDF API for user: {} and course: {}",
+        log.info("Generating PDF certificate using html-to-image API for user: {} and course: {}",
                 certificateData.getStudentName(), certificateData.getCourseTitle());
 
         try {
             // 1. Load and process HTML template
             String htmlContent = loadAndProcessHtmlTemplate(certificateData);
 
-            // 2. Call HTML-to-PDF API
+            // 2. Call html-to-image API
             byte[] pdfBytes = callHtmlToPdfApi(htmlContent);
 
             log.info("PDF certificate generated successfully using API. Size: {} bytes", pdfBytes.length);
@@ -77,12 +77,12 @@ public class CertificatePdfService {
      * @throws IOException if PDF generation fails
      */
     public byte[] generateCertificatePdfDirect(CertificateDataDto certificateData) throws IOException {
-        log.info("Using HTML-to-PDF API method for certificate generation (direct call)");
+        log.info("Using html-to-image API method for certificate generation (direct call)");
         return generateCertificatePdf(certificateData);
     }
 
     /**
-     * Call HTML-to-PDF API to convert HTML to PDF
+     * Call html-to-image API to convert HTML to PDF
      * 
      * @param htmlContent HTML content to convert
      * @return PDF as byte array
@@ -90,7 +90,7 @@ public class CertificatePdfService {
      */
     private byte[] callHtmlToPdfApi(String htmlContent) throws IOException {
         try {
-            log.info("Calling HTML-to-PDF API at: {} with HTML content length: {} characters",
+            log.info("Calling html-to-image API at: {} with HTML content length: {} characters",
                     pdfApiUrl, htmlContent.length());
 
             // Create request payload
@@ -111,7 +111,7 @@ public class CertificatePdfService {
                     requestEntity,
                     byte[].class);
 
-            log.info("HTML-to-PDF API responded with status: {}", response.getStatusCode());
+            log.info("html-to-image API responded with status: {}", response.getStatusCode());
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 byte[] pdfBytes = response.getBody();
@@ -130,13 +130,13 @@ public class CertificatePdfService {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Failed to call HTML-to-PDF API: {}", e.getMessage(), e);
-            throw new IOException("HTML-to-PDF API call failed: " + e.getMessage(), e);
+            log.error("Failed to call html-to-image API: {}", e.getMessage(), e);
+            throw new IOException("html-to-image API call failed: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Create request body for HTML-to-PDF API
+     * Create request body for html-to-image API
      * 
      * @param htmlContent HTML content to convert
      * @return Request body map
@@ -259,7 +259,7 @@ public class CertificatePdfService {
     }
 
     /**
-     * Debug method to test HTML-to-PDF API with minimal HTML
+     * Debug method to test html-to-image API with minimal HTML
      * For testing purposes
      */
     public byte[] testSimplePdf() throws IOException {
@@ -281,7 +281,7 @@ public class CertificatePdfService {
                 </head>
                 <body>
                     <h1>TEST CERTIFICATE</h1>
-                    <p>This is a test to verify HTML-to-PDF API is working.</p>
+                    <p>This is a test to verify html-to-image API is working.</p>
                     <p>Student: TEST STUDENT</p>
                     <p>Course: TEST COURSE</p>
                 </body>

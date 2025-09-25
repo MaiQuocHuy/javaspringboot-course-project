@@ -26,7 +26,7 @@ import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 import project.ktc.springboot_app.upload.interfaces.CloudinaryService;
-import project.ktc.springboot_app.upload.dto.DocumentUploadResponseDto;
+import project.ktc.springboot_app.upload.dto.ImageUploadResponseDto;
 import project.ktc.springboot_app.email.interfaces.EmailService;
 
 import java.time.LocalDateTime;
@@ -45,7 +45,7 @@ public class CertificateServiceImp implements CertificateService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final CertificatePdfService certificatePdfService;
+    private final CertificateImageService certificateImageService;
     private final CloudinaryService cloudinaryService;
     private final EmailService emailService;
     private final ApplicationContext applicationContext;
@@ -78,9 +78,10 @@ public class CertificateServiceImp implements CertificateService {
             }
 
             // 4. Validate user completed all lessons in the course
-            if (!hasUserCompletedAllLessons(user.getId(), course.getId())) {
-                return ApiResponseUtil.badRequest("User has not completed all lessons in the course");
-            }
+            // if (!hasUserCompletedAllLessons(user.getId(), course.getId())) {
+            // return ApiResponseUtil.badRequest("User has not completed all lessons in the
+            // course");
+            // }
 
             // 5. Validate user is enrolled in the course
             if (!enrollmentRepository.existsByUserIdAndCourseId(user.getId(), course.getId())) {
@@ -104,11 +105,11 @@ public class CertificateServiceImp implements CertificateService {
             log.info("Certificate created successfully with ID: {} and code: {}",
                     savedCertificate.getId(), savedCertificate.getCertificateCode());
 
-            // 9. Generate and upload PDF asynchronously
+            // 9. Generate and upload image asynchronously
             try {
-                generateAndUploadCertificatePdf(savedCertificate);
+                generateAndUploadCertificateImage(savedCertificate);
             } catch (Exception e) {
-                log.error("Failed to generate/upload PDF for certificate {}: {}",
+                log.error("Failed to generate/upload image for certificate {}: {}",
                         savedCertificate.getId(), e.getMessage(), e);
                 // Don't fail the certificate creation, just log the error
             }
@@ -227,8 +228,8 @@ public class CertificateServiceImp implements CertificateService {
 
             log.info("Certificate reloaded successfully: {}", certificate.getCertificateCode());
 
-            // Generate PDF and upload to cloud storage
-            generateAndUploadCertificatePdf(certificate);
+            // Generate image and upload to cloud storage
+            generateAndUploadCertificateImage(certificate);
 
             log.info("Async processing completed successfully for certificate: {}", certificate.getCertificateCode());
 
@@ -478,13 +479,13 @@ public class CertificateServiceImp implements CertificateService {
             certificate.setFileUrl(null);
             certificateRepository.save(certificate);
 
-            // Regenerate PDF asynchronously
-            generateAndUploadCertificatePdf(certificate);
+            // Regenerate image asynchronously
+            generateAndUploadCertificateImage(certificate);
 
             // Build response
             CertificateResponseDto responseDto = mapToCertificateResponseDto(certificate);
 
-            return ApiResponseUtil.success(responseDto, "Certificate PDF regeneration started");
+            return ApiResponseUtil.success(responseDto, "Certificate image regeneration started");
 
         } catch (Exception e) {
             log.error("Error regenerating certificate PDF: {}", e.getMessage(), e);
@@ -582,13 +583,13 @@ public class CertificateServiceImp implements CertificateService {
     }
 
     /**
-     * Generate certificate PDF and upload to cloud storage asynchronously
+     * Generate certificate image and upload to cloud storage asynchronously
      */
-    private void generateAndUploadCertificatePdf(Certificate certificate) {
+    private void generateAndUploadCertificateImage(Certificate certificate) {
         try {
-            log.info("Starting PDF generation for certificate: {}", certificate.getCertificateCode());
+            log.info("Starting image generation for certificate: {}", certificate.getCertificateCode());
 
-            // Prepare certificate data for PDF generation
+            // Prepare certificate data for image generation
             CertificateDataDto certificateData = CertificateDataDto.builder()
                     .studentName(certificate.getUser().getName())
                     .studentEmail(certificate.getUser().getEmail())
@@ -601,18 +602,18 @@ public class CertificateServiceImp implements CertificateService {
                                     : "General")
                     .build();
 
-            // Generate PDF
-            byte[] pdfData = certificatePdfService.generateCertificatePdfDirect(certificateData);
+            // Generate Image
+            byte[] imageData = certificateImageService.generateCertificateImageDirect(certificateData);
 
             // Generate filename
-            String filename = certificatePdfService.generatePdfFilename(
+            String filename = certificateImageService.generateImageFilename(
                     certificate.getUser().getId(),
                     certificate.getCourse().getId(),
                     certificate.getCertificateCode());
 
             // Upload to Cloudinary
-            DocumentUploadResponseDto uploadResponse = cloudinaryService.uploadCertificatePdf(pdfData, filename);
-            log.info("Url Document: {}", uploadResponse);
+            ImageUploadResponseDto uploadResponse = cloudinaryService.uploadCertificateImage(imageData, filename);
+            log.info("Url Image: {}", uploadResponse);
             // Update certificate with file URL
             certificate.setFileUrl(uploadResponse.getUrl());
             certificateRepository.save(certificate);
