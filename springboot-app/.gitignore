@@ -43,6 +43,3 @@ build/
 
 .env.dev
 .env.prod
-
-application-dev.properties
-application-prod.properties

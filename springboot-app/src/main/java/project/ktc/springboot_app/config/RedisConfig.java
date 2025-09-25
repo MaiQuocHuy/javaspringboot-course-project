@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -125,6 +126,7 @@ public class RedisConfig {
                 log.info("Configuring LOCAL Redis connection to {}:{} with database {} (Profile: dev)",
                                 redisHost, redisPort, database);
 
+                // Redis standalone configuration for remote
                 // Redis standalone configuration for remote
                 RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
                 redisConfig.setHostName(redisHost);
