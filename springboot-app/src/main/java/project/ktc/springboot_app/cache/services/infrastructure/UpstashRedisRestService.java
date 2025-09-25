@@ -1,5 +1,6 @@
 package project.ktc.springboot_app.cache.services.infrastructure;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -24,6 +25,7 @@ import java.nio.charset.StandardCharsets;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UpstashRedisRestService {
 
     @Value("${upstash.redis.rest.url}")
@@ -32,13 +34,8 @@ public class UpstashRedisRestService {
     @Value("${upstash.redis.rest.token}")
     private String restToken;
 
-    private final RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper;
-
-    public UpstashRedisRestService() {
-        this.restTemplate = new RestTemplate();
-        this.objectMapper = new ObjectMapper();
-    }
 
     /**
      * Test Redis connectivity via REST API

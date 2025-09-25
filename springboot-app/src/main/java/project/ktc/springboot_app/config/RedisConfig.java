@@ -2,7 +2,16 @@ package project.ktc.springboot_app.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -117,9 +126,8 @@ public class RedisConfig {
                 RedisTemplate<String, Object> template = new RedisTemplate<>();
                 template.setConnectionFactory(connectionFactory);
 
-                // Configure JSON serializer
-                ObjectMapper objectMapper = new ObjectMapper();
-                objectMapper.registerModule(new JavaTimeModule());
+                // Configure JSON serializer using the main ObjectMapper
+                ObjectMapper objectMapper = createConfiguredObjectMapper();
                 objectMapper.activateDefaultTyping(
                                 objectMapper.getPolymorphicTypeValidator(),
                                 ObjectMapper.DefaultTyping.NON_FINAL,
@@ -204,12 +212,34 @@ public class RedisConfig {
          * Create Jackson JSON serializer for Redis values
          */
         private GenericJackson2JsonRedisSerializer createJsonSerializer() {
-                ObjectMapper objectMapper = new ObjectMapper();
-                objectMapper.registerModule(new JavaTimeModule());
+                ObjectMapper objectMapper = createConfiguredObjectMapper();
                 objectMapper.activateDefaultTyping(
                                 objectMapper.getPolymorphicTypeValidator(),
                                 ObjectMapper.DefaultTyping.NON_FINAL,
                                 JsonTypeInfo.As.PROPERTY);
                 return new GenericJackson2JsonRedisSerializer(objectMapper);
+        }
+
+        /**
+         * Create ObjectMapper with consistent LocalDateTime configuration matching
+         * JacksonConfig
+         */
+        private ObjectMapper createConfiguredObjectMapper() {
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                // Configure JavaTimeModule with same custom serializers as JacksonConfig
+                JavaTimeModule javaTimeModule = new JavaTimeModule();
+                javaTimeModule.addSerializer(LocalDateTime.class,
+                                new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+                javaTimeModule.addSerializer(LocalDate.class,
+                                new LocalDateSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                javaTimeModule.addSerializer(LocalTime.class,
+                                new LocalTimeSerializer(DateTimeFormatter.ofPattern("HH:mm:ss")));
+
+                objectMapper.registerModule(javaTimeModule);
+                objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                objectMapper.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+
+                return objectMapper;
         }
 }

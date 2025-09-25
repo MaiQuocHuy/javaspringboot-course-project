@@ -1,6 +1,7 @@
 # Tài Liệu Database Schema - Hệ Thống Quản Lý Khóa Học
 
 ## Tổng Quan
+
 Tài liệu này mô tả cấu trúc database của hệ thống quản lý khóa học trực tuyến, bao gồm 31 bảng chính được tổ chức theo các module chức năng.
 
 ---
@@ -8,6 +9,7 @@ Tài liệu này mô tả cấu trúc database của hệ thống quản lý kh�
 ## 1. BẢNG QUẢN LÝ NGƯỜI DÙNG
 
 ### 1.1 users - Bảng Người Dùng
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh người dùng (UUID)
 email VARCHAR(150) NOT NULL UNIQUE - Địa chỉ email đăng nhập
@@ -20,9 +22,11 @@ is_active BOOLEAN DEFAULT TRUE - Trạng thái hoạt động tài khoản
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo tài khoản
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật cuối
 ```
+
 **Quan hệ**: Liên kết với tất cả các bảng khác qua foreign key user_id
 
 ### 1.2 user_roles - Bảng Vai Trò Người Dùng
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh vai trò
 user_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại liên kết users.id
@@ -31,6 +35,7 @@ assigned_by VARCHAR(36) (FK) - Người gán vai trò
 assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian gán vai trò
 is_active BOOLEAN DEFAULT TRUE - Trạng thái hoạt động vai trò
 ```
+
 **Quan hệ**: users.id → user_roles.user_id (CASCADE)
 
 ---
@@ -38,6 +43,7 @@ is_active BOOLEAN DEFAULT TRUE - Trạng thái hoạt động vai trò
 ## 2. BẢNG QUẢN LÝ KHÓA HỌC
 
 ### 2.1 categories - Bảng Danh Mục Khóa Học
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh danh mục
 name VARCHAR(150) NOT NULL UNIQUE - Tên danh mục
@@ -48,9 +54,11 @@ display_order INT DEFAULT 0 - Thứ tự hiển thị
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
+
 **Quan hệ**: Liên kết với courses.category_id
 
 ### 2.2 courses - Bảng Khóa Học
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh khóa học
 title VARCHAR(200) NOT NULL - Tiêu đề khóa học
@@ -71,11 +79,14 @@ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 published_at TIMESTAMP - Thời gian xuất bản
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → courses.instructor_id (RESTRICT)
 - categories.id → courses.category_id (RESTRICT)
 
 ### 2.3 sections - Bảng Chương Học
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh chương
 course_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại courses.id
@@ -86,9 +97,11 @@ is_active BOOLEAN DEFAULT TRUE - Trạng thái hoạt động
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
+
 **Quan hệ**: courses.id → sections.course_id (CASCADE)
 
 ### 2.4 lessons - Bảng Bài Học
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh bài học
 section_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại sections.id
@@ -103,6 +116,7 @@ is_active BOOLEAN DEFAULT TRUE - Trạng thái hoạt động
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
+
 **Quan hệ**: sections.id → lessons.section_id (CASCADE)
 
 ---
@@ -110,6 +124,7 @@ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nh�
 ## 3. BẢNG QUẢN LÝ ĐĂNG KÝ VÀ TIẾN ĐỘ HỌC TẬP
 
 ### 3.1 enrollments - Bảng Đăng Ký Khóa Học
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh đăng ký
 user_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại users.id (học viên)
@@ -123,12 +138,15 @@ certificate_issued BOOLEAN DEFAULT FALSE - Đã cấp chứng chỉ
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → enrollments.user_id (CASCADE)
 - courses.id → enrollments.course_id (CASCADE)
-**Unique**: (user_id, course_id) - Không trùng lặp đăng ký
+  **Unique**: (user_id, course_id) - Không trùng lặp đăng ký
 
 ### 3.2 lesson_progress - Bảng Tiến Độ Bài Học
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh tiến độ
 enrollment_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại enrollments.id
@@ -140,16 +158,19 @@ watch_time_seconds INT DEFAULT 0 - Thời gian xem thực tế (giây)
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - enrollments.id → lesson_progress.enrollment_id (CASCADE)
 - lessons.id → lesson_progress.lesson_id (CASCADE)
-**Unique**: (enrollment_id, lesson_id) - Không trùng lặp tiến độ
+  **Unique**: (enrollment_id, lesson_id) - Không trùng lặp tiến độ
 
 ---
 
 ## 4. BẢNG QUẢN LÝ THANH TOÁN
 
 ### 4.1 payments - Bảng Thanh Toán
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh thanh toán
 user_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại users.id (người thanh toán)
@@ -165,11 +186,14 @@ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 completed_at TIMESTAMP - Thời gian hoàn thành thanh toán
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → payments.user_id (RESTRICT)
 - courses.id → payments.course_id (RESTRICT)
 
 ### 4.2 refunds - Bảng Hoàn Tiền
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh hoàn tiền
 payment_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại payments.id
@@ -182,7 +206,9 @@ processed_at TIMESTAMP - Thời gian xử lý
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - payments.id → refunds.payment_id (RESTRICT)
 - users.id → refunds.user_id (RESTRICT)
 - users.id → refunds.processed_by (SET NULL)
@@ -192,6 +218,7 @@ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nh�
 ## 5. BẢNG ĐÁNH GIÁ VÀ PHẢN HỒI
 
 ### 5.1 reviews - Bảng Đánh Giá Khóa Học
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh đánh giá
 user_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại users.id (người đánh giá)
@@ -205,17 +232,20 @@ approved_at TIMESTAMP - Thời gian duyệt
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → reviews.user_id (CASCADE)
 - courses.id → reviews.course_id (CASCADE)
 - users.id → reviews.approved_by (SET NULL)
-**Unique**: (user_id, course_id) - Một người chỉ đánh giá một lần
+  **Unique**: (user_id, course_id) - Một người chỉ đánh giá một lần
 
 ---
 
 ## 6. BẢNG QUẢN LÝ GIẢNG VIÊN
 
 ### 6.1 instructor_profiles - Bảng Hồ Sơ Giảng Viên
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh hồ sơ
 user_id VARCHAR(36) (FK) NOT NULL UNIQUE - Khóa ngoại users.id
@@ -232,11 +262,14 @@ verified_at TIMESTAMP - Thời gian xác minh
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → instructor_profiles.user_id (CASCADE)
 - users.id → instructor_profiles.verified_by (SET NULL)
 
 ### 6.2 instructor_earnings - Bảng Thu Nhập Giảng Viên
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh thu nhập
 instructor_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại users.id (giảng viên)
@@ -251,12 +284,15 @@ payout_date TIMESTAMP - Ngày chi trả thực tế
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian ghi nhận
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → instructor_earnings.instructor_id (RESTRICT)
 - courses.id → instructor_earnings.course_id (RESTRICT)
 - payments.id → instructor_earnings.payment_id (RESTRICT)
 
 ### 6.3 instructor_applications - Bảng Đơn Xin Làm Giảng Viên
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh đơn đăng ký
 user_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại users.id (người nộp đơn)
@@ -268,7 +304,9 @@ review_notes TEXT - Ghi chú từ người xem xét
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian nộp đơn
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → instructor_applications.user_id (CASCADE)
 - users.id → instructor_applications.reviewed_by (SET NULL)
 
@@ -277,6 +315,7 @@ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nh�
 ## 7. BẢNG BẢO MẬT VÀ PHIÊN LÀM VIỆC
 
 ### 7.1 user_tokens - Bảng Token Người Dùng
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh token
 user_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại users.id
@@ -287,6 +326,7 @@ is_revoked BOOLEAN DEFAULT FALSE - Trạng thái thu hồi token
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 used_at TIMESTAMP - Thời gian sử dụng
 ```
+
 **Quan hệ**: users.id → user_tokens.user_id (CASCADE)
 
 ---
@@ -294,6 +334,7 @@ used_at TIMESTAMP - Thời gian sử dụng
 ## 8. BẢNG KIỂM TRA VÀ QUIZ
 
 ### 8.1 quizzes - Bảng Bài Kiểm Tra
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh quiz
 lesson_id VARCHAR(36) (FK) - Khóa ngoại lessons.id (nếu thuộc bài học)
@@ -307,11 +348,14 @@ is_active BOOLEAN DEFAULT TRUE - Trạng thái hoạt động
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - lessons.id → quizzes.lesson_id (CASCADE)
 - courses.id → quizzes.course_id (CASCADE)
 
 ### 8.2 quiz_questions - Bảng Câu Hỏi Quiz
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh câu hỏi
 quiz_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại quizzes.id
@@ -326,9 +370,11 @@ is_active BOOLEAN DEFAULT TRUE - Trạng thái hoạt động
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
+
 **Quan hệ**: quizzes.id → quiz_questions.quiz_id (CASCADE)
 
 ### 8.3 quiz_attempts - Bảng Lần Làm Quiz
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh lần làm
 user_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại users.id
@@ -343,7 +389,9 @@ started_at TIMESTAMP NOT NULL - Thời gian bắt đầu
 completed_at TIMESTAMP - Thời gian hoàn thành
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → quiz_attempts.user_id (CASCADE)
 - quizzes.id → quiz_attempts.quiz_id (CASCADE)
 
@@ -352,6 +400,7 @@ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 ## 9. BẢNG NHẬT KÝ HỆ THỐNG
 
 ### 9.1 system_logs - Bảng Nhật Ký Hệ Thống
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh log
 user_id VARCHAR(36) (FK) - Khóa ngoại users.id (nếu có)
@@ -363,6 +412,7 @@ user_agent TEXT - Thông tin trình duyệt
 metadata JSON - Dữ liệu bổ sung (JSON)
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian ghi log
 ```
+
 **Quan hệ**: users.id → system_logs.user_id (SET NULL)
 
 ---
@@ -370,6 +420,7 @@ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian ghi log
 ## 10. BẢNG HỆ THỐNG PHÂN QUYỀN (RBAC)
 
 ### 10.1 filter_types - Bảng Loại Bộ Lọc
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh loại bộ lọc
 name VARCHAR(50) NOT NULL UNIQUE - Tên loại bộ lọc
@@ -379,6 +430,7 @@ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nh�
 ```
 
 ### 10.2 resources - Bảng Tài Nguyên Hệ Thống
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh tài nguyên
 name VARCHAR(100) NOT NULL UNIQUE - Tên tài nguyên
@@ -388,9 +440,11 @@ resource_path VARCHAR(255) - Đường dẫn API tài nguyên
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
+
 **Quan hệ**: resources.id → resources.parent_id (CASCADE) - Tự tham chiếu phân cấp
 
 ### 10.3 actions - Bảng Hành Động Hệ Thống
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh hành động
 name VARCHAR(50) NOT NULL UNIQUE - Tên hành động (CREATE, READ, UPDATE, DELETE)
@@ -400,6 +454,7 @@ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nh�
 ```
 
 ### 10.4 permissions - Bảng Quyền Hạn
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh quyền
 resource_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại resources.id
@@ -409,12 +464,15 @@ description TEXT - Mô tả chi tiết quyền hạn
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - resources.id → permissions.resource_id (CASCADE)
 - actions.id → permissions.action_id (CASCADE)
-**Unique**: (resource_id, action_id) - Không trùng lặp quyền
+  **Unique**: (resource_id, action_id) - Không trùng lặp quyền
 
 ### 10.5 role_permissions - Bảng Phân Quyền Vai Trò
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh phân quyền
 role VARCHAR(50) NOT NULL - Tên vai trò (STUDENT, INSTRUCTOR, ADMIN)
@@ -425,16 +483,19 @@ is_granted BOOLEAN DEFAULT TRUE - Trạng thái cấp quyền
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - permissions.id → role_permissions.permission_id (CASCADE)
 - filter_types.id → role_permissions.filter_type_id (SET NULL)
-**Unique**: (role, permission_id) - Không trùng lặp phân quyền
+  **Unique**: (role, permission_id) - Không trùng lặp phân quyền
 
 ---
 
 ## 11. BẢNG HỆ THỐNG GIẢM GIÁ VÀ AFFILIATE
 
 ### 11.1 discounts - Bảng Mã Giảm Giá
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh mã giảm giá
 code VARCHAR(50) NOT NULL UNIQUE - Mã giảm giá duy nhất
@@ -453,9 +514,11 @@ is_active BOOLEAN DEFAULT TRUE - Trạng thái hoạt động
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian tạo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 ```
+
 **Quan hệ**: users.id → discounts.owner_user_id (SET NULL)
 
 ### 11.2 discount_usages - Bảng Lịch Sử Sử Dụng Mã Giảm Giá
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh lần sử dụng
 discount_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại discounts.id
@@ -465,14 +528,17 @@ discount_amount DECIMAL(10,2) NOT NULL - Số tiền được giảm thực tế
 referred_by_user_id VARCHAR(36) (FK) - Khóa ngoại users.id (người giới thiệu)
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP - Thời gian sử dụng
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - discounts.id → discount_usages.discount_id (CASCADE)
 - users.id → discount_usages.user_id (CASCADE)
 - payments.id → discount_usages.payment_id (CASCADE)
 - users.id → discount_usages.referred_by_user_id (SET NULL)
-**Unique**: (discount_id, payment_id) - Không trùng lặp sử dụng
+  **Unique**: (discount_id, payment_id) - Không trùng lặp sử dụng
 
 ### 11.3 affiliate_payouts - Bảng Chi Trả Hoa Hồng Affiliate
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh chi trả
 referred_by_user_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại users.id (người giới thiệu)
@@ -486,7 +552,9 @@ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nh�
 paid_at TIMESTAMP - Thời gian chi trả thực tế
 cancelled_at TIMESTAMP - Thời gian hủy chi trả
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → affiliate_payouts.referred_by_user_id (RESTRICT)
 - courses.id → affiliate_payouts.course_id (RESTRICT)
 - discount_usages.id → affiliate_payouts.discount_usage_id (SET NULL)
@@ -496,6 +564,7 @@ cancelled_at TIMESTAMP - Thời gian hủy chi trả
 ## 12. BẢNG HỆ THỐNG THÔNG BÁO
 
 ### 12.1 notifications - Bảng Thông Báo
+
 ```
 id VARCHAR(36) (PK) NOT NULL - Khóa chính định danh thông báo
 user_id VARCHAR(36) (FK) NOT NULL - Khóa ngoại users.id (người nhận)
@@ -510,7 +579,9 @@ read_at TIMESTAMP - Thời gian đọc thông báo
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE - Thời gian cập nhật
 expired_at TIMESTAMP - Thời gian hết hạn thông báo
 ```
-**Quan hệ**: 
+
+**Quan hệ**:
+
 - users.id → notifications.user_id (CASCADE)
 - resources.id → notifications.resource_id (CASCADE)
 
@@ -519,6 +590,7 @@ expired_at TIMESTAMP - Thời gian hết hạn thông báo
 ## TỔNG KẾT QUAN HỆ CHÍNH
 
 ### Quan Hệ 1-n (One-to-Many):
+
 - **users** → **user_roles** (Một người dùng có nhiều vai trò)
 - **users** → **courses** (Một giảng viên có nhiều khóa học)
 - **users** → **enrollments** (Một học viên đăng ký nhiều khóa học)
@@ -528,11 +600,13 @@ expired_at TIMESTAMP - Thời gian hết hạn thông báo
 - **users** → **payments** (Một người dùng có nhiều thanh toán)
 
 ### Quan Hệ n-n (Many-to-Many):
+
 - **users** ↔ **courses** (qua bảng enrollments)
 - **roles** ↔ **permissions** (qua bảng role_permissions)
 - **discounts** ↔ **payments** (qua bảng discount_usages)
 
 ### Đặc Điểm Kỹ Thuật:
+
 - **UUID Primary Keys**: Tất cả bảng sử dụng VARCHAR(36) UUID làm khóa chính
 - **Timestamp Auditing**: Các bảng có created_at và updated_at để theo dõi thay đổi
 - **Soft Delete**: Sử dụng cột is_active thay vì xóa vật lý
@@ -541,6 +615,7 @@ expired_at TIMESTAMP - Thời gian hết hạn thông báo
 - **Comprehensive Indexing**: Index trên các cột thường được query và foreign keys
 
 ### Performance Considerations:
+
 - **Composite Indexes**: Tạo index phức hợp cho các query thường dùng
 - **Foreign Key Constraints**: Đảm bảo tính toàn vẹn dữ liệu với CASCADE/RESTRICT/SET NULL
 - **Unique Constraints**: Ngăn chặn dữ liệu trùng lặp trên các cột quan trọng
@@ -548,4 +623,4 @@ expired_at TIMESTAMP - Thời gian hết hạn thông báo
 
 ---
 
-*Tài liệu này được tạo tự động từ database schema và sẽ được cập nhật khi có thay đổi cấu trúc.*
+_Tài liệu này được tạo tự động từ database schema và sẽ được cập nhật khi có thay đổi cấu trúc._
