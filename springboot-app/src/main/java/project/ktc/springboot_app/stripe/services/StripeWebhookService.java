@@ -47,6 +47,7 @@ public class StripeWebhookService {
     private final AffiliatePayoutService affiliatePayoutService;
     private final DiscountUsageRepository discountUsageRepository;
     private final NotificationHelper notificationHelper;
+    private final PaymentBackgroundProcessingService paymentBackgroundProcessingService;
 
     /**
      * Processes incoming webhook events from Stripe
@@ -152,7 +153,8 @@ public class StripeWebhookService {
      * This is the main event for course purchases
      */
     private void handleCheckoutSessionCompleted(Event event) {
-        log.info("Handling checkout session completed event: {}", event.getId());
+        long startTime = System.currentTimeMillis();
+        log.info("🚀 Handling checkout session completed event: {} (OPTIMIZED VERSION)", event.getId());
 
         Session session = null;
 
@@ -262,15 +264,26 @@ public class StripeWebhookService {
                 }
             }
 
-            // Send payment confirmation email asynchronously
-            sendPaymentConfirmationEmail(session, courseId, userId);
-            String userName = payment.getUser().getName();
-            notificationHelper.createAdminStudentPaymentNotification(payment.getId(), userName,
-                    payment.getCourse().getTitle(),
-                    payment.getAmount());
+            // 🚀 PERFORMANCE OPTIMIZATION: Move heavy email processing to background
+            // This keeps webhook response time under 5 seconds to prevent Stripe timeouts
+            paymentBackgroundProcessingService.processPaymentBackgroundTasks(
+                    session.getId(), courseId, userId, payment.getId());
+
+            // Log performance improvement
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+            log.info("✅ OPTIMIZED: Checkout session completed in {}ms (target: <5000ms)", duration);
+            
+            if (duration > 5000) {
+                log.warn("⚠️ Webhook processing took {}ms - still over 5 second target!", duration);
+            } else {    
+                log.info("🎯 SUCCESS: Webhook processed in {}ms - under 5 second target!", duration);
+            }
 
         } catch (Exception e) {
-            log.error("Error processing checkout session completion: {}", e.getMessage(), e);
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+            log.error("❌ Error processing checkout session completion after {}ms: {}", duration, e.getMessage(), e);
             throw new RuntimeException("Failed to process checkout session completion", e);
         }
     }

@@ -50,6 +50,14 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "WHERE c.id = :courseId AND c.isPublished = true AND c.isDeleted = false")
         Optional<Course> findPublishedCourseByIdWithDetails(@Param("courseId") String courseId);
 
+        /**
+         * Lightweight query to get basic course info without sections/lessons for fast webhook processing
+         */
+        @Query("SELECT c FROM Course c " +
+                        "LEFT JOIN FETCH c.instructor i " +
+                        "WHERE c.id = :courseId")
+        Optional<Course> findBasicCourseInfoById(@Param("courseId") String courseId);
+
         @Query("SELECT c FROM Course c " +
                         "LEFT JOIN FETCH c.instructor i " +
                         "WHERE c.slug = :slug AND c.isPublished = true AND c.isApproved = true AND c.isDeleted = false")
