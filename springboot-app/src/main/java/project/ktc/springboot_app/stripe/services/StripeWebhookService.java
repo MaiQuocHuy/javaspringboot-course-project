@@ -273,10 +273,10 @@ public class StripeWebhookService {
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
             log.info("✅ OPTIMIZED: Checkout session completed in {}ms (target: <5000ms)", duration);
-            
+
             if (duration > 5000) {
                 log.warn("⚠️ Webhook processing took {}ms - still over 5 second target!", duration);
-            } else {    
+            } else {
                 log.info("🎯 SUCCESS: Webhook processed in {}ms - under 5 second target!", duration);
             }
 

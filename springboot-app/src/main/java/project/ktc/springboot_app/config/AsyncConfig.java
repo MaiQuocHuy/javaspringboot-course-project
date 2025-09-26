@@ -18,7 +18,8 @@ import java.util.concurrent.Executor;
 public class AsyncConfig {
 
     /**
-     * Task executor for payment background processing (emails, notifications, affiliate payouts)
+     * Task executor for payment background processing (emails, notifications,
+     * affiliate payouts)
      * Optimized for handling heavy operations after payment completion
      */
     @Bean(name = "taskExecutor")
@@ -26,7 +27,7 @@ public class AsyncConfig {
         log.info("✅ Creating optimized async task executor for payment processing");
 
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        
+
         // Increased pool size for better payment processing performance
         executor.setCorePoolSize(3);
         executor.setMaxPoolSize(10);
@@ -34,19 +35,19 @@ public class AsyncConfig {
         executor.setThreadNamePrefix("PaymentAsync-");
         executor.setKeepAliveSeconds(60);
         executor.setAllowCoreThreadTimeOut(true);
-        
+
         executor.setRejectedExecutionHandler((r, executor1) -> {
             log.warn("⚠️ Payment background task rejected - queue full. Executing synchronously as fallback");
             r.run();
         });
-        
+
         // Graceful shutdown for payment processing
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(30);
-        
+
         executor.initialize();
 
-        log.info("🚀 Payment async executor ready: core={}, max={}, queue={}", 
+        log.info("🚀 Payment async executor ready: core={}, max={}, queue={}",
                 executor.getCorePoolSize(), executor.getMaxPoolSize(), executor.getQueueCapacity());
 
         return executor;
