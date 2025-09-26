@@ -73,7 +73,7 @@ public class CacheServiceConfigUnified {
     // cacheObjectMapper);
     // }
 
-    @Bean("cacheService")
+    @Bean("cacheService")   
     @Primary
     @Profile("prod")
     public CacheService productionCacheService(RedisCacheServiceImp redisCacheServiceImp) {

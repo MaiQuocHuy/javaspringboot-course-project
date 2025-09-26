@@ -181,23 +181,12 @@ public class StudentLessonServiceImp implements StudentService {
                         enrollmentRepository.save(enrollment);
                         log.info("Updated enrollment status to COMPLETED for user {} in course {}", userId, courseId);
 
-                        // // Create certificate asynchronously to avoid blocking lesson completion
-                        CompletableFuture.runAsync(() -> {
-                            try {
-                                CreateCertificateDto dto = new CreateCertificateDto();
-                                dto.setUserId(userId);
-                                dto.setCourseId(courseId);
+                        CreateCertificateDto dto = new CreateCertificateDto();
+                        dto.setUserId(userId);
+                        dto.setCourseId(courseId);
 
-                                certificateService.createCertificate(dto);
-                                log.info("Certificate created successfully for user {} and course {}",
-                                        userId,
-                                        courseId);
-                            } catch (Exception e) {
-                                log.error("Failed to create certificate for user {} and course {}: {}",
-                                        userId,
-                                        courseId, e.getMessage(), e);
-                            }
-                        }, taskExecutor);
+                        certificateService.createCertificate(dto);
+
                     }
                 }
             }

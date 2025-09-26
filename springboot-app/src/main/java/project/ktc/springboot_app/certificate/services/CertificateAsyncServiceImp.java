@@ -34,6 +34,7 @@ public class CertificateAsyncServiceImp implements CertificateAsyncService {
      * Process certificate PDF generation, cloud upload, and email notification
      * asynchronously
      * This method runs in a separate thread and has its own transaction context
+     * Uses pessimistic locking to prevent data conflicts
      * 
      * @param certificateId The ID of the certificate to process
      */
@@ -44,16 +45,13 @@ public class CertificateAsyncServiceImp implements CertificateAsyncService {
         log.info("Starting async processing for certificate ID: {}", certificateId);
 
         try {
-            // Reload the certificate entity with all necessary relationships in a fresh
-            // transaction
-            // Use method with JOIN FETCH to avoid LazyInitializationException
-            Optional<Certificate> certificateOpt = certificateRepository.findByIdWithRelationships(certificateId);
-            if (certificateOpt.isEmpty()) {
+            // Fetch the latest certificate with pessimistic lock to prevent conflicts
+            Certificate certificate = fetchLatestCertificateWithRetry(certificateId);
+
+            if (certificate == null) {
                 log.error("Certificate not found with ID: {} during async processing", certificateId);
                 return;
             }
-
-            Certificate certificate = certificateOpt.get();
 
             // Ensure all necessary relationships are loaded to avoid
             // LazyInitializationException
@@ -111,9 +109,14 @@ public class CertificateAsyncServiceImp implements CertificateAsyncService {
             ImageUploadResponseDto uploadResponse = cloudinaryService.uploadCertificateImage(imageData, filename);
             log.info("Url Image: {}", uploadResponse);
 
-            // Update certificate with file URL
-            certificate.setFileUrl(uploadResponse.getUrl());
-            certificateRepository.save(certificate);
+            // Update certificate with file URL atomically to prevent conflicts
+            int updatedRows = certificateRepository.updateFileUrl(certificate.getId(), uploadResponse.getUrl());
+            if (updatedRows == 0) {
+                log.warn("Failed to update certificate file URL - certificate may have been modified concurrently: {}",
+                        certificate.getCertificateCode());
+            } else {
+                log.info("Certificate file URL updated successfully: {}", certificate.getCertificateCode());
+            }
 
             log.info("PDF generated and uploaded successfully for certificate: {}. URL: {}",
                     certificate.getCertificateCode(), uploadResponse.getUrl());
@@ -159,5 +162,51 @@ public class CertificateAsyncServiceImp implements CertificateAsyncService {
             log.error("Error sending certificate notification email for {}: {}",
                     certificate.getCertificateCode(), e.getMessage(), e);
         }
+    }
+
+    /**
+     * Fetch the latest certificate with retry mechanism and pessimistic locking
+     * This prevents stale data conflicts during async processing
+     */
+    private Certificate fetchLatestCertificateWithRetry(String certificateId) {
+        final int MAX_RETRIES = 3;
+        final long RETRY_DELAY_MS = 100;
+
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                log.debug("Attempting to fetch certificate with lock, attempt {} of {}", attempt, MAX_RETRIES);
+
+                Optional<Certificate> certificateOpt = certificateRepository.findByIdWithLock(certificateId);
+
+                if (certificateOpt.isPresent()) {
+                    Certificate certificate = certificateOpt.get();
+                    log.info("Certificate fetched successfully with lock: {}", certificate.getCertificateCode());
+                    return certificate;
+                } else {
+                    log.warn("Certificate not found with ID: {}", certificateId);
+                    return null;
+                }
+
+            } catch (Exception e) {
+                log.warn("Failed to fetch certificate on attempt {} of {}: {}",
+                        attempt, MAX_RETRIES, e.getMessage());
+
+                if (attempt == MAX_RETRIES) {
+                    log.error("All retry attempts failed for certificate ID: {}", certificateId, e);
+                    return null;
+                }
+
+                // Wait before retry
+                try {
+                    Thread.sleep(RETRY_DELAY_MS * attempt);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    log.error("Retry interrupted for certificate ID: {}", certificateId);
+                    return null;
+                }
+            }
+        }
+
+        return null;
     }
 }
