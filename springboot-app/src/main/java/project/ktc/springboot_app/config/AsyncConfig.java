@@ -10,6 +10,7 @@ import java.util.concurrent.Executor;
 
 /**
  * Configuration for asynchronous processing
+ * Optimized for payment background processing to prevent webhook timeouts
  */
 @Configuration
 @EnableAsync
@@ -17,22 +18,36 @@ import java.util.concurrent.Executor;
 public class AsyncConfig {
 
     /**
-     * Task executor for affiliate payout processing
+     * Task executor for payment background processing (emails, notifications, affiliate payouts)
+     * Optimized for handling heavy operations after payment completion
      */
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
-        log.info("Creating async task executor for affiliate payouts");
+        log.info("✅ Creating optimized async task executor for payment processing");
 
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("affiliate-payout-");
+        
+        // Increased pool size for better payment processing performance
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("PaymentAsync-");
+        executor.setKeepAliveSeconds(60);
+        executor.setAllowCoreThreadTimeOut(true);
+        
         executor.setRejectedExecutionHandler((r, executor1) -> {
-            log.warn("Affiliate payout task rejected, executing synchronously");
+            log.warn("⚠️ Payment background task rejected - queue full. Executing synchronously as fallback");
             r.run();
         });
+        
+        // Graceful shutdown for payment processing
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
+        
         executor.initialize();
+
+        log.info("🚀 Payment async executor ready: core={}, max={}, queue={}", 
+                executor.getCorePoolSize(), executor.getMaxPoolSize(), executor.getQueueCapacity());
 
         return executor;
     }
