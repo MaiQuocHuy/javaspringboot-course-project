@@ -3,11 +3,14 @@ package project.ktc.springboot_app.certificate.repositories;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import project.ktc.springboot_app.certificate.entity.Certificate;
 
+import jakarta.persistence.LockModeType;
 import java.util.Optional;
 
 @Repository
@@ -109,4 +112,37 @@ public interface CertificateRepository extends JpaRepository<Certificate, String
                      "LEFT JOIN FETCH co.instructor i " +
                      "WHERE c.id = :certificateId")
        Optional<Certificate> findByIdWithRelationships(@Param("certificateId") String certificateId);
+
+       /**
+        * Find certificate by ID with pessimistic lock to ensure latest data
+        * Used for async processing to prevent stale data conflicts
+        */
+       @Lock(LockModeType.PESSIMISTIC_READ)
+       @Query("SELECT c FROM Certificate c " +
+                     "LEFT JOIN FETCH c.user u " +
+                     "LEFT JOIN FETCH c.course co " +
+                     "LEFT JOIN FETCH co.instructor i " +
+                     "WHERE c.id = :certificateId")
+       Optional<Certificate> findByIdWithLock(@Param("certificateId") String certificateId);
+
+       /**
+        * Find certificate by ID with optimistic force increment lock
+        * Alternative locking strategy for high-concurrency scenarios
+        */
+       @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+       @Query("SELECT c FROM Certificate c " +
+                     "LEFT JOIN FETCH c.user u " +
+                     "LEFT JOIN FETCH c.course co " +
+                     "LEFT JOIN FETCH co.instructor i " +
+                     "WHERE c.id = :certificateId")
+       Optional<Certificate> findByIdWithOptimisticLock(@Param("certificateId") String certificateId);
+
+       /**
+        * Update certificate file URL atomically
+        * Used to prevent conflicts when updating the file URL after async processing
+        */
+       @Modifying
+       @Query("UPDATE Certificate c SET c.fileUrl = :fileUrl, c.updatedAt = CURRENT_TIMESTAMP " +
+                     "WHERE c.id = :certificateId")
+       int updateFileUrl(@Param("certificateId") String certificateId, @Param("fileUrl") String fileUrl);
 }

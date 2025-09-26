@@ -216,6 +216,20 @@ public class CacheKeyBuilder {
     }
 
     /**
+     * Builds pattern for matching all user enrollment status cache keys
+     * 
+     * @param userId user identifier
+     * @return pattern for matching all enrollment status keys for the user
+     */
+    public String buildUserEnrollmentStatusPattern(String userId) {
+        String pattern = String.format(CacheConstants.USER_ENROLLMENT_STATUS_PATTERN,
+                sanitizeValue(userId),
+                "*"); // wildcard for all course combinations
+        log.debug("Built user enrollment status pattern: {}", pattern);
+        return pattern;
+    }
+
+    /**
      * Builds cache key for current user profile detail
      * 
      * @param userEmail user email identifier

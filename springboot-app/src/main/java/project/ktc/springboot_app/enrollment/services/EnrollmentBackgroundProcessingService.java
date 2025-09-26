@@ -84,19 +84,19 @@ public class EnrollmentBackgroundProcessingService {
         log.debug("Starting cache invalidation for course: {}", courseId);
 
         try {
-            // Get enrollment counts for cache invalidation logic
+            // Get current enrollment count for logging purposes
             long currentEnrollmentCount = enrollmentRepository.countByCourseId(courseId);
-            long previousEnrollmentCount = Math.max(0, currentEnrollmentCount - 1);
+            log.info("Processing enrollment change for course: {} with current count: {}", courseId,
+                    currentEnrollmentCount);
 
-            // Check and invalidate enrollment-related cache
-            coursesCacheService.checkAndInvalidateForEnrollmentChange(
-                    courseId, courseSlug, previousEnrollmentCount, currentEnrollmentCount);
+            // Invalidate all course-related cache after enrollment change
+            coursesCacheService.invalidateCacheForEnrollmentChange(courseId, courseSlug);
 
             // Invalidate instructor statistics cache
             cacheInvalidationService.invalidateInstructorStatisticsOnEnrollment(instructorId);
 
-            // Invalidate course cache
-            coursesCacheService.invalidateCourseCache(courseId);
+            // Note: Comprehensive course cache invalidation is handled by
+            // invalidateCacheForEnrollmentChange
 
             long duration = System.currentTimeMillis() - startTime;
             log.debug("Cache invalidation completed for course: {} in {}ms", courseId, duration);
