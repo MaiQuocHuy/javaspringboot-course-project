@@ -20,6 +20,7 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.cache.services.domain.CoursesCacheService;
 import project.ktc.springboot_app.certificate.dto.CreateCertificateDto;
 import project.ktc.springboot_app.certificate.interfaces.CertificateService;
+import project.ktc.springboot_app.certificate.services.CertificateAsyncService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
@@ -57,6 +58,7 @@ public class StudentLessonServiceImp implements StudentService {
     private final ObjectMapper objectMapper;
     private final CertificateService certificateService;
     private final CoursesCacheService coursesCacheService;
+    private final CertificateAsyncService certificateAsyncService;
     private final Executor taskExecutor;
 
     /**
@@ -179,7 +181,7 @@ public class StudentLessonServiceImp implements StudentService {
                         enrollmentRepository.save(enrollment);
                         log.info("Updated enrollment status to COMPLETED for user {} in course {}", userId, courseId);
 
-                        // Create certificate asynchronously to avoid blocking lesson completion
+                        // // Create certificate asynchronously to avoid blocking lesson completion
                         CompletableFuture.runAsync(() -> {
                             try {
                                 CreateCertificateDto dto = new CreateCertificateDto();
@@ -187,16 +189,21 @@ public class StudentLessonServiceImp implements StudentService {
                                 dto.setCourseId(courseId);
 
                                 certificateService.createCertificate(dto);
-                                log.info("Certificate created successfully for user {} and course {}", userId,
+                                log.info("Certificate created successfully for user {} and course {}",
+                                        userId,
                                         courseId);
                             } catch (Exception e) {
-                                log.error("Failed to create certificate for user {} and course {}: {}", userId,
+                                log.error("Failed to create certificate for user {} and course {}: {}",
+                                        userId,
                                         courseId, e.getMessage(), e);
                             }
                         }, taskExecutor);
                     }
                 }
             }
+
+            // certificateAsyncService.processCertificateAsync();
+
         } catch (Exception e) {
             log.error("Error checking course completion for user {} in course {}: {}",
                     userId, courseId, e.getMessage(), e);

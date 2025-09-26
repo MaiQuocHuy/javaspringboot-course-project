@@ -59,16 +59,26 @@ public class CacheServiceConfigUnified {
      * - Uses HybridRedisCacheService with both Redis and Upstash REST fallback
      * - Provides high availability and fault tolerance in production
      */
+    // @Bean("cacheService")
+    // @Primary
+    // @Profile("prod")
+    // public CacheService productionCacheService(
+    // RedisTemplate<String, Object> redisTemplate,
+    // UpstashRedisRestService upstashRedisRestService,
+    // @Qualifier("cacheObjectMapper") ObjectMapper cacheObjectMapper) {
+
+    // log.info("🚀 Configuring PROD CacheService: HybridRedisCacheService with
+    // Redis + Upstash REST fallback");
+    // return new HybridRedisCacheService(redisTemplate, upstashRedisRestService,
+    // cacheObjectMapper);
+    // }
+
     @Bean("cacheService")
     @Primary
     @Profile("prod")
-    public CacheService productionCacheService(
-            RedisTemplate<String, Object> redisTemplate,
-            UpstashRedisRestService upstashRedisRestService,
-            @Qualifier("cacheObjectMapper") ObjectMapper cacheObjectMapper) {
-
-        log.info("🚀 Configuring PROD CacheService: HybridRedisCacheService with Redis + Upstash REST fallback");
-        return new HybridRedisCacheService(redisTemplate, upstashRedisRestService, cacheObjectMapper);
+    public CacheService productionCacheService(RedisCacheServiceImp redisCacheServiceImp) {
+        log.info("🔧 Configuring DEV CacheService: RedisCacheServiceImp for local Redis");
+        return redisCacheServiceImp;
     }
 
     /**
