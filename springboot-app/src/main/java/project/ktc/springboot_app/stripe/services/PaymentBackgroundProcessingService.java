@@ -40,7 +40,7 @@ public class PaymentBackgroundProcessingService {
     @Transactional
     public CompletableFuture<Void> processPaymentBackgroundTasks(
             String sessionId, String courseId, String userId, String paymentId) {
-        
+
         long startTime = System.currentTimeMillis();
         log.info("🔄 Starting background processing for payment: {} (session: {})", paymentId, sessionId);
 
@@ -75,12 +75,13 @@ public class PaymentBackgroundProcessingService {
             processAffiliatePayouts(payment, course);
 
             long endTime = System.currentTimeMillis();
-            log.info("✅ Background processing completed for payment: {} in {}ms", 
+            log.info("✅ Background processing completed for payment: {} in {}ms",
                     paymentId, (endTime - startTime));
 
         } catch (Exception e) {
             log.error("❌ Error during background processing for payment: {} - {}", paymentId, e.getMessage(), e);
-            // Don't rethrow - background processing failures shouldn't affect main payment flow
+            // Don't rethrow - background processing failures shouldn't affect main payment
+            // flow
         }
 
         return CompletableFuture.completedFuture(null);
@@ -134,14 +135,14 @@ public class PaymentBackgroundProcessingService {
 
             // Create admin notification
             notificationHelper.createAdminStudentPaymentNotification(
-                    payment.getId(), 
+                    payment.getId(),
                     user.getName(),
                     course.getTitle(),
                     payment.getAmount());
 
             // Student notifications are typically handled by the frontend or via email
             // For now, we'll just log this - can be extended later
-            log.info("💰 Student {} purchased course {} for ${}", 
+            log.info("💰 Student {} purchased course {} for ${}",
                     user.getName(), course.getTitle(), payment.getAmount());
 
             log.info("✅ Payment notifications created successfully");
@@ -153,7 +154,8 @@ public class PaymentBackgroundProcessingService {
 
     /**
      * Processes affiliate payouts if applicable
-     * Note: Affiliate processing will be handled separately via discount usage records
+     * Note: Affiliate processing will be handled separately via discount usage
+     * records
      */
     private void processAffiliatePayouts(Payment payment, Course course) {
         try {

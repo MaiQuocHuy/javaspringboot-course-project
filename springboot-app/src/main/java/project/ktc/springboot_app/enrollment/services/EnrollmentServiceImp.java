@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.cache.services.domain.CoursesCacheService;
-import project.ktc.springboot_app.cache.services.infrastructure.CacheInvalidationService;
+
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
@@ -24,7 +24,7 @@ import project.ktc.springboot_app.enrollment.dto.StudentDashboardStatsDto;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.interfaces.EnrollmentService;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
-import project.ktc.springboot_app.notification.utils.NotificationHelper;
+
 import project.ktc.springboot_app.payment.repositories.PaymentRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
@@ -51,11 +51,10 @@ public class EnrollmentServiceImp implements EnrollmentService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
-    private final NotificationHelper notificationHelper;
     private final CoursesCacheService coursesCacheService;
-    private final CacheInvalidationService cacheInvalidationService;
     private final LessonCompletionRepository lessonCompletionRepository;
     private final QuizResultRepository quizResultRepository;
+    private final EnrollmentBackgroundProcessingService backgroundProcessingService;
 
     @Override
     public ResponseEntity<ApiResponse<EnrollmentResponseDto>> enroll(String courseId) {
@@ -406,34 +405,27 @@ public class EnrollmentServiceImp implements EnrollmentService {
 
     @Override
     public void createEnrollmentFromWebhook(String userId, String courseId, String stripeSessionId) {
+        long startTime = System.currentTimeMillis();
         log.info("Creating enrollment from webhook for user {} in course {} (Stripe session: {})",
                 userId, courseId, stripeSessionId);
 
         try {
-            // Fetch user and course
-            Optional<User> userOpt = userRepository.findById(userId);
-            Optional<Course> courseOpt = courseRepository.findById(courseId);
+            // ESSENTIAL SYNCHRONOUS OPERATIONS (keep under 3 seconds)
 
-            if (userOpt.isEmpty()) {
-                log.error("User not found: {}", userId);
-                throw new RuntimeException("User not found: " + userId);
-            }
+            // 1. Validate user and course (optimized queries)
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-            if (courseOpt.isEmpty()) {
-                log.error("Course not found: {}", courseId);
-                throw new RuntimeException("Course not found: " + courseId);
-            }
+            Course course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new RuntimeException("Course not found: " + courseId));
 
-            User user = userOpt.get();
-            Course course = courseOpt.get();
-
-            // Check if already enrolled
+            // 2. Quick duplicate check
             if (enrollmentRepository.existsByUserIdAndCourseId(userId, courseId)) {
                 log.warn("User {} is already enrolled in course {}", userId, courseId);
-                return; // Don't create duplicate enrollment
+                return;
             }
 
-            // Create enrollment
+            // 3. Create enrollment record (essential operation)
             Enrollment enrollment = new Enrollment();
             enrollment.setId(java.util.UUID.randomUUID().toString());
             enrollment.setUser(user);
@@ -441,28 +433,37 @@ public class EnrollmentServiceImp implements EnrollmentService {
             enrollment.setEnrolledAt(LocalDateTime.now());
             enrollment.setCompletionStatus(Enrollment.CompletionStatus.IN_PROGRESS);
 
+            // Save enrollment immediately
             enrollmentRepository.save(enrollment);
-            long previousEnrollmentCount = enrollmentRepository.countByCourseId(courseId) - 1; // Subtract the current
-            // enrollment
-            long currentEnrollmentCount = enrollmentRepository.countByCourseId(courseId);
 
-            coursesCacheService.checkAndInvalidateForEnrollmentChange(courseId, course.getSlug(),
-                    previousEnrollmentCount, currentEnrollmentCount);
+            long syncDuration = System.currentTimeMillis() - startTime;
+            log.info("Enrollment sync operations completed for user {} in course {} in {}ms",
+                    userId, courseId, syncDuration);
 
-            cacheInvalidationService.invalidateInstructorStatisticsOnEnrollment(course.getInstructor().getId());
+            // HEAVY OPERATIONS MOVED TO BACKGROUND PROCESSING
+            // These operations will be handled asynchronously to prevent database timeout
+            backgroundProcessingService.processEnrollmentBackgroundTasks(
+                    enrollment,
+                    courseId,
+                    course.getSlug(),
+                    course.getInstructor().getId());
 
-            coursesCacheService.invalidateCourseCache(courseId);
+            // Also process additional background statistics
+            backgroundProcessingService.processWebhookEnrollmentBackground(
+                    enrollment.getId(),
+                    courseId,
+                    course.getSlug(),
+                    course.getInstructor().getId(),
+                    userId);
 
-            notificationHelper.createInstructorNewStudentEnrollmentNotification(
-                    enrollment.getCourse().getInstructor().getId(), enrollment.getCourse().getId(),
-                    enrollment.getCourse().getTitle(), enrollment.getUser().getName(), enrollment.getUser().getId(),
-                    enrollment.getId());
-
-            log.info("Enrollment successfully created for user {} in course {}", userId, courseId);
+            long totalDuration = System.currentTimeMillis() - startTime;
+            log.info("Enrollment webhook processing initiated for user {} in course {} in {}ms (sync: {}ms)",
+                    userId, courseId, totalDuration, syncDuration);
 
         } catch (Exception e) {
-            log.error("Error creating enrollment from webhook for user {} and course {}: {}",
-                    userId, courseId, e.getMessage(), e);
+            long failureDuration = System.currentTimeMillis() - startTime;
+            log.error("Error creating enrollment from webhook for user {} and course {} after {}ms: {}",
+                    userId, courseId, failureDuration, e.getMessage(), e);
             throw new RuntimeException("Failed to create enrollment from webhook", e);
         }
     }
