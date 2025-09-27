@@ -13,6 +13,7 @@ import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.course.repositories.CourseRepository;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
+import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.payment.repositories.PaymentRepository;
 import project.ktc.springboot_app.refund.dto.RefundRequestDto;
@@ -23,6 +24,8 @@ import project.ktc.springboot_app.refund.repositories.RefundRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -36,6 +39,7 @@ public class StudentRefundServiceImp implements StudentRefundService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final InstructorEarningRepository instructorEarningRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     @Override
     @Transactional
@@ -98,7 +102,15 @@ public class StudentRefundServiceImp implements StudentRefundService {
                 }
             }
 
-            // 7. Create refund request
+            // 7. Check course completion progress (must be less than 30%)
+            double courseProgress = calculateProgress(user.getId(), courseId);
+            if (courseProgress >= 0.3) {
+                log.warn("Course completion is {}% for user: {} and course: {}. Refund blocked.",
+                        courseProgress * 100, user.getId(), courseId);
+                return ApiResponseUtil.badRequest("Refund is not allowed for courses with 50% or more completion");
+            }
+
+            // 8. Create refund request
             Refund refund = new Refund();
             refund.setPayment(payment);
             refund.setAmount(payment.getAmount());
@@ -107,7 +119,7 @@ public class StudentRefundServiceImp implements StudentRefundService {
 
             Refund savedRefund = refundRepository.save(refund);
 
-            // 8. Build response
+            // 9. Build response
             RefundResponseDto responseDto = RefundResponseDto.builder()
                     .id(savedRefund.getId())
                     .course(RefundResponseDto.CourseInfo.builder()
@@ -128,6 +140,32 @@ public class StudentRefundServiceImp implements StudentRefundService {
         } catch (Exception e) {
             log.error("Error processing refund request for course: {} by user: {}", courseId, userEmail, e);
             return ApiResponseUtil.internalServerError("Failed to process refund request. Please try again later.");
+        }
+    }
+
+    /**
+     * Calculate course completion progress as a decimal (0.0 to 1.0)
+     * 
+     * @param userId   the user ID
+     * @param courseId the course ID
+     * @return progress as decimal (0.0 = 0%, 1.0 = 100%)
+     */
+    private double calculateProgress(String userId, String courseId) {
+        try {
+            Long completedLessons = enrollmentRepository.countCompletedLessonsByUserAndCourse(userId, courseId);
+            Long totalLessons = enrollmentRepository.countTotalLessonsByCourse(courseId);
+
+            if (totalLessons == null || totalLessons == 0) {
+                return 0.0;
+            }
+
+            double progress = (double) completedLessons / totalLessons;
+            return BigDecimal.valueOf(progress)
+                    .setScale(4, RoundingMode.HALF_UP)
+                    .doubleValue();
+        } catch (Exception e) {
+            log.warn("Failed to calculate progress for user {} and course {}: {}", userId, courseId, e.getMessage());
+            return 0.0;
         }
     }
 }
