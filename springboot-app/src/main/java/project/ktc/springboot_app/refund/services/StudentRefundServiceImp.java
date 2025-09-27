@@ -122,17 +122,17 @@ public class StudentRefundServiceImp implements StudentRefundService {
                         courseName,
                         studentName,
                         refundReason)
-                        .thenAccept(notification -> 
-                            log.info("✅ Refund request notification created for instructor {}: {}", 
-                                instructorId, notification.getId()))
+                        .thenAccept(
+                                notification -> log.info("✅ Refund request notification created for instructor {}: {}",
+                                        instructorId, notification.getId()))
                         .exceptionally(ex -> {
-                            log.error("❌ Failed to create refund request notification for instructor {}: {}", 
-                                instructorId, ex.getMessage(), ex);
+                            log.error("❌ Failed to create refund request notification for instructor {}: {}",
+                                    instructorId, ex.getMessage(), ex);
                             return null;
                         });
             } catch (Exception notificationError) {
-                log.error("❌ Failed to create refund request notification: {}", 
-                    notificationError.getMessage(), notificationError);
+                log.error("❌ Failed to create refund request notification: {}",
+                        notificationError.getMessage(), notificationError);
                 // Continue execution even if notification fails
             }
 
