@@ -123,4 +123,55 @@ public interface AdminPaymentRepository extends JpaRepository<Payment, String> {
         @Query("SELECT COUNT(p) FROM Payment p WHERE p.status = 'FAILED'")
         Long countFailedPayments();
 
+        /**
+         * Get all payments with advanced search and filtering for admin
+         * Supports search by payment ID, user name, or course title
+         * Supports filtering by status and date range
+         */
+        @Query("SELECT p FROM Payment p " +
+                        "LEFT JOIN FETCH p.user u " +
+                        "LEFT JOIN FETCH p.course c " +
+                        "WHERE (:search IS NULL OR :search = '' OR " +
+                        "       LOWER(p.id) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "       LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "       LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+                        "AND (:status IS NULL OR p.status = :status) " +
+                        "AND (:paymentMethod IS NULL OR :paymentMethod = '' OR " +
+                        "     LOWER(p.paymentMethod) LIKE LOWER(CONCAT('%', :paymentMethod, '%'))) " +
+                        "AND (:fromDate IS NULL OR DATE(p.createdAt) >= :fromDate) " +
+                        "AND (:toDate IS NULL OR DATE(p.createdAt) <= :toDate) " +
+                        "ORDER BY p.createdAt DESC")
+        Page<Payment> findAllPaymentsWithFilter(
+                        @Param("search") String search,
+                        @Param("status") project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+                        @Param("paymentMethod") String paymentMethod,
+                        @Param("fromDate") java.time.LocalDate fromDate,
+                        @Param("toDate") java.time.LocalDate toDate,
+                        Pageable pageable);
+
+        /**
+         * Get all payments with advanced search and filtering for admin (no pagination)
+         * Supports search by payment ID, user name, or course title
+         * Supports filtering by status and date range
+         */
+        @Query("SELECT p FROM Payment p " +
+                        "LEFT JOIN FETCH p.user u " +
+                        "LEFT JOIN FETCH p.course c " +
+                        "WHERE (:search IS NULL OR :search = '' OR " +
+                        "       LOWER(p.id) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "       LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "       LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+                        "AND (:status IS NULL OR p.status = :status) " +
+                        "AND (:paymentMethod IS NULL OR :paymentMethod = '' OR " +
+                        "     LOWER(p.paymentMethod) LIKE LOWER(CONCAT('%', :paymentMethod, '%'))) " +
+                        "AND (:fromDate IS NULL OR DATE(p.createdAt) >= :fromDate) " +
+                        "AND (:toDate IS NULL OR DATE(p.createdAt) <= :toDate) " +
+                        "ORDER BY p.createdAt DESC")
+        List<Payment> findAllPaymentsWithFilter(
+                        @Param("search") String search,
+                        @Param("status") project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+                        @Param("paymentMethod") String paymentMethod,
+                        @Param("fromDate") java.time.LocalDate fromDate,
+                        @Param("toDate") java.time.LocalDate toDate);
+
 }

@@ -10,10 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
@@ -27,6 +31,7 @@ import project.ktc.springboot_app.refund.interfaces.AdminRefundService;
 @PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 @Tag(name = "Admin Refund API", description = "Endpoints for admin refund management")
 public class AdminRefundController {
 
@@ -40,7 +45,7 @@ public class AdminRefundController {
          */
         @GetMapping
         @Operation(summary = "Get all refunds", description = """
-                        Retrieves all refunds in the system with pagination support for admin view.
+                        Retrieves all refunds in the system with pagination support and advanced filtering for admin view.
 
                         **Features:**
                         - Returns all refunds across all users
@@ -48,6 +53,12 @@ public class AdminRefundController {
                         - Refunds are ordered by creation date (most recent first)
                         - Supports pagination for better performance
                         - Shows refund status, amount, and method
+                        - Advanced search and filtering capabilities
+
+                        **Search & Filter Options:**
+                        - Search by refund ID, user name, or reason
+                        - Filter by refund status (PENDING, COMPLETED, FAILED)
+                        - Filter by creation date range
 
                         **Admin Only:**
                         - This endpoint requires ADMIN role
@@ -61,10 +72,22 @@ public class AdminRefundController {
                         @ApiResponse(responseCode = "500", description = "Internal server error")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<AdminRefundResponseDto>>> getAllRefunds(
-                        @PageableDefault(size = 10) Pageable pageable) {
-                log.info("Admin retrieving all refunds with pagination: page={}, size={}", pageable.getPageNumber(),
-                                pageable.getPageSize());
-                return adminRefundService.getAllRefunds(pageable);
+                        @Parameter(description = "Search by refund ID, user name, or reason") @RequestParam(required = false) String search,
+
+                        @Parameter(description = "Filter by refund status", example = "COMPLETED") @RequestParam(required = false) project.ktc.springboot_app.refund.entity.Refund.RefundStatus status,
+
+                        @Parameter(description = "Filter by creation date from (ISO format: yyyy-MM-dd)", example = "2024-01-01") @RequestParam(required = false) String fromDate,
+
+                        @Parameter(description = "Filter by creation date to (ISO format: yyyy-MM-dd)", example = "2024-12-31") @RequestParam(required = false) String toDate,
+
+                        @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
+
+                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size) {
+
+                Pageable pageable = PageRequest.of(page, size);
+                log.info("Admin requesting all refunds with pagination: page={}, size={}, search={}, status={}, fromDate={}, toDate={}",
+                                page, size, search, status, fromDate, toDate);
+                return adminRefundService.getAllRefunds(search, status, fromDate, toDate, pageable);
         }
 
         /**
@@ -74,10 +97,15 @@ public class AdminRefundController {
          */
         @GetMapping("/all")
         @Operation(summary = "Get all refunds (no pagination)", description = """
-                        Retrieves all refunds in the system without pagination for admin view.
+                        Retrieves all refunds in the system without pagination for admin view with search and filtering.
 
                         **Warning:** This endpoint returns all refunds at once and should be used carefully
                         for systems with large numbers of refunds as it may impact performance.
+
+                        **Search & Filter Options:**
+                        - Search by refund ID, user name, or reason
+                        - Filter by refund status (PENDING, COMPLETED, FAILED)
+                        - Filter by creation date range
 
                         **Use cases:**
                         - Generating reports that need complete data
@@ -94,9 +122,17 @@ public class AdminRefundController {
                         @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
                         @ApiResponse(responseCode = "500", description = "Internal server error")
         })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<AdminRefundResponseDto>>> getAllRefunds() {
-                log.info("Admin requesting all refunds without pagination");
-                return adminRefundService.getAllRefunds();
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<AdminRefundResponseDto>>> getAllRefundsAll(
+                        @Parameter(description = "Search by refund ID, user name, or reason") @RequestParam(required = false) String search,
+
+                        @Parameter(description = "Filter by refund status", example = "COMPLETED") @RequestParam(required = false) project.ktc.springboot_app.refund.entity.Refund.RefundStatus status,
+
+                        @Parameter(description = "Filter by creation date from (ISO format: yyyy-MM-dd)", example = "2024-01-01") @RequestParam(required = false) String fromDate,
+
+                        @Parameter(description = "Filter by creation date to (ISO format: yyyy-MM-dd)", example = "2024-12-31") @RequestParam(required = false) String toDate) {
+                log.info("Admin requesting all refunds without pagination with filters: search={}, status={}, fromDate={}, toDate={}",
+                                search, status, fromDate, toDate);
+                return adminRefundService.getAllRefunds(search, status, fromDate, toDate);
         }
 
         /**

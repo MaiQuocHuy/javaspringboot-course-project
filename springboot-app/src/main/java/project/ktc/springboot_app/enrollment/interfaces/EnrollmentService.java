@@ -19,7 +19,14 @@ public interface EnrollmentService {
     ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(Enrollment.CompletionStatus status,
             Pageable pageable);
 
+    ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(String search,
+            String progressFilter,
+            Enrollment.CompletionStatus status, String sortBy, String sortDirection, Pageable pageable);
+
     ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(Enrollment.CompletionStatus status);
+
+    ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(String search, String progressFilter,
+            Enrollment.CompletionStatus status);
 
     ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getRecentCourses();
 

@@ -16,14 +16,17 @@ public class SpringbootAppApplication {
 
 		// Environment configuration - check for .env file first, then fall back to
 		// system environment variables
-		// String profile = System.getProperty("spring.profiles.active", "dev");
 		String profile = System.getenv("SPRING_PROFILES_ACTIVE");
+		if (profile == null || profile.trim().isEmpty()) {
+			profile = System.getProperty("spring.profiles.active", "dev");
+		}
 
 		// DEBUG: In ra để kiểm tra
 		System.out.println("=== DEBUG INFO ===");
 		System.out.println("Current profile: " + profile);
 		System.out.println("SPRING_PROFILES_ACTIVE from env: " + System.getenv("SPRING_PROFILES_ACTIVE"));
 		System.out.println("SPRING_PROFILES_ACTIVE from property: " + System.getProperty("SPRING_PROFILES_ACTIVE"));
+		System.out.println("Attempting to load .env." + profile + " file...");
 
 		Dotenv tempDotenv = null;
 		try {
@@ -31,9 +34,10 @@ public class SpringbootAppApplication {
 					.filename(".env." + profile)
 					.ignoreIfMissing()
 					.load();
-			System.out.println("Loaded .env file successfully");
+			System.out.println("✅ Loaded .env." + profile + " file successfully");
 		} catch (Exception e) {
-			System.out.println("No .env file found, using system environment variables");
+			System.out.println("❌ No .env." + profile + " file found, using system environment variables. Error: "
+					+ e.getMessage());
 		}
 		final Dotenv dotenv = tempDotenv;
 
@@ -87,6 +91,13 @@ public class SpringbootAppApplication {
 				getEnvWithDefault.apply("UPSTASH_REDIS_REST_URL", "localhost"));
 		setSystemPropertyIfNotNull("UPSTASH_REDIS_REST_TOKEN", getEnvWithDefault.apply("UPSTASH_REDIS_REST_TOKEN",
 				"ASCwAAImcDI0ODYwOTVhODMwZWE0NmRhOTAzMTFkZmM4YjVjZWZjN3AyODM2OA"));
+
+		// Debug: Print some key environment variables to verify they're loaded
+		System.out.println("=== ENVIRONMENT VARIABLES CHECK ===");
+		System.out.println("DB_URL: " + (System.getProperty("DB_URL") != null ? "✅ Set" : "❌ Not set"));
+		System.out.println("REDIS_HOST: " + (System.getProperty("REDIS_HOST") != null ? "✅ Set" : "❌ Not set"));
+		System.out.println("REDIS_PORT: " + (System.getProperty("REDIS_PORT") != null ? "✅ Set" : "❌ Not set"));
+		System.out.println("==========================================");
 
 		SpringApplication.run(SpringbootAppApplication.class, args);
 	}
