@@ -276,8 +276,41 @@ public class AdminPaymentServiceImp implements AdminPaymentService {
 
             if (paymentStatus == PaymentStatus.COMPLETED) {
                 String userName = payment.getUser().getName();
+                String userId = payment.getUser().getId();
+                String courseTitle = payment.getCourse().getTitle();
+                String courseId = payment.getCourse().getId();
+
+                // Create admin notification
                 notificationHelper.createAdminStudentPaymentNotification(payment.getId(), userName,
-                        payment.getCourse().getTitle(), payment.getAmount());
+                        courseTitle, payment.getAmount());
+
+                // Create student payment success notification
+                try {
+                    String courseUrl = "/dashboard/learning/" + courseId;
+                    notificationHelper.createPaymentSuccessNotification(
+                            userId,
+                            payment.getId(),
+                            courseTitle,
+                            courseUrl,
+                            courseId)
+                            .thenAccept(notification -> log.info(
+                                    "✅ Payment success notification created for student {} ({}): {}",
+                                    userName, userId, notification.getId()))
+                            .exceptionally(ex -> {
+                                log.error("❌ Failed to create payment success notification for student {}: {}",
+                                        userId, ex.getMessage(), ex);
+                                return null;
+                            });
+
+                    log.info(
+                            "💰 Admin updated payment {} to COMPLETED for student {} - payment success notification created",
+                            payment.getId(), userName);
+
+                } catch (Exception studentNotificationError) {
+                    log.error("❌ Failed to create student payment success notification: {}",
+                            studentNotificationError.getMessage(), studentNotificationError);
+                    // Continue execution even if student notification fails
+                }
             }
 
             log.info("Successfully updated payment status for payment: {} from {} to {}",

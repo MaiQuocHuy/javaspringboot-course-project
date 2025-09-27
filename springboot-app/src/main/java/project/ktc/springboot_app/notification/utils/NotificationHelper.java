@@ -36,13 +36,17 @@ public class NotificationHelper {
      * Create a payment success notification
      */
     public CompletableFuture<NotificationResponseDto> createPaymentSuccessNotification(
-            String userId, String paymentId, String courseName, String courseUrl) {
+            String userId, String paymentId, String courseName, String courseUrl, String courseId) {
+
+        if (courseUrl == null || courseUrl.trim().isEmpty()) {
+            courseUrl = "/dashboard/learning/" + courseId;
+        }
 
         CreateNotificationDto notificationDto = CreateNotificationDto.builder()
                 .user_id(userId)
                 .resource_id("res-payment-001")
                 .entity_id(paymentId)
-                .message("Payment successful for course '" + courseName + "'")
+                .message("Payment successful for course '" + courseName + "' enjoy learning!")
                 .action_url(courseUrl)
                 .priority(NotificationPriority.HIGH)
                 .expired_at(LocalDateTime.now().plusDays(30))
@@ -555,7 +559,7 @@ public class NotificationHelper {
         }
 
         String message = String.format(
-                "❌ Your instructor application has been rejected. Reason: %s. You can submit a new application after 3 days.",
+                "❌ Your instructor application has been rejected. Reason: %s. You can submit a new application.",
                 rejectionReason);
         String actionUrl = "/settings?tab=application";
 
