@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.certificate.dto.CertificateListDto;
 import project.ktc.springboot_app.certificate.dto.CertificateResponseDto;
@@ -99,16 +101,19 @@ public class CertificateServiceImp implements CertificateService {
 
             // 9. Process PDF generation, upload, and email notification asynchronously
             // Pass only the ID to avoid entity detachment issues
-            try {
-                certificateAsyncService.processCertificateAsync(savedCertificate.getId());
-            } catch (Exception e) {
-                log.error("Failed to start async processing for certificate {}: {}",
-                        savedCertificate.getId(), e.getMessage(), e);
-                // Don't fail the certificate creation, just log the error
-            }
+            // try {
+            // certificateAsyncService.processCertificateAsync(savedCertificate.getId());
+            // } catch (Exception e) {
+            // log.error("Failed to start async processing for certificate {}: {}",
+            // savedCertificate.getId(), e.getMessage(), e);
+            // // Don't fail the certificate creation, just log the error
+            // }
 
             // 10. Build response
             CertificateResponseDto responseDto = mapToCertificateResponseDto(savedCertificate);
+
+            // 5. Schedule async processing AFTER transaction commits
+            scheduleAsyncProcessing(savedCertificate.getId());
 
             return ApiResponseUtil.created(responseDto, "Certificate created successfully");
 
@@ -638,5 +643,24 @@ public class CertificateServiceImp implements CertificateService {
                 .instructorName(certificate.getCourse().getInstructor().getName())
                 .fileStatus(certificate.getFileUrl() != null ? "GENERATED" : "PENDING")
                 .build();
+    }
+
+    private void scheduleAsyncProcessing(String certificateId) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            try {
+                                certificateAsyncService.processCertificateAsync(certificateId);
+                            } catch (Exception e) {
+                                log.error("Failed to start async processing: {}", e.getMessage());
+                            }
+                        }
+                    });
+        } else {
+            // Fallback nếu không có active transaction
+            certificateAsyncService.processCertificateAsync(certificateId);
+        }
     }
 }
