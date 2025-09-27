@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.cache.services.domain.CoursesCacheService;
+import project.ktc.springboot_app.certificate.dto.CertificateResponseDto;
 import project.ktc.springboot_app.certificate.dto.CreateCertificateDto;
 import project.ktc.springboot_app.certificate.interfaces.CertificateService;
 import project.ktc.springboot_app.certificate.services.CertificateAsyncService;
@@ -32,6 +33,7 @@ import project.ktc.springboot_app.lesson.entity.Lesson;
 import project.ktc.springboot_app.lesson.interfaces.StudentService;
 import project.ktc.springboot_app.lesson.repositories.InstructorLessonRepository;
 import project.ktc.springboot_app.lesson.repositories.LessonCompletionRepository;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 import project.ktc.springboot_app.quiz.dto.QuizSubmissionResponseDto;
 import project.ktc.springboot_app.quiz.dto.SubmitQuizDto;
 import project.ktc.springboot_app.quiz.repositories.QuizQuestionRepository;
@@ -60,6 +62,7 @@ public class StudentLessonServiceImp implements StudentService {
     private final CoursesCacheService coursesCacheService;
     private final CertificateAsyncService certificateAsyncService;
     private final Executor taskExecutor;
+    private final NotificationHelper notificationHelper;
 
     /**
      * Mark a lesson as completed by the current student.
@@ -185,7 +188,49 @@ public class StudentLessonServiceImp implements StudentService {
                         dto.setUserId(userId);
                         dto.setCourseId(courseId);
 
-                        certificateService.createCertificate(dto);
+                        ResponseEntity<ApiResponse<CertificateResponseDto>> createdCertificate = certificateService
+                                .createCertificate(dto);
+
+                        try {
+                            String courseName = enrollment.getCourse().getTitle();
+                            String certificateUrl = "/dashboard/certificates/" + courseId;
+
+                            // ✅ Extract variables để tránh multiple calls
+                            ApiResponse<CertificateResponseDto> responseBody = createdCertificate != null
+                                    ? createdCertificate.getBody()
+                                    : null;
+                            CertificateResponseDto certificateData = responseBody != null ? responseBody.getData()
+                                    : null;
+                            String certificateId = certificateData != null ? certificateData.getId() : null;
+
+                            if (certificateId != null) {
+                                notificationHelper.createCertificateNotification(
+                                        userId,
+                                        certificateId,
+                                        courseName,
+                                        certificateUrl)
+                                        .thenAccept(notification -> log.info(
+                                                "✅ Certificate notification created for student {} (course: {}): {}",
+                                                userId, courseId, notification.getId()))
+                                        .exceptionally(ex -> {
+                                            log.error(
+                                                    "❌ Failed to create certificate notification for student {} (course: {}): {}",
+                                                    userId, courseId, ex.getMessage(), ex);
+                                            return null;
+                                        });
+                            } else {
+                                log.error("❌ Certificate creation returned null/invalid response for user {} course {}",
+                                        userId, courseId);
+                            }
+
+                            log.info("🎓 Student {} completed course {} - certificate created and notification sent",
+                                    userId, courseName);
+
+                        } catch (Exception notificationError) {
+                            log.error("❌ Failed to create certificate notification: {}",
+                                    notificationError.getMessage(), notificationError);
+                            // Continue execution even if notification fails
+                        }
 
                     }
                 }
