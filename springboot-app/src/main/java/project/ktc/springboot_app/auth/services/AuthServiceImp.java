@@ -210,6 +210,31 @@ public class AuthServiceImp implements AuthService {
                 try {
                     createInstructorApplication(savedUser, certificate, cv, other,
                             registerApplicationDto.getPortfolio());
+
+                    // Get the latest application ID for the user
+                    String applicationId = instructorApplicationRepository
+                            .findFirstByUserIdOrderBySubmittedAtDesc(savedUser.getId())
+                            .map(InstructorApplication::getId)
+                            .orElse(savedUser.getId()); // Fallback to pattern if not found
+
+                    // Create notifications for instructor application submission
+                    notificationHelper.createAdminInstructorApplicationNotification(savedUser.getId(),
+                            savedUser.getName(),
+                            savedUser.getEmail());
+
+                    // Create student notification about application submission
+                    notificationHelper.createInstructorApplicationSubmittedNotification(
+                            savedUser.getId(),
+                            applicationId) // Use the actual application ID
+                            .thenAccept(notification -> log.info(
+                                    "✅ Application submitted notification created for user {}: {}",
+                                    savedUser.getId(), notification.getId()))
+                            .exceptionally(ex -> {
+                                log.error("❌ Failed to create application submitted notification for user {}: {}",
+                                        savedUser.getId(), ex.getMessage(), ex);
+                                return null;
+                            });
+
                 } catch (Exception e) {
                     log.error("Failed to create instructor application for user: {}, error: {}", savedUser.getId(),
                             e.getMessage());
@@ -217,9 +242,6 @@ public class AuthServiceImp implements AuthService {
                     // as the user account was created successfully
                 }
             }
-
-            notificationHelper.createAdminInstructorApplicationNotification(savedUser.getId(), savedUser.getName(),
-                    savedUser.getEmail());
 
             log.info("User registered successfully with role {}: {}", registerApplicationDto.getRole().name(),
                     savedUser.getEmail());
