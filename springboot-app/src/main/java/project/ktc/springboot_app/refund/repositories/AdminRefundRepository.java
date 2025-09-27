@@ -1,5 +1,6 @@
 package project.ktc.springboot_app.refund.repositories;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,5 +78,50 @@ public interface AdminRefundRepository extends RefundRepository {
          */
         @Query("SELECT COUNT(r) FROM Refund r WHERE r.status = 'FAILED'")
         Long countFailedRefunds();
+
+        /**
+         * Get all refunds with search and filter support for admin (paginated)
+         * Search by refund ID, user name, or reason
+         * Filter by status and date range
+         */
+        @Query("SELECT r FROM Refund r " +
+                        "LEFT JOIN FETCH r.payment p " +
+                        "LEFT JOIN FETCH p.user u " +
+                        "WHERE (:search IS NULL OR :search = '' OR " +
+                        "LOWER(r.id) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "LOWER(r.reason) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+                        "AND (:status IS NULL OR r.status = :status) " +
+                        "AND (:fromDate IS NULL OR DATE(r.requestedAt) >= :fromDate) " +
+                        "AND (:toDate IS NULL OR DATE(r.requestedAt) <= :toDate) " +
+                        "ORDER BY r.requestedAt DESC")
+        Page<Refund> findAllRefundsWithFilter(
+                        @Param("search") String search,
+                        @Param("status") Refund.RefundStatus status,
+                        @Param("fromDate") LocalDate fromDate,
+                        @Param("toDate") LocalDate toDate,
+                        Pageable pageable);
+
+        /**
+         * Get all refunds with search and filter support for admin (non-paginated)
+         * Search by refund ID, user name, or reason
+         * Filter by status and date range
+         */
+        @Query("SELECT r FROM Refund r " +
+                        "LEFT JOIN FETCH r.payment p " +
+                        "LEFT JOIN FETCH p.user u " +
+                        "WHERE (:search IS NULL OR :search = '' OR " +
+                        "LOWER(r.id) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "LOWER(u.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "LOWER(r.reason) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+                        "AND (:status IS NULL OR r.status = :status) " +
+                        "AND (:fromDate IS NULL OR DATE(r.requestedAt) >= :fromDate) " +
+                        "AND (:toDate IS NULL OR DATE(r.requestedAt) <= :toDate) " +
+                        "ORDER BY r.requestedAt DESC")
+        List<Refund> findAllRefundsWithFilter(
+                        @Param("search") String search,
+                        @Param("status") Refund.RefundStatus status,
+                        @Param("fromDate") LocalDate fromDate,
+                        @Param("toDate") LocalDate toDate);
 
 }
