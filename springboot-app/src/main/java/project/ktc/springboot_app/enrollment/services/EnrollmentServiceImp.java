@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -165,6 +167,97 @@ public class EnrollmentServiceImp implements EnrollmentService {
                 List<MyEnrolledCourseDto> enrolledCourses = enrollments.stream()
                                 .map(this::mapToMyEnrolledCourseDto)
                                 .collect(Collectors.toList());
+
+                return ApiResponseUtil.success(enrolledCourses, "Enrolled courses retrieved successfully");
+        }
+
+        @Override
+        public ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(
+                        String search, String progressFilter, Enrollment.CompletionStatus status,
+                        String sortBy, String sortDirection, Pageable pageable) {
+                log.info("Fetching enrolled courses with search: {}, progressFilter: {}, status: {}, sortBy: {}, sortDirection: {}",
+                                search, progressFilter, status, sortBy, sortDirection);
+
+                // Get current authenticated user ID
+                String currentUserId = SecurityUtil.getCurrentUserId();
+
+                // If progressFilter is specified, we need to fetch all results first, then
+                // filter and paginate
+                if (progressFilter != null && !progressFilter.isEmpty()) {
+                        return getMyCourses_WithProgressFilter(currentUserId, search, progressFilter, status, sortBy,
+                                        sortDirection, pageable);
+                }
+
+                // If no progress filter, we can use normal database pagination
+                // Create sorting based on sortBy and sortDirection
+                Sort sort = createSort(sortBy, sortDirection);
+                Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+                // Fetch enrollments with search and filter
+                Page<Enrollment> enrollmentsPage;
+                try {
+                        enrollmentsPage = enrollmentRepository.findByUserIdWithSearchAndFilter(
+                                        currentUserId, search, status, sortedPageable);
+                } catch (Exception e) {
+                        log.error("Error fetching enrollments: {}", e.getMessage());
+                        return ApiResponseUtil.error(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                                        "Failed to fetch enrolled courses");
+                }
+
+                // Convert to DTOs with progress calculation
+                List<MyEnrolledCourseDto> enrolledCourses = enrollmentsPage.getContent().stream()
+                                .map(this::mapToMyEnrolledCourseDto)
+                                .collect(Collectors.toList());
+
+                // Create paginated response
+                PaginatedResponse<MyEnrolledCourseDto> paginatedResponse = PaginatedResponse
+                                .<MyEnrolledCourseDto>builder()
+                                .content(enrolledCourses)
+                                .page(PaginatedResponse.PageInfo.builder()
+                                                .number(enrollmentsPage.getNumber())
+                                                .size(enrollmentsPage.getSize())
+                                                .totalElements(enrollmentsPage.getTotalElements())
+                                                .totalPages(enrollmentsPage.getTotalPages())
+                                                .first(enrollmentsPage.isFirst())
+                                                .last(enrollmentsPage.isLast())
+                                                .build())
+                                .build();
+
+                return ApiResponseUtil.success(paginatedResponse, "Enrolled courses retrieved successfully");
+        }
+
+        @Override
+        public ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(
+                        String search, String progressFilter, Enrollment.CompletionStatus status) {
+                log.info("Fetching all enrolled courses with search: {}, progressFilter: {}, status: {}",
+                                search, progressFilter, status);
+
+                // Get current authenticated user ID
+                String currentUserId = SecurityUtil.getCurrentUserId();
+
+                // Create a large pageable to get all results (we'll limit to 1000 for safety)
+                Pageable pageable = PageRequest.of(0, 1000, Sort.by(Sort.Direction.DESC, "enrolledAt"));
+
+                // Fetch enrollments with search and filter
+                Page<Enrollment> enrollmentsPage;
+                try {
+                        enrollmentsPage = enrollmentRepository.findByUserIdWithSearchAndFilter(
+                                        currentUserId, search, status, pageable);
+                } catch (Exception e) {
+                        log.error("Error fetching enrollments: {}", e.getMessage());
+                        return ApiResponseUtil.error(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                                        "Failed to fetch enrolled courses");
+                }
+
+                // Convert to DTOs with progress calculation
+                List<MyEnrolledCourseDto> enrolledCourses = enrollmentsPage.getContent().stream()
+                                .map(this::mapToMyEnrolledCourseDto)
+                                .collect(Collectors.toList());
+
+                // Apply progress filter if specified
+                if (progressFilter != null && !progressFilter.isEmpty()) {
+                        enrolledCourses = filterByProgress(enrolledCourses, progressFilter);
+                }
 
                 return ApiResponseUtil.success(enrolledCourses, "Enrolled courses retrieved successfully");
         }
@@ -385,7 +478,7 @@ public class EnrollmentServiceImp implements EnrollmentService {
 
                         double progress = (double) completedLessons / totalLessons;
                         return BigDecimal.valueOf(progress)
-                                        .setScale(2, RoundingMode.HALF_UP)
+                                        .setScale(4, RoundingMode.HALF_UP)
                                         .doubleValue();
                 } catch (Exception e) {
                         log.warn("Failed to calculate progress for user {} and course {}: {}", userId, courseId,
@@ -499,5 +592,140 @@ public class EnrollmentServiceImp implements EnrollmentService {
                                         userId, courseId, failureDuration, e.getMessage(), e);
                         throw new RuntimeException("Failed to create enrollment from webhook", e);
                 }
+        }
+
+        /**
+         * Handle pagination when progress filter is applied - requires fetching all
+         * data first
+         */
+        private ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses_WithProgressFilter(
+                        String currentUserId, String search, String progressFilter, Enrollment.CompletionStatus status,
+                        String sortBy, String sortDirection, Pageable pageable) {
+
+                log.info("Fetching all enrollments for progress filtering");
+
+                // Create sorting for fetching all data
+                Sort sort = createSort(sortBy, sortDirection);
+                // Fetch all matching results (with reasonable limit for safety)
+                Pageable allResultsPageable = PageRequest.of(0, 1000, sort);
+
+                // Fetch all enrollments with search and status filter (but no pagination yet)
+                Page<Enrollment> allEnrollmentsPage;
+                try {
+                        allEnrollmentsPage = enrollmentRepository.findByUserIdWithSearchAndFilter(
+                                        currentUserId, search, status, allResultsPageable);
+                } catch (Exception e) {
+                        log.error("Error fetching all enrollments for progress filtering: {}", e.getMessage());
+                        return ApiResponseUtil.error(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                                        "Failed to fetch enrolled courses");
+                }
+
+                // Convert all to DTOs with progress calculation
+                List<MyEnrolledCourseDto> allEnrolledCourses = allEnrollmentsPage.getContent().stream()
+                                .map(this::mapToMyEnrolledCourseDto)
+                                .collect(Collectors.toList());
+
+                // Apply progress filter
+                List<MyEnrolledCourseDto> filteredCourses = filterByProgress(allEnrolledCourses, progressFilter);
+
+                // Apply manual pagination to filtered results
+                int totalElements = filteredCourses.size();
+                int pageNumber = pageable.getPageNumber();
+                int pageSize = pageable.getPageSize();
+                int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+
+                // Calculate start and end indices for current page
+                int startIndex = pageNumber * pageSize;
+                int endIndex = Math.min(startIndex + pageSize, totalElements);
+
+                // Get the current page content
+                List<MyEnrolledCourseDto> pageContent = (startIndex < totalElements)
+                                ? filteredCourses.subList(startIndex, endIndex)
+                                : List.of();
+
+                // Create paginated response with correct metadata
+                PaginatedResponse<MyEnrolledCourseDto> paginatedResponse = PaginatedResponse
+                                .<MyEnrolledCourseDto>builder()
+                                .content(pageContent)
+                                .page(PaginatedResponse.PageInfo.builder()
+                                                .number(pageNumber)
+                                                .size(pageSize)
+                                                .totalElements((long) totalElements)
+                                                .totalPages(totalPages)
+                                                .first(pageNumber == 0)
+                                                .last(pageNumber >= totalPages - 1)
+                                                .build())
+                                .build();
+
+                log.info("Progress filtering applied: {} total courses, {} filtered courses, page {}/{}",
+                                allEnrolledCourses.size(), totalElements, pageNumber + 1, totalPages);
+
+                return ApiResponseUtil.success(paginatedResponse, "Enrolled courses retrieved successfully");
+        }
+
+        /**
+         * Create sorting based on sortBy and sortDirection parameters
+         */
+        private Sort createSort(String sortBy, String sortDirection) {
+                Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC
+                                : Sort.Direction.DESC;
+
+                switch (sortBy.toLowerCase()) {
+                        case "recent":
+                                return Sort.by(direction, "enrolledAt");
+                        case "title":
+                                return Sort.by(direction, "course.title");
+                        case "instructor":
+                                return Sort.by(direction, "course.instructor.name");
+                        case "progress":
+                                // For progress sorting, we'll sort by enrollment date for now
+                                // since progress calculation is done after fetching data
+                                return Sort.by(direction, "enrolledAt");
+                        default:
+                                return Sort.by(Sort.Direction.DESC, "enrolledAt");
+                }
+        }
+
+        /**
+         * Filter courses by progress status
+         */
+        private List<MyEnrolledCourseDto> filterByProgress(List<MyEnrolledCourseDto> courses, String progressFilter) {
+                if (progressFilter == null || progressFilter.isEmpty()) {
+                        return courses;
+                }
+
+                log.debug("Filtering {} courses by progress: {}", courses.size(), progressFilter);
+
+                List<MyEnrolledCourseDto> filteredCourses = courses.stream()
+                                .filter(course -> {
+                                        Double progress = course.getProgress();
+                                        if (progress == null)
+                                                progress = 0.0;
+
+                                        boolean matches = false;
+                                        switch (progressFilter.toLowerCase()) {
+                                                case "completed":
+                                                        matches = progress >= 1.0;
+                                                        break;
+                                                case "in_progress":
+                                                        matches = progress > 0.0 && progress < 1.0;
+                                                        break;
+                                                case "not_started":
+                                                        matches = progress == 0.0;
+                                                        break;
+                                                default:
+                                                        matches = true;
+                                        }
+
+                                        log.debug("Course '{}' progress: {} - Filter '{}' matches: {}",
+                                                        course.getTitle(), progress, progressFilter, matches);
+                                        return matches;
+                                })
+                                .collect(Collectors.toList());
+
+                log.info("Progress filter '{}' applied: {} courses out of {} matched",
+                                progressFilter, filteredCourses.size(), courses.size());
+
+                return filteredCourses;
         }
 }
