@@ -45,4 +45,14 @@ public interface CloudinaryService {
      * @throws IOException if upload fails
      */
     DocumentUploadResponseDto uploadCertificatePdf(byte[] pdfData, String filename) throws IOException;
+
+    /**
+     * Upload certificate image to Cloudinary
+     * 
+     * @param imageData Image file as byte array
+     * @param filename  Name of the image file
+     * @return Image upload response with URL
+     * @throws IOException if upload fails
+     */
+    ImageUploadResponseDto uploadCertificateImage(byte[] imageData, String filename) throws IOException;
 }

@@ -20,6 +20,7 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.cache.services.domain.CoursesCacheService;
 import project.ktc.springboot_app.certificate.dto.CreateCertificateDto;
 import project.ktc.springboot_app.certificate.interfaces.CertificateService;
+import project.ktc.springboot_app.certificate.services.CertificateAsyncService;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
@@ -39,6 +40,8 @@ import project.ktc.springboot_app.section.entity.Section;
 import project.ktc.springboot_app.section.repositories.InstructorSectionRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -55,6 +58,8 @@ public class StudentLessonServiceImp implements StudentService {
     private final ObjectMapper objectMapper;
     private final CertificateService certificateService;
     private final CoursesCacheService coursesCacheService;
+    private final CertificateAsyncService certificateAsyncService;
+    private final Executor taskExecutor;
 
     /**
      * Mark a lesson as completed by the current student.
@@ -180,11 +185,14 @@ public class StudentLessonServiceImp implements StudentService {
                         dto.setUserId(userId);
                         dto.setCourseId(courseId);
 
-                        // certificateService.createCertificateAsync(dto);
                         certificateService.createCertificate(dto);
+
                     }
                 }
             }
+
+            // certificateAsyncService.processCertificateAsync();
+
         } catch (Exception e) {
             log.error("Error checking course completion for user {} in course {}: {}",
                     userId, courseId, e.getMessage(), e);

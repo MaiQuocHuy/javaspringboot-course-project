@@ -125,6 +125,11 @@
         	<artifactId>cloudinary-http45</artifactId>
         	<version>1.39.0</version>
     	</dependency>
+
+		<dependency>
+			<groupId>io.lettuce</groupId>
+			<artifactId>lettuce-core</artifactId>
+		</dependency>
     	
     	<!-- iText PDF for certificate generation (currently using wkhtmltopdf instead) -->
 		<!-- <dependency>

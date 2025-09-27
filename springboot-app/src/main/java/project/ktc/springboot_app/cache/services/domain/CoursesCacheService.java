@@ -441,28 +441,83 @@ public class CoursesCacheService {
     }
 
     /**
-     * Checks enrollment counts and invalidates cache if significant changes
+     * Invalidates cache when enrollment changes occur (always refresh for
+     * consistency)
      */
     public void checkAndInvalidateForEnrollmentChange(String courseId, String slug,
             long previousCount, long newCount) {
         try {
-            // Calculate percentage change
-            double threshold = 0.05; // 5% threshold
-            if (previousCount > 0) {
-                double percentageChange = Math.abs((newCount - previousCount) / (double) previousCount);
-                if (percentageChange >= threshold) {
-                    log.info("Significant enrollment change ({:.2f}%) detected for course {}. Invalidating cache.",
-                            percentageChange * 100, courseId);
-                    invalidateCourseByIdAndSlug(courseId, slug);
-                }
-            } else if (newCount > 0) {
-                // First enrollment - always invalidate
-                log.info("First enrollment detected for course {}. Invalidating cache.", courseId);
+            // Always invalidate cache when enrollment count changes
+            if (previousCount != newCount) {
+                log.info("Enrollment change detected for course {} (from {} to {}). Invalidating cache.",
+                        courseId, previousCount, newCount);
+
+                // Invalidate individual course cache (detail + slug)
                 invalidateCourseByIdAndSlug(courseId, slug);
+
+                // Invalidate all shared course list caches to ensure consistent enrollment
+                // counts
+                // This includes findAllPublic API cache which contains enrollment counts
+                invalidateAllCoursesCaches();
+
+                log.info("Successfully invalidated all course caches for enrollment change in course: {}", courseId);
+            } else {
+                log.debug("No enrollment change detected for course: {}", courseId);
             }
 
         } catch (Exception e) {
-            log.error("Failed to check enrollment change for course: {}", courseId, e);
+            log.error("Failed to invalidate cache for enrollment change in course: {}", courseId, e);
+        }
+    }
+
+    /**
+     * Invalidates user-specific enrollment status cache
+     * This ensures that enrollment status is immediately updated after purchase
+     */
+    public void invalidateUserEnrollmentStatus(String userId) {
+        try {
+            log.debug("Invalidating user enrollment status cache for user: {}", userId);
+
+            // Build pattern to match all enrollment status keys for this user
+            String pattern = cacheKeyBuilder.buildUserEnrollmentStatusPattern(userId);
+
+            // Find all cache keys matching the pattern
+            Set<String> keysToDelete = cacheService.getKeys(pattern);
+
+            if (!keysToDelete.isEmpty()) {
+                // Delete all matching cache entries
+                long deletedCount = cacheService.remove(keysToDelete);
+                log.debug("Invalidated {} user enrollment status cache entries for user: {}",
+                        deletedCount, userId);
+            } else {
+                log.debug("No user enrollment status cache entries found to invalidate for user: {}", userId);
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to invalidate user enrollment status cache for user: {}", userId, e);
+        }
+    }
+
+    /**
+     * Invalidates all course-related cache after enrollment change
+     * This ensures consistent enrollment counts across all course APIs
+     */
+    public void invalidateCacheForEnrollmentChange(String courseId, String slug) {
+        try {
+            log.info("Invalidating cache after enrollment change for course: {}", courseId);
+
+            // Invalidate individual course cache (detail + slug)
+            invalidateCourseByIdAndSlug(courseId, slug);
+
+            // Invalidate all shared course list caches to ensure consistent enrollment
+            // counts
+            // This includes findAllPublic API cache which contains enrollment counts
+            invalidateAllCoursesCaches();
+
+            log.info("Successfully invalidated all course caches after enrollment change for course: {}", courseId);
+
+        } catch (Exception e) {
+            log.error("Failed to invalidate cache after enrollment change for course: {}", courseId, e);
         }
     }
 }
