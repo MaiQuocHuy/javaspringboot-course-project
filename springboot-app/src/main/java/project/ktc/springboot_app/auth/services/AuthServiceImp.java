@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -580,6 +581,80 @@ public class AuthServiceImp implements AuthService {
             log.error("Error during password reset: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Password reset failed. Please try again later.");
         }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> logoutAdmin(HttpServletRequest request,
+            HttpServletResponse response) {
+        log.info("Processing admin logout request");
+
+        try {
+            // Lấy refresh token từ cookie
+            String refreshToken = extractRefreshTokenFromCookie(request);
+
+            // Validate refresh token
+            if (refreshToken == null || refreshToken.trim().isEmpty()) {
+                log.warn("Logout attempt with empty refresh token");
+                return ApiResponseUtil.badRequest("Refresh token is required");
+            }
+
+            // Validate refresh token is provided
+            if (refreshToken == null || refreshToken.trim().isEmpty()) {
+                log.warn("Logout attempt with empty refresh token");
+                return ApiResponseUtil.badRequest("Refresh token is required");
+            }
+
+            // Find the refresh token in database
+            Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByToken(refreshToken.trim());
+
+            if (tokenOpt.isEmpty()) {
+                log.warn("Logout attempt with invalid refresh token: {}", refreshToken);
+                return ApiResponseUtil.badRequest("Invalid refresh token");
+            }
+
+            RefreshToken token = tokenOpt.get();
+
+            // Check if token is already revoked
+            if (Boolean.TRUE.equals(token.getIsRevoked())) {
+                log.warn("Logout attempt with already revoked token: {}", refreshToken);
+                return ApiResponseUtil.badRequest("Invalid refresh token");
+            }
+
+            // Check if token is expired
+            if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+                log.warn("Logout attempt with expired token: {}", refreshToken);
+                return ApiResponseUtil.badRequest("Invalid refresh token");
+            }
+
+            // Revoke the refresh token
+            token.setIsRevoked(true);
+            refreshTokenRepository.save(token);
+
+            // Clear refresh token cookie
+            String cookieValue = "refreshToken=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict";
+            response.addHeader("Set-Cookie", cookieValue);
+
+            log.info("Successfully logged out admin user...");
+            return ApiResponseUtil.success("Logout successful");
+
+        } catch (Exception e) {
+            log.error("Error during admin logout: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Logout failed. Please try again later.");
+        }
+    }
+
+    // Helper methods
+    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null)
+            return null;
+
+        for (Cookie cookie : request.getCookies()) {
+            if ("refreshToken".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 
     @Override
