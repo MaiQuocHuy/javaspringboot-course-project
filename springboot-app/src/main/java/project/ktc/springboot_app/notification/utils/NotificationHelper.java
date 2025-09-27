@@ -84,33 +84,11 @@ public class NotificationHelper {
                 .user_id(userId)
                 .resource_id("res-course-001")
                 .entity_id(certificateId)
-                .message("Congratulations! You have completed course '" + courseName + "' and received a certificate")
+                .message("Congratulations! You have completed course '" + courseName
+                        + "', certificate will be available soon for you to download.")
                 .action_url(certificateUrl)
                 .priority(NotificationPriority.HIGH)
                 .expired_at(LocalDateTime.now().plusDays(90))
-                .build();
-
-        return notificationService.createNotification(notificationDto);
-    }
-
-    /**
-     * Create a course approval notification for instructors
-     */
-    public CompletableFuture<NotificationResponseDto> createCourseApprovalNotification(
-            String instructorId, String courseId, String courseName, String courseUrl, boolean approved) {
-
-        String message = approved
-                ? "Your course '" + courseName + "' has been approved"
-                : "Your course '" + courseName + "' needs additional modifications";
-
-        CreateNotificationDto notificationDto = CreateNotificationDto.builder()
-                .user_id(instructorId)
-                .resource_id("res-course-001")
-                .entity_id(courseId)
-                .message(message)
-                .action_url(courseUrl)
-                .priority(NotificationPriority.HIGH)
-                .expired_at(LocalDateTime.now().plusDays(30))
                 .build();
 
         return notificationService.createNotification(notificationDto);
@@ -123,8 +101,8 @@ public class NotificationHelper {
             String userId, String refundId, String courseName, String refundUrl, String status) {
 
         String message = switch (status.toLowerCase()) {
-            case "approved" -> "Refund request for course '" + courseName + "' has been approved";
-            case "rejected" -> "Refund request for course '" + courseName + "' has been rejected";
+            case "completed" -> "Refund request for course '" + courseName + "' has been approved";
+            case "failed" -> "Refund request for course '" + courseName + "' has been rejected";
             default -> "Refund request status for course '" + courseName + "' has been updated";
         };
 
@@ -494,6 +472,89 @@ public class NotificationHelper {
 
         log.info("Creating new student enrollment notification for instructor: {} - course: {} - student: {}",
                 instructorId, courseId, studentName);
+        return notificationService.createNotification(notificationDto);
+    }
+
+    /**
+     * Instructor Notification 4: Application submitted (MEDIUM priority)
+     * Notify user when they submit an instructor application and need to wait for
+     * approval
+     */
+    public CompletableFuture<NotificationResponseDto> createInstructorApplicationSubmittedNotification(
+            String userId, String applicationId) {
+        // Validate inputs
+        if (userId == null || userId.trim().isEmpty()) {
+            log.error("Cannot create instructor application submitted notification: userId is null or empty");
+            return CompletableFuture
+                    .failedFuture(new IllegalArgumentException("User ID cannot be null or empty"));
+        }
+        if (applicationId == null || applicationId.trim().isEmpty()) {
+            log.error("Cannot create instructor application submitted notification: applicationId is null or empty");
+            return CompletableFuture
+                    .failedFuture(new IllegalArgumentException("Application ID cannot be null or empty"));
+        }
+
+        String message = "📝 Your instructor application has been submitted successfully! Please wait for admin approval before you can create courses.";
+        String actionUrl = "/settings?tab=application";
+
+        CreateNotificationDto notificationDto = CreateNotificationDto.builder()
+                .user_id(userId)
+                .resource_id("res-instructor-application-001")
+                .entity_id(applicationId)
+                .message(message)
+                .action_url(actionUrl)
+                .priority(NotificationPriority.MEDIUM)
+                .expired_at(LocalDateTime.now().plusDays(30))
+                .build();
+
+        log.info("Creating instructor application submitted notification for user: {} - application: {}",
+                userId, applicationId);
+        return notificationService.createNotification(notificationDto);
+    }
+
+    /**
+     * Instructor Notification 5: New refund request (MEDIUM priority)
+     * Notify instructor when a student submits a refund request for their course
+     */
+    public CompletableFuture<NotificationResponseDto> createInstructorNewRefundRequestNotification(
+            String instructorId, String refundId, String courseName, String studentName, String refundReason) {
+        // Validate inputs
+        if (instructorId == null || instructorId.trim().isEmpty()) {
+            log.error("Cannot create instructor new refund request notification: instructorId is null or empty");
+            return CompletableFuture
+                    .failedFuture(new IllegalArgumentException("Instructor ID cannot be null or empty"));
+        }
+        if (refundId == null || refundId.trim().isEmpty()) {
+            log.error("Cannot create instructor new refund request notification: refundId is null or empty");
+            return CompletableFuture
+                    .failedFuture(new IllegalArgumentException("Refund ID cannot be null or empty"));
+        }
+        if (courseName == null || courseName.trim().isEmpty()) {
+            courseName = "Unknown Course";
+        }
+        if (studentName == null || studentName.trim().isEmpty()) {
+            studentName = "A student";
+        }
+        if (refundReason == null || refundReason.trim().isEmpty()) {
+            refundReason = "No reason provided";
+        }
+
+        String message = String.format("💰 %s has requested a refund for your course '%s'. Reason: %s",
+                studentName, courseName, refundReason);
+        String actionUrl = "/instructor/refunds/" + refundId;
+
+        CreateNotificationDto notificationDto = CreateNotificationDto.builder()
+                .user_id(instructorId)
+                .resource_id("res-refund-001")
+                .entity_id(refundId)
+                .message(message)
+                .action_url(actionUrl)
+                .priority(NotificationPriority.MEDIUM)
+                .expired_at(LocalDateTime.now().plusDays(30))
+                .build();
+
+        log.info("Creating new refund request notification for instructor: {} - refund: {} - student: {}",
+                instructorId, refundId, studentName);
         return notificationService.createNotification(notificationDto);
     }
 
