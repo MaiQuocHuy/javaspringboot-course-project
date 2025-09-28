@@ -1,5 +1,8 @@
 package project.ktc.springboot_app.discount.services;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +15,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.discount.dto.InstructorAffiliatePayoutResponseDto;
 import project.ktc.springboot_app.discount.entity.AffiliatePayout;
+import project.ktc.springboot_app.discount.enums.PayoutStatus;
 import project.ktc.springboot_app.discount.interfaces.InstructorAffiliatePayoutService;
 import project.ktc.springboot_app.discount.repositories.InstructorAffiliatePayoutRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
@@ -93,6 +97,76 @@ public class InstructorAffiliatePayoutServiceImp implements InstructorAffiliateP
                         log.error("Error retrieving affiliate payout {} for instructor: {}", affiliatePayoutId,
                                         instructorId, e);
                         return ApiResponseUtil.internalServerError("Failed to retrieve affiliate payout");
+                }
+        }
+
+        @Override
+        public ResponseEntity<ApiResponse<PaginatedResponse<InstructorAffiliatePayoutResponseDto>>> getAffiliatePayouts(
+                        String search, PayoutStatus status, String fromDate, String toDate, Pageable pageable) {
+
+                String instructorId = SecurityUtil.getCurrentUserId();
+                log.info("Getting affiliate payouts with filters for instructor: {} - search: {}, status: {}, fromDate: {}, toDate: {}, page: {}, size: {}",
+                                instructorId, search, status, fromDate, toDate, pageable.getPageNumber(),
+                                pageable.getPageSize());
+
+                try {
+                        LocalDate fromLocalDate = null;
+                        LocalDate toLocalDate = null;
+
+                        // Parse and validate date parameters
+                        if (fromDate != null && !fromDate.isEmpty()) {
+                                try {
+                                        fromLocalDate = LocalDate.parse(fromDate);
+                                } catch (DateTimeParseException e) {
+                                        return ApiResponseUtil
+                                                        .badRequest("Invalid fromDate format. Use YYYY-MM-DD format");
+                                }
+                        }
+
+                        if (toDate != null && !toDate.isEmpty()) {
+                                try {
+                                        toLocalDate = LocalDate.parse(toDate);
+                                } catch (DateTimeParseException e) {
+                                        return ApiResponseUtil
+                                                        .badRequest("Invalid toDate format. Use YYYY-MM-DD format");
+                                }
+                        }
+
+                        // Validate date range if both dates provided
+                        if (fromLocalDate != null && toLocalDate != null && fromLocalDate.isAfter(toLocalDate)) {
+                                return ApiResponseUtil.badRequest("Start date cannot be after end date");
+                        }
+
+                        Page<AffiliatePayout> affiliatePayoutPage = instructorAffiliatePayoutRepository
+                                        .findByCourseInstructorIdWithFilter(instructorId, search,
+                                                        status, fromLocalDate, toLocalDate, pageable);
+
+                        Page<InstructorAffiliatePayoutResponseDto> responsePage = affiliatePayoutPage
+                                        .map(InstructorAffiliatePayoutResponseDto::fromEntity);
+
+                        PaginatedResponse<InstructorAffiliatePayoutResponseDto> paginatedResponse = PaginatedResponse
+                                        .<InstructorAffiliatePayoutResponseDto>builder()
+                                        .content(responsePage.getContent())
+                                        .page(PaginatedResponse.PageInfo.builder()
+                                                        .number(responsePage.getNumber())
+                                                        .size(responsePage.getSize())
+                                                        .totalElements(responsePage.getTotalElements())
+                                                        .totalPages(responsePage.getTotalPages())
+                                                        .first(responsePage.isFirst())
+                                                        .last(responsePage.isLast())
+                                                        .build())
+                                        .build();
+
+                        log.info("Successfully retrieved {} affiliate payouts for instructor: {} with filters",
+                                        responsePage.getTotalElements(), instructorId);
+
+                        return ApiResponseUtil.success(paginatedResponse,
+                                        "Instructor affiliate payouts with filters retrieved successfully");
+
+                } catch (Exception e) {
+                        log.error("Error retrieving affiliate payouts with filters for instructor: {}", instructorId,
+                                        e);
+                        return ApiResponseUtil.internalServerError("Failed to retrieve affiliate payouts with filters");
                 }
         }
 }
