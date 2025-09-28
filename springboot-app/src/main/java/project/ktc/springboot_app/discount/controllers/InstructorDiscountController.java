@@ -1,15 +1,22 @@
 package project.ktc.springboot_app.discount.controllers;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -19,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.discount.dto.InstructorAffiliatePayoutResponseDto;
 import project.ktc.springboot_app.discount.dto.InstructorDiscountUsageResponseDto;
+import project.ktc.springboot_app.discount.enums.DiscountType;
 import project.ktc.springboot_app.discount.interfaces.InstructorAffiliatePayoutService;
 import project.ktc.springboot_app.discount.interfaces.InstructorDiscountUsageService;
 
@@ -32,6 +40,7 @@ import project.ktc.springboot_app.discount.interfaces.InstructorDiscountUsageSer
 @PreAuthorize("hasRole('INSTRUCTOR')")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 @Tag(name = "Instructor Discount API", description = "API for instructor discount and affiliate operations")
 @SecurityRequirement(name = "bearerAuth")
 public class InstructorDiscountController {
@@ -42,20 +51,37 @@ public class InstructorDiscountController {
         /**
          * Get discount usages for courses owned by the instructor
          * 
-         * @param pageable Pagination parameters
+         * @param search   Search by discount usage ID, discount code, user name, or
+         *                 course title
+         * @param type     Filter by discount type
+         * @param fromDate Filter by usage date from (ISO date string)
+         * @param toDate   Filter by usage date to (ISO date string)
+         * @param page     Page number (0-based)
+         * @param size     Page size
          * @return ResponseEntity containing paginated list of discount usages
          */
         @GetMapping("/discount-usage")
         @Operation(summary = "Get instructor discount usages", description = """
-                        Retrieves all discount usages for courses owned by the current instructor.
+                        Retrieves all discount usages for courses owned by the current instructor with advanced search and filtering.
                         This shows which discounts have been used on the instructor's courses.
 
                         **Features:**
                         - Shows discount usage on instructor's courses
                         - Includes user details, course info, and discount details
                         - Shows referral information when applicable
+                        - Advanced search and filtering capabilities
                         - Supports pagination for better performance
                         - Ordered by usage date (most recent first)
+
+                        **Search & Filter Options:**
+                        - Search by discount usage ID, discount code, user name, or course title
+                        - Filter by discount type (GENERAL, REFERRAL)
+                        - Filter by usage date range
+
+                        **Example Usage:**
+                        - `/api/instructor/discount-usage?search=john&type=REFERRAL&page=0&size=10`
+                        - `/api/instructor/discount-usage?fromDate=2024-01-01&toDate=2024-12-31`
+                        - `/api/instructor/discount-usage?search=SAVE20&type=GENERAL`
 
                         **Instructor Only:**
                         - This endpoint requires INSTRUCTOR role
@@ -68,12 +94,23 @@ public class InstructorDiscountController {
                         @ApiResponse(responseCode = "500", description = "Internal server error")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<InstructorDiscountUsageResponseDto>>> getDiscountUsages(
-                        @PageableDefault(size = 10) Pageable pageable) {
+                        @Parameter(description = "Search by discount usage ID, discount code, user name, or course title") @RequestParam(required = false) String search,
 
-                log.info("Instructor requesting discount usages with pagination: page={}, size={}",
-                                pageable.getPageNumber(), pageable.getPageSize());
+                        @Parameter(description = "Filter by discount type", example = "GENERAL") @RequestParam(required = false) DiscountType type,
 
-                return instructorDiscountUsageService.getDiscountUsages(pageable);
+                        @Parameter(description = "Filter by usage date from (ISO format: yyyy-MM-dd)", example = "2024-01-01") @RequestParam(required = false) String fromDate,
+
+                        @Parameter(description = "Filter by usage date to (ISO format: yyyy-MM-dd)", example = "2024-12-31") @RequestParam(required = false) String toDate,
+
+                        @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
+
+                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size) {
+
+                Pageable pageable = PageRequest.of(page, size);
+                log.info("Instructor requesting discount usages with filters - search: {}, type: {}, fromDate: {}, toDate: {}, page: {}, size: {}",
+                                search, type, fromDate, toDate, page, size);
+
+                return instructorDiscountUsageService.getDiscountUsages(search, type, fromDate, toDate, pageable);
         }
 
         /**
