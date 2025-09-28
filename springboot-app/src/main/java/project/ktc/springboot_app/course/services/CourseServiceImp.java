@@ -78,16 +78,20 @@ public class CourseServiceImp implements CourseService {
         @Override
         public ResponseEntity<ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(
                         String search,
-                        String categoryId,
+                        List<String> categoryIds,
                         BigDecimal minPrice,
                         BigDecimal maxPrice,
                         CourseLevel level,
                         Double averageRating,
                         Pageable pageable) {
 
+                // Convert empty list to null for JPQL compatibility
+                List<String> processedCategoryIds = (categoryIds != null && categoryIds.isEmpty()) ? null : categoryIds;
+
                 log.info(
-                                "Finding public courses with filters: search={}, categoryId={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}",
-                                search, categoryId, minPrice, maxPrice, level, averageRating, pageable.getPageNumber());
+                                "Finding public courses with filters: search={}, categoryIds={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}",
+                                search, processedCategoryIds, minPrice, maxPrice, level, averageRating,
+                                pageable.getPageNumber());
 
                 if (averageRating != null) {
                         log.info("RATING FILTER APPLIED: averageRating >= {}", averageRating);
@@ -104,7 +108,7 @@ public class CourseServiceImp implements CourseService {
                 // ============ STEP 1: Get shared course data (check cache first) ============
 
                 SharedCourseDataDto sharedData = getSharedCourseData(
-                                pageable.getPageNumber(), pageable.getPageSize(), search, categoryId,
+                                pageable.getPageNumber(), pageable.getPageSize(), search, processedCategoryIds,
                                 minPrice, maxPrice, level, averageRating, getSortString(pageable), pageable);
 
                 // ============ STEP 2: Get user-specific enrollment status ============
@@ -143,15 +147,22 @@ public class CourseServiceImp implements CourseService {
          * Gets shared course data, checking cache first, then falling back to database
          */
         private SharedCourseDataDto getSharedCourseData(int pageNumber, int pageSize, String search,
-                        String categoryId, BigDecimal minPrice, BigDecimal maxPrice, CourseLevel level,
+                        List<String> categoryIds, BigDecimal minPrice, BigDecimal maxPrice, CourseLevel level,
                         Double averageRating, String sortString, Pageable pageable) {
 
-                // Try cache first (skip cache when averageRating filter is applied for now)
+                log.info("🔍 getSharedCourseData called with categoryIds: {}, size: {}", categoryIds,
+                                categoryIds != null ? categoryIds.size() : 0);
+
+                // Try cache first (skip cache when averageRating filter or multi-category
+                // filtering is applied for now)
                 SharedCourseCacheDto cachedData = null;
-                if (averageRating == null) {
+                if (averageRating == null && (categoryIds == null || categoryIds.size() <= 1)) {
                         try {
+                                String singleCategoryId = (categoryIds != null && !categoryIds.isEmpty())
+                                                ? categoryIds.get(0)
+                                                : null;
                                 cachedData = coursesCacheService.getSharedCourseData(
-                                                pageNumber, pageSize, search, categoryId,
+                                                pageNumber, pageSize, search, singleCategoryId,
                                                 minPrice, maxPrice, level, sortString);
 
                                 if (cachedData != null) {
@@ -169,7 +180,7 @@ public class CourseServiceImp implements CourseService {
 
                 // Query courses with pagination
                 Page<Course> coursePage = courseRepository.findPublishedCoursesWithFilters(
-                                search, categoryId, minPrice, maxPrice, level, averageRating, pageable);
+                                search, categoryIds, minPrice, maxPrice, level, averageRating, pageable);
                 log.info("Found {} courses from database", coursePage.getTotalElements());
 
                 // Batch load categories to avoid N+1 problem
@@ -219,14 +230,19 @@ public class CourseServiceImp implements CourseService {
                 // Convert to cache DTO for storage
                 SharedCourseCacheDto cacheDto = CourseCacheMapper.toSharedCacheDto(sharedData);
 
-                // Store in shared cache (30 minutes TTL)
-                try {
-                        coursesCacheService.storeSharedCourseData(
-                                        pageNumber, pageSize, search, categoryId,
-                                        minPrice, maxPrice, level, sortString, cacheDto);
-                        log.info("✅ Stored shared course data in cache (30 min TTL)");
-                } catch (Exception e) {
-                        log.warn("⚠️ Failed to cache shared course data", e);
+                // Store in shared cache (30 minutes TTL) - only for single category filtering
+                if (averageRating == null && (categoryIds == null || categoryIds.size() <= 1)) {
+                        try {
+                                String singleCategoryId = (categoryIds != null && !categoryIds.isEmpty())
+                                                ? categoryIds.get(0)
+                                                : null;
+                                coursesCacheService.storeSharedCourseData(
+                                                pageNumber, pageSize, search, singleCategoryId,
+                                                minPrice, maxPrice, level, sortString, cacheDto);
+                                log.info("✅ Stored shared course data in cache (30 min TTL)");
+                        } catch (Exception e) {
+                                log.warn("⚠️ Failed to cache shared course data", e);
+                        }
                 }
 
                 return sharedData;
@@ -421,7 +437,7 @@ public class CourseServiceImp implements CourseService {
         @Override
         public ResponseEntity<ApiResponse<PaginatedResponse<CourseAdminResponseDto>>> findCoursesForAdmin(
                         Boolean isApproved,
-                        String categoryId,
+                        List<String> categoryIds,
                         String search,
                         BigDecimal minPrice,
                         BigDecimal maxPrice,
@@ -429,9 +445,12 @@ public class CourseServiceImp implements CourseService {
                         Double averageRating,
                         Pageable pageable) {
 
+                // Convert empty list to null for JPQL compatibility
+                List<String> processedCategoryIds = (categoryIds != null && categoryIds.isEmpty()) ? null : categoryIds;
+
                 log.info(
-                                "Finding courses for admin with filters: isApproved={}, categoryId={}, search={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}",
-                                isApproved, categoryId, search, minPrice, maxPrice, level, averageRating,
+                                "Finding courses for admin with filters: isApproved={}, categoryIds={}, search={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}",
+                                isApproved, processedCategoryIds, search, minPrice, maxPrice, level, averageRating,
                                 pageable.getPageNumber());
 
                 // Validate price range
@@ -440,7 +459,8 @@ public class CourseServiceImp implements CourseService {
                 }
 
                 Page<Course> coursePage = courseRepository.findCoursesForAdmin(
-                                isApproved, categoryId, search, minPrice, maxPrice, level, averageRating, pageable);
+                                isApproved, processedCategoryIds, search, minPrice, maxPrice, level, averageRating,
+                                pageable);
 
                 // Load categories separately for each course to avoid N+1 problem
                 List<Course> coursesWithCategories = coursePage.getContent().stream()

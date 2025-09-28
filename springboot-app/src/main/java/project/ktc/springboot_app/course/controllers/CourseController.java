@@ -1,5 +1,6 @@
 package project.ktc.springboot_app.course.controllers;
 
+import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -7,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,6 +35,7 @@ import java.math.BigDecimal;
 @Tag(name = "Courses API", description = "Endpoints for managing courses")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class CourseController {
 
         private final CourseServiceImp courseService;
@@ -51,7 +54,7 @@ public class CourseController {
 
                         @Parameter(description = "Search by course title, description, or instructor name") @RequestParam(required = false) String search,
 
-                        @Parameter(description = "Filter by category ID") @RequestParam(required = false) String categoryId,
+                        @Parameter(description = "Filter by category IDs (can be multiple)") @RequestParam(required = false) List<String> categoryIds,
 
                         @Parameter(description = "Minimum course price") @RequestParam(required = false) BigDecimal minPrice,
 
@@ -62,6 +65,10 @@ public class CourseController {
                         @Parameter(description = "Filter by minimum average rating (0.0-5.0)") @RequestParam(required = false) Double averageRating,
 
                         @Parameter(description = "Sort field and direction (e.g., 'price,asc', 'title,desc')") @RequestParam(defaultValue = "createdAt,desc") String sort) {
+
+                log.info("🎯 CourseController.findAllPublic called with categoryIds: {}, size: {}",
+                                categoryIds, categoryIds != null ? categoryIds.size() : 0);
+
                 // Create Pageable with sorting
                 Sort.Direction sortDirection = Sort.Direction.ASC;
                 String sortField = "createdAt";
@@ -79,7 +86,8 @@ public class CourseController {
                 // Call service method to get filtered courses
                 ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> result = courseService
                                 .findAllPublic(
-                                                search, categoryId, minPrice, maxPrice, level, averageRating, pageable);
+                                                search, categoryIds, minPrice, maxPrice, level, averageRating,
+                                                pageable);
 
                 return result;
         }
