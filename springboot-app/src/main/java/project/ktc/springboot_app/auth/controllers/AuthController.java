@@ -149,37 +149,31 @@ public class AuthController {
                         @ApiResponse(responseCode = "500", description = "Logout failed due to server error")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> logout(
-                        @Valid @RequestBody(required = false) RefreshTokenDto refreshTokenRequest,
-                        HttpServletRequest request,
-                        HttpServletResponse response) {
-                String refreshToken = null;
+                        @Valid @RequestBody RefreshTokenDto refreshTokenRequest) {
 
-                // Read from cookie first
-                if (request.getCookies() != null) {
-                        for (Cookie cookie : request.getCookies()) {
-                                if ("refreshToken".equals(cookie.getName())) {
-                                        refreshToken = cookie.getValue();
-                                        break;
-                                }
-                        }
-                }
-
-                // If cookie null, check request body
-                if ((refreshToken == null || refreshToken.isEmpty()) &&
-                                refreshTokenRequest != null) {
-                        refreshToken = refreshTokenRequest.getRefreshToken();
-                }
+                String refreshToken = refreshTokenRequest.getRefreshToken();
 
                 // validation
                 if (refreshToken == null || refreshToken.isEmpty()) {
                         return ApiResponseUtil.badRequest("Refresh token is required");
                 }
 
-                // Clear cookie
-                String clearCookie = "refreshToken=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict";
-                response.addHeader("Set-Cookie", clearCookie);
-
                 return authService.logout(refreshToken);
+        }
+
+        @PostMapping("/admin/logout")
+        @Operation(summary = "Logout Admin", description = "Logs out the user by revoking the provided refresh token")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Logout successful"),
+                        @ApiResponse(responseCode = "400", description = "Invalid or missing refresh token"),
+                        @ApiResponse(responseCode = "500", description = "Logout failed due to server error")
+        })
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> logoutAdmin(
+                        HttpServletRequest request,
+                        HttpServletResponse response) {
+
+                return authService.logoutAdmin(request, response);
+
         }
 
         @PostMapping(value = "/register-application", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

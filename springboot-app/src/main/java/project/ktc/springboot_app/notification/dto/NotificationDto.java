@@ -30,6 +30,8 @@ public class NotificationDto {
 
     private NotificationPriority priority;
 
+    private long unreadCount;
+
     private Boolean isRead;
 
     private LocalDateTime readAt;

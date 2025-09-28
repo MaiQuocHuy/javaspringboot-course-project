@@ -28,11 +28,47 @@ public interface AdminPaymentService {
         ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(Pageable pageable);
 
         /**
+         * Get all payments with pagination, search, and filtering for admin
+         * 
+         * @param search        Search term for payment ID, user name, or course title
+         * @param status        Filter by payment status
+         * @param fromDate      Filter by creation date from (ISO date string)
+         * @param toDate        Filter by creation date to (ISO date string)
+         * @param paymentMethod Filter by payment method
+         * @param pageable      Pagination information
+         * @return ResponseEntity containing paginated list of filtered payments
+         */
+        ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(
+                        String search,
+                        project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+                        String fromDate,
+                        String toDate,
+                        String paymentMethod,
+                        Pageable pageable);
+
+        /**
          * Get all payments without pagination for admin
          * 
          * @return ResponseEntity containing list of all payments
          */
         ResponseEntity<ApiResponse<List<AdminPaymentResponseDto>>> getAllPayments();
+
+        /**
+         * Get all payments without pagination with search and filtering for admin
+         * 
+         * @param search        Search term for payment ID, user name, or course title
+         * @param status        Filter by payment status
+         * @param fromDate      Filter by creation date from (ISO date string)
+         * @param toDate        Filter by creation date to (ISO date string)
+         * @param paymentMethod Filter by payment method
+         * @return ResponseEntity containing list of filtered payments
+         */
+        ResponseEntity<ApiResponse<List<AdminPaymentResponseDto>>> getAllPayments(
+                        String search,
+                        project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+                        String fromDate,
+                        String toDate,
+                        String paymentMethod);
 
         /**
          * Get payment details by ID for admin

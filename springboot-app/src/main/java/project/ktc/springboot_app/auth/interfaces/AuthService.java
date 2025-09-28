@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import project.ktc.springboot_app.auth.dto.GoogleLoginDto;
 import project.ktc.springboot_app.auth.dto.LoginAdminDto;
@@ -29,6 +30,9 @@ public interface AuthService {
         ResponseEntity<ApiResponse<Map<String, String>>> resetPassword(String email, String newPassword);
 
         ResponseEntity<ApiResponse<Void>> logout(String refreshToken);
+
+        ResponseEntity<ApiResponse<Void>> logoutAdmin(HttpServletRequest request,
+                        HttpServletResponse response);
 
         ResponseEntity<ApiResponse<Map<String, Object>>> googleLogin(GoogleLoginDto googleLoginDto);
 

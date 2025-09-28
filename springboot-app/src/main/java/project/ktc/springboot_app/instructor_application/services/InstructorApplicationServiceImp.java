@@ -91,11 +91,28 @@ public class InstructorApplicationServiceImp implements InstructorApplicationSer
             User applicant = userRepository.findById(currentUserId)
                     .orElseThrow(() -> new RuntimeException("User not found with id: " + currentUserId));
 
-            // Notify admin about new instructor application
+            // Get the latest application ID for the user
+            String applicationId = applicationRepository.findFirstByUserIdOrderBySubmittedAtDesc(currentUserId)
+                    .map(InstructorApplication::getId)
+                    .orElse(currentUserId); // Fallback to pattern if not found
+
+            // Create notifications for instructor application
             notificationHelper.createAdminInstructorApplicationNotification(
                     currentUserId,
                     applicant.getName(),
                     applicant.getEmail());
+
+            // Create student notification about application submission
+            notificationHelper.createInstructorApplicationSubmittedNotification(
+                    currentUserId,
+                    applicationId) // Use the actual application ID
+                    .thenAccept(notification -> log.info("✅ Application submitted notification created for user {}: {}",
+                            currentUserId, notification.getId()))
+                    .exceptionally(ex -> {
+                        log.error("❌ Failed to create application submitted notification for user {}: {}",
+                                currentUserId, ex.getMessage(), ex);
+                        return null;
+                    });
 
             // Build response
             DocumentUploadResponseDto response = DocumentUploadResponseDto.builder()

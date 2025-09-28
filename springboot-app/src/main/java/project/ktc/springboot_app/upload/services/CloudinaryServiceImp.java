@@ -171,6 +171,22 @@ public class CloudinaryServiceImp implements CloudinaryService {
         return String.format("%s_%s_%s", filename, timestamp, uuid);
     }
 
+    private String generatePublicIdForDocuments(String originalFilename) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String uuid = UUID.randomUUID().toString().substring(0, 8);
+        String filename = originalFilename != null ? originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_") : "image";
+        String extension = "";
+
+        // Remove file extension as Cloudinary handles it
+        int lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            extension = filename.substring(lastDotIndex);
+            filename = filename.substring(0, lastDotIndex);
+        }
+
+        return String.format("%s_%s_%s%s", filename, timestamp, uuid, extension);
+    }
+
     /**
      * Upload video file to Cloudinary
      * 
@@ -392,7 +408,7 @@ public class CloudinaryServiceImp implements CloudinaryService {
 
         try {
             // Generate unique public ID for documents
-            String publicId = "instructor-documents/" + generatePublicId(file.getOriginalFilename());
+            String publicId = "instructor-documents/" + generatePublicIdForDocuments(file.getOriginalFilename());
 
             // Upload to Cloudinary as raw file
             @SuppressWarnings("unchecked")

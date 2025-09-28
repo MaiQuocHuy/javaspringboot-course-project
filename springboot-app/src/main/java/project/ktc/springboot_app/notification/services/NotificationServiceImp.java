@@ -95,8 +95,12 @@ public class NotificationServiceImp implements NotificationService {
         Page<Notification> notificationPage = notificationRepository
                 .findByUserIdOrderByCreatedAtDesc(userId, pageable);
 
+        // Get unread count for the user
+        long unreadCount = notificationRepository.countByUserIdAndIsReadFalse(userId);
+
         // Convert Page<Notification> thành Page<NotificationDto>
-        Page<NotificationDto> notificationDtoPage = notificationPage.map(this::mapToDto);
+        Page<NotificationDto> notificationDtoPage = notificationPage
+                .map(notification -> mapToDto(notification, unreadCount));
 
         // Sử dụng static method of() để tạo PaginatedResponse
         PaginatedResponse<NotificationDto> paginatedResponse = PaginatedResponse.of(notificationDtoPage);
@@ -161,7 +165,7 @@ public class NotificationServiceImp implements NotificationService {
                 .build();
     }
 
-    private NotificationDto mapToDto(Notification notification) {
+    private NotificationDto mapToDto(Notification notification, long unreadCount) {
         return NotificationDto.builder()
                 .id(notification.getId())
                 .userId(notification.getUserId())
@@ -169,6 +173,7 @@ public class NotificationServiceImp implements NotificationService {
                 .entityId(notification.getEntityId())
                 .message(notification.getMessage())
                 .actionUrl(notification.getActionUrl())
+                .unreadCount(unreadCount)
                 .priority(notification.getPriority())
                 .isRead(notification.getIsRead())
                 .readAt(notification.getReadAt())

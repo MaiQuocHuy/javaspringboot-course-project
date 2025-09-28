@@ -1,5 +1,6 @@
 package project.ktc.springboot_app.course.controllers;
 
+import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -81,7 +82,7 @@ public class AdminCourseController {
 
                         @Parameter(description = "Sort criteria (format: field,direction)", example = "createdAt,asc") @RequestParam(defaultValue = "createdAt,asc") String sort,
 
-                        @Parameter(description = "Filter by category ID", example = "") @RequestParam(required = false) String categoryId,
+                        @Parameter(description = "Filter by category IDs", example = "") @RequestParam(required = false) List<String> categoryIds,
 
                         @Parameter(description = "Search by course title, description, or instructor name", example = "") @RequestParam(required = false) String search,
 
@@ -93,8 +94,8 @@ public class AdminCourseController {
 
                         @Parameter(description = "Filter by course averageRating (1.0 - 5.0)", example = "") @RequestParam(required = false) Double averageRating) {
                 log.info(
-                                "Admin retrieving courses with filters: status={}, categoryId={}, search={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}, size={}",
-                                status, categoryId, search, minPrice, maxPrice, level, averageRating, page, size);
+                                "Admin retrieving courses with filters: status={}, categoryIds={}, search={}, minPrice={}, maxPrice={}, level={}, averageRating={}, page={}, size={}",
+                                status, categoryIds, search, minPrice, maxPrice, level, averageRating, page, size);
 
                 // Parse sort parameter
                 String[] sortParts = sort.split(",");
@@ -107,7 +108,7 @@ public class AdminCourseController {
 
                 Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
 
-                return courseService.findCoursesForAdmin(status, categoryId, search, minPrice, maxPrice, level,
+                return courseService.findCoursesForAdmin(status, categoryIds, search, minPrice, maxPrice, level,
                                 averageRating,
                                 pageable);
         }

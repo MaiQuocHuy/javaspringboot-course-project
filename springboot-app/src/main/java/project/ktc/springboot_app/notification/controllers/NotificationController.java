@@ -182,7 +182,8 @@ public class NotificationController {
                                         "user-001", // userId
                                         "payment-001", // paymentId
                                         "Advanced Spring Boot", // courseName
-                                        "/courses/advanced-spring-boot" // courseUrl
+                                        "/courses/advanced-spring-boot",
+                                        "course-001" // courseId
                         ).get(); // Convert async to sync
 
                         project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto> response = project.ktc.springboot_app.common.dto.ApiResponse
@@ -250,66 +251,6 @@ public class NotificationController {
                         return ResponseEntity.status(201).body(response);
                 } catch (Exception e) {
                         log.error("Error creating certificate notification: {}", e.getMessage(), e);
-                        project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto> errorResponse = project.ktc.springboot_app.common.dto.ApiResponse
-                                        .error(500, "Error: " + e.getMessage());
-                        return ResponseEntity.status(500).body(errorResponse);
-                }
-        }
-
-        /**
-         * Test course approval notification (approved)
-         */
-        @PostMapping("/test/course-approval-approved")
-        @Operation(summary = "Test course approval notification (approved)", description = "Creates a test course approval notification (approved)")
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto>> testCourseApprovalApproved() {
-                log.info("Testing course approval notification (approved)");
-
-                try {
-                        NotificationResponseDto notification = notificationHelper.createCourseApprovalNotification(
-                                        "instructor-001", // instructorId
-                                        "course-001", // courseId
-                                        "Node.js Development", // courseName
-                                        "/courses/nodejs-development", // courseUrl
-                                        true // approved
-                        ).get(); // Convert async to sync
-
-                        project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto> response = project.ktc.springboot_app.common.dto.ApiResponse
-                                        .created(
-                                                        notification,
-                                                        "Course approval notification (approved) created successfully");
-                        return ResponseEntity.status(201).body(response);
-                } catch (Exception e) {
-                        log.error("Error creating course approval notification: {}", e.getMessage(), e);
-                        project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto> errorResponse = project.ktc.springboot_app.common.dto.ApiResponse
-                                        .error(500, "Error: " + e.getMessage());
-                        return ResponseEntity.status(500).body(errorResponse);
-                }
-        }
-
-        /**
-         * Test course approval notification (rejected)
-         */
-        @PostMapping("/test/course-approval-rejected")
-        @Operation(summary = "Test course approval notification (rejected)", description = "Creates a test course approval notification (rejected)")
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto>> testCourseApprovalRejected() {
-                log.info("Testing course approval notification (rejected)");
-
-                try {
-                        NotificationResponseDto notification = notificationHelper.createCourseApprovalNotification(
-                                        "instructor-002", // instructorId
-                                        "course-002", // courseId
-                                        "Python Basics", // courseName
-                                        "/courses/python-basics", // courseUrl
-                                        false // rejected
-                        ).get(); // Convert async to sync
-
-                        project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto> response = project.ktc.springboot_app.common.dto.ApiResponse
-                                        .created(
-                                                        notification,
-                                                        "Course approval notification (rejected) created successfully");
-                        return ResponseEntity.status(201).body(response);
-                } catch (Exception e) {
-                        log.error("Error creating course approval notification: {}", e.getMessage(), e);
                         project.ktc.springboot_app.common.dto.ApiResponse<NotificationResponseDto> errorResponse = project.ktc.springboot_app.common.dto.ApiResponse
                                         .error(500, "Error: " + e.getMessage());
                         return ResponseEntity.status(500).body(errorResponse);
@@ -467,7 +408,7 @@ public class NotificationController {
                         // Test student notifications
                         notificationHelper.createPaymentSuccessNotification(
                                         "user-100", "payment-100", "Complete Web Development",
-                                        "/courses/complete-web-dev").get();
+                                        "/courses/complete-web-dev", "course-001").get();
 
                         notificationHelper.createEnrollmentNotification(
                                         "user-101", "enrollment-100", "Full Stack Development",
@@ -476,10 +417,6 @@ public class NotificationController {
                         notificationHelper.createCertificateNotification(
                                         "user-102", "certificate-100", "DevOps Essentials",
                                         "/certificates/devops-essentials").get();
-
-                        notificationHelper.createCourseApprovalNotification(
-                                        "instructor-100", "course-100", "Cloud Computing", "/courses/cloud-computing",
-                                        true).get();
 
                         notificationHelper.createRefundNotification(
                                         "user-103", "refund-100", "Data Science", "/refunds/refund-100", "approved")

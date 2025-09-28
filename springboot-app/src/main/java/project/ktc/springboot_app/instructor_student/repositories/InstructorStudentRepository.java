@@ -9,17 +9,24 @@ import project.ktc.springboot_app.enrollment.entity.Enrollment;
 
 @Repository
 public interface InstructorStudentRepository extends JpaRepository<Enrollment, String> {
-        // Get instructor's enrolled student Ids
+        // Get total instructor's enrolled student
         @Query(value = "SELECT DISTINCT(e.user.id) FROM Enrollment e " +
                         "INNER JOIN e.course c " +
                         "WHERE c.instructor.id = :instructorId")
-        List<String> getEnrolledStudentIdsByInstructorId(String instructorId);
+        List<String> countTotalEnrolledStudents(String instructorId);
+
+        // Get instructor's enrolled student Ids with filters
+        @Query(value = "SELECT DISTINCT(e.user.id) FROM Enrollment e " +
+                        "INNER JOIN e.course c " +
+                        "WHERE c.instructor.id = :instructorId AND (:search IS NULL OR (e.user.name LIKE %:search% OR e.user.email LIKE %:search%))")
+        List<String> countEnrolledStudentIdsWithFilters(String instructorId, String search);
 
         // Get instructor's enrolled student
-        @Query(value = "SELECT e.user FROM Enrollment e " +
-                        "INNER JOIN e.course c " +
-                        "WHERE c.instructor.id = :instructorId AND c.id = :courseId")
-        List<String> getEnrolledStudentsByInstructorId(String instructorId, String courseId);
+        // @Query(value = "SELECT e.user FROM Enrollment e " +
+        // "INNER JOIN e.course c " +
+        // "WHERE c.instructor.id = :instructorId AND c.id = :courseId")
+        // List<String> getEnrolledStudentsByInstructorId(String instructorId, String
+        // courseId);
 
         // Get student information
         @Query(value = "SELECT u.id, u.name, u.email, u.thumbnail_url FROM users u" +

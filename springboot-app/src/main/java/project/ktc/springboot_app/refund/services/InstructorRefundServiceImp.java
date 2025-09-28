@@ -1,6 +1,8 @@
 package project.ktc.springboot_app.refund.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ import project.ktc.springboot_app.refund.repositories.InstructorRefundRepository
 import project.ktc.springboot_app.refund.repositories.RefundRepository;
 import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +44,7 @@ public class InstructorRefundServiceImp implements InstructorRefundService {
     private final RefundRepository refundRepository;
     private final InstructorEarningRepository instructorEarningRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final NotificationHelper notificationHelper;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
@@ -234,7 +238,38 @@ public class InstructorRefundServiceImp implements InstructorRefundService {
             // 6. Save the updated refund
             Refund savedRefund = refundRepository.save(refund);
 
-            // 7. Build response
+            // 7. Create refund notification for the student
+            try {
+                String studentId = payment.getUser().getId();
+                String courseName = payment.getCourse().getTitle();
+                String refundUrl = "/dashboard/payments"; // As requested, set to null since URL is not available yet
+                String status = newStatus.name().toLowerCase(); // Convert to lowercase for the notification message
+
+                notificationHelper.createRefundNotification(
+                        studentId,
+                        savedRefund.getId(),
+                        courseName,
+                        refundUrl,
+                        status)
+                        .thenAccept(notification -> log.info(
+                                "✅ Refund notification created for student {} (refund: {}): {}",
+                                studentId, refundId, notification.getId()))
+                        .exceptionally(ex -> {
+                            log.error("❌ Failed to create refund notification for student {} (refund: {}): {}",
+                                    studentId, refundId, ex.getMessage(), ex);
+                            return null;
+                        });
+
+                log.info("💰 Refund {} status updated to {} for student {} - notification created",
+                        refundId, newStatus, studentId);
+
+            } catch (Exception notificationError) {
+                log.error("❌ Failed to create refund notification: {}",
+                        notificationError.getMessage(), notificationError);
+                // Continue execution even if notification fails
+            }
+
+            // 8. Build response
             RefundStatusUpdateResponseDto response = RefundStatusUpdateResponseDto.builder()
                     .id(savedRefund.getId())
                     .paymentId(savedRefund.getPayment().getId())
@@ -253,6 +288,135 @@ public class InstructorRefundServiceImp implements InstructorRefundService {
         } catch (Exception e) {
             log.error("Error updating refund status for refund ID {}: {}", refundId, e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Failed to update refund status. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<PaginatedResponse<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
+            String search,
+            Refund.RefundStatus status,
+            String fromDate,
+            String toDate,
+            Pageable pageable) {
+        try {
+            String userId = SecurityUtil.getCurrentUserId();
+            log.info(
+                    "Instructor retrieving refunds with filters - search: {}, status: {}, fromDate: {}, toDate: {}, page: {}, size: {} for instructor: {}",
+                    search, status, fromDate, toDate, pageable.getPageNumber(), pageable.getPageSize(), userId);
+
+            // Validate and parse dates
+            LocalDate fromLocalDate = null;
+            LocalDate toLocalDate = null;
+
+            if (fromDate != null && !fromDate.trim().isEmpty()) {
+                try {
+                    fromLocalDate = LocalDate.parse(fromDate);
+                } catch (DateTimeParseException e) {
+                    log.warn("Invalid fromDate format: {}", fromDate);
+                    return ApiResponseUtil.badRequest("Invalid fromDate format. Use YYYY-MM-DD");
+                }
+            }
+
+            if (toDate != null && !toDate.trim().isEmpty()) {
+                try {
+                    toLocalDate = LocalDate.parse(toDate);
+                } catch (DateTimeParseException e) {
+                    log.warn("Invalid toDate format: {}", toDate);
+                    return ApiResponseUtil.badRequest("Invalid toDate format. Use YYYY-MM-DD");
+                }
+            }
+
+            // Validate date range
+            if (fromLocalDate != null && toLocalDate != null && fromLocalDate.isAfter(toLocalDate)) {
+                log.warn("Invalid date range: fromDate {} is after toDate {}", fromDate, toDate);
+                return ApiResponseUtil.badRequest("fromDate cannot be after toDate");
+            }
+
+            Page<Refund> refunds = instructorRefundRepository.findAllRefundsByInstructorIdWithFilter(
+                    userId, search, status, fromLocalDate, toLocalDate, pageable);
+
+            List<InstructorRefundResponseDto> refundDtos = refunds.getContent().stream()
+                    .map(InstructorRefundResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            PaginatedResponse<InstructorRefundResponseDto> paginatedResponse = PaginatedResponse
+                    .<InstructorRefundResponseDto>builder()
+                    .content(refundDtos)
+                    .page(PaginatedResponse.PageInfo.builder()
+                            .number(refunds.getNumber())
+                            .size(refunds.getSize())
+                            .totalElements(refunds.getTotalElements())
+                            .totalPages(refunds.getTotalPages())
+                            .first(refunds.isFirst())
+                            .last(refunds.isLast())
+                            .build())
+                    .build();
+
+            log.info("Retrieved {} filtered refunds for instructor {} (page {} of {})",
+                    refundDtos.size(), userId, refunds.getNumber(), refunds.getTotalPages());
+
+            return ApiResponseUtil.success(paginatedResponse, "Refunds retrieved successfully!");
+
+        } catch (Exception e) {
+            log.error("Error retrieving filtered refunds for instructor: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Error retrieving filtered refunds for instructor");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
+            String search,
+            Refund.RefundStatus status,
+            String fromDate,
+            String toDate) {
+        try {
+            String userId = SecurityUtil.getCurrentUserId();
+            log.info(
+                    "Instructor retrieving all refunds with filters without pagination - search: {}, status: {}, fromDate: {}, toDate: {} for instructor: {}",
+                    search, status, fromDate, toDate, userId);
+
+            // Validate and parse dates
+            LocalDate fromLocalDate = null;
+            LocalDate toLocalDate = null;
+
+            if (fromDate != null && !fromDate.trim().isEmpty()) {
+                try {
+                    fromLocalDate = LocalDate.parse(fromDate);
+                } catch (DateTimeParseException e) {
+                    log.warn("Invalid fromDate format: {}", fromDate);
+                    return ApiResponseUtil.badRequest("Invalid fromDate format. Use YYYY-MM-DD");
+                }
+            }
+
+            if (toDate != null && !toDate.trim().isEmpty()) {
+                try {
+                    toLocalDate = LocalDate.parse(toDate);
+                } catch (DateTimeParseException e) {
+                    log.warn("Invalid toDate format: {}", toDate);
+                    return ApiResponseUtil.badRequest("Invalid toDate format. Use YYYY-MM-DD");
+                }
+            }
+
+            // Validate date range
+            if (fromLocalDate != null && toLocalDate != null && fromLocalDate.isAfter(toLocalDate)) {
+                log.warn("Invalid date range: fromDate {} is after toDate {}", fromDate, toDate);
+                return ApiResponseUtil.badRequest("fromDate cannot be after toDate");
+            }
+
+            List<Refund> refunds = instructorRefundRepository.findAllRefundsByInstructorIdWithFilter(
+                    userId, search, status, fromLocalDate, toLocalDate);
+
+            List<InstructorRefundResponseDto> refundDtos = refunds.stream()
+                    .map(InstructorRefundResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            log.info("Retrieved {} filtered refunds for instructor {}", refundDtos.size(), userId);
+
+            return ApiResponseUtil.success(refundDtos, "Refunds retrieved successfully!");
+
+        } catch (Exception e) {
+            log.error("Error retrieving filtered refunds for instructor: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Error retrieving filtered refunds for instructor");
         }
     }
 }
