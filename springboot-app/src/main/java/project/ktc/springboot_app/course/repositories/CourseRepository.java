@@ -30,7 +30,7 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "     LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
                         "     LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
                         "     LOWER(i.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-                        "AND (:categoryId IS NULL OR cat.id = :categoryId) " +
+                        "AND (:categoryIds IS NULL OR cat.id IN :categoryIds) " +
                         "AND (:minPrice IS NULL OR c.price >= :minPrice) " +
                         "AND (:maxPrice IS NULL OR c.price <= :maxPrice) " +
                         "AND (:level IS NULL OR c.level = :level) " +
@@ -38,7 +38,7 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "     (SELECT AVG(rev.rating) FROM Review rev WHERE rev.course.id = c.id) >= :averageRating)")
         Page<Course> findPublishedCoursesWithFilters(
                         @Param("search") String search,
-                        @Param("categoryId") String categoryId,
+                        @Param("categoryIds") List<String> categoryIds,
                         @Param("minPrice") BigDecimal minPrice,
                         @Param("maxPrice") BigDecimal maxPrice,
                         @Param("level") CourseLevel level,
@@ -121,7 +121,7 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "LEFT JOIN c.categories cat " +
                         "WHERE c.isDeleted = false " +
                         "AND (:isApproved IS NULL OR c.isApproved = :isApproved) " +
-                        "AND (:categoryId IS NULL OR cat.id = :categoryId) " +
+                        "AND (:categoryIds IS NULL OR cat.id IN :categoryIds) " +
                         "AND (:search IS NULL OR " +
                         "     LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
                         "     LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
@@ -133,7 +133,7 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "(SELECT r.course.id FROM Review r GROUP BY r.course.id HAVING AVG(r.rating) >= :averageRating))")
         Page<Course> findCoursesForAdmin(
                         @Param("isApproved") Boolean isApproved,
-                        @Param("categoryId") String categoryId,
+                        @Param("categoryIds") List<String> categoryIds,
                         @Param("search") String search,
                         @Param("minPrice") BigDecimal minPrice,
                         @Param("maxPrice") BigDecimal maxPrice,
@@ -155,13 +155,13 @@ public interface CourseRepository extends JpaRepository<Course, String>, JpaSpec
                         "     LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
                         "     LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
                         "     LOWER(c.instructor.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-                        "AND (:categoryId IS NULL OR cat.id = :categoryId) " +
+                        "AND (:categoryIds IS NULL OR cat.id IN :categoryIds) " +
                         "AND (:minPrice IS NULL OR c.price >= :minPrice) " +
                         "AND (:maxPrice IS NULL OR c.price <= :maxPrice) " +
                         "AND (:level IS NULL OR c.level = :level)")
         Long countPublishedCoursesWithFilters(
                         @Param("search") String search,
-                        @Param("categoryId") String categoryId,
+                        @Param("categoryIds") List<String> categoryIds,
                         @Param("minPrice") BigDecimal minPrice,
                         @Param("maxPrice") BigDecimal maxPrice,
                         @Param("level") CourseLevel level);

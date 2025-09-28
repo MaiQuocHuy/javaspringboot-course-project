@@ -36,17 +36,18 @@ public interface CategoryRepository extends JpaRepository<Category, String> {
 
     /**
      * Retrieves all categories with their course count.
-     * Counts only published and non-deleted courses.
+     * Counts only published, approved and non-deleted courses.
      * Categories with zero courses are still included in the result.
      */
-    @Query("""
+    @Query(value = """
             SELECT c.id as id, c.name as name, c.description as description,
-                   COALESCE(COUNT(CASE WHEN co.isPublished = true AND co.isDeleted = false THEN 1 END), 0) as courseCount
-            FROM Category c
-            LEFT JOIN c.courses co
+                   COALESCE(COUNT(CASE WHEN co.is_published = 1 AND co.is_approved = 1 AND (co.is_deleted = 0 OR co.is_deleted IS NULL) THEN 1 END), 0) as courseCount
+            FROM categories c
+            LEFT JOIN course_categories cc ON c.id = cc.category_id
+            LEFT JOIN courses co ON cc.course_id = co.id
             GROUP BY c.id, c.name, c.description
             ORDER BY c.name ASC
-            """)
+            """, nativeQuery = true)
     List<CategoryProjection> findAllWithCourseCount();
 
     /**

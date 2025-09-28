@@ -19,7 +19,7 @@ import project.ktc.springboot_app.section.dto.SectionWithLessonsDto;
 public interface CourseService {
         ResponseEntity<ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(
                         String search,
-                        String categoryId,
+                        List<String> categoryIds,
                         BigDecimal minPrice,
                         BigDecimal maxPrice,
                         CourseLevel level,
@@ -32,7 +32,7 @@ public interface CourseService {
 
         ResponseEntity<ApiResponse<PaginatedResponse<CourseAdminResponseDto>>> findCoursesForAdmin(
                         Boolean isApproved,
-                        String categoryId,
+                        List<String> categoryIds,
                         String search,
                         BigDecimal minPrice,
                         BigDecimal maxPrice,
