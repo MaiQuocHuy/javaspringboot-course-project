@@ -1,5 +1,6 @@
 package project.ktc.springboot_app.stripe.services;
 
+import com.stripe.exception.InvalidRequestException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.PaymentIntent;
@@ -33,7 +34,20 @@ public class StripePaymentDetailsService {
             log.info("Fetching Stripe payment details for session: {}", sessionId);
 
             // Retrieve the checkout session
-            Session session = Session.retrieve(sessionId);
+            Session session;
+            try {
+                session = Session.retrieve(sessionId);
+            } catch (InvalidRequestException e) {
+                // Handle case where session doesn't exist (expired, deleted, or invalid)
+                if (e.getMessage() != null && e.getMessage().contains("No such checkout.session")) {
+                    log.warn("Stripe session no longer exists for ID: {}. This is normal for expired test sessions.",
+                            sessionId);
+                    return null;
+                } else {
+                    // Re-throw other invalid request exceptions
+                    throw e;
+                }
+            }
 
             if (session == null) {
                 log.warn("Stripe session not found for ID: {}", sessionId);
