@@ -46,10 +46,6 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
   private final UserRepository userRepository;
   private final CourseRepository courseRepository;
 
-  private List<String> getEnrolledStudentIds(String instructorId) {
-    return instructorStudentRepository.getEnrolledStudentIdsByInstructorId(instructorId);
-  }
-
   private Double calculateProgress(String userId, String courseId) {
     try {
       Long completedLessons = enrollmentRepository.countCompletedLessonsByUserAndCourse(userId, courseId);
@@ -87,14 +83,17 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
   }
 
   @Override
-  public ResponseEntity<ApiResponse<PaginatedResponse<InstructorStudentDto>>> getEnrolledStudents(Pageable pageable) {
+  public ResponseEntity<ApiResponse<PaginatedResponse<InstructorStudentDto>>> getEnrolledStudents(String search,
+      Pageable pageable) {
     try {
+      log.info("Fetching enrolled students with search: {}", search);
       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
       User currentUser = (User) authentication.getPrincipal();
       String instructorId = currentUser.getId();
 
-      // Get total enrolled students
-      List<String> enrolledStudentIds = getEnrolledStudentIds(instructorId);
+      // Count total enrolled students
+      List<String> enrolledStudentIds = instructorStudentRepository.countEnrolledStudentIdsWithFilters(instructorId,
+          search);
       // Get detailed information for each student
       List<InstructorStudentDto> studentsList = new ArrayList<>();
 
@@ -152,7 +151,7 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
       } else {
         // Check if student has already enrolled in any courses
         String instructorId = SecurityUtil.getCurrentUserId();
-        List<String> enrolledStudentIds = getEnrolledStudentIds(instructorId);
+        List<String> enrolledStudentIds = instructorStudentRepository.countTotalEnrolledStudents(instructorId);
         if (!enrolledStudentIds.contains(studentId)) {
           return ApiResponseUtil.notFound("The student has not enrolled in any of your courses");
         } else {
@@ -233,6 +232,22 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
       }
     } catch (Exception e) {
       return ApiResponseUtil.internalServerError(e.getMessage());
+    }
+  }
+
+  @Override
+  public ResponseEntity<ApiResponse<Long>> getNumOfEnrolledStudent() {
+    try {
+      // Get current instructor ID
+      String instructorId = SecurityUtil.getCurrentUserId();
+
+      // Get total enrolled students
+      List<String> enrolledStudentIds = instructorStudentRepository.countTotalEnrolledStudents(instructorId);
+      Long totalEnrolledStudents = (long) enrolledStudentIds.size();
+      return ApiResponseUtil.success(totalEnrolledStudents, "Get number of enrolled students successfully");
+    } catch (Exception e) {
+      return ApiResponseUtil
+          .internalServerError("Failed to get number of enrolled students");
     }
   }
 }
