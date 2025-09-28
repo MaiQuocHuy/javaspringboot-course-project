@@ -193,7 +193,7 @@ public class StudentLessonServiceImp implements StudentService {
 
                         try {
                             String courseName = enrollment.getCourse().getTitle();
-                            String certificateUrl = "/dashboard/certificates/" + courseId;
+                            String certificateUrl = "/dashboard/certificates";
 
                             // ✅ Extract variables để tránh multiple calls
                             ApiResponse<CertificateResponseDto> responseBody = createdCertificate != null
