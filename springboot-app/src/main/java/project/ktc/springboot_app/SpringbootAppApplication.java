@@ -87,6 +87,8 @@ public class SpringbootAppApplication {
 				getEnvWithDefault.apply("UPSTASH_REDIS_REST_URL", "localhost"));
 		setSystemPropertyIfNotNull("UPSTASH_REDIS_REST_TOKEN", getEnvWithDefault.apply("UPSTASH_REDIS_REST_TOKEN",
 				"ASCwAAImcDI0ODYwOTVhODMwZWE0NmRhOTAzMTFkZmM4YjVjZWZjN3AyODM2OA"));
+		setSystemPropertyIfNotNull("PDF_API_URL", getEnv.apply("PDF_API_URL"));
+		setSystemPropertyIfNotNull("IMAGE_API_URL", getEnv.apply("IMAGE_API_URL"));
 
 		SpringApplication.run(SpringbootAppApplication.class, args);
 	}
