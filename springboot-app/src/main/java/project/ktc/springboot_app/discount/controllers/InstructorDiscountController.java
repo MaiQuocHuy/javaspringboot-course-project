@@ -27,6 +27,7 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.discount.dto.InstructorAffiliatePayoutResponseDto;
 import project.ktc.springboot_app.discount.dto.InstructorDiscountUsageResponseDto;
 import project.ktc.springboot_app.discount.enums.DiscountType;
+import project.ktc.springboot_app.discount.enums.PayoutStatus;
 import project.ktc.springboot_app.discount.interfaces.InstructorAffiliatePayoutService;
 import project.ktc.springboot_app.discount.interfaces.InstructorDiscountUsageService;
 
@@ -114,23 +115,34 @@ public class InstructorDiscountController {
         }
 
         /**
-         * Get affiliate payouts for courses owned by the instructor
+         * Get affiliate payouts for courses owned by the instructor with search and
+         * filter options
          * (Shows who gets commission on instructor's courses)
-         * 
-         * @param pageable Pagination parameters
-         * @return ResponseEntity containing paginated list of affiliate payouts
          */
         @GetMapping("/affiliate-payout")
-        @Operation(summary = "Get instructor affiliate payouts", description = """
-                        Retrieves all affiliate payouts for courses owned by the current instructor.
+        @Operation(summary = "Get instructor affiliate payouts with search and filters", description = """
+                        Retrieves all affiliate payouts for courses owned by the current instructor with advanced search and filtering options.
                         This shows who receives commissions from sales of the instructor's courses.
 
                         **Features:**
+                        - Advanced search by affiliate payout ID, referrer name, course title, or discount code
+                        - Filter by payout status (PENDING, PAID, CANCELLED)
+                        - Filter by date range for precise time-based queries
                         - Shows commission payouts related to instructor's courses
                         - Includes affiliate user details and commission amounts
                         - Shows payout status and timing information
                         - Supports pagination for better performance
                         - Ordered by creation date (most recent first)
+
+                        **Search Capabilities:**
+                        - Search by affiliate payout ID for exact matches
+                        - Search by referrer name (user who gets the commission)
+                        - Search by course title
+                        - Search by discount code used
+
+                        **Filter Options:**
+                        - Status: Filter by payout status (PENDING, PAID, CANCELLED)
+                        - Date Range: Filter by payout creation date
 
                         **Instructor Only:**
                         - This endpoint requires INSTRUCTOR role
@@ -139,21 +151,35 @@ public class InstructorDiscountController {
                         **Use Cases:**
                         - Track who is promoting instructor's courses
                         - Monitor commission payouts and their status
+                        - Search for specific payouts or referrers
+                        - Analyze payout patterns over time
                         - Understand referral patterns for courses
                         """)
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Affiliate payouts retrieved successfully"),
+                        @ApiResponse(responseCode = "400", description = "Bad request - Invalid parameters"),
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                         @ApiResponse(responseCode = "403", description = "Forbidden - Instructor role required"),
                         @ApiResponse(responseCode = "500", description = "Internal server error")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<InstructorAffiliatePayoutResponseDto>>> getAffiliatePayouts(
-                        @PageableDefault(size = 10) Pageable pageable) {
+                        @Parameter(description = "Search by affiliate payout ID, referrer name, course title, or discount code", example = "john.doe or Spring Boot Course") @RequestParam(required = false) String search,
 
-                log.info("Instructor requesting affiliate payouts with pagination: page={}, size={}",
-                                pageable.getPageNumber(), pageable.getPageSize());
+                        @Parameter(description = "Filter by payout status", example = "PENDING") @RequestParam(required = false) PayoutStatus status,
 
-                return instructorAffiliatePayoutService.getAffiliatePayouts(pageable);
+                        @Parameter(description = "Filter by payout date from (ISO format: yyyy-MM-dd)", example = "2024-01-01") @RequestParam(required = false) String fromDate,
+
+                        @Parameter(description = "Filter by payout date to (ISO format: yyyy-MM-dd)", example = "2024-12-31") @RequestParam(required = false) String toDate,
+
+                        @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
+
+                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size) {
+
+                Pageable pageable = PageRequest.of(page, size);
+                log.info("Instructor requesting affiliate payouts with filters - search: {}, status: {}, fromDate: {}, toDate: {}, page: {}, size: {}",
+                                search, status, fromDate, toDate, page, size);
+
+                return instructorAffiliatePayoutService.getAffiliatePayouts(search, status, fromDate, toDate, pageable);
         }
 
         /**
