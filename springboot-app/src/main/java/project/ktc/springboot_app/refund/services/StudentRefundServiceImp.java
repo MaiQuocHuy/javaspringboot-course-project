@@ -23,6 +23,7 @@ import project.ktc.springboot_app.refund.interfaces.StudentRefundService;
 import project.ktc.springboot_app.refund.repositories.RefundRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -39,6 +40,7 @@ public class StudentRefundServiceImp implements StudentRefundService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final InstructorEarningRepository instructorEarningRepository;
+    private final NotificationHelper notificationHelper;
     private final EnrollmentRepository enrollmentRepository;
 
     @Override
@@ -118,6 +120,33 @@ public class StudentRefundServiceImp implements StudentRefundService {
             refund.setReason(refundRequestDto.getReason());
 
             Refund savedRefund = refundRepository.save(refund);
+
+            // 8. Notify instructor about new refund request
+            try {
+                String instructorId = course.getInstructor().getId();
+                String studentName = user.getName();
+                String courseName = course.getTitle();
+                String refundReason = refundRequestDto.getReason();
+
+                notificationHelper.createInstructorNewRefundRequestNotification(
+                        instructorId,
+                        savedRefund.getId(),
+                        courseName,
+                        studentName,
+                        refundReason)
+                        .thenAccept(
+                                notification -> log.info("✅ Refund request notification created for instructor {}: {}",
+                                        instructorId, notification.getId()))
+                        .exceptionally(ex -> {
+                            log.error("❌ Failed to create refund request notification for instructor {}: {}",
+                                    instructorId, ex.getMessage(), ex);
+                            return null;
+                        });
+            } catch (Exception notificationError) {
+                log.error("❌ Failed to create refund request notification: {}",
+                        notificationError.getMessage(), notificationError);
+                // Continue execution even if notification fails
+            }
 
             // 9. Build response
             RefundResponseDto responseDto = RefundResponseDto.builder()

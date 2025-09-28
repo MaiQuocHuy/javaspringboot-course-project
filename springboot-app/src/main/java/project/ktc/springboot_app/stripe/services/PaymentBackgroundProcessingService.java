@@ -140,10 +140,32 @@ public class PaymentBackgroundProcessingService {
                     course.getTitle(),
                     payment.getAmount());
 
-            // Student notifications are typically handled by the frontend or via email
-            // For now, we'll just log this - can be extended later
-            log.info("💰 Student {} purchased course {} for ${}",
-                    user.getName(), course.getTitle(), payment.getAmount());
+            // Create student payment success notification
+            try {
+                String courseUrl = "/dashboard/learning/" + course.getId();
+                notificationHelper.createPaymentSuccessNotification(
+                        user.getId(),
+                        payment.getId(),
+                        course.getTitle(),
+                        courseUrl,
+                        course.getId())
+                        .thenAccept(notification -> log.info(
+                                "✅ Payment success notification created for student {} ({}): {}",
+                                user.getName(), user.getId(), notification.getId()))
+                        .exceptionally(ex -> {
+                            log.error("❌ Failed to create payment success notification for student {}: {}",
+                                    user.getId(), ex.getMessage(), ex);
+                            return null;
+                        });
+
+                log.info("💰 Student {} purchased course {} for ${} - payment success notification created",
+                        user.getName(), course.getTitle(), payment.getAmount());
+
+            } catch (Exception studentNotificationError) {
+                log.error("❌ Failed to create student payment success notification: {}",
+                        studentNotificationError.getMessage(), studentNotificationError);
+                // Continue with admin notification even if student notification fails
+            }
 
             log.info("✅ Payment notifications created successfully");
 

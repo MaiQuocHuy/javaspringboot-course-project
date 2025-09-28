@@ -184,7 +184,7 @@ public class CertificateAsyncServiceImp implements CertificateAsyncService {
                     return certificate;
                 } else {
                     log.warn("Certificate not found with ID: {}", certificateId);
-                    return null;
+                    // return null;
                 }
 
             } catch (Exception e) {

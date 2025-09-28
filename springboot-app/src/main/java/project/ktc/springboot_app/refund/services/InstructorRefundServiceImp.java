@@ -33,6 +33,7 @@ import project.ktc.springboot_app.refund.repositories.InstructorRefundRepository
 import project.ktc.springboot_app.refund.repositories.RefundRepository;
 import project.ktc.springboot_app.stripe.services.StripePaymentDetailsService;
 import project.ktc.springboot_app.utils.SecurityUtil;
+import project.ktc.springboot_app.notification.utils.NotificationHelper;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +44,7 @@ public class InstructorRefundServiceImp implements InstructorRefundService {
     private final RefundRepository refundRepository;
     private final InstructorEarningRepository instructorEarningRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final NotificationHelper notificationHelper;
 
     @Override
     public ResponseEntity<ApiResponse<PaginatedResponse<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
@@ -236,7 +238,38 @@ public class InstructorRefundServiceImp implements InstructorRefundService {
             // 6. Save the updated refund
             Refund savedRefund = refundRepository.save(refund);
 
-            // 7. Build response
+            // 7. Create refund notification for the student
+            try {
+                String studentId = payment.getUser().getId();
+                String courseName = payment.getCourse().getTitle();
+                String refundUrl = "/dashboard/payments"; // As requested, set to null since URL is not available yet
+                String status = newStatus.name().toLowerCase(); // Convert to lowercase for the notification message
+
+                notificationHelper.createRefundNotification(
+                        studentId,
+                        savedRefund.getId(),
+                        courseName,
+                        refundUrl,
+                        status)
+                        .thenAccept(notification -> log.info(
+                                "✅ Refund notification created for student {} (refund: {}): {}",
+                                studentId, refundId, notification.getId()))
+                        .exceptionally(ex -> {
+                            log.error("❌ Failed to create refund notification for student {} (refund: {}): {}",
+                                    studentId, refundId, ex.getMessage(), ex);
+                            return null;
+                        });
+
+                log.info("💰 Refund {} status updated to {} for student {} - notification created",
+                        refundId, newStatus, studentId);
+
+            } catch (Exception notificationError) {
+                log.error("❌ Failed to create refund notification: {}",
+                        notificationError.getMessage(), notificationError);
+                // Continue execution even if notification fails
+            }
+
+            // 8. Build response
             RefundStatusUpdateResponseDto response = RefundStatusUpdateResponseDto.builder()
                     .id(savedRefund.getId())
                     .paymentId(savedRefund.getPayment().getId())
