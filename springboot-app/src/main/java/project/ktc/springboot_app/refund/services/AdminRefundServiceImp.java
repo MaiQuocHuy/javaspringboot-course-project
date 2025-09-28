@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
@@ -143,6 +146,133 @@ public class AdminRefundServiceImp implements AdminRefundService {
         } catch (Exception e) {
             log.error("Error retrieving refund details for admin: {}", e.getMessage(), e);
             return ApiResponseUtil.internalServerError("Error retrieving refund details for admin");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<PaginatedResponse<AdminRefundResponseDto>>> getAllRefunds(
+            String search,
+            Refund.RefundStatus status,
+            String fromDate,
+            String toDate,
+            Pageable pageable) {
+        try {
+            log.info(
+                    "Admin retrieving refunds with filters - search: {}, status: {}, fromDate: {}, toDate: {}, page: {}, size: {}",
+                    search, status, fromDate, toDate, pageable.getPageNumber(), pageable.getPageSize());
+
+            // Validate and parse dates
+            LocalDate fromLocalDate = null;
+            LocalDate toLocalDate = null;
+
+            if (fromDate != null && !fromDate.trim().isEmpty()) {
+                try {
+                    fromLocalDate = LocalDate.parse(fromDate);
+                } catch (DateTimeParseException e) {
+                    log.warn("Invalid fromDate format: {}", fromDate);
+                    return ApiResponseUtil.badRequest("Invalid fromDate format. Use YYYY-MM-DD");
+                }
+            }
+
+            if (toDate != null && !toDate.trim().isEmpty()) {
+                try {
+                    toLocalDate = LocalDate.parse(toDate);
+                } catch (DateTimeParseException e) {
+                    log.warn("Invalid toDate format: {}", toDate);
+                    return ApiResponseUtil.badRequest("Invalid toDate format. Use YYYY-MM-DD");
+                }
+            }
+
+            // Validate date range
+            if (fromLocalDate != null && toLocalDate != null && fromLocalDate.isAfter(toLocalDate)) {
+                log.warn("Invalid date range: fromDate {} is after toDate {}", fromDate, toDate);
+                return ApiResponseUtil.badRequest("fromDate cannot be after toDate");
+            }
+
+            Page<Refund> refunds = adminRefundRepository.findAllRefundsWithFilter(
+                    search, status, fromLocalDate, toLocalDate, pageable);
+
+            List<AdminRefundResponseDto> refundDtos = refunds.getContent().stream()
+                    .map(AdminRefundResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            PaginatedResponse<AdminRefundResponseDto> paginatedResponse = PaginatedResponse
+                    .<AdminRefundResponseDto>builder()
+                    .content(refundDtos)
+                    .page(PaginatedResponse.PageInfo.builder()
+                            .number(refunds.getNumber())
+                            .size(refunds.getSize())
+                            .totalElements(refunds.getTotalElements())
+                            .totalPages(refunds.getTotalPages())
+                            .first(refunds.isFirst())
+                            .last(refunds.isLast())
+                            .build())
+                    .build();
+
+            log.info("Retrieved {} filtered refunds for admin (page {} of {})",
+                    refundDtos.size(), refunds.getNumber(), refunds.getTotalPages());
+
+            return ApiResponseUtil.success(paginatedResponse, "Refunds retrieved successfully!");
+
+        } catch (Exception e) {
+            log.error("Error retrieving filtered refunds for admin: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Error retrieving filtered refunds for admin");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<AdminRefundResponseDto>>> getAllRefunds(
+            String search,
+            Refund.RefundStatus status,
+            String fromDate,
+            String toDate) {
+        try {
+            log.info(
+                    "Admin retrieving all refunds with filters without pagination - search: {}, status: {}, fromDate: {}, toDate: {}",
+                    search, status, fromDate, toDate);
+
+            // Validate and parse dates
+            LocalDate fromLocalDate = null;
+            LocalDate toLocalDate = null;
+
+            if (fromDate != null && !fromDate.trim().isEmpty()) {
+                try {
+                    fromLocalDate = LocalDate.parse(fromDate);
+                } catch (DateTimeParseException e) {
+                    log.warn("Invalid fromDate format: {}", fromDate);
+                    return ApiResponseUtil.badRequest("Invalid fromDate format. Use YYYY-MM-DD");
+                }
+            }
+
+            if (toDate != null && !toDate.trim().isEmpty()) {
+                try {
+                    toLocalDate = LocalDate.parse(toDate);
+                } catch (DateTimeParseException e) {
+                    log.warn("Invalid toDate format: {}", toDate);
+                    return ApiResponseUtil.badRequest("Invalid toDate format. Use YYYY-MM-DD");
+                }
+            }
+
+            // Validate date range
+            if (fromLocalDate != null && toLocalDate != null && fromLocalDate.isAfter(toLocalDate)) {
+                log.warn("Invalid date range: fromDate {} is after toDate {}", fromDate, toDate);
+                return ApiResponseUtil.badRequest("fromDate cannot be after toDate");
+            }
+
+            List<Refund> refunds = adminRefundRepository.findAllRefundsWithFilter(
+                    search, status, fromLocalDate, toLocalDate);
+
+            List<AdminRefundResponseDto> refundDtos = refunds.stream()
+                    .map(AdminRefundResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            log.info("Retrieved {} filtered refunds for admin", refundDtos.size());
+
+            return ApiResponseUtil.success(refundDtos, "Refunds retrieved successfully!");
+
+        } catch (Exception e) {
+            log.error("Error retrieving filtered refunds for admin: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Error retrieving filtered refunds for admin");
         }
     }
 

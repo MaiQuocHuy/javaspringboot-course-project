@@ -2,16 +2,18 @@ package project.ktc.springboot_app.payment.controllers;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +23,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
@@ -42,6 +46,7 @@ import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
 @Slf4j
 @Tag(name = "Admin Payment API", description = "API for managing payments (Admin only)")
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public class AdminPaymentController {
 
         private final AdminPaymentService adminPaymentService;
@@ -55,7 +60,7 @@ public class AdminPaymentController {
         @GetMapping
         @PreAuthorize("hasPermission('Payment', 'payment:READ')")
         @Operation(summary = "Get all payments", description = """
-                        Retrieves all payments in the system with pagination support for admin view.
+                        Retrieves all payments in the system with pagination support and advanced filtering for admin view.
 
                         **Features:**
                         - Returns all payments across all users
@@ -63,6 +68,12 @@ public class AdminPaymentController {
                         - Payments are ordered by creation date (most recent first)
                         - Supports pagination for better performance
                         - Shows payment status, amount, and method
+                        - Advanced search and filtering capabilities
+
+                        **Search & Filter Options:**
+                        - Search by payment ID, user name, or course title
+                        - Filter by payment status (PENDING, COMPLETED, FAILED, REFUNDED)
+                        - Filter by creation date range
 
                         **Admin Only:**
                         - This endpoint requires ADMIN role
@@ -82,10 +93,24 @@ public class AdminPaymentController {
                         @ApiResponse(responseCode = "500", description = "Internal server error")
         })
         public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(
-                        @PageableDefault(size = 10) Pageable pageable) {
-                log.info("Admin requesting all payments with pagination: page={}, size={}",
-                                pageable.getPageNumber(), pageable.getPageSize());
-                return adminPaymentService.getAllPayments(pageable);
+                        @Parameter(description = "Search by payment ID, user name, or course title") @RequestParam(required = false) String search,
+
+                        @Parameter(description = "Filter by payment status", example = "COMPLETED") @RequestParam(required = false) project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+
+                        @Parameter(description = "Filter by creation date from (ISO format: yyyy-MM-dd)", example = "2024-01-01") @RequestParam(required = false) String fromDate,
+
+                        @Parameter(description = "Filter by creation date to (ISO format: yyyy-MM-dd)", example = "2024-12-31") @RequestParam(required = false) String toDate,
+
+                        @Parameter(description = "Filter by payment method", example = "STRIPE") @RequestParam(required = false) String paymentMethod,
+
+                        @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
+
+                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size) {
+
+                Pageable pageable = PageRequest.of(page, size);
+                log.info("Admin requesting all payments with pagination: page={}, size={}, search={}, status={}, fromDate={}, toDate={}, paymentMethod={}",
+                                page, size, search, status, fromDate, toDate, paymentMethod);
+                return adminPaymentService.getAllPayments(search, status, fromDate, toDate, paymentMethod, pageable);
         }
 
         /**
@@ -96,10 +121,15 @@ public class AdminPaymentController {
         @GetMapping("/all")
         @PreAuthorize("hasPermission('Payment', 'payment:READ')")
         @Operation(summary = "Get all payments (no pagination)", description = """
-                        Retrieves all payments in the system without pagination for admin view.
+                        Retrieves all payments in the system without pagination for admin view with search and filtering.
 
                         **Warning:** This endpoint returns all payments at once and should be used carefully
                         for systems with large numbers of payments as it may impact performance.
+
+                        **Search & Filter Options:**
+                        - Search by payment ID, user name, or course title
+                        - Filter by payment status (PENDING, COMPLETED, FAILED, REFUNDED)
+                        - Filter by creation date range
 
                         **Use cases:**
                         - Generating reports that need complete data
@@ -116,9 +146,19 @@ public class AdminPaymentController {
                         @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
                         @ApiResponse(responseCode = "500", description = "Internal server error")
         })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<AdminPaymentResponseDto>>> getAllPayments() {
-                log.info("Admin requesting all payments without pagination");
-                return adminPaymentService.getAllPayments();
+        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<AdminPaymentResponseDto>>> getAllPaymentsAll(
+                        @Parameter(description = "Search by payment ID, user name, or course title") @RequestParam(required = false) String search,
+
+                        @Parameter(description = "Filter by payment status", example = "COMPLETED") @RequestParam(required = false) project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+
+                        @Parameter(description = "Filter by creation date from (ISO format: yyyy-MM-dd)", example = "2024-01-01") @RequestParam(required = false) String fromDate,
+
+                        @Parameter(description = "Filter by creation date to (ISO format: yyyy-MM-dd)", example = "2024-12-31") @RequestParam(required = false) String toDate,
+
+                        @Parameter(description = "Filter by payment method", example = "STRIPE") @RequestParam(required = false) String paymentMethod) {
+                log.info("Admin requesting all payments without pagination with filters: search={}, status={}, fromDate={}, toDate={}, paymentMethod={}",
+                                search, status, fromDate, toDate, paymentMethod);
+                return adminPaymentService.getAllPayments(search, status, fromDate, toDate, paymentMethod);
         }
 
         /**

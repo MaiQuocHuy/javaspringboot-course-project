@@ -130,6 +130,121 @@ public class AdminPaymentServiceImp implements AdminPaymentService {
     }
 
     @Override
+    public ResponseEntity<ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(
+            String search,
+            project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+            String fromDate,
+            String toDate,
+            String paymentMethod,
+            Pageable pageable) {
+        try {
+            log.info(
+                    "Admin retrieving payments with filters - search: {}, status: {}, fromDate: {}, toDate: {}, paymentMethod: {}, page: {}, size: {}",
+                    search, status, fromDate, toDate, paymentMethod, pageable.getPageNumber(), pageable.getPageSize());
+
+            // Parse date strings to LocalDate
+            java.time.LocalDate parsedFromDate = null;
+            java.time.LocalDate parsedToDate = null;
+
+            try {
+                if (fromDate != null && !fromDate.trim().isEmpty()) {
+                    parsedFromDate = java.time.LocalDate.parse(fromDate);
+                }
+                if (toDate != null && !toDate.trim().isEmpty()) {
+                    parsedToDate = java.time.LocalDate.parse(toDate);
+                }
+            } catch (java.time.format.DateTimeParseException e) {
+                log.warn("Invalid date format provided - fromDate: {}, toDate: {}", fromDate, toDate);
+                return ApiResponseUtil.badRequest("Invalid date format. Please use yyyy-MM-dd format.");
+            }
+
+            // Validate date range
+            if (parsedFromDate != null && parsedToDate != null && parsedFromDate.isAfter(parsedToDate)) {
+                return ApiResponseUtil.badRequest("From date cannot be after to date.");
+            }
+
+            Page<Payment> payments = adminPaymentRepository.findAllPaymentsWithFilter(
+                    search, status, paymentMethod, parsedFromDate, parsedToDate, pageable);
+
+            List<AdminPaymentResponseDto> paymentDtos = payments.getContent().stream()
+                    .map(AdminPaymentResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            PaginatedResponse<AdminPaymentResponseDto> paginatedResponse = PaginatedResponse
+                    .<AdminPaymentResponseDto>builder()
+                    .content(paymentDtos)
+                    .page(PaginatedResponse.PageInfo.builder()
+                            .number(payments.getNumber())
+                            .size(payments.getSize())
+                            .totalElements(payments.getTotalElements())
+                            .totalPages(payments.getTotalPages())
+                            .first(payments.isFirst())
+                            .last(payments.isLast())
+                            .build())
+                    .build();
+
+            log.info("Retrieved {} payments out of {} total with filters applied",
+                    paymentDtos.size(), payments.getTotalElements());
+
+            return ApiResponseUtil.success(paginatedResponse, "Payments retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving payments with filters for admin: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve payments. Please try again later.");
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<AdminPaymentResponseDto>>> getAllPayments(
+            String search,
+            project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+            String fromDate,
+            String toDate,
+            String paymentMethod) {
+        try {
+            log.info(
+                    "Admin retrieving all payments without pagination with filters - search: {}, status: {}, fromDate: {}, toDate: {}, paymentMethod: {}",
+                    search, status, fromDate, toDate, paymentMethod);
+
+            // Parse date strings to LocalDate
+            java.time.LocalDate parsedFromDate = null;
+            java.time.LocalDate parsedToDate = null;
+
+            try {
+                if (fromDate != null && !fromDate.trim().isEmpty()) {
+                    parsedFromDate = java.time.LocalDate.parse(fromDate);
+                }
+                if (toDate != null && !toDate.trim().isEmpty()) {
+                    parsedToDate = java.time.LocalDate.parse(toDate);
+                }
+            } catch (java.time.format.DateTimeParseException e) {
+                log.warn("Invalid date format provided - fromDate: {}, toDate: {}", fromDate, toDate);
+                return ApiResponseUtil.badRequest("Invalid date format. Please use yyyy-MM-dd format.");
+            }
+
+            // Validate date range
+            if (parsedFromDate != null && parsedToDate != null && parsedFromDate.isAfter(parsedToDate)) {
+                return ApiResponseUtil.badRequest("From date cannot be after to date.");
+            }
+
+            List<Payment> payments = adminPaymentRepository.findAllPaymentsWithFilter(
+                    search, status, paymentMethod, parsedFromDate, parsedToDate);
+
+            List<AdminPaymentResponseDto> paymentDtos = payments.stream()
+                    .map(AdminPaymentResponseDto::fromEntity)
+                    .collect(Collectors.toList());
+
+            log.info("Retrieved {} payments with filters applied", paymentDtos.size());
+
+            return ApiResponseUtil.success(paymentDtos, "Payments retrieved successfully");
+
+        } catch (Exception e) {
+            log.error("Error retrieving all payments with filters for admin: {}", e.getMessage(), e);
+            return ApiResponseUtil.internalServerError("Failed to retrieve payments. Please try again later.");
+        }
+    }
+
+    @Override
     public ResponseEntity<ApiResponse<AdminPaymentDetailResponseDto>> getPaymentDetail(String paymentId) {
         try {
             log.info("Admin retrieving payment detail for payment: {}", paymentId);

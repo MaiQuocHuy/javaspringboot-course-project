@@ -92,4 +92,18 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
                         "ORDER BY e.enrolledAt DESC")
         List<Enrollment> findRecentEnrollmentsByUserId(@Param("userId") String userId,
                         org.springframework.data.domain.Pageable pageable);
+
+        @Query("SELECT e FROM Enrollment e " +
+                        "JOIN FETCH e.course c " +
+                        "JOIN FETCH c.instructor i " +
+                        "WHERE e.user.id = :userId " +
+                        "AND (:status IS NULL OR e.completionStatus = :status) " +
+                        "AND (:search IS NULL OR :search = '' OR " +
+                        "     LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                        "     LOWER(i.name) LIKE LOWER(CONCAT('%', :search, '%')))")
+        Page<Enrollment> findByUserIdWithSearchAndFilter(
+                        @Param("userId") String userId,
+                        @Param("search") String search,
+                        @Param("status") Enrollment.CompletionStatus status,
+                        Pageable pageable);
 }
