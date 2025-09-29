@@ -3,6 +3,9 @@ package project.ktc.springboot_app.earning.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.course.entity.Course;
 import project.ktc.springboot_app.entity.BaseEntity;
@@ -19,6 +22,9 @@ import java.time.LocalDateTime;
                 })
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class InstructorEarning extends BaseEntity {
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "instructor_id", nullable = false)

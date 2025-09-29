@@ -3,6 +3,9 @@ package project.ktc.springboot_app.log.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import project.ktc.springboot_app.auth.entitiy.User;
 
@@ -17,6 +20,9 @@ import java.time.LocalDateTime;
 })
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SystemLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,6 +53,6 @@ public class SystemLog {
     private LocalDateTime createdAt;
 
     public enum Action {
-        CREATE, UPDATE, DELETE
+        CREATE, UPDATE, DELETE, PAID_OUT, VIEW
     }
 }

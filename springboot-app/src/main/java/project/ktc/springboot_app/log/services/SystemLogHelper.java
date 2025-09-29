@@ -1,6 +1,5 @@
 package project.ktc.springboot_app.log.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,9 +67,6 @@ public class SystemLogHelper {
             log.debug("System log created: {} action for {} entity with ID: {}",
                     action, entityType, entityId);
 
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize log data for {} action on {} entity: {}",
-                    action, entityType, e.getMessage());
         } catch (Exception e) {
             log.error("Failed to create system log for {} action on {} entity: {}",
                     action, entityType, e.getMessage());

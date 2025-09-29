@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
@@ -26,6 +29,7 @@ public class LogServiceImp implements LogService {
 
     private final SystemLogRepository systemLogRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -58,6 +62,7 @@ public class LogServiceImp implements LogService {
             systemLog.setAction(createLogDto.getAction());
             systemLog.setEntityType(createLogDto.getEntityType());
             systemLog.setEntityId(createLogDto.getEntityId());
+
             systemLog.setOldValues(createLogDto.getOldValues());
             systemLog.setNewValues(createLogDto.getNewValues());
 
