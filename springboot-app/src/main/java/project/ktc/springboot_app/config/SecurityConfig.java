@@ -64,7 +64,8 @@ public class SecurityConfig {
                                                                 "/health",
                                                                 "/actuator/health",
                                                                 "/actuator/info",
-                                                                "/actuator/**")
+                                                                "/actuator/**",
+                                                                "/actuator/health/**")
                                                 .permitAll()
                                                 // Admin
                                                 // .requestMatchers("/api/admin/**").hasRole("ADMIN")
