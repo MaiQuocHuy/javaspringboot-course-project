@@ -49,6 +49,18 @@ public interface AdminPaymentRepository extends JpaRepository<Payment, String> {
         Optional<Payment> findPaymentByIdWithDetails(@Param("paymentId") String paymentId);
 
         /**
+         * Get payment by ID with refunds for payout processing
+         * Eager loads refunds to avoid LazyInitializationException
+         */
+        @Query("SELECT p FROM Payment p " +
+                        "LEFT JOIN FETCH p.user u " +
+                        "LEFT JOIN FETCH p.course c " +
+                        "LEFT JOIN FETCH c.instructor " +
+                        "LEFT JOIN FETCH p.refunds r " +
+                        "WHERE p.id = :paymentId")
+        Optional<Payment> findPaymentByIdWithRefunds(@Param("paymentId") String paymentId);
+
+        /**
          * Get payments filtered by status with pagination
          * Useful for admin to filter payments by their status
          */
@@ -58,6 +70,19 @@ public interface AdminPaymentRepository extends JpaRepository<Payment, String> {
                         "WHERE p.status = :status " +
                         "ORDER BY p.createdAt DESC")
         Page<Payment> findPaymentsByStatus(@Param("status") Payment.PaymentStatus status, Pageable pageable);
+
+        /**
+         * Get payments by status with refunds for payout eligibility checking
+         * Eager loads refunds to avoid LazyInitializationException
+         */
+        @Query("SELECT DISTINCT p FROM Payment p " +
+                        "LEFT JOIN FETCH p.user u " +
+                        "LEFT JOIN FETCH p.course c " +
+                        "LEFT JOIN FETCH c.instructor " +
+                        "LEFT JOIN FETCH p.refunds r " +
+                        "WHERE p.status = :status " +
+                        "ORDER BY p.createdAt DESC")
+        Page<Payment> findPaymentsByStatusWithRefunds(@Param("status") Payment.PaymentStatus status, Pageable pageable);
 
         /**
          * Get payments for a specific user (admin view)

@@ -86,4 +86,13 @@ public interface InstructorEarningRepository extends JpaRepository<InstructorEar
 
         @Query("SELECT ie FROM InstructorEarning ie WHERE ie.payment.id = :paymentId")
         java.util.Optional<InstructorEarning> findByPaymentId(@Param("paymentId") String paymentId);
+
+        /**
+         * Find instructor earnings created between two dates
+         * Used for scheduled reports and analysis
+         */
+        @Query("SELECT ie FROM InstructorEarning ie WHERE ie.createdAt BETWEEN :startDate AND :endDate ORDER BY ie.createdAt DESC")
+        java.util.List<InstructorEarning> findByCreatedAtBetween(
+                        @Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate);
 }

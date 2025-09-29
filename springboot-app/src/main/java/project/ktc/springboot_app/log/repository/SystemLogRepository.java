@@ -55,4 +55,15 @@ public interface SystemLogRepository extends JpaRepository<SystemLog, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable);
+
+    /**
+     * Find logs by action, entity type and date range
+     * Used for scheduled audit reports
+     */
+    @Query("SELECT sl FROM SystemLog sl WHERE sl.action = :action AND sl.entityType = :entityType AND sl.createdAt BETWEEN :startDate AND :endDate ORDER BY sl.createdAt DESC")
+    List<SystemLog> findByActionAndEntityTypeAndCreatedAtBetween(
+                    @Param("action") SystemLog.Action action,
+                    @Param("entityType") String entityType,
+                    @Param("startDate") LocalDateTime startDate,
+                    @Param("endDate") LocalDateTime endDate);
 }
