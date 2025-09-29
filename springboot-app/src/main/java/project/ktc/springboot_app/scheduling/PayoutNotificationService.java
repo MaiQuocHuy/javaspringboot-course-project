@@ -9,6 +9,8 @@ import project.ktc.springboot_app.email.interfaces.EmailService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -179,9 +181,13 @@ public class PayoutNotificationService {
      */
     private String buildPayoutSummaryContent(int successCount, int failureCount, BigDecimal totalAmount) {
         StringBuilder content = new StringBuilder();
+        ZonedDateTime nowVN = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+
         content.append("<h3>🎯 Automatic Payout Processing Summary</h3>");
         content.append("<div style='margin: 20px 0;'>");
-        content.append("<p><strong>Processing Time:</strong> ").append(LocalDateTime.now().format(FORMATTER)).append("</p>");
+        content.append("<p><strong>Processing Time:</strong> ")
+                .append(nowVN.format(FORMATTER))
+                .append("</p>");
         content.append("<p><strong>✅ Successful Payouts:</strong> ").append(successCount).append("</p>");
         content.append("<p><strong>❌ Failed Payouts:</strong> ").append(failureCount).append("</p>");
         content.append("<p><strong>💰 Total Amount Processed:</strong> $").append(totalAmount).append("</p>");
@@ -206,9 +212,10 @@ public class PayoutNotificationService {
      */
     private String buildErrorNotificationContent(Exception error) {
         StringBuilder content = new StringBuilder();
+        ZonedDateTime nowVN = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         content.append("<h3>🚨 Automatic Payout Processing Error</h3>");
         content.append("<div style='margin: 20px 0; padding: 10px; background-color: #ffebee; border-left: 4px solid #f44336;'>");
-        content.append("<p><strong>Error Time:</strong> ").append(LocalDateTime.now().format(FORMATTER)).append("</p>");
+        content.append("<p><strong>Error Time:</strong> ").append(nowVN.format(FORMATTER)).append("</p>");
         content.append("<p><strong>Error Type:</strong> ").append(error.getClass().getSimpleName()).append("</p>");
         content.append("<p><strong>Error Message:</strong> ").append(error.getMessage()).append("</p>");
         content.append("</div>");
@@ -336,9 +343,12 @@ public class PayoutNotificationService {
      */
     private String buildTestNotificationContent() {
         StringBuilder content = new StringBuilder();
+        ZonedDateTime nowVN = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         content.append("<h3>🧪 Test Payout Notification</h3>");
         content.append("<div style='margin: 20px 0; padding: 10px; background-color: #e3f2fd; border-left: 4px solid #2196f3;'>");
-        content.append("<p><strong>Test Time:</strong> ").append(LocalDateTime.now().format(FORMATTER)).append("</p>");
+        content.append("<p><strong>Test Time:</strong> ")
+                .append(nowVN.format(FORMATTER))
+                .append("</p>");
         content.append("<p><strong>Purpose:</strong> Verify email notification system is working</p>");
         content.append("<p><strong>System Status:</strong> ✅ Email service is operational</p>");
         content.append("</div>");
