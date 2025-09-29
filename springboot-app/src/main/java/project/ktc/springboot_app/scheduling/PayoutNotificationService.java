@@ -9,6 +9,8 @@ import project.ktc.springboot_app.email.interfaces.EmailService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -179,9 +181,13 @@ public class PayoutNotificationService {
      */
     private String buildPayoutSummaryContent(int successCount, int failureCount, BigDecimal totalAmount) {
         StringBuilder content = new StringBuilder();
+        ZonedDateTime nowVN = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+
         content.append("<h3>🎯 Automatic Payout Processing Summary</h3>");
         content.append("<div style='margin: 20px 0;'>");
-        content.append("<p><strong>Processing Time:</strong> ").append(LocalDateTime.now().format(FORMATTER)).append("</p>");
+        content.append("<p><strong>Processing Time:</strong> ")
+                .append(nowVN.format(FORMATTER))
+                .append("</p>");
         content.append("<p><strong>✅ Successful Payouts:</strong> ").append(successCount).append("</p>");
         content.append("<p><strong>❌ Failed Payouts:</strong> ").append(failureCount).append("</p>");
         content.append("<p><strong>💰 Total Amount Processed:</strong> $").append(totalAmount).append("</p>");
