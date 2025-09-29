@@ -21,7 +21,7 @@ public class CreateCourseDto {
     private String title;
 
     @NotBlank(message = "Description is required")
-    @Size(min = 20, max = 1000, message = "Description must be between 20 and 1000 characters")
+    @Size(min = 20, max = 255, message = "Description must be between 20 and 255 characters")
     private String description;
 
     @NotBlank(message = "Slug is required")
