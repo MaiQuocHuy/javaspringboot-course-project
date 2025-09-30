@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "🔍 Running lint-staged..."
+npm run lint-staged

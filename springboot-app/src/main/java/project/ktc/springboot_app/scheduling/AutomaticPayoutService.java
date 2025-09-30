@@ -10,7 +10,9 @@ import project.ktc.springboot_app.config.PayoutSchedulingProperties;
 import project.ktc.springboot_app.earning.entity.InstructorEarning;
 import project.ktc.springboot_app.earning.repositories.InstructorEarningRepository;
 import project.ktc.springboot_app.payment.entity.Payment;
+import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
 import project.ktc.springboot_app.payment.repositories.AdminPaymentRepository;
+import project.ktc.springboot_app.payment.services.AdminPaymentServiceImp;
 import project.ktc.springboot_app.cache.services.infrastructure.CacheInvalidationService;
 
 import java.math.BigDecimal;
@@ -35,7 +37,7 @@ public class AutomaticPayoutService {
     private final CacheInvalidationService cacheInvalidationService;
     private final PayoutSchedulingProperties payoutProperties;
     private final PayoutNotificationService payoutNotificationService;
-
+    private final AdminPaymentServiceImp adminPaymentService;
     /**
      * Main scheduled job for processing automatic payouts
      * Runs every 4 hours during business hours (8 AM to 8 PM)
@@ -172,6 +174,8 @@ public class AutomaticPayoutService {
             // Update payment paid out timestamp using fresh payment
             freshPayment.setPaidOutAt(now);
             Payment updatedPayment = adminPaymentRepository.save(freshPayment);
+
+            adminPaymentService.createAffiliatePayoutForReferralDiscount(freshPayment);
 
             // Invalidate relevant caches
             cacheInvalidationService.invalidateInstructorStatisticsOnPayment(
