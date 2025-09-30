@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "📝 Checking Conventional Commit format..."
+npx --no-install commitlint --edit "$1"

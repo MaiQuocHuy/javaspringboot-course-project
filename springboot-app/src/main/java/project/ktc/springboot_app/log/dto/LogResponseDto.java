@@ -5,17 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO for system log creation response
- */
+/** DTO for system log creation response */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class LogResponseDto {
 
-    /**
-     * ID of the created log entry
-     */
-    private Long id;
+  /** ID of the created log entry */
+  private Long id;
 }

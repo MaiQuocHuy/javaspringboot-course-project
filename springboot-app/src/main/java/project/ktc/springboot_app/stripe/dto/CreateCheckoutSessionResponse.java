@@ -6,9 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Response DTO for Stripe Checkout Session creation
- */
+/** Response DTO for Stripe Checkout Session creation */
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,12 +14,14 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Response object for checkout session creation")
 public class CreateCheckoutSessionResponse {
 
-    @Schema(description = "Stripe session ID", example = "cs_test_1234567890")
-    private String sessionId;
+  @Schema(description = "Stripe session ID", example = "cs_test_1234567890")
+  private String sessionId;
 
-    @Schema(description = "Stripe checkout URL", example = "https://checkout.stripe.com/pay/cs_test_1234567890")
-    private String sessionUrl;
+  @Schema(
+      description = "Stripe checkout URL",
+      example = "https://checkout.stripe.com/pay/cs_test_1234567890")
+  private String sessionUrl;
 
-    @Schema(description = "Price calculation details")
-    private PriceCalculationResponse priceCalculation;
+  @Schema(description = "Price calculation details")
+  private PriceCalculationResponse priceCalculation;
 }

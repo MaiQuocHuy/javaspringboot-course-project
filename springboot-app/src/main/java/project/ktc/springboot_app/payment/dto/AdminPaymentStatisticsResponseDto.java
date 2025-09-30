@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminPaymentStatisticsResponseDto {
-    private Long total;
-    private Long pending;
-    private Long completed;
-    private Long failed;
-    private Long refunded;
+  private Long total;
+  private Long pending;
+  private Long completed;
+  private Long failed;
+  private Long refunded;
 }

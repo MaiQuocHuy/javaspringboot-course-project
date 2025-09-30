@@ -13,9 +13,9 @@ import project.ktc.springboot_app.entity.BaseEntity;
 @Builder
 public class ChatMessageType extends BaseEntity {
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String name; // TEXT, FILE, AUDIO, VIDEO
+  @Column(nullable = false, unique = true, length = 50)
+  private String name; // TEXT, FILE, AUDIO, VIDEO
 
-    @Column(length = 255)
-    private String description;
+  @Column(length = 255)
+  private String description;
 }

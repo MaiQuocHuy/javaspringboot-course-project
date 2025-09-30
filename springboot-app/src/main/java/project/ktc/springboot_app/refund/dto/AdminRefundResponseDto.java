@@ -2,7 +2,6 @@ package project.ktc.springboot_app.refund.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,62 +13,62 @@ import project.ktc.springboot_app.refund.entity.Refund;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminRefundResponseDto {
+  private String id;
+  private PaymentInfo payment;
+  private String reason;
+  private String rejectedReason;
+  private BigDecimal amount;
+  private String status;
+  private LocalDateTime requestedAt;
+  private LocalDateTime processedAt;
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class PaymentInfo {
     private String id;
-    private PaymentInfo payment;
-    private String reason;
-    private String rejectedReason;
     private BigDecimal amount;
     private String status;
-    private LocalDateTime requestedAt;
-    private LocalDateTime processedAt;
+    private UserInfoDto user;
+    private LocalDateTime createdAt;
+  }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class PaymentInfo {
-        private String id;
-        private BigDecimal amount;
-        private String status;
-        private UserInfoDto user;
-        private LocalDateTime createdAt;
-    }
+  /** Nested DTO for user information in payment response */
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class UserInfoDto {
+    private String id;
+    private String name;
+    private String email;
+    private String thumbnailUrl;
+  }
 
-    /**
-     * Nested DTO for user information in payment response
-     */
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class UserInfoDto {
-        private String id;
-        private String name;
-        private String email;
-        private String thumbnailUrl;
-    }
-
-    public static AdminRefundResponseDto fromEntity(Refund refund) {
-        return AdminRefundResponseDto.builder()
-                .id(refund.getId())
-                .payment(PaymentInfo.builder()
-                        .id(refund.getPayment().getId())
-                        .amount(refund.getPayment().getAmount())
-                        .status(refund.getPayment().getStatus().name())
-                        .user(UserInfoDto.builder()
-                                .id(refund.getPayment().getUser().getId())
-                                .name(refund.getPayment().getUser().getName())
-                                .email(refund.getPayment().getUser().getEmail())
-                                .thumbnailUrl(refund.getPayment().getUser().getThumbnailUrl())
-                                .build())
-                        .createdAt(refund.getPayment().getCreatedAt())
+  public static AdminRefundResponseDto fromEntity(Refund refund) {
+    return AdminRefundResponseDto.builder()
+        .id(refund.getId())
+        .payment(
+            PaymentInfo.builder()
+                .id(refund.getPayment().getId())
+                .amount(refund.getPayment().getAmount())
+                .status(refund.getPayment().getStatus().name())
+                .user(
+                    UserInfoDto.builder()
+                        .id(refund.getPayment().getUser().getId())
+                        .name(refund.getPayment().getUser().getName())
+                        .email(refund.getPayment().getUser().getEmail())
+                        .thumbnailUrl(refund.getPayment().getUser().getThumbnailUrl())
                         .build())
-                .reason(refund.getReason())
-                .rejectedReason(refund.getRejectedReason())
-                .amount(refund.getAmount())
-                .status(refund.getStatus().name())
-                .requestedAt(refund.getRequestedAt())
-                .processedAt(refund.getProcessedAt())
-                .build();
-    }
+                .createdAt(refund.getPayment().getCreatedAt())
+                .build())
+        .reason(refund.getReason())
+        .rejectedReason(refund.getRejectedReason())
+        .amount(refund.getAmount())
+        .status(refund.getStatus().name())
+        .requestedAt(refund.getRequestedAt())
+        .processedAt(refund.getProcessedAt())
+        .build();
+  }
 }

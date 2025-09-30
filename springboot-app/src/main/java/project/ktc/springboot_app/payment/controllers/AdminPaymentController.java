@@ -1,7 +1,17 @@
 package project.ktc.springboot_app.payment.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -15,31 +25,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 import project.ktc.springboot_app.payment.dto.AdminPaidOutResponseDto;
+import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminPaymentStatisticsResponseDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusDto;
 import project.ktc.springboot_app.payment.dto.AdminUpdatePaymentStatusResponseDto;
-import project.ktc.springboot_app.payment.dto.AdminPaymentDetailResponseDto;
 import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
 
-/**
- * REST Controller for admin payment operations
- * Requires ADMIN role for all endpoints
- */
+/** REST Controller for admin payment operations Requires ADMIN role for all endpoints */
 @RestController
 @RequestMapping("/api/admin/payments")
 @RequiredArgsConstructor
@@ -49,17 +44,20 @@ import project.ktc.springboot_app.payment.interfaces.AdminPaymentService;
 @Validated
 public class AdminPaymentController {
 
-        private final AdminPaymentService adminPaymentService;
+  private final AdminPaymentService adminPaymentService;
 
-        /**
-         * Get all payments with pagination
-         * 
-         * @param pageable Pagination parameters
-         * @return ResponseEntity containing paginated list of payments
-         */
-        @GetMapping
-        @PreAuthorize("hasPermission('Payment', 'payment:READ')")
-        @Operation(summary = "Get all payments", description = """
+  /**
+   * Get all payments with pagination
+   *
+   * @param pageable Pagination parameters
+   * @return ResponseEntity containing paginated list of payments
+   */
+  @GetMapping
+  @PreAuthorize("hasPermission('Payment', 'payment:READ')")
+  @Operation(
+      summary = "Get all payments",
+      description =
+          """
                         Retrieves all payments in the system with pagination support and advanced filtering for admin view.
 
                         **Features:**
@@ -86,41 +84,68 @@ public class AdminPaymentController {
                         - Course information (ID, title, thumbnail)
                         - Payment timestamps (created, paid)
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Payments retrieved successfully"),
-                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<AdminPaymentResponseDto>>> getAllPayments(
-                        @Parameter(description = "Search by payment ID, user name, or course title") @RequestParam(required = false) String search,
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Payments retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<
+          project.ktc.springboot_app.common.dto.ApiResponse<
+              PaginatedResponse<AdminPaymentResponseDto>>>
+      getAllPayments(
+          @Parameter(description = "Search by payment ID, user name, or course title")
+              @RequestParam(required = false)
+              String search,
+          @Parameter(description = "Filter by payment status", example = "COMPLETED")
+              @RequestParam(required = false)
+              project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+          @Parameter(
+                  description = "Filter by creation date from (ISO format: yyyy-MM-dd)",
+                  example = "2024-01-01")
+              @RequestParam(required = false)
+              String fromDate,
+          @Parameter(
+                  description = "Filter by creation date to (ISO format: yyyy-MM-dd)",
+                  example = "2024-12-31")
+              @RequestParam(required = false)
+              String toDate,
+          @Parameter(description = "Filter by payment method", example = "STRIPE")
+              @RequestParam(required = false)
+              String paymentMethod,
+          @Parameter(description = "Page number (0-based)")
+              @RequestParam(defaultValue = "0")
+              @Min(0)
+              Integer page,
+          @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100)
+              Integer size) {
 
-                        @Parameter(description = "Filter by payment status", example = "COMPLETED") @RequestParam(required = false) project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+    Pageable pageable = PageRequest.of(page, size);
+    log.info(
+        "Admin requesting all payments with pagination: page={}, size={}, search={}, status={}, fromDate={}, toDate={}, paymentMethod={}",
+        page,
+        size,
+        search,
+        status,
+        fromDate,
+        toDate,
+        paymentMethod);
+    return adminPaymentService.getAllPayments(
+        search, status, fromDate, toDate, paymentMethod, pageable);
+  }
 
-                        @Parameter(description = "Filter by creation date from (ISO format: yyyy-MM-dd)", example = "2024-01-01") @RequestParam(required = false) String fromDate,
-
-                        @Parameter(description = "Filter by creation date to (ISO format: yyyy-MM-dd)", example = "2024-12-31") @RequestParam(required = false) String toDate,
-
-                        @Parameter(description = "Filter by payment method", example = "STRIPE") @RequestParam(required = false) String paymentMethod,
-
-                        @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
-
-                        @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size) {
-
-                Pageable pageable = PageRequest.of(page, size);
-                log.info("Admin requesting all payments with pagination: page={}, size={}, search={}, status={}, fromDate={}, toDate={}, paymentMethod={}",
-                                page, size, search, status, fromDate, toDate, paymentMethod);
-                return adminPaymentService.getAllPayments(search, status, fromDate, toDate, paymentMethod, pageable);
-        }
-
-        /**
-         * Get all payments without pagination
-         * 
-         * @return ResponseEntity containing list of all payments
-         */
-        @GetMapping("/all")
-        @PreAuthorize("hasPermission('Payment', 'payment:READ')")
-        @Operation(summary = "Get all payments (no pagination)", description = """
+  /**
+   * Get all payments without pagination
+   *
+   * @return ResponseEntity containing list of all payments
+   */
+  @GetMapping("/all")
+  @PreAuthorize("hasPermission('Payment', 'payment:READ')")
+  @Operation(
+      summary = "Get all payments (no pagination)",
+      description =
+          """
                         Retrieves all payments in the system without pagination for admin view with search and filtering.
 
                         **Warning:** This endpoint returns all payments at once and should be used carefully
@@ -140,36 +165,57 @@ public class AdminPaymentController {
                         - This endpoint requires ADMIN role
                         - Returns complete payment data for all users
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "All payments retrieved successfully"),
-                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<AdminPaymentResponseDto>>> getAllPaymentsAll(
-                        @Parameter(description = "Search by payment ID, user name, or course title") @RequestParam(required = false) String search,
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "All payments retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<
+          project.ktc.springboot_app.common.dto.ApiResponse<List<AdminPaymentResponseDto>>>
+      getAllPaymentsAll(
+          @Parameter(description = "Search by payment ID, user name, or course title")
+              @RequestParam(required = false)
+              String search,
+          @Parameter(description = "Filter by payment status", example = "COMPLETED")
+              @RequestParam(required = false)
+              project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
+          @Parameter(
+                  description = "Filter by creation date from (ISO format: yyyy-MM-dd)",
+                  example = "2024-01-01")
+              @RequestParam(required = false)
+              String fromDate,
+          @Parameter(
+                  description = "Filter by creation date to (ISO format: yyyy-MM-dd)",
+                  example = "2024-12-31")
+              @RequestParam(required = false)
+              String toDate,
+          @Parameter(description = "Filter by payment method", example = "STRIPE")
+              @RequestParam(required = false)
+              String paymentMethod) {
+    log.info(
+        "Admin requesting all payments without pagination with filters: search={}, status={}, fromDate={}, toDate={}, paymentMethod={}",
+        search,
+        status,
+        fromDate,
+        toDate,
+        paymentMethod);
+    return adminPaymentService.getAllPayments(search, status, fromDate, toDate, paymentMethod);
+  }
 
-                        @Parameter(description = "Filter by payment status", example = "COMPLETED") @RequestParam(required = false) project.ktc.springboot_app.payment.entity.Payment.PaymentStatus status,
-
-                        @Parameter(description = "Filter by creation date from (ISO format: yyyy-MM-dd)", example = "2024-01-01") @RequestParam(required = false) String fromDate,
-
-                        @Parameter(description = "Filter by creation date to (ISO format: yyyy-MM-dd)", example = "2024-12-31") @RequestParam(required = false) String toDate,
-
-                        @Parameter(description = "Filter by payment method", example = "STRIPE") @RequestParam(required = false) String paymentMethod) {
-                log.info("Admin requesting all payments without pagination with filters: search={}, status={}, fromDate={}, toDate={}, paymentMethod={}",
-                                search, status, fromDate, toDate, paymentMethod);
-                return adminPaymentService.getAllPayments(search, status, fromDate, toDate, paymentMethod);
-        }
-
-        /**
-         * Get payment details by ID
-         * 
-         * @param paymentId The payment ID to retrieve
-         * @return ResponseEntity containing detailed payment information
-         */
-        @GetMapping("/{paymentId}")
-        @PreAuthorize("hasPermission('Payment', 'payment:READ')")
-        @Operation(summary = "Get payment details", description = """
+  /**
+   * Get payment details by ID
+   *
+   * @param paymentId The payment ID to retrieve
+   * @return ResponseEntity containing detailed payment information
+   */
+  @GetMapping("/{paymentId}")
+  @PreAuthorize("hasPermission('Payment', 'payment:READ')")
+  @Operation(
+      summary = "Get payment details",
+      description =
+          """
                         Retrieves detailed information about a specific payment by ID for admin view.
 
                         **Features:**
@@ -188,29 +234,35 @@ public class AdminPaymentController {
                         - Includes transaction ID, receipt URL, and card information
                         - Gracefully handles Stripe API errors
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Payment details retrieved successfully"),
-                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @ApiResponse(responseCode = "404", description = "Payment not found"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminPaymentDetailResponseDto>> getPaymentDetail(
-                        @Parameter(description = "Payment ID", required = true) @PathVariable String paymentId) {
-                log.info("Admin requesting payment details for payment: {}", paymentId);
-                return adminPaymentService.getPaymentDetail(paymentId);
-        }
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Payment details retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+        @ApiResponse(responseCode = "404", description = "Payment not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<
+          project.ktc.springboot_app.common.dto.ApiResponse<AdminPaymentDetailResponseDto>>
+      getPaymentDetail(
+          @Parameter(description = "Payment ID", required = true) @PathVariable String paymentId) {
+    log.info("Admin requesting payment details for payment: {}", paymentId);
+    return adminPaymentService.getPaymentDetail(paymentId);
+  }
 
-        /**
-         * Update payment status
-         * 
-         * @param paymentId The payment ID to update
-         * @param newStatus The new payment status (COMPLETED or FAILED)
-         * @return ResponseEntity containing updated payment information
-         */
-        @PatchMapping("/{paymentId}/status")
-        @PreAuthorize("hasPermission('Payment', 'payment:UPDATE')")
-        @Operation(summary = "Update payment status", description = """
+  /**
+   * Update payment status
+   *
+   * @param paymentId The payment ID to update
+   * @param newStatus The new payment status (COMPLETED or FAILED)
+   * @return ResponseEntity containing updated payment information
+   */
+  @PatchMapping("/{paymentId}/status")
+  @PreAuthorize("hasPermission('Payment', 'payment:UPDATE')")
+  @Operation(
+      summary = "Update payment status",
+      description =
+          """
                         Updates the status of a payment from PENDING to either COMPLETED or FAILED.
 
                         **Allowed Status Transitions:**
@@ -236,31 +288,41 @@ public class AdminPaymentController {
                         - Sets paidAt timestamp for COMPLETED status
                         - Creates system log entry for audit trail
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Payment status updated successfully"),
-                        @ApiResponse(responseCode = "400", description = "Invalid status or payment cannot be updated"),
-                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @ApiResponse(responseCode = "404", description = "Payment not found"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminUpdatePaymentStatusResponseDto>> updatePaymentStatus(
-                        @Parameter(description = "Payment ID", required = true) @PathVariable String paymentId,
-                        @Valid @RequestBody AdminUpdatePaymentStatusDto newStatusDto) {
-                log.info("Admin updating payment status for payment: {} to status: {}", paymentId,
-                                newStatusDto.getStatus());
-                return adminPaymentService.updatePaymentStatus(paymentId, newStatusDto.getStatus().name());
-        }
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Payment status updated successfully"),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid status or payment cannot be updated"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+        @ApiResponse(responseCode = "404", description = "Payment not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<
+          project.ktc.springboot_app.common.dto.ApiResponse<AdminUpdatePaymentStatusResponseDto>>
+      updatePaymentStatus(
+          @Parameter(description = "Payment ID", required = true) @PathVariable String paymentId,
+          @Valid @RequestBody AdminUpdatePaymentStatusDto newStatusDto) {
+    log.info(
+        "Admin updating payment status for payment: {} to status: {}",
+        paymentId,
+        newStatusDto.getStatus());
+    return adminPaymentService.updatePaymentStatus(paymentId, newStatusDto.getStatus().name());
+  }
 
-        /**
-         * Paid out payment to instructor
-         * 
-         * @param paymentId The payment ID to paid out
-         * @return ResponseEntity containing paid out operation result
-         */
-        @PostMapping("/{paymentId}/paid-out")
-        @PreAuthorize("hasPermission('Payment', 'payment:PAID_OUT')")
-        @Operation(summary = "Paid out payment to instructor", description = """
+  /**
+   * Paid out payment to instructor
+   *
+   * @param paymentId The payment ID to paid out
+   * @return ResponseEntity containing paid out operation result
+   */
+  @PostMapping("/{paymentId}/paid-out")
+  @PreAuthorize("hasPermission('Payment', 'payment:PAID_OUT')")
+  @Operation(
+      summary = "Paid out payment to instructor",
+      description =
+          """
                         **Purpose:**
                         Pays out the payment to the course instructor by creating an instructor earning record.
 
@@ -279,28 +341,35 @@ public class AdminPaymentController {
                         - This endpoint requires ADMIN role
                         - Used for instructor payment processing
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Payment paid out successfully"),
-                        @ApiResponse(responseCode = "400", description = "Payment cannot be paid out (validation failed)"),
-                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @ApiResponse(responseCode = "404", description = "Payment not found"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminPaidOutResponseDto>> paidOutPayment(
-                        @Parameter(description = "Payment ID", required = true) @PathVariable String paymentId) {
-                log.info("Admin attempting to paid out payment: {}", paymentId);
-                return adminPaymentService.paidOutPayment(paymentId);
-        }
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Payment paid out successfully"),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Payment cannot be paid out (validation failed)"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+        @ApiResponse(responseCode = "404", description = "Payment not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminPaidOutResponseDto>>
+      paidOutPayment(
+          @Parameter(description = "Payment ID", required = true) @PathVariable String paymentId) {
+    log.info("Admin attempting to paid out payment: {}", paymentId);
+    return adminPaymentService.paidOutPayment(paymentId);
+  }
 
-        /**
-         * Get payment statistics for admin dashboard
-         * 
-         * @return ResponseEntity containing payment counts by status
-         */
-        @GetMapping("/statistics")
-        @PreAuthorize("hasPermission('Payment', 'payment:READ')")
-        @Operation(summary = "Get payment statistics", description = """
+  /**
+   * Get payment statistics for admin dashboard
+   *
+   * @return ResponseEntity containing payment counts by status
+   */
+  @GetMapping("/statistics")
+  @PreAuthorize("hasPermission('Payment', 'payment:READ')")
+  @Operation(
+      summary = "Get payment statistics",
+      description =
+          """
                         **Purpose:**
                         Retrieves comprehensive statistics about payments for admin dashboard.
 
@@ -316,15 +385,17 @@ public class AdminPaymentController {
                         - This endpoint requires ADMIN role
                         - Provides system-wide statistics
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
-                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminPaymentStatisticsResponseDto>> getPaymentStatistics() {
-                log.info("Admin retrieving payment statistics");
-                return adminPaymentService.getPaymentStatistics();
-        }
-
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<
+          project.ktc.springboot_app.common.dto.ApiResponse<AdminPaymentStatisticsResponseDto>>
+      getPaymentStatistics() {
+    log.info("Admin retrieving payment statistics");
+    return adminPaymentService.getPaymentStatistics();
+  }
 }

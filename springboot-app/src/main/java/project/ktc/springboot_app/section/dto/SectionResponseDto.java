@@ -11,13 +11,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SectionResponseDto {
 
-    private String id;
+  private String id;
 
-    private String title;
+  private String title;
 
-    private String description;
+  private String description;
 
-    private Integer orderIndex;
+  private Integer orderIndex;
 
-    private String courseId;
+  private String courseId;
 }

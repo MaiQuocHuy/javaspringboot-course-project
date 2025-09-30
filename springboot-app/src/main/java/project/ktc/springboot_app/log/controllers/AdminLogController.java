@@ -15,10 +15,7 @@ import project.ktc.springboot_app.log.dto.CreateLogDto;
 import project.ktc.springboot_app.log.dto.LogResponseDto;
 import project.ktc.springboot_app.log.services.LogServiceImp;
 
-/**
- * REST Controller for admin system log operations
- * Requires ADMIN role for all endpoints
- */
+/** REST Controller for admin system log operations Requires ADMIN role for all endpoints */
 @RestController
 @RequestMapping("/api/admin/logs")
 @PreAuthorize("hasRole('ADMIN')")
@@ -28,29 +25,36 @@ import project.ktc.springboot_app.log.services.LogServiceImp;
 @SecurityRequirement(name = "bearerAuth")
 public class AdminLogController {
 
-        private final LogServiceImp logService;
+  private final LogServiceImp logService;
 
-        /**
-         * Creates a new system log entry
-         * 
-         * @param createLogDto The log data to create
-         * @return ResponseEntity with the created log information
-         */
-        @PostMapping
-        @Operation(summary = "Create system log entry", description = "Creates a new system log entry to track admin actions")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "201", description = "Log entry created successfully"),
-                        @ApiResponse(responseCode = "400", description = "Invalid request data"),
-                        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @ApiResponse(responseCode = "403", description = "Forbidden - User does not have ADMIN role"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<LogResponseDto>> createLog(
-                        @Valid @RequestBody CreateLogDto createLogDto) {
+  /**
+   * Creates a new system log entry
+   *
+   * @param createLogDto The log data to create
+   * @return ResponseEntity with the created log information
+   */
+  @PostMapping
+  @Operation(
+      summary = "Create system log entry",
+      description = "Creates a new system log entry to track admin actions")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "201", description = "Log entry created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request data"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - User does not have ADMIN role"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<LogResponseDto>>
+      createLog(@Valid @RequestBody CreateLogDto createLogDto) {
 
-                log.info("Admin creating system log entry - Action: {}, EntityType: {}",
-                                createLogDto.getAction(), createLogDto.getEntityType());
+    log.info(
+        "Admin creating system log entry - Action: {}, EntityType: {}",
+        createLogDto.getAction(),
+        createLogDto.getEntityType());
 
-                return logService.createLog(createLogDto);
-        }
+    return logService.createLog(createLogDto);
+  }
 }

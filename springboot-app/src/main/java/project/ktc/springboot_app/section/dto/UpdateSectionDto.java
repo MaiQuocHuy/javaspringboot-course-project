@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateSectionDto {
-    @Size(max = 255, message = "Section title must be between 3 and 255 characters")
-    private String title;
-    
-    @Size(max = 255, message = "Section description must not exceed 255 characters")
-    private String description;
+  @Size(max = 255, message = "Section title must be between 3 and 255 characters")
+  private String title;
+
+  @Size(max = 255, message = "Section description must not exceed 255 characters")
+  private String description;
 }

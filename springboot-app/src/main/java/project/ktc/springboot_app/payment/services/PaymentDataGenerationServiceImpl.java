@@ -1,5 +1,13 @@
 package project.ktc.springboot_app.payment.services;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,15 +21,6 @@ import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.payment.interfaces.PaymentDataGenerationService;
 import project.ktc.springboot_app.payment.repositories.PaymentRepository;
 import project.ktc.springboot_app.user.repositories.UserRepository;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -59,14 +58,18 @@ public class PaymentDataGenerationServiceImpl implements PaymentDataGenerationSe
           .message("Database already contains sufficient payment data for analytics")
           .paymentsGenerated(0L)
           .totalPayments(getCurrentPaymentCount())
-          .details("Current payment count exceeds the minimum threshold of " + SUFFICIENT_DATA_THRESHOLD)
+          .details(
+              "Current payment count exceeds the minimum threshold of " + SUFFICIENT_DATA_THRESHOLD)
           .build();
     }
 
     try {
       // Get students and courses for random assignment with validation
-      List<User> students = userRepository.findUsersWithFilters(null, "STUDENT", true,
-          org.springframework.data.domain.Pageable.unpaged()).getContent();
+      List<User> students =
+          userRepository
+              .findUsersWithFilters(
+                  null, "STUDENT", true, org.springframework.data.domain.Pageable.unpaged())
+              .getContent();
       List<Course> courses = courseRepository.findAll();
 
       // Validate minimum student count (must be at least 5)
@@ -77,7 +80,8 @@ public class PaymentDataGenerationServiceImpl implements PaymentDataGenerationSe
             .paymentsGenerated(0L)
             .totalPayments(getCurrentPaymentCount())
             .details(
-                String.format("Found %d students, but minimum 5 active students required for payment data generation",
+                String.format(
+                    "Found %d students, but minimum 5 active students required for payment data generation",
                     students.size()))
             .build();
       }
@@ -89,8 +93,10 @@ public class PaymentDataGenerationServiceImpl implements PaymentDataGenerationSe
             .message("Cannot generate payment data: Insufficient courses in database")
             .paymentsGenerated(0L)
             .totalPayments(getCurrentPaymentCount())
-            .details(String.format("Found %d courses, but minimum 8 courses required for payment data generation",
-                courses.size()))
+            .details(
+                String.format(
+                    "Found %d courses, but minimum 8 courses required for payment data generation",
+                    courses.size()))
             .build();
       }
 
@@ -113,8 +119,10 @@ public class PaymentDataGenerationServiceImpl implements PaymentDataGenerationSe
           .message("Sample payment data generated successfully")
           .paymentsGenerated(totalGenerated)
           .totalPayments(getCurrentPaymentCount())
-          .details(String.format("Generated %d payments across years %d-%d with seasonal patterns", totalGenerated,
-              currentYear - 2, currentYear))
+          .details(
+              String.format(
+                  "Generated %d payments across years %d-%d with seasonal patterns",
+                  totalGenerated, currentYear - 2, currentYear))
           .build();
 
     } catch (Exception e) {
@@ -129,8 +137,8 @@ public class PaymentDataGenerationServiceImpl implements PaymentDataGenerationSe
     }
   }
 
-  private long generatePaymentsForYear(int year, List<User> students, List<Course> courses,
-      List<Payment> paymentsToSave) {
+  private long generatePaymentsForYear(
+      int year, List<User> students, List<Course> courses, List<Payment> paymentsToSave) {
     long paymentsGenerated = 0;
 
     for (int month = 1; month <= 12; month++) {
@@ -201,12 +209,14 @@ public class PaymentDataGenerationServiceImpl implements PaymentDataGenerationSe
 
     // Get dynamic price range from courses in database
     PriceRange priceRange = courseRepository.findMinAndMaxPrice();
-    BigDecimal minPrice = priceRange != null && priceRange.getMinPrice() != null
-        ? priceRange.getMinPrice()
-        : BigDecimal.valueOf(30); // Fallback to 30 if no price range found
-    BigDecimal maxPrice = priceRange != null && priceRange.getMaxPrice() != null
-        ? priceRange.getMaxPrice()
-        : BigDecimal.valueOf(300); // Fallback to 300 if no price range found
+    BigDecimal minPrice =
+        priceRange != null && priceRange.getMinPrice() != null
+            ? priceRange.getMinPrice()
+            : BigDecimal.valueOf(30); // Fallback to 30 if no price range found
+    BigDecimal maxPrice =
+        priceRange != null && priceRange.getMaxPrice() != null
+            ? priceRange.getMaxPrice()
+            : BigDecimal.valueOf(300); // Fallback to 300 if no price range found
 
     // Random amount between min and max price
     double priceRange_double = maxPrice.subtract(minPrice).doubleValue();
@@ -214,10 +224,7 @@ public class PaymentDataGenerationServiceImpl implements PaymentDataGenerationSe
     amount = amount.setScale(2, RoundingMode.HALF_UP);
 
     // Random time during the day
-    LocalTime randomTime = LocalTime.of(
-        random.nextInt(24),
-        random.nextInt(60),
-        random.nextInt(60));
+    LocalTime randomTime = LocalTime.of(random.nextInt(24), random.nextInt(60), random.nextInt(60));
     LocalDateTime paymentDateTime = LocalDateTime.of(date, randomTime);
 
     payment.setUser(randomStudent);

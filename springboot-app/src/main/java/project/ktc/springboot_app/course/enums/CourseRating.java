@@ -1,7 +1,9 @@
 package project.ktc.springboot_app.course.enums;
 
 public enum CourseRating {
-  THREE(3), FOUR(4), FIVE(5);
+  THREE(3),
+  FOUR(4),
+  FIVE(5);
 
   private final int value;
 

@@ -2,7 +2,6 @@ package project.ktc.springboot_app.discount.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,75 +13,78 @@ import project.ktc.springboot_app.discount.entity.DiscountUsage;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentDiscountUsageResponseDto {
+  private String id;
+  private DiscountInfo discount;
+  private UserInfo user;
+  private CourseInfo course;
+  private LocalDateTime usedAt;
+  private BigDecimal discountPercent;
+  private BigDecimal discountAmount;
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class DiscountInfo {
     private String id;
-    private DiscountInfo discount;
-    private UserInfo user;
-    private CourseInfo course;
-    private LocalDateTime usedAt;
-    private BigDecimal discountPercent;
-    private BigDecimal discountAmount;
+    private String code;
+    private String description;
+    private String type;
+  }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class DiscountInfo {
-        private String id;
-        private String code;
-        private String description;
-        private String type;
-    }
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class UserInfo {
+    private String name;
+    private String email;
+  }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class UserInfo {
-        private String name;
-        private String email;
-    }
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class CourseInfo {
+    private String id;
+    private String title;
+    private UserInfo instructor;
+    private BigDecimal price;
+  }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class CourseInfo {
-        private String id;
-        private String title;
-        private UserInfo instructor;
-        private BigDecimal price;
-    }
+  public static StudentDiscountUsageResponseDto fromEntity(DiscountUsage usage) {
+    DiscountInfo discountInfo =
+        DiscountInfo.builder()
+            .id(usage.getDiscount().getId())
+            .code(usage.getDiscount().getCode())
+            .description(usage.getDiscount().getDescription())
+            .type(usage.getDiscount().getType().name())
+            .build();
+    UserInfo userInfo =
+        UserInfo.builder()
+            .name(usage.getUser().getName())
+            .email(usage.getUser().getEmail())
+            .build();
+    CourseInfo courseInfo =
+        CourseInfo.builder()
+            .id(usage.getCourse().getId())
+            .title(usage.getCourse().getTitle())
+            .instructor(
+                UserInfo.builder()
+                    .name(usage.getCourse().getInstructor().getName())
+                    .email(usage.getCourse().getInstructor().getEmail())
+                    .build())
+            .price(usage.getCourse().getPrice())
+            .build();
 
-    public static StudentDiscountUsageResponseDto fromEntity(DiscountUsage usage) {
-        DiscountInfo discountInfo = DiscountInfo.builder()
-                .id(usage.getDiscount().getId())
-                .code(usage.getDiscount().getCode())
-                .description(usage.getDiscount().getDescription())
-                .type(usage.getDiscount().getType().name())
-                .build();
-        UserInfo userInfo = UserInfo.builder()
-                .name(usage.getUser().getName())
-                .email(usage.getUser().getEmail())
-                .build();
-        CourseInfo courseInfo = CourseInfo.builder()
-                .id(usage.getCourse().getId())
-                .title(usage.getCourse().getTitle())
-                .instructor(UserInfo.builder()
-                        .name(usage.getCourse().getInstructor().getName())
-                        .email(usage.getCourse().getInstructor().getEmail())
-                        .build())
-                .price(usage.getCourse().getPrice())
-                .build();
-
-        return StudentDiscountUsageResponseDto.builder()
-                .id(usage.getId())
-                .discount(discountInfo)
-                .user(userInfo)
-                .course(courseInfo)
-                .usedAt(usage.getUsedAt())
-                .discountPercent(usage.getDiscountPercent())
-                .discountAmount(usage.getDiscountAmount())
-                .build();
-    }
-
+    return StudentDiscountUsageResponseDto.builder()
+        .id(usage.getId())
+        .discount(discountInfo)
+        .user(userInfo)
+        .course(courseInfo)
+        .usedAt(usage.getUsedAt())
+        .discountPercent(usage.getDiscountPercent())
+        .discountAmount(usage.getDiscountAmount())
+        .build();
+  }
 }

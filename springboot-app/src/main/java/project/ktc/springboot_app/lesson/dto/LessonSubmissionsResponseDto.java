@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 import project.ktc.springboot_app.common.dto.PaginatedResponse;
 
 /**
- * DTO for the complete lesson submissions API response.
- * Contains both summary statistics and paginated submission data.
+ * DTO for the complete lesson submissions API response. Contains both summary statistics and
+ * paginated submission data.
  */
 @Data
 @Builder
@@ -17,10 +17,10 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 @AllArgsConstructor
 @Schema(description = "Complete lesson submissions response with summary and paginated data")
 public class LessonSubmissionsResponseDto {
-    
-    @Schema(description = "Summary statistics for submissions")
-    private SubmissionSummaryDto summary;
-    
-    @Schema(description = "Paginated submission data")
-    private PaginatedResponse<LessonSubmissionResponseDto> submissions;
+
+  @Schema(description = "Summary statistics for submissions")
+  private SubmissionSummaryDto summary;
+
+  @Schema(description = "Paginated submission data")
+  private PaginatedResponse<LessonSubmissionResponseDto> submissions;
 }

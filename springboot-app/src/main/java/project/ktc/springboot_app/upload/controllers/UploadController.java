@@ -21,9 +21,7 @@ import project.ktc.springboot_app.upload.exception.InvalidVideoFormatException;
 import project.ktc.springboot_app.upload.services.CloudinaryServiceImp;
 import project.ktc.springboot_app.upload.services.FileValidationService;
 
-/**
- * REST Controller for handling file uploads
- */
+/** REST Controller for handling file uploads */
 @RestController
 @RequestMapping("/api/upload")
 @RequiredArgsConstructor
@@ -31,11 +29,14 @@ import project.ktc.springboot_app.upload.services.FileValidationService;
 @Tag(name = "File Upload API", description = "Endpoints for uploading and managing files")
 public class UploadController {
 
-        private final CloudinaryServiceImp cloudinaryService;
-        private final FileValidationService fileValidationService;
+  private final CloudinaryServiceImp cloudinaryService;
+  private final FileValidationService fileValidationService;
 
-        @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        @Operation(summary = "Upload an image file", description = """
+  @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @Operation(
+      summary = "Upload an image file",
+      description =
+          """
                         Upload an image file to Cloudinary and return the secure URL.
 
                         **Validation Rules:**
@@ -45,34 +46,52 @@ public class UploadController {
 
                         **Returns:** Secure URL, public ID, and file metadata on successful upload.
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "201", description = "Image uploaded successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ImageUploadResponseDto.class))),
-                        @ApiResponse(responseCode = "400", description = "Validation failed - invalid file format, empty file, or file too large", content = @Content(mediaType = "application/json")),
-                        @ApiResponse(responseCode = "500", description = "Upload failed due to server error", content = @Content(mediaType = "application/json"))
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<ImageUploadResponseDto>> uploadImage(
-                        @RequestParam("file") MultipartFile file) {
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Image uploaded successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ImageUploadResponseDto.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Validation failed - invalid file format, empty file, or file too large",
+            content = @Content(mediaType = "application/json")),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Upload failed due to server error",
+            content = @Content(mediaType = "application/json"))
+      })
+  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<ImageUploadResponseDto>>
+      uploadImage(@RequestParam("file") MultipartFile file) {
 
-                log.info("Received image upload request: {} ({})",
-                                file.getOriginalFilename(), file.getContentType());
+    log.info(
+        "Received image upload request: {} ({})",
+        file.getOriginalFilename(),
+        file.getContentType());
 
-                try {
-                        // Validate the uploaded file
-                        fileValidationService.validateImageFile(file);
+    try {
+      // Validate the uploaded file
+      fileValidationService.validateImageFile(file);
 
-                        // Upload to Cloudinary if validation passes
-                        ImageUploadResponseDto result = cloudinaryService.uploadImage(file);
+      // Upload to Cloudinary if validation passes
+      ImageUploadResponseDto result = cloudinaryService.uploadImage(file);
 
-                        return ApiResponseUtil.created(result, "Image uploaded successfully");
+      return ApiResponseUtil.created(result, "Image uploaded successfully");
 
-                } catch (InvalidImageFormatException e) {
-                        log.warn("File validation failed for {}: {}", file.getOriginalFilename(), e.getMessage());
-                        return ApiResponseUtil.badRequest(e.getMessage());
-                }
-        }
+    } catch (InvalidImageFormatException e) {
+      log.warn("File validation failed for {}: {}", file.getOriginalFilename(), e.getMessage());
+      return ApiResponseUtil.badRequest(e.getMessage());
+    }
+  }
 
-        @PostMapping(value = "/video", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        @Operation(summary = "Upload a video file", description = """
+  @PostMapping(value = "/video", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @Operation(
+      summary = "Upload a video file",
+      description =
+          """
                         Upload a video file to Cloudinary and return the secure URL with metadata.
 
                         **Validation Rules:**
@@ -83,80 +102,115 @@ public class UploadController {
 
                         **Returns:** Secure URL, public ID, video metadata (duration, dimensions), and upload details.
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "201", description = "Video uploaded successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = VideoUploadResponseDto.class))),
-                        @ApiResponse(responseCode = "400", description = "Validation failed - invalid file format, empty file, or file too large", content = @Content(mediaType = "application/json")),
-                        @ApiResponse(responseCode = "500", description = "Upload failed due to server error", content = @Content(mediaType = "application/json"))
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<VideoUploadResponseDto>> uploadVideo(
-                        @Parameter(description = "Video file to upload (max 100MB)", required = true) @RequestParam("file") MultipartFile file) {
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Video uploaded successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = VideoUploadResponseDto.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Validation failed - invalid file format, empty file, or file too large",
+            content = @Content(mediaType = "application/json")),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Upload failed due to server error",
+            content = @Content(mediaType = "application/json"))
+      })
+  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<VideoUploadResponseDto>>
+      uploadVideo(
+          @Parameter(description = "Video file to upload (max 100MB)", required = true)
+              @RequestParam("file")
+              MultipartFile file) {
 
-                log.info("Received video upload request: {} ({}, {} MB)",
-                                file.getOriginalFilename(), file.getContentType(), file.getSize() / (1024 * 1024));
+    log.info(
+        "Received video upload request: {} ({}, {} MB)",
+        file.getOriginalFilename(),
+        file.getContentType(),
+        file.getSize() / (1024 * 1024));
 
-                try {
-                        // Validate the uploaded video file
-                        fileValidationService.validateVideoFile(file);
+    try {
+      // Validate the uploaded video file
+      fileValidationService.validateVideoFile(file);
 
-                        // Upload to Cloudinary if validation passes
-                        VideoUploadResponseDto result = cloudinaryService.uploadVideo(file);
+      // Upload to Cloudinary if validation passes
+      VideoUploadResponseDto result = cloudinaryService.uploadVideo(file);
 
-                        return ApiResponseUtil.created(result, "Video uploaded successfully");
+      return ApiResponseUtil.created(result, "Video uploaded successfully");
 
-                } catch (InvalidVideoFormatException e) {
-                        log.warn("Video validation failed for {}: {}", file.getOriginalFilename(), e.getMessage());
-                        return ApiResponseUtil.badRequest(e.getMessage());
-                }
-        }
+    } catch (InvalidVideoFormatException e) {
+      log.warn("Video validation failed for {}: {}", file.getOriginalFilename(), e.getMessage());
+      return ApiResponseUtil.badRequest(e.getMessage());
+    }
+  }
 
-        @DeleteMapping("/image/{publicId}")
-        @Operation(summary = "Delete an image", description = """
+  @DeleteMapping("/image/{publicId}")
+  @Operation(
+      summary = "Delete an image",
+      description =
+          """
                         Delete an image from Cloudinary using its public ID.
                         Use `%2F` for slashes in nested folder names.
                         Example: `course-management%2Fimage_timestamp_uuid`
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Image deleted successfully"),
-                        @ApiResponse(responseCode = "404", description = "Image not found"),
-                        @ApiResponse(responseCode = "500", description = "Server error during deletion")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> deleteImage(
-                        @Parameter(description = "Cloudinary public ID, e.g. `course-management%2Fimage_timestamp_uuid`", required = true) @PathVariable String publicId) {
-                log.info("Received image deletion request for public ID: {}", publicId);
-                // Decode public ID to handle URL encoding
-                String decodedPublicId = "course-management/" + publicId;
-                boolean deleted = cloudinaryService.deleteImage(decodedPublicId);
-                log.info("Image deletion result for public ID {}: {}", decodedPublicId, deleted);
-                return deleted
-                                ? ApiResponseUtil.success("Image deleted successfully")
-                                : ApiResponseUtil.notFound("Image not found or already deleted");
-        }
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Image deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Image not found"),
+        @ApiResponse(responseCode = "500", description = "Server error during deletion")
+      })
+  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> deleteImage(
+      @Parameter(
+              description = "Cloudinary public ID, e.g. `course-management%2Fimage_timestamp_uuid`",
+              required = true)
+          @PathVariable
+          String publicId) {
+    log.info("Received image deletion request for public ID: {}", publicId);
+    // Decode public ID to handle URL encoding
+    String decodedPublicId = "course-management/" + publicId;
+    boolean deleted = cloudinaryService.deleteImage(decodedPublicId);
+    log.info("Image deletion result for public ID {}: {}", decodedPublicId, deleted);
+    return deleted
+        ? ApiResponseUtil.success("Image deleted successfully")
+        : ApiResponseUtil.notFound("Image not found or already deleted");
+  }
 
-        @DeleteMapping("/video/{publicId}")
-        @Operation(summary = "Delete a video", description = """
+  @DeleteMapping("/video/{publicId}")
+  @Operation(
+      summary = "Delete a video",
+      description =
+          """
                         Delete a video from Cloudinary using its public ID.
                         Use `%2F` for slashes in nested folder names.
                         Example: `course-videos%2Fvideo_timestamp_uuid`
                         """)
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Video deleted successfully"),
-                        @ApiResponse(responseCode = "404", description = "Video not found"),
-                        @ApiResponse(responseCode = "500", description = "Server error during deletion")
-        })
-        public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> deleteVideo(
-                        @Parameter(description = "Cloudinary public ID for video, e.g. `course-videos%2Fvideo_timestamp_uuid`", required = true) @PathVariable String publicId) {
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Video deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Video not found"),
+        @ApiResponse(responseCode = "500", description = "Server error during deletion")
+      })
+  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<Void>> deleteVideo(
+      @Parameter(
+              description =
+                  "Cloudinary public ID for video, e.g. `course-videos%2Fvideo_timestamp_uuid`",
+              required = true)
+          @PathVariable
+          String publicId) {
 
-                log.info("Received video deletion request for public ID: {}", publicId);
+    log.info("Received video deletion request for public ID: {}", publicId);
 
-                // Decode public ID to handle URL encoding
-                String decodedPublicId = "course-videos/" + publicId;
-                boolean deleted = cloudinaryService.deleteVideo(decodedPublicId);
+    // Decode public ID to handle URL encoding
+    String decodedPublicId = "course-videos/" + publicId;
+    boolean deleted = cloudinaryService.deleteVideo(decodedPublicId);
 
-                log.info("Video deletion result for public ID {}: {}", decodedPublicId, deleted);
+    log.info("Video deletion result for public ID {}: {}", decodedPublicId, deleted);
 
-                return deleted
-                                ? ApiResponseUtil.success("Video deleted successfully")
-                                : ApiResponseUtil.notFound("Video not found or already deleted");
-        }
-
+    return deleted
+        ? ApiResponseUtil.success("Video deleted successfully")
+        : ApiResponseUtil.notFound("Video not found or already deleted");
+  }
 }

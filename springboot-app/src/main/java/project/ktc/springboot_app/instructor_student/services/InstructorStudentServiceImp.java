@@ -8,16 +8,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.category.entity.Category;
 import project.ktc.springboot_app.common.dto.ApiResponse;
@@ -48,7 +46,8 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
 
   private Double calculateProgress(String userId, String courseId) {
     try {
-      Long completedLessons = enrollmentRepository.countCompletedLessonsByUserAndCourse(userId, courseId);
+      Long completedLessons =
+          enrollmentRepository.countCompletedLessonsByUserAndCourse(userId, courseId);
       Long totalLessons = enrollmentRepository.countTotalLessonsByCourse(courseId);
 
       if (totalLessons == null || totalLessons == 0) {
@@ -56,11 +55,13 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
       }
 
       double progress = (double) completedLessons / totalLessons;
-      return BigDecimal.valueOf(progress)
-          .setScale(2, RoundingMode.HALF_UP)
-          .doubleValue();
+      return BigDecimal.valueOf(progress).setScale(2, RoundingMode.HALF_UP).doubleValue();
     } catch (Exception e) {
-      log.warn("Failed to calculate progress for user {} and course {}: {}", userId, courseId, e.getMessage());
+      log.warn(
+          "Failed to calculate progress for user {} and course {}: {}",
+          userId,
+          courseId,
+          e.getMessage());
       return 0.0;
     }
   }
@@ -71,20 +72,21 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
     pagedListHolder.setPage(pageable.getPageNumber());
 
     List<T> pageContent = pagedListHolder.getPageList();
-    PageInfo pageInfo = PageInfo.builder()
-        .number(pagedListHolder.getPage())
-        .size(pagedListHolder.getPageSize())
-        .totalPages(pagedListHolder.getPageCount())
-        .totalElements(fullList.size())
-        .first(pagedListHolder.isFirstPage())
-        .last(pagedListHolder.isLastPage())
-        .build();
+    PageInfo pageInfo =
+        PageInfo.builder()
+            .number(pagedListHolder.getPage())
+            .size(pagedListHolder.getPageSize())
+            .totalPages(pagedListHolder.getPageCount())
+            .totalElements(fullList.size())
+            .first(pagedListHolder.isFirstPage())
+            .last(pagedListHolder.isLastPage())
+            .build();
     return new PaginatedResponse<>(pageContent, pageInfo);
   }
 
   @Override
-  public ResponseEntity<ApiResponse<PaginatedResponse<InstructorStudentDto>>> getEnrolledStudents(String search,
-      Pageable pageable) {
+  public ResponseEntity<ApiResponse<PaginatedResponse<InstructorStudentDto>>> getEnrolledStudents(
+      String search, Pageable pageable) {
     try {
       log.info("Fetching enrolled students with search: {}", search);
       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -92,8 +94,8 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
       String instructorId = currentUser.getId();
 
       // Count total enrolled students
-      List<String> enrolledStudentIds = instructorStudentRepository.countEnrolledStudentIdsWithFilters(instructorId,
-          search);
+      List<String> enrolledStudentIds =
+          instructorStudentRepository.countEnrolledStudentIdsWithFilters(instructorId, search);
       // Get detailed information for each student
       List<InstructorStudentDto> studentsList = new ArrayList<>();
 
@@ -101,26 +103,25 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
         List<Object[]> studentInfo = instructorStudentRepository.getStudentById(studentId);
         if (studentInfo != null && !studentInfo.isEmpty()) {
           // Set information for each student
-          InstructorStudentDto student = InstructorStudentDto.builder()
-              .id((String) studentInfo.get(0)[0])
-              .name((String) studentInfo.get(0)[1])
-              .email((String) studentInfo.get(0)[2])
-              .thumbnailUrl((String) studentInfo.get(0)[3])
-              .build();
+          InstructorStudentDto student =
+              InstructorStudentDto.builder()
+                  .id((String) studentInfo.get(0)[0])
+                  .name((String) studentInfo.get(0)[1])
+                  .email((String) studentInfo.get(0)[2])
+                  .thumbnailUrl((String) studentInfo.get(0)[3])
+                  .build();
 
           // Get student's enrolled courses
-          List<Object[]> studentCourses = instructorStudentRepository.getStudentCourses(instructorId, studentId);
+          List<Object[]> studentCourses =
+              instructorStudentRepository.getStudentCourses(instructorId, studentId);
           if (studentCourses != null && !studentCourses.isEmpty()) {
             List<EnrolledCourses> enrolledCourses = new ArrayList<>();
             for (Object[] course : studentCourses) {
               String id = (String) course[0];
               String title = (String) course[1];
               Double progress = calculateProgress(studentId, id);
-              EnrolledCourses enrolledCourse = EnrolledCourses.builder()
-                  .courseId(id)
-                  .title(title)
-                  .progress(progress)
-                  .build();
+              EnrolledCourses enrolledCourse =
+                  EnrolledCourses.builder().courseId(id).title(title).progress(progress).build();
               enrolledCourses.add(enrolledCourse);
             }
             student.setEnrolledCourses(enrolledCourses);
@@ -128,7 +129,8 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
           studentsList.add(student);
         }
       }
-      PaginatedResponse<InstructorStudentDto> pagedStudentsList = getPaginatedList(studentsList, pageable);
+      PaginatedResponse<InstructorStudentDto> pagedStudentsList =
+          getPaginatedList(studentsList, pageable);
       return ApiResponseUtil.success(pagedStudentsList, "Get enrolled students successfully");
     } catch (Exception e) {
       return ApiResponseUtil.internalServerError(e.getMessage());
@@ -136,8 +138,8 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
   }
 
   @Override
-  public ResponseEntity<ApiResponse<InstructorStudentDetailsDto>> getEnrolledStudentDetails(String studentId,
-      Pageable pageable) {
+  public ResponseEntity<ApiResponse<InstructorStudentDetailsDto>> getEnrolledStudentDetails(
+      String studentId, Pageable pageable) {
     try {
       // Validate student ID
       if (studentId == null || studentId.trim().isEmpty()) {
@@ -151,22 +153,24 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
       } else {
         // Check if student has already enrolled in any courses
         String instructorId = SecurityUtil.getCurrentUserId();
-        List<String> enrolledStudentIds = instructorStudentRepository.countTotalEnrolledStudents(instructorId);
+        List<String> enrolledStudentIds =
+            instructorStudentRepository.countTotalEnrolledStudents(instructorId);
         if (!enrolledStudentIds.contains(studentId)) {
           return ApiResponseUtil.notFound("The student has not enrolled in any of your courses");
         } else {
           // Get student details
           User student = userOpt.get();
-          InstructorStudentDetailsDto studentDetails = InstructorStudentDetailsDto.builder()
-              .id(student.getId())
-              .name(student.getName())
-              .email(student.getEmail())
-              .thumbnailUrl(student.getThumbnailUrl())
-              .build();
+          InstructorStudentDetailsDto studentDetails =
+              InstructorStudentDetailsDto.builder()
+                  .id(student.getId())
+                  .name(student.getName())
+                  .email(student.getEmail())
+                  .thumbnailUrl(student.getThumbnailUrl())
+                  .build();
 
           // Get student's enrolled courses
-          List<Object[]> enrolledCoursesData = instructorStudentRepository
-              .getStudentCoursesDetails(instructorId, student.getId());
+          List<Object[]> enrolledCoursesData =
+              instructorStudentRepository.getStudentCoursesDetails(instructorId, student.getId());
 
           List<EnrolledCoursesDetails> enrolledCoursesDetails = new ArrayList<>();
           Set<String> processedCourseIds = new HashSet<>();
@@ -184,26 +188,25 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
             List<CategoryInfo> categoryInfos = new ArrayList<>();
             if (course.getCategories() != null && !course.getCategories().isEmpty()) {
               for (Category category : course.getCategories()) {
-                CategoryInfo categoryInfo = CategoryInfo.builder()
-                    .id(category.getId())
-                    .name(category.getName())
-                    .build();
+                CategoryInfo categoryInfo =
+                    CategoryInfo.builder().id(category.getId()).name(category.getName()).build();
                 categoryInfos.add(categoryInfo);
               }
             }
 
-            EnrolledCoursesDetails details = EnrolledCoursesDetails.builder()
-                .courseId(courseId)
-                .title(course.getTitle())
-                .description(course.getDescription())
-                .price(course.getPrice())
-                .thumbnailUrl(course.getThumbnailUrl())
-                .level(course.getLevel().name())
-                .categories(categoryInfos)
-                .createdAt(course.getCreatedAt())
-                .updatedAt(course.getUpdatedAt())
-                .enrolledAt(enrolledAt)
-                .build();
+            EnrolledCoursesDetails details =
+                EnrolledCoursesDetails.builder()
+                    .courseId(courseId)
+                    .title(course.getTitle())
+                    .description(course.getDescription())
+                    .price(course.getPrice())
+                    .thumbnailUrl(course.getThumbnailUrl())
+                    .level(course.getLevel().name())
+                    .categories(categoryInfos)
+                    .createdAt(course.getCreatedAt())
+                    .updatedAt(course.getUpdatedAt())
+                    .enrolledAt(enrolledAt)
+                    .build();
 
             // Calculate student's progress
             Double progress = calculateProgress(studentId, courseId);
@@ -222,13 +225,13 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
           }
 
           // Paginate enrolled courses
-          PaginatedResponse<EnrolledCoursesDetails> pagedEnrolledCourses = getPaginatedList(enrolledCoursesDetails,
-              pageable);
+          PaginatedResponse<EnrolledCoursesDetails> pagedEnrolledCourses =
+              getPaginatedList(enrolledCoursesDetails, pageable);
           studentDetails.setEnrolledCourses(pagedEnrolledCourses);
 
-          return ApiResponseUtil.success(studentDetails, "Get enrolled student details successfully");
+          return ApiResponseUtil.success(
+              studentDetails, "Get enrolled student details successfully");
         }
-
       }
     } catch (Exception e) {
       return ApiResponseUtil.internalServerError(e.getMessage());
@@ -242,12 +245,13 @@ public class InstructorStudentServiceImp implements InstructorStudentService {
       String instructorId = SecurityUtil.getCurrentUserId();
 
       // Get total enrolled students
-      List<String> enrolledStudentIds = instructorStudentRepository.countTotalEnrolledStudents(instructorId);
+      List<String> enrolledStudentIds =
+          instructorStudentRepository.countTotalEnrolledStudents(instructorId);
       Long totalEnrolledStudents = (long) enrolledStudentIds.size();
-      return ApiResponseUtil.success(totalEnrolledStudents, "Get number of enrolled students successfully");
+      return ApiResponseUtil.success(
+          totalEnrolledStudents, "Get number of enrolled students successfully");
     } catch (Exception e) {
-      return ApiResponseUtil
-          .internalServerError("Failed to get number of enrolled students");
+      return ApiResponseUtil.internalServerError("Failed to get number of enrolled students");
     }
   }
 }

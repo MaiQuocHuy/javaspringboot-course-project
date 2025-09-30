@@ -1,10 +1,9 @@
 package project.ktc.springboot_app.auth.entitiy;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,23 +22,22 @@ import project.ktc.springboot_app.entity.BaseEntity;
 @Slf4j
 public class PasswordReset extends BaseEntity {
 
-    @Column(name = "user_id", nullable = false)
-    private String userId;
+  @Column(name = "user_id", nullable = false)
+  private String userId;
 
-    @Column(name = "otp_code", nullable = false)
-    private String otpCode;
+  @Column(name = "otp_code", nullable = false)
+  private String otpCode;
 
-    @Column(name = "expires_at", nullable = false)
-    private LocalDateTime expiresAt;
+  @Column(name = "expires_at", nullable = false)
+  private LocalDateTime expiresAt;
 
-    @Column(name = "is_used", nullable = false)
-    @Builder.Default
-    private boolean isUsed = false;
+  @Column(name = "is_used", nullable = false)
+  @Builder.Default
+  private boolean isUsed = false;
 
-    @Column(name = "attempts", nullable = false)
-    private int attempts;
+  @Column(name = "attempts", nullable = false)
+  private int attempts;
 
-    @Column(name = "max_attempts", nullable = false)
-    private int maxAttempts;
-
+  @Column(name = "max_attempts", nullable = false)
+  private int maxAttempts;
 }

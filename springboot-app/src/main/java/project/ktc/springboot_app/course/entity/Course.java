@@ -1,6 +1,8 @@
 package project.ktc.springboot_app.course.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import project.ktc.springboot_app.auth.entitiy.User;
@@ -13,65 +15,65 @@ import project.ktc.springboot_app.payment.entity.Payment;
 import project.ktc.springboot_app.review.entity.Review;
 import project.ktc.springboot_app.section.entity.Section;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 @Entity
 @Table(name = "courses")
 @Getter
 @Setter
 public class Course extends BaseEntity {
-    @Column(nullable = false)
-    private String title;
+  @Column(nullable = false)
+  private String title;
 
-    @Column(nullable = false, unique = true)
-    private String slug;
+  @Column(nullable = false, unique = true)
+  private String slug;
 
-    @Column(name = "description")
-    private String description;
+  @Column(name = "description")
+  private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "instructor_id")
-    private User instructor;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "instructor_id")
+  private User instructor;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal price = BigDecimal.ZERO;
+  @Column(precision = 10, scale = 2)
+  private BigDecimal price = BigDecimal.ZERO;
 
-    @Column(name = "is_published")
-    private Boolean isPublished = false;
+  @Column(name = "is_published")
+  private Boolean isPublished = false;
 
-    @Column(name = "is_approved")
-    private Boolean isApproved = false;
+  @Column(name = "is_approved")
+  private Boolean isApproved = false;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+  @Column(name = "is_deleted")
+  private Boolean isDeleted = false;
 
-    @Column(name = "thumbnail_url")
-    private String thumbnailUrl;
+  @Column(name = "thumbnail_url")
+  private String thumbnailUrl;
 
-    @Column(name = "thumbnail_id")
-    private String thumbnailId;
+  @Column(name = "thumbnail_id")
+  private String thumbnailId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "level")
-    private CourseLevel level = CourseLevel.BEGINNER;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "level")
+  private CourseLevel level = CourseLevel.BEGINNER;
 
-    @ManyToMany
-    @JoinTable(name = "course_categories", joinColumns = @JoinColumn(name = "course_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private List<Category> categories;
+  @ManyToMany
+  @JoinTable(
+      name = "course_categories",
+      joinColumns = @JoinColumn(name = "course_id"),
+      inverseJoinColumns = @JoinColumn(name = "category_id"))
+  private List<Category> categories;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Section> sections;
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Section> sections;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Enrollment> enrollments;
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Enrollment> enrollments;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Review> reviews;
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Review> reviews;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Payment> payments;
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Payment> payments;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<InstructorEarning> instructorEarnings;
+  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<InstructorEarning> instructorEarnings;
 }

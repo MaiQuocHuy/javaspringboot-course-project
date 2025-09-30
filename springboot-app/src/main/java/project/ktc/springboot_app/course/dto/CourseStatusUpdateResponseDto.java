@@ -11,9 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CourseStatusUpdateResponseDto {
 
-    private String id;
-    private String title;
-    private String previousStatus;
-    private String currentStatus;
-
+  private String id;
+  private String title;
+  private String previousStatus;
+  private String currentStatus;
 }

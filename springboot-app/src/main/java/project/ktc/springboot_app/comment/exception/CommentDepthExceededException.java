@@ -4,11 +4,11 @@ import project.ktc.springboot_app.common.exception.BusinessLogicException;
 
 public class CommentDepthExceededException extends BusinessLogicException {
 
-    public CommentDepthExceededException() {
-        super("Comment depth limit exceeded. Maximum 3 levels allowed.");
-    }
+  public CommentDepthExceededException() {
+    super("Comment depth limit exceeded. Maximum 3 levels allowed.");
+  }
 
-    public CommentDepthExceededException(String message) {
-        super(message);
-    }
+  public CommentDepthExceededException(String message) {
+    super(message);
+  }
 }

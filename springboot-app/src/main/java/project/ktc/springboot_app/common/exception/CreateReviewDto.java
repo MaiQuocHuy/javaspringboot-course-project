@@ -18,14 +18,17 @@ import lombok.NoArgsConstructor;
 @Schema(description = "DTO for creating a course review")
 public class CreateReviewDto {
 
-    @NotNull(message = "Rating is required")
-    @Min(value = 1, message = "Rating must be at least 1")
-    @Max(value = 5, message = "Rating must be at most 5")
-    @Schema(description = "Course rating from 1 to 5", example = "5", minimum = "1", maximum = "5")
-    private Integer rating;
+  @NotNull(message = "Rating is required")
+  @Min(value = 1, message = "Rating must be at least 1")
+  @Max(value = 5, message = "Rating must be at most 5")
+  @Schema(description = "Course rating from 1 to 5", example = "5", minimum = "1", maximum = "5")
+  private Integer rating;
 
-    @NotBlank(message = "Review text is required")
-    @Size(max = 1000, message = "Review text must not exceed 1000 characters")
-    @Schema(description = "Review text content", example = "Excellent course! Very helpful and well-structured.", maxLength = 1000)
-    private String review_text;
+  @NotBlank(message = "Review text is required")
+  @Size(max = 1000, message = "Review text must not exceed 1000 characters")
+  @Schema(
+      description = "Review text content",
+      example = "Excellent course! Very helpful and well-structured.",
+      maxLength = 1000)
+  private String review_text;
 }

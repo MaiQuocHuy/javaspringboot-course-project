@@ -23,16 +23,18 @@ import project.ktc.springboot_app.entity.BaseEntity;
 @Entity
 @Table(name = "course_review_status")
 public class CourseReviewStatus extends BaseEntity {
-    public enum ReviewStatus {
-        PENDING, APPROVED, DENIED, RESUBMITTED
-    }
+  public enum ReviewStatus {
+    PENDING,
+    APPROVED,
+    DENIED,
+    RESUBMITTED
+  }
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false, unique = true)
-    private Course course;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "course_id", nullable = false, unique = true)
+  private Course course;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = true, length = 20)
-    private ReviewStatus status;
-
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status", nullable = true, length = 20)
+  private ReviewStatus status;
 }

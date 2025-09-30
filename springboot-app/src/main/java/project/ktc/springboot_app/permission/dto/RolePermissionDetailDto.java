@@ -1,17 +1,14 @@
 package project.ktc.springboot_app.permission.dto;
 
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO for individual permission details within a resource group
- * Used in API 7.7 GET /api/permissions/{role_id}
+ * DTO for individual permission details within a resource group Used in API 7.7 GET
+ * /api/permissions/{role_id}
  */
 @Data
 @Builder
@@ -19,21 +16,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RolePermissionDetailDto {
 
-    private String permissionKey;
+  private String permissionKey;
 
-    private String description;
+  private String description;
 
-    private String resource;
+  private String resource;
 
-    private String action;
+  private String action;
 
-    private String filterType;
+  private String filterType;
 
-    private Boolean isAssigned;
+  private Boolean isAssigned;
 
-    private Boolean canAssignToRole;
+  private Boolean canAssignToRole;
 
-    private Boolean isRestricted;
+  private Boolean isRestricted;
 
-    private List<String> allowedRoles;
+  private List<String> allowedRoles;
 }

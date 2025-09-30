@@ -1,14 +1,13 @@
 package project.ktc.springboot_app.course.dto;
 
+import jakarta.validation.constraints.*;
+import java.math.BigDecimal;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import project.ktc.springboot_app.course.enums.CourseLevel;
-
-import jakarta.validation.constraints.*;
-import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @Builder
@@ -16,18 +15,18 @@ import java.util.List;
 @AllArgsConstructor
 public class UpdateCourseDto {
 
-    @Size(min = 5, max = 100, message = "Title must be between 5 and 100 characters")
-    private String title;
+  @Size(min = 5, max = 100, message = "Title must be between 5 and 100 characters")
+  private String title;
 
-    @Size(min = 20, max = 1000, message = "Description must be between 20 and 1000 characters")
-    private String description;
+  @Size(min = 20, max = 1000, message = "Description must be between 20 and 1000 characters")
+  private String description;
 
-    @DecimalMin(value = "0.0", inclusive = true, message = "Price must be greater than or equal to 0")
-    @DecimalMax(value = "9999.99", message = "Price cannot exceed 9999.99")
-    private BigDecimal price;
+  @DecimalMin(value = "0.0", inclusive = true, message = "Price must be greater than or equal to 0")
+  @DecimalMax(value = "9999.99", message = "Price cannot exceed 9999.99")
+  private BigDecimal price;
 
-    @Size(min = 1, message = "At least one category must be selected")
-    private List<String> categoryIds;
+  @Size(min = 1, message = "At least one category must be selected")
+  private List<String> categoryIds;
 
-    private CourseLevel level;
+  private CourseLevel level;
 }

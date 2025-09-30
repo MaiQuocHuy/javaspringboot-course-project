@@ -1,5 +1,6 @@
 package project.ktc.springboot_app.enrollment.services;
 
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -12,198 +13,200 @@ import project.ktc.springboot_app.enrollment.entity.Enrollment;
 import project.ktc.springboot_app.enrollment.repositories.EnrollmentRepository;
 import project.ktc.springboot_app.notification.utils.NotificationHelper;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
- * Service for handling enrollment background processing tasks asynchronously.
- * This service is responsible for non-essential operations that can be
- * performed
- * after the main enrollment creation to improve performance and reduce timeout
- * risks.
+ * Service for handling enrollment background processing tasks asynchronously. This service is
+ * responsible for non-essential operations that can be performed after the main enrollment creation
+ * to improve performance and reduce timeout risks.
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class EnrollmentBackgroundProcessingService {
 
-    private final EnrollmentRepository enrollmentRepository;
-    private final CoursesCacheService coursesCacheService;
-    private final CacheInvalidationService cacheInvalidationService;
-    private final NotificationHelper notificationHelper;
+  private final EnrollmentRepository enrollmentRepository;
+  private final CoursesCacheService coursesCacheService;
+  private final CacheInvalidationService cacheInvalidationService;
+  private final NotificationHelper notificationHelper;
 
-    /**
-     * Process all background tasks for a newly created enrollment asynchronously.
-     * 
-     * @param enrollment   The newly created enrollment
-     * @param courseId     The course ID
-     * @param courseSlug   The course slug
-     * @param instructorId The instructor ID
-     */
-    @Async("taskExecutor")
-    public CompletableFuture<Void> processEnrollmentBackgroundTasks(
-            Enrollment enrollment,
-            String courseId,
-            String courseSlug,
-            String instructorId) {
+  /**
+   * Process all background tasks for a newly created enrollment asynchronously.
+   *
+   * @param enrollment The newly created enrollment
+   * @param courseId The course ID
+   * @param courseSlug The course slug
+   * @param instructorId The instructor ID
+   */
+  @Async("taskExecutor")
+  public CompletableFuture<Void> processEnrollmentBackgroundTasks(
+      Enrollment enrollment, String courseId, String courseSlug, String instructorId) {
 
-        long startTime = System.currentTimeMillis();
-        log.info("Starting background processing for enrollment: {} in course: {}",
-                enrollment.getId(), courseId);
+    long startTime = System.currentTimeMillis();
+    log.info(
+        "Starting background processing for enrollment: {} in course: {}",
+        enrollment.getId(),
+        courseId);
 
-        try {
-            // Process cache invalidation
-            processCacheInvalidationAsync(courseId, courseSlug, instructorId);
+    try {
+      // Process cache invalidation
+      processCacheInvalidationAsync(courseId, courseSlug, instructorId);
 
-            // Process notifications
-            processNotificationsAsync(enrollment);
+      // Process notifications
+      processNotificationsAsync(enrollment);
 
-            long duration = System.currentTimeMillis() - startTime;
-            log.info("Background processing completed for enrollment: {} in {}ms",
-                    enrollment.getId(), duration);
+      long duration = System.currentTimeMillis() - startTime;
+      log.info(
+          "Background processing completed for enrollment: {} in {}ms",
+          enrollment.getId(),
+          duration);
 
-        } catch (Exception e) {
-            log.error("Error in background processing for enrollment: {} - {}",
-                    enrollment.getId(), e.getMessage(), e);
-            // Don't rethrow - background processing failures shouldn't affect main flow
-        }
-
-        return CompletableFuture.completedFuture(null);
+    } catch (Exception e) {
+      log.error(
+          "Error in background processing for enrollment: {} - {}",
+          enrollment.getId(),
+          e.getMessage(),
+          e);
+      // Don't rethrow - background processing failures shouldn't affect main flow
     }
 
-    /**
-     * Handle cache invalidation operations asynchronously.
-     */
-    @Async("taskExecutor")
-    @Transactional
-    public CompletableFuture<Void> processCacheInvalidationAsync(
-            String courseId,
-            String courseSlug,
-            String instructorId) {
+    return CompletableFuture.completedFuture(null);
+  }
 
-        long startTime = System.currentTimeMillis();
-        log.debug("Starting cache invalidation for course: {}", courseId);
+  /** Handle cache invalidation operations asynchronously. */
+  @Async("taskExecutor")
+  @Transactional
+  public CompletableFuture<Void> processCacheInvalidationAsync(
+      String courseId, String courseSlug, String instructorId) {
 
-        try {
-            // Get current enrollment count for logging purposes
-            long currentEnrollmentCount = enrollmentRepository.countByCourseId(courseId);
-            log.info("Processing enrollment change for course: {} with current count: {}", courseId,
-                    currentEnrollmentCount);
+    long startTime = System.currentTimeMillis();
+    log.debug("Starting cache invalidation for course: {}", courseId);
 
-            // Invalidate all course-related cache after enrollment change
-            coursesCacheService.invalidateCacheForEnrollmentChange(courseId, courseSlug);
+    try {
+      // Get current enrollment count for logging purposes
+      long currentEnrollmentCount = enrollmentRepository.countByCourseId(courseId);
+      log.info(
+          "Processing enrollment change for course: {} with current count: {}",
+          courseId,
+          currentEnrollmentCount);
 
-            // Invalidate instructor statistics cache
-            cacheInvalidationService.invalidateInstructorStatisticsOnEnrollment(instructorId);
+      // Invalidate all course-related cache after enrollment change
+      coursesCacheService.invalidateCacheForEnrollmentChange(courseId, courseSlug);
 
-            // Note: Comprehensive course cache invalidation is handled by
-            // invalidateCacheForEnrollmentChange
+      // Invalidate instructor statistics cache
+      cacheInvalidationService.invalidateInstructorStatisticsOnEnrollment(instructorId);
 
-            long duration = System.currentTimeMillis() - startTime;
-            log.debug("Cache invalidation completed for course: {} in {}ms", courseId, duration);
+      // Note: Comprehensive course cache invalidation is handled by
+      // invalidateCacheForEnrollmentChange
 
-        } catch (Exception e) {
-            log.error("Error in cache invalidation for course: {} - {}", courseId, e.getMessage(), e);
-            // Continue processing even if cache invalidation fails
-        }
+      long duration = System.currentTimeMillis() - startTime;
+      log.debug("Cache invalidation completed for course: {} in {}ms", courseId, duration);
 
-        return CompletableFuture.completedFuture(null);
+    } catch (Exception e) {
+      log.error("Error in cache invalidation for course: {} - {}", courseId, e.getMessage(), e);
+      // Continue processing even if cache invalidation fails
     }
 
-    /**
-     * Handle notification creation asynchronously.
-     */
-    @Async("taskExecutor")
-    @Transactional
-    public CompletableFuture<Void> processNotificationsAsync(Enrollment enrollment) {
-        long startTime = System.currentTimeMillis();
-        log.debug("Starting notification processing for enrollment: {}", enrollment.getId());
+    return CompletableFuture.completedFuture(null);
+  }
 
-        try {
-            Course course = enrollment.getCourse();
+  /** Handle notification creation asynchronously. */
+  @Async("taskExecutor")
+  @Transactional
+  public CompletableFuture<Void> processNotificationsAsync(Enrollment enrollment) {
+    long startTime = System.currentTimeMillis();
+    log.debug("Starting notification processing for enrollment: {}", enrollment.getId());
 
-            // Create instructor notification for new student enrollment
-            notificationHelper.createInstructorNewStudentEnrollmentNotification(
-                    course.getInstructor().getId(),
-                    course.getId(),
-                    course.getTitle(),
-                    enrollment.getUser().getName(),
-                    enrollment.getUser().getId(),
-                    enrollment.getId());
+    try {
+      Course course = enrollment.getCourse();
 
-            long duration = System.currentTimeMillis() - startTime;
-            log.debug("Notification processing completed for enrollment: {} in {}ms",
-                    enrollment.getId(), duration);
+      // Create instructor notification for new student enrollment
+      notificationHelper.createInstructorNewStudentEnrollmentNotification(
+          course.getInstructor().getId(),
+          course.getId(),
+          course.getTitle(),
+          enrollment.getUser().getName(),
+          enrollment.getUser().getId(),
+          enrollment.getId());
 
-        } catch (Exception e) {
-            log.error("Error in notification processing for enrollment: {} - {}",
-                    enrollment.getId(), e.getMessage(), e);
-            // Continue processing even if notification creation fails
-        }
+      long duration = System.currentTimeMillis() - startTime;
+      log.debug(
+          "Notification processing completed for enrollment: {} in {}ms",
+          enrollment.getId(),
+          duration);
 
-        return CompletableFuture.completedFuture(null);
+    } catch (Exception e) {
+      log.error(
+          "Error in notification processing for enrollment: {} - {}",
+          enrollment.getId(),
+          e.getMessage(),
+          e);
+      // Continue processing even if notification creation fails
     }
 
-    /**
-     * Process enrollment statistics updates asynchronously.
-     * This can be used for analytics and reporting purposes.
-     */
-    @Async("taskExecutor")
-    @Transactional
-    public CompletableFuture<Void> processEnrollmentStatisticsAsync(String courseId, String userId) {
-        long startTime = System.currentTimeMillis();
-        log.debug("Starting statistics processing for course: {} and user: {}", courseId, userId);
+    return CompletableFuture.completedFuture(null);
+  }
 
-        try {
-            // Update enrollment statistics
-            long totalEnrollments = enrollmentRepository.countByCourseId(courseId);
-            log.debug("Updated course {} total enrollments: {}", courseId, totalEnrollments);
+  /**
+   * Process enrollment statistics updates asynchronously. This can be used for analytics and
+   * reporting purposes.
+   */
+  @Async("taskExecutor")
+  @Transactional
+  public CompletableFuture<Void> processEnrollmentStatisticsAsync(String courseId, String userId) {
+    long startTime = System.currentTimeMillis();
+    log.debug("Starting statistics processing for course: {} and user: {}", courseId, userId);
 
-            // Additional statistics processing can be added here
-            // For example: user engagement metrics, course popularity metrics, etc.
+    try {
+      // Update enrollment statistics
+      long totalEnrollments = enrollmentRepository.countByCourseId(courseId);
+      log.debug("Updated course {} total enrollments: {}", courseId, totalEnrollments);
 
-            long duration = System.currentTimeMillis() - startTime;
-            log.debug("Statistics processing completed for course: {} in {}ms", courseId, duration);
+      // Additional statistics processing can be added here
+      // For example: user engagement metrics, course popularity metrics, etc.
 
-        } catch (Exception e) {
-            log.error("Error in statistics processing for course: {} - {}", courseId, e.getMessage(), e);
-            // Continue processing even if statistics update fails
-        }
+      long duration = System.currentTimeMillis() - startTime;
+      log.debug("Statistics processing completed for course: {} in {}ms", courseId, duration);
 
-        return CompletableFuture.completedFuture(null);
+    } catch (Exception e) {
+      log.error("Error in statistics processing for course: {} - {}", courseId, e.getMessage(), e);
+      // Continue processing even if statistics update fails
     }
 
-    /**
-     * Comprehensive background processing for webhook-triggered enrollments.
-     * This method handles all non-essential operations that can be performed
-     * asynchronously.
-     */
-    @Async("taskExecutor")
-    public CompletableFuture<Void> processWebhookEnrollmentBackground(
-            String enrollmentId,
-            String courseId,
-            String courseSlug,
-            String instructorId,
-            String userId) {
+    return CompletableFuture.completedFuture(null);
+  }
 
-        long startTime = System.currentTimeMillis();
-        log.info("Starting comprehensive background processing for webhook enrollment: {}", enrollmentId);
+  /**
+   * Comprehensive background processing for webhook-triggered enrollments. This method handles all
+   * non-essential operations that can be performed asynchronously.
+   */
+  @Async("taskExecutor")
+  public CompletableFuture<Void> processWebhookEnrollmentBackground(
+      String enrollmentId, String courseId, String courseSlug, String instructorId, String userId) {
 
-        try {
-            // Process cache invalidation
-            processCacheInvalidationAsync(courseId, courseSlug, instructorId).get();
+    long startTime = System.currentTimeMillis();
+    log.info(
+        "Starting comprehensive background processing for webhook enrollment: {}", enrollmentId);
 
-            // Process statistics
-            processEnrollmentStatisticsAsync(courseId, userId).get();
+    try {
+      // Process cache invalidation
+      processCacheInvalidationAsync(courseId, courseSlug, instructorId).get();
 
-            long duration = System.currentTimeMillis() - startTime;
-            log.info("Comprehensive background processing completed for enrollment: {} in {}ms",
-                    enrollmentId, duration);
+      // Process statistics
+      processEnrollmentStatisticsAsync(courseId, userId).get();
 
-        } catch (Exception e) {
-            log.error("Error in comprehensive background processing for enrollment: {} - {}",
-                    enrollmentId, e.getMessage(), e);
-        }
+      long duration = System.currentTimeMillis() - startTime;
+      log.info(
+          "Comprehensive background processing completed for enrollment: {} in {}ms",
+          enrollmentId,
+          duration);
 
-        return CompletableFuture.completedFuture(null);
+    } catch (Exception e) {
+      log.error(
+          "Error in comprehensive background processing for enrollment: {} - {}",
+          enrollmentId,
+          e.getMessage(),
+          e);
     }
+
+    return CompletableFuture.completedFuture(null);
+  }
 }

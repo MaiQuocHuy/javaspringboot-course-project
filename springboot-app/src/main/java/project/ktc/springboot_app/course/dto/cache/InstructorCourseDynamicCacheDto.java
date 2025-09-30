@@ -1,18 +1,16 @@
 package project.ktc.springboot_app.course.dto.cache;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 /**
- * Cache DTO for instructor course dynamic information (frequently changing
- * data)
- * Contains metrics and status that change often
+ * Cache DTO for instructor course dynamic information (frequently changing data) Contains metrics
+ * and status that change often
  */
 @Data
 @Builder
@@ -20,23 +18,23 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class InstructorCourseDynamicCacheDto implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    private String courseId;
+  private String courseId;
 
-    // Dynamic metrics
-    private Integer enrollmentCount;
-    private Double averageRating;
-    private BigDecimal revenue;
-    private Integer sectionCount;
-    private LocalDateTime lastContentUpdate;
+  // Dynamic metrics
+  private Integer enrollmentCount;
+  private Double averageRating;
+  private BigDecimal revenue;
+  private Integer sectionCount;
+  private LocalDateTime lastContentUpdate;
 
-    // Permissions (computed based on current state)
-    private Boolean canEdit;
-    private Boolean canDelete;
-    private Boolean canUnpublish;
-    private Boolean canResubmit;
+  // Permissions (computed based on current state)
+  private Boolean canEdit;
+  private Boolean canDelete;
+  private Boolean canUnpublish;
+  private Boolean canResubmit;
 
-    // Cache metadata
-    private LocalDateTime cacheCreatedAt;
+  // Cache metadata
+  private LocalDateTime cacheCreatedAt;
 }

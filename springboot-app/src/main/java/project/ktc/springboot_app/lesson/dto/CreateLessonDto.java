@@ -16,13 +16,20 @@ import lombok.NoArgsConstructor;
 @Schema(description = "DTO for creating a new lesson with video content")
 public class CreateLessonDto {
 
-    @NotBlank(message = "Lesson title is required")
-    @Size(min = 3, max = 255, message = "Lesson title must be between 3 and 255 characters")
-    @Schema(description = "Lesson title", example = "Introduction to Spring Boot Basics", required = true)
-    private String title;
+  @NotBlank(message = "Lesson title is required")
+  @Size(min = 3, max = 255, message = "Lesson title must be between 3 and 255 characters")
+  @Schema(
+      description = "Lesson title",
+      example = "Introduction to Spring Boot Basics",
+      required = true)
+  private String title;
 
-    @NotBlank(message = "Lesson type is required")
-    @Pattern(regexp = "^(VIDEO|QUIZ)$", message = "Lesson type must be either 'VIDEO' or 'QUIZ'")
-    @Schema(description = "Lesson type", example = "VIDEO", allowableValues = { "VIDEO", "QUIZ" }, required = true)
-    private String type;
+  @NotBlank(message = "Lesson type is required")
+  @Pattern(regexp = "^(VIDEO|QUIZ)$", message = "Lesson type must be either 'VIDEO' or 'QUIZ'")
+  @Schema(
+      description = "Lesson type",
+      example = "VIDEO",
+      allowableValues = {"VIDEO", "QUIZ"},
+      required = true)
+  private String type;
 }

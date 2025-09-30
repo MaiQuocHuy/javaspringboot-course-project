@@ -5,6 +5,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,11 +27,6 @@ import project.ktc.springboot_app.discount.dto.response.AffiliateStatisticsRespo
 import project.ktc.springboot_app.discount.enums.PayoutStatus;
 import project.ktc.springboot_app.discount.interfaces.AdminAffiliatePayoutService;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
 @RestController
 @RequestMapping("/api/admin/affiliate")
 @RequiredArgsConstructor
@@ -36,11 +35,14 @@ import java.time.LocalTime;
 @SecurityRequirement(name = "Bearer Authentication")
 public class AdminAffiliateController {
 
-        private final AdminAffiliatePayoutService adminAffiliatePayoutService;
+  private final AdminAffiliatePayoutService adminAffiliatePayoutService;
 
-        @GetMapping("/payouts")
-        @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Get affiliate payouts", description = """
+  @GetMapping("/payouts")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      summary = "Get affiliate payouts",
+      description =
+          """
                         Retrieve affiliate payouts with filtering and pagination options.
 
                         **Filtering Options:**
@@ -56,34 +58,61 @@ public class AdminAffiliateController {
                         **Permissions Required:**
                         - ADMIN role
                         """)
-        @ApiResponses({
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Payouts retrieved successfully"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<ApiResponse<PaginatedResponse<AffiliatePayoutResponseDto>>> getAffiliatePayouts(
-                        @PageableDefault(size = 20, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable,
-                        @Parameter(description = "Filter by user ID") @RequestParam(required = false) Long userId,
-                        @Parameter(description = "Filter by payout status") @RequestParam(required = false) PayoutStatus status,
-                        @Parameter(description = "Filter by start date (YYYY-MM-DD)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                        @Parameter(description = "Filter by end date (YYYY-MM-DD)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                        @Parameter(description = "Filter by minimum amount") @RequestParam(required = false) BigDecimal minAmount,
-                        @Parameter(description = "Filter by maximum amount") @RequestParam(required = false) BigDecimal maxAmount) {
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Payouts retrieved successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized - Invalid or missing token"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "403",
+        description = "Forbidden - Admin role required"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "500",
+        description = "Internal server error")
+  })
+  public ResponseEntity<ApiResponse<PaginatedResponse<AffiliatePayoutResponseDto>>>
+      getAffiliatePayouts(
+          @PageableDefault(
+                  size = 20,
+                  sort = "createdAt",
+                  direction = org.springframework.data.domain.Sort.Direction.DESC)
+              Pageable pageable,
+          @Parameter(description = "Filter by user ID") @RequestParam(required = false) Long userId,
+          @Parameter(description = "Filter by payout status") @RequestParam(required = false)
+              PayoutStatus status,
+          @Parameter(description = "Filter by start date (YYYY-MM-DD)")
+              @RequestParam(required = false)
+              @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+              LocalDate startDate,
+          @Parameter(description = "Filter by end date (YYYY-MM-DD)")
+              @RequestParam(required = false)
+              @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+              LocalDate endDate,
+          @Parameter(description = "Filter by minimum amount") @RequestParam(required = false)
+              BigDecimal minAmount,
+          @Parameter(description = "Filter by maximum amount") @RequestParam(required = false)
+              BigDecimal maxAmount) {
 
-                LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
-                LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
+    LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+    LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
 
-                Page<AffiliatePayoutResponseDto> payouts = adminAffiliatePayoutService.getAffiliatePayouts(
-                                pageable, userId, status, startDateTime, endDateTime, minAmount, maxAmount);
+    Page<AffiliatePayoutResponseDto> payouts =
+        adminAffiliatePayoutService.getAffiliatePayouts(
+            pageable, userId, status, startDateTime, endDateTime, minAmount, maxAmount);
 
-                PaginatedResponse<AffiliatePayoutResponseDto> response = PaginatedResponse.of(payouts);
-                return ResponseEntity.ok(ApiResponse.success(response, "Affiliate payouts retrieved successfully"));
-        }
+    PaginatedResponse<AffiliatePayoutResponseDto> response = PaginatedResponse.of(payouts);
+    return ResponseEntity.ok(
+        ApiResponse.success(response, "Affiliate payouts retrieved successfully"));
+  }
 
-        @GetMapping("/statistics")
-        @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Get affiliate statistics", description = """
+  @GetMapping("/statistics")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      summary = "Get affiliate statistics",
+      description =
+          """
                         Retrieve comprehensive affiliate statistics including:
                         - Total commission amount
                         - Paid and pending amounts
@@ -93,42 +122,68 @@ public class AdminAffiliateController {
                         **Permissions Required:**
                         - ADMIN role
                         """)
-        @ApiResponses({
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<ApiResponse<AffiliateStatisticsResponseDto>> getAffiliateStatistics() {
-                AffiliateStatisticsResponseDto statistics = adminAffiliatePayoutService.getAffiliateStatistics();
-                return ResponseEntity
-                                .ok(ApiResponse.success(statistics, "Affiliate statistics retrieved successfully"));
-        }
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Statistics retrieved successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized - Invalid or missing token"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "403",
+        description = "Forbidden - Admin role required"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "500",
+        description = "Internal server error")
+  })
+  public ResponseEntity<ApiResponse<AffiliateStatisticsResponseDto>> getAffiliateStatistics() {
+    AffiliateStatisticsResponseDto statistics =
+        adminAffiliatePayoutService.getAffiliateStatistics();
+    return ResponseEntity.ok(
+        ApiResponse.success(statistics, "Affiliate statistics retrieved successfully"));
+  }
 
-        @GetMapping("/payouts/{id}")
-        @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Get affiliate payout by ID", description = """
+  @GetMapping("/payouts/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      summary = "Get affiliate payout by ID",
+      description =
+          """
                         Retrieve detailed information about a specific affiliate payout.
 
                         **Permissions Required:**
                         - ADMIN role
                         """)
-        @ApiResponses({
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Payout retrieved successfully"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Payout not found"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<ApiResponse<AffiliatePayoutResponseDto>> getPayoutById(
-                        @Parameter(description = "Payout ID", required = true) @PathVariable Long id) {
-                AffiliatePayoutResponseDto payout = adminAffiliatePayoutService.getPayoutById(id);
-                return ResponseEntity.ok(ApiResponse.success(payout, "Affiliate payout retrieved successfully"));
-        }
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Payout retrieved successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized - Invalid or missing token"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "403",
+        description = "Forbidden - Admin role required"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Payout not found"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "500",
+        description = "Internal server error")
+  })
+  public ResponseEntity<ApiResponse<AffiliatePayoutResponseDto>> getPayoutById(
+      @Parameter(description = "Payout ID", required = true) @PathVariable Long id) {
+    AffiliatePayoutResponseDto payout = adminAffiliatePayoutService.getPayoutById(id);
+    return ResponseEntity.ok(
+        ApiResponse.success(payout, "Affiliate payout retrieved successfully"));
+  }
 
-        @GetMapping("/payouts/{id}/detail")
-        @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Get detailed affiliate payout information", description = """
+  @GetMapping("/payouts/{id}/detail")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      summary = "Get detailed affiliate payout information",
+      description =
+          """
                         Retrieve comprehensive information about a specific affiliate payout including:
                         - Referrer details (who gets the commission)
                         - Course information with instructor details
@@ -139,23 +194,38 @@ public class AdminAffiliateController {
                         **Permissions Required:**
                         - ADMIN role
                         """)
-        @ApiResponses({
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Detailed payout information retrieved successfully"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Payout not found"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<ApiResponse<AffiliatePayoutDetailResponseDto>> getPayoutDetailById(
-                        @Parameter(description = "Payout ID", required = true) @PathVariable String id) {
-                AffiliatePayoutDetailResponseDto payoutDetail = adminAffiliatePayoutService.getPayoutDetailById(id);
-                return ResponseEntity.ok(ApiResponse.success(payoutDetail,
-                                "Detailed affiliate payout information retrieved successfully"));
-        }
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Detailed payout information retrieved successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized - Invalid or missing token"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "403",
+        description = "Forbidden - Admin role required"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Payout not found"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "500",
+        description = "Internal server error")
+  })
+  public ResponseEntity<ApiResponse<AffiliatePayoutDetailResponseDto>> getPayoutDetailById(
+      @Parameter(description = "Payout ID", required = true) @PathVariable String id) {
+    AffiliatePayoutDetailResponseDto payoutDetail =
+        adminAffiliatePayoutService.getPayoutDetailById(id);
+    return ResponseEntity.ok(
+        ApiResponse.success(
+            payoutDetail, "Detailed affiliate payout information retrieved successfully"));
+  }
 
-        @PatchMapping("/payouts/{id}/mark-paid")
-        @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Mark payout as paid", description = """
+  @PatchMapping("/payouts/{id}/mark-paid")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      summary = "Mark payout as paid",
+      description =
+          """
                         Mark a pending affiliate payout as paid.
 
                         **Business Rules:**
@@ -166,23 +236,38 @@ public class AdminAffiliateController {
                         **Permissions Required:**
                         - ADMIN role
                         """)
-        @ApiResponses({
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Payout marked as paid successfully"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad request - Payout cannot be marked as paid"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Payout not found"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<ApiResponse<AffiliatePayoutResponseDto>> markPayoutAsPaid(
-                        @Parameter(description = "Payout ID", required = true) @PathVariable Long id) {
-                AffiliatePayoutResponseDto payout = adminAffiliatePayoutService.markPayoutAsPaid(id);
-                return ResponseEntity.ok(ApiResponse.success(payout, "Payout marked as paid successfully"));
-        }
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Payout marked as paid successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "400",
+        description = "Bad request - Payout cannot be marked as paid"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized - Invalid or missing token"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "403",
+        description = "Forbidden - Admin role required"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Payout not found"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "500",
+        description = "Internal server error")
+  })
+  public ResponseEntity<ApiResponse<AffiliatePayoutResponseDto>> markPayoutAsPaid(
+      @Parameter(description = "Payout ID", required = true) @PathVariable Long id) {
+    AffiliatePayoutResponseDto payout = adminAffiliatePayoutService.markPayoutAsPaid(id);
+    return ResponseEntity.ok(ApiResponse.success(payout, "Payout marked as paid successfully"));
+  }
 
-        @PatchMapping("/payouts/{id}/cancel")
-        @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Cancel payout", description = """
+  @PatchMapping("/payouts/{id}/cancel")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      summary = "Cancel payout",
+      description =
+          """
                         Cancel a pending affiliate payout with a reason.
 
                         **Business Rules:**
@@ -193,25 +278,40 @@ public class AdminAffiliateController {
                         **Permissions Required:**
                         - ADMIN role
                         """)
-        @ApiResponses({
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Payout cancelled successfully"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad request - Invalid cancellation request"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Payout not found"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<ApiResponse<AffiliatePayoutResponseDto>> cancelPayout(
-                        @Parameter(description = "Payout ID", required = true) @PathVariable Long id,
-                        @RequestBody CancelPayoutRequestDto cancelRequest) {
-                AffiliatePayoutResponseDto payout = adminAffiliatePayoutService.cancelPayout(id,
-                                cancelRequest.getReason());
-                return ResponseEntity.ok(ApiResponse.success(payout, "Payout cancelled successfully"));
-        }
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Payout cancelled successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "400",
+        description = "Bad request - Invalid cancellation request"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized - Invalid or missing token"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "403",
+        description = "Forbidden - Admin role required"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Payout not found"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "500",
+        description = "Internal server error")
+  })
+  public ResponseEntity<ApiResponse<AffiliatePayoutResponseDto>> cancelPayout(
+      @Parameter(description = "Payout ID", required = true) @PathVariable Long id,
+      @RequestBody CancelPayoutRequestDto cancelRequest) {
+    AffiliatePayoutResponseDto payout =
+        adminAffiliatePayoutService.cancelPayout(id, cancelRequest.getReason());
+    return ResponseEntity.ok(ApiResponse.success(payout, "Payout cancelled successfully"));
+  }
 
-        @GetMapping("/payouts/export")
-        @PreAuthorize("hasRole('ADMIN')")
-        @Operation(summary = "Export affiliate payouts", description = """
+  @GetMapping("/payouts/export")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      summary = "Export affiliate payouts",
+      description =
+          """
                         Export affiliate payouts to CSV format with filtering options.
 
                         **Export Features:**
@@ -222,31 +322,49 @@ public class AdminAffiliateController {
                         **Permissions Required:**
                         - ADMIN role
                         """)
-        @ApiResponses({
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Export generated successfully"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden - Admin role required"),
-                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        public ResponseEntity<byte[]> exportPayouts(
-                        @Parameter(description = "Filter by user ID") @RequestParam(required = false) Long userId,
-                        @Parameter(description = "Filter by payout status") @RequestParam(required = false) PayoutStatus status,
-                        @Parameter(description = "Filter by start date (YYYY-MM-DD)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                        @Parameter(description = "Filter by end date (YYYY-MM-DD)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                        @Parameter(description = "Filter by minimum amount") @RequestParam(required = false) BigDecimal minAmount,
-                        @Parameter(description = "Filter by maximum amount") @RequestParam(required = false) BigDecimal maxAmount) {
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Export generated successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized - Invalid or missing token"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "403",
+        description = "Forbidden - Admin role required"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "500",
+        description = "Internal server error")
+  })
+  public ResponseEntity<byte[]> exportPayouts(
+      @Parameter(description = "Filter by user ID") @RequestParam(required = false) Long userId,
+      @Parameter(description = "Filter by payout status") @RequestParam(required = false)
+          PayoutStatus status,
+      @Parameter(description = "Filter by start date (YYYY-MM-DD)")
+          @RequestParam(required = false)
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate startDate,
+      @Parameter(description = "Filter by end date (YYYY-MM-DD)")
+          @RequestParam(required = false)
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate endDate,
+      @Parameter(description = "Filter by minimum amount") @RequestParam(required = false)
+          BigDecimal minAmount,
+      @Parameter(description = "Filter by maximum amount") @RequestParam(required = false)
+          BigDecimal maxAmount) {
 
-                LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
-                LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
+    LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+    LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
 
-                byte[] csvData = adminAffiliatePayoutService.exportPayouts(
-                                userId, status, startDateTime, endDateTime, minAmount, maxAmount);
+    byte[] csvData =
+        adminAffiliatePayoutService.exportPayouts(
+            userId, status, startDateTime, endDateTime, minAmount, maxAmount);
 
-                return ResponseEntity.ok()
-                                .header("Content-Type", "text/csv")
-                                .header("Content-Disposition",
-                                                "attachment; filename=\"affiliate_payouts_" + LocalDate.now()
-                                                                + ".csv\"")
-                                .body(csvData);
-        }
+    return ResponseEntity.ok()
+        .header("Content-Type", "text/csv")
+        .header(
+            "Content-Disposition",
+            "attachment; filename=\"affiliate_payouts_" + LocalDate.now() + ".csv\"")
+        .body(csvData);
+  }
 }

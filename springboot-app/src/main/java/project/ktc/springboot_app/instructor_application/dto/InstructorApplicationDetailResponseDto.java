@@ -1,9 +1,7 @@
 package project.ktc.springboot_app.instructor_application.dto;
 
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,17 +14,16 @@ import project.ktc.springboot_app.instructor_application.entity.InstructorApplic
 @Builder
 public class InstructorApplicationDetailResponseDto {
 
-    private String id;
+  private String id;
 
-    private ApplicationStatus status;
+  private ApplicationStatus status;
 
-    private String documents;
+  private String documents;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime submittedAt;
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  private LocalDateTime submittedAt;
 
-    private String rejectionReason;
+  private String rejectionReason;
 
-    private long submitAttemptRemain;
-
+  private long submitAttemptRemain;
 }

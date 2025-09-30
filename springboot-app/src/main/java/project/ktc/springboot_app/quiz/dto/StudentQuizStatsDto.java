@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentQuizStatsDto {
-    private Long totalQuizzes;
-    private Long passedQuizzes; // >= 80 score
-    private Long failedQuizzes; // < 80 score
-    private Double averageScore;
+  private Long totalQuizzes;
+  private Long passedQuizzes; // >= 80 score
+  private Long failedQuizzes; // < 80 score
+  private Double averageScore;
 }

@@ -5,5 +5,4 @@ import org.springframework.stereotype.Repository;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 
 @Repository
-public interface LessonRepository extends JpaRepository<Lesson, String> {
-}
+public interface LessonRepository extends JpaRepository<Lesson, String> {}

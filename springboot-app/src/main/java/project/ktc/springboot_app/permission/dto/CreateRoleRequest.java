@@ -9,9 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Request DTO for creating a new role
- */
+/** Request DTO for creating a new role */
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,9 +17,11 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Request DTO for creating a new role")
 public class CreateRoleRequest {
 
-    @Schema(description = "Role name", example = "MANAGER", required = true)
-    @NotBlank(message = "Role name cannot be blank")
-    @Size(min = 3, max = 50, message = "Role name must be between 3 and 50 characters")
-    @Pattern(regexp = "^[A-Z_]+$", message = "Role name must contain only uppercase letters and underscores")
-    private String name;
+  @Schema(description = "Role name", example = "MANAGER", required = true)
+  @NotBlank(message = "Role name cannot be blank")
+  @Size(min = 3, max = 50, message = "Role name must be between 3 and 50 characters")
+  @Pattern(
+      regexp = "^[A-Z_]+$",
+      message = "Role name must contain only uppercase letters and underscores")
+  private String name;
 }

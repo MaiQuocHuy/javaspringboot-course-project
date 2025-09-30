@@ -1,20 +1,18 @@
 package project.ktc.springboot_app.revenue.services;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.common.utils.ApiResponseUtil;
 import project.ktc.springboot_app.revenue.dto.*;
 import project.ktc.springboot_app.revenue.interfaces.AdminRevenueService;
 import project.ktc.springboot_app.revenue.repositories.AdminRevenueRepository;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Year;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -40,8 +38,8 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
       // Check if data exists for both years before making comparison
       if (hasDataForYear(currentYear) || hasDataForYear(previousYear)) {
-        List<Object[]> yearlyComparisonList = adminRevenueRepository.getYearlyRevenueComparison(currentYear,
-            previousYear);
+        List<Object[]> yearlyComparisonList =
+            adminRevenueRepository.getYearlyRevenueComparison(currentYear, previousYear);
 
         if (yearlyComparisonList != null && !yearlyComparisonList.isEmpty()) {
           Object[] yearlyComparison = yearlyComparisonList.get(0);
@@ -54,14 +52,14 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
       // Get monthly comparison for monthly growth
       Double monthlyGrowth = 0.0;
-      List<Object[]> monthlyComparison = adminRevenueRepository.getMonthlyGrowthComparison(currentYear, previousYear);
+      List<Object[]> monthlyComparison =
+          adminRevenueRepository.getMonthlyGrowthComparison(currentYear, previousYear);
       if (monthlyComparison != null && !monthlyComparison.isEmpty()) {
         monthlyGrowth = calculateMonthlyGrowthFromComparison(monthlyComparison);
       }
 
       // Calculate yearly growth
-      Double yearlyGrowth = calculateGrowthPercentage(currentYearRevenue,
-          previousYearRevenue);
+      Double yearlyGrowth = calculateGrowthPercentage(currentYearRevenue, previousYearRevenue);
 
       // Get user and transaction counts
       Long activeUsers = adminRevenueRepository.getTotalActiveUsers();
@@ -74,46 +72,49 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       avgRevenuePerUser = avgRevenuePerUser != null ? avgRevenuePerUser : 0.0;
 
       // Build statistics cards
-      List<StatisticsDTO.StatCard> statCards = Arrays.asList(
-          StatisticsDTO.StatCard.builder()
-              .title("Total Revenue")
-              .value(formatCurrency(totalRevenue))
-              .build(),
-          StatisticsDTO.StatCard.builder()
-              .title("Monthly Growth")
-              .value(formatPercentage(monthlyGrowth))
-              .build(),
-          StatisticsDTO.StatCard.builder()
-              .title("Yearly Growth")
-              .value(formatPercentage(yearlyGrowth))
-              .build(),
-          StatisticsDTO.StatCard.builder()
-              .title("Active Users")
-              .value(String.valueOf(activeUsers))
-              .build(),
-          StatisticsDTO.StatCard.builder()
-              .title("Total Transactions")
-              .value(String.valueOf(totalTransactions))
-              .build(),
-          StatisticsDTO.StatCard.builder()
-              .title("Avg Revenue Per User")
-              .value(formatCurrency(avgRevenuePerUser))
-              .build());
+      List<StatisticsDTO.StatCard> statCards =
+          Arrays.asList(
+              StatisticsDTO.StatCard.builder()
+                  .title("Total Revenue")
+                  .value(formatCurrency(totalRevenue))
+                  .build(),
+              StatisticsDTO.StatCard.builder()
+                  .title("Monthly Growth")
+                  .value(formatPercentage(monthlyGrowth))
+                  .build(),
+              StatisticsDTO.StatCard.builder()
+                  .title("Yearly Growth")
+                  .value(formatPercentage(yearlyGrowth))
+                  .build(),
+              StatisticsDTO.StatCard.builder()
+                  .title("Active Users")
+                  .value(String.valueOf(activeUsers))
+                  .build(),
+              StatisticsDTO.StatCard.builder()
+                  .title("Total Transactions")
+                  .value(String.valueOf(totalTransactions))
+                  .build(),
+              StatisticsDTO.StatCard.builder()
+                  .title("Avg Revenue Per User")
+                  .value(formatCurrency(avgRevenuePerUser))
+                  .build());
 
-      StatisticsDTO statistics = StatisticsDTO.builder()
-          .stats(statCards)
-          .totalRevenue(totalRevenue != null ? totalRevenue : 0.0)
-          .monthlyGrowth(monthlyGrowth)
-          .yearlyGrowth(yearlyGrowth)
-          .avgRevenuePerUser(avgRevenuePerUser)
-          .totalActiveUsers(activeUsers)
-          .totalTransactions(totalTransactions)
-          .build();
+      StatisticsDTO statistics =
+          StatisticsDTO.builder()
+              .stats(statCards)
+              .totalRevenue(totalRevenue != null ? totalRevenue : 0.0)
+              .monthlyGrowth(monthlyGrowth)
+              .yearlyGrowth(yearlyGrowth)
+              .avgRevenuePerUser(avgRevenuePerUser)
+              .totalActiveUsers(activeUsers)
+              .totalTransactions(totalTransactions)
+              .build();
 
       return ApiResponseUtil.success(statistics, "Revenue statistics retrieved successfully");
     } catch (Exception e) {
       log.error("Error getting statistics: {}", e.getMessage(), e);
-      return ApiResponseUtil.internalServerError("Failed to get revenue statistics: " + e.getMessage());
+      return ApiResponseUtil.internalServerError(
+          "Failed to get revenue statistics: " + e.getMessage());
     }
   }
 
@@ -133,34 +134,36 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
       if (isValidDataList(monthlyData)) {
         for (Object[] row : monthlyData) {
-          if (row == null || row.length < 4)
-            continue;
+          if (row == null || row.length < 4) continue;
 
           Integer yearVal = safeGetInteger(row[0]);
           Integer month = safeGetInteger(row[1]);
           Double revenue = safeGetDouble(row[2]);
           Long transactions = safeGetLong(row[3]);
 
-          monthlyList.add(MonthlyRevenueDTO.MonthlyData.builder()
-              .month(getMonthName(month))
-              .year(yearVal)
-              .revenue(revenue)
-              .transactions(transactions)
-              .build());
+          monthlyList.add(
+              MonthlyRevenueDTO.MonthlyData.builder()
+                  .month(getMonthName(month))
+                  .year(yearVal)
+                  .revenue(revenue)
+                  .transactions(transactions)
+                  .build());
         }
       }
 
       List<Integer> availableYears = adminRevenueRepository.getDistinctPaymentYears();
 
-      MonthlyRevenueDTO monthlyRevenue = MonthlyRevenueDTO.builder()
-          .monthlyData(monthlyList)
-          .availableYears(availableYears != null ? availableYears : new ArrayList<>())
-          .build();
+      MonthlyRevenueDTO monthlyRevenue =
+          MonthlyRevenueDTO.builder()
+              .monthlyData(monthlyList)
+              .availableYears(availableYears != null ? availableYears : new ArrayList<>())
+              .build();
 
       return ApiResponseUtil.success(monthlyRevenue, "Monthly revenue data retrieved successfully");
     } catch (Exception e) {
       log.error("Error getting monthly revenue for year {}: {}", year, e.getMessage(), e);
-      return ApiResponseUtil.internalServerError("Failed to get monthly revenue: " + e.getMessage());
+      return ApiResponseUtil.internalServerError(
+          "Failed to get monthly revenue: " + e.getMessage());
     }
   }
 
@@ -183,32 +186,34 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
           year -= 1;
         }
 
-        List<Object[]> recentRevenueData = adminRevenueRepository.getRecentRevenueForYear(year, month);
+        List<Object[]> recentRevenueData =
+            adminRevenueRepository.getRecentRevenueForYear(year, month);
 
         if (isValidDataList(recentRevenueData)) {
           for (Object[] row : recentRevenueData) {
-            if (row == null || row.length < 4)
-              continue;
+            if (row == null || row.length < 4) continue;
 
             Integer yearVal = safeGetInteger(row[0]);
             Integer monthVal = safeGetInteger(row[1]);
             Double revenue = safeGetDouble(row[2]);
             Long transactions = safeGetLong(row[3]);
 
-            recentRevenues.add(MonthlyRevenueDTO.MonthlyData.builder()
-                .month(getMonthName(monthVal))
-                .year(yearVal)
-                .revenue(revenue)
-                .transactions(transactions)
-                .build());
+            recentRevenues.add(
+                MonthlyRevenueDTO.MonthlyData.builder()
+                    .month(getMonthName(monthVal))
+                    .year(yearVal)
+                    .revenue(revenue)
+                    .transactions(transactions)
+                    .build());
           }
         } else {
-          recentRevenues.add(MonthlyRevenueDTO.MonthlyData.builder()
-              .month(getMonthName(month))
-              .year(year)
-              .revenue(0.0)
-              .transactions(0L)
-              .build());
+          recentRevenues.add(
+              MonthlyRevenueDTO.MonthlyData.builder()
+                  .month(getMonthName(month))
+                  .year(year)
+                  .revenue(0.0)
+                  .transactions(0L)
+                  .build());
         }
       }
 
@@ -225,20 +230,24 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       }
       growth = calculateGrowthPercentage(latestRevenue, previousRevenue);
 
-      MonthlyRevenueDTO.RecentMonthlyData recentMonthlyData = MonthlyRevenueDTO.RecentMonthlyData.builder()
-          .recentRevenues(recentRevenues)
-          .growth(growth)
-          .build();
+      MonthlyRevenueDTO.RecentMonthlyData recentMonthlyData =
+          MonthlyRevenueDTO.RecentMonthlyData.builder()
+              .recentRevenues(recentRevenues)
+              .growth(growth)
+              .build();
 
-      return ApiResponseUtil.success(recentMonthlyData, "Recent monthly revenue data retrieved successfully");
+      return ApiResponseUtil.success(
+          recentMonthlyData, "Recent monthly revenue data retrieved successfully");
     } catch (Exception e) {
       log.error("Error getting recent revenues: {}", e.getMessage(), e);
-      return ApiResponseUtil.internalServerError("Failed to get recent revenues: " + e.getMessage());
+      return ApiResponseUtil.internalServerError(
+          "Failed to get recent revenues: " + e.getMessage());
     }
   }
 
   @Override
-  public ResponseEntity<ApiResponse<List<MonthlyRevenueDTO.DailyData>>> getDailysRevenue(Integer year, Integer month) {
+  public ResponseEntity<ApiResponse<List<MonthlyRevenueDTO.DailyData>>> getDailysRevenue(
+      Integer year, Integer month) {
     log.info("Getting daily revenue for {}/{}", month, year);
 
     try {
@@ -256,19 +265,20 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       // Process existing data from database
       if (isValidDataList(dailyData)) {
         for (Object[] row : dailyData) {
-          if (row == null || row.length < 3)
-            continue;
+          if (row == null || row.length < 3) continue;
 
           Date date = (Date) row[0];
           Double revenue = safeGetDouble(row[1]);
           Long transactions = safeGetLong(row[2]);
 
           String dateStr = date != null ? date.toString() : "";
-          dailyDataMap.put(dateStr, MonthlyRevenueDTO.DailyData.builder()
-              .date(dateStr)
-              .revenue(revenue)
-              .transactions(transactions)
-              .build());
+          dailyDataMap.put(
+              dateStr,
+              MonthlyRevenueDTO.DailyData.builder()
+                  .date(dateStr)
+                  .revenue(revenue)
+                  .transactions(transactions)
+                  .build());
         }
       }
 
@@ -285,11 +295,12 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
         // Check if we have data for this day, otherwise use zero values
         MonthlyRevenueDTO.DailyData dayData = dailyDataMap.get(dateStr);
         if (dayData == null) {
-          dayData = MonthlyRevenueDTO.DailyData.builder()
-              .date(dateStr)
-              .revenue(0.0)
-              .transactions(0L)
-              .build();
+          dayData =
+              MonthlyRevenueDTO.DailyData.builder()
+                  .date(dateStr)
+                  .revenue(0.0)
+                  .transactions(0L)
+                  .build();
         }
 
         dailyList.add(dayData);
@@ -314,10 +325,8 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
       if (!isValidDataList(topSpendersData)) {
         log.warn("No top spenders data found");
-        TopSpendersDTO result = TopSpendersDTO.builder()
-            .topStudents(users)
-            .limit(limit != null ? limit : 5)
-            .build();
+        TopSpendersDTO result =
+            TopSpendersDTO.builder().topStudents(users).limit(limit != null ? limit : 5).build();
         return ApiResponseUtil.success(result, "No top spenders data found");
       }
 
@@ -325,10 +334,8 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       int maxLimit = limit != null ? limit : 5;
 
       for (Object[] row : topSpendersData) {
-        if (count >= maxLimit)
-          break;
-        if (row == null || row.length < 6)
-          continue;
+        if (count >= maxLimit) break;
+        if (row == null || row.length < 6) continue;
 
         String userId = (String) row[0];
         String userName = (String) row[1];
@@ -338,25 +345,22 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
         Long coursesEnrolled = safeGetLong(row[5]);
 
         // Skip users with no spending
-        if (totalSpent <= 0)
-          continue;
+        if (totalSpent <= 0) continue;
 
-        users.add(TopSpendersDTO.StudentSpendingData.builder()
-            .id(userId != null ? userId : "")
-            .name(userName != null ? userName : "Unknown")
-            .email(userEmail != null ? userEmail : "")
-            .totalSpent(totalSpent)
-            .coursesEnrolled(coursesEnrolled.intValue())
-            .avatarUrl(userThumbnail != null ? userThumbnail : "")
-            .build());
+        users.add(
+            TopSpendersDTO.StudentSpendingData.builder()
+                .id(userId != null ? userId : "")
+                .name(userName != null ? userName : "Unknown")
+                .email(userEmail != null ? userEmail : "")
+                .totalSpent(totalSpent)
+                .coursesEnrolled(coursesEnrolled.intValue())
+                .avatarUrl(userThumbnail != null ? userThumbnail : "")
+                .build());
 
         count++;
       }
 
-      TopSpendersDTO result = TopSpendersDTO.builder()
-          .topStudents(users)
-          .limit(maxLimit)
-          .build();
+      TopSpendersDTO result = TopSpendersDTO.builder().topStudents(users).limit(maxLimit).build();
 
       return ApiResponseUtil.success(result, "Top spenders data retrieved successfully");
     } catch (Exception e) {
@@ -376,9 +380,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
       if (isValidDataList(categoryData)) {
         // Calculate total revenue for percentage calculations
-        Double totalRevenue = categoryData.stream()
-            .mapToDouble(row -> safeGetDouble(row[1]))
-            .sum();
+        Double totalRevenue = categoryData.stream().mapToDouble(row -> safeGetDouble(row[1])).sum();
 
         for (Object[] row : categoryData) {
           if (row == null || row.length < 4) {
@@ -395,15 +397,17 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
           String categoryName = (String) row[0];
           Long studentsCount = safeGetLong(row[2]);
           Long coursesCount = safeGetLong(row[3]);
-          Double percentage = totalRevenue > 0 ? (Math.round((revenue / totalRevenue) * 100 * 100.0) / 100.0) : 0.0;
+          Double percentage =
+              totalRevenue > 0 ? (Math.round((revenue / totalRevenue) * 100 * 100.0) / 100.0) : 0.0;
 
-          categories.add(PerformanceMetricsDTO.CategoryRevenue.builder()
-              .category(categoryName != null ? categoryName : "Unknown")
-              .revenue(revenue)
-              .studentsCount(studentsCount.intValue())
-              .coursesCount(coursesCount.intValue())
-              .percentage(percentage)
-              .build());
+          categories.add(
+              PerformanceMetricsDTO.CategoryRevenue.builder()
+                  .category(categoryName != null ? categoryName : "Unknown")
+                  .revenue(revenue)
+                  .studentsCount(studentsCount.intValue())
+                  .coursesCount(coursesCount.intValue())
+                  .percentage(percentage)
+                  .build());
         }
       }
 
@@ -429,36 +433,42 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
           Long coursesCount = safeGetLong(row[3]);
           Long studentsCount = safeGetLong(row[5]);
 
-          instructors.add(PerformanceMetricsDTO.InstructorPerformance.builder()
-              .id(instructorId != null ? instructorId : "")
-              .name(instructorName != null ? instructorName : "Unknown")
-              .email(instructorEmail != null ? instructorEmail : "")
-              .coursesCount(coursesCount != null ? coursesCount.intValue() : 0)
-              .totalRevenue(revenue)
-              .averageRating(null)
-              .totalStudents(studentsCount != null ? studentsCount.intValue() : 0)
-              .build());
+          instructors.add(
+              PerformanceMetricsDTO.InstructorPerformance.builder()
+                  .id(instructorId != null ? instructorId : "")
+                  .name(instructorName != null ? instructorName : "Unknown")
+                  .email(instructorEmail != null ? instructorEmail : "")
+                  .coursesCount(coursesCount != null ? coursesCount.intValue() : 0)
+                  .totalRevenue(revenue)
+                  .averageRating(null)
+                  .totalStudents(studentsCount != null ? studentsCount.intValue() : 0)
+                  .build());
         }
       }
 
-      PerformanceMetricsDTO result = PerformanceMetricsDTO.builder()
-          .categoryRevenues(categories)
-          .topInstructors(instructors)
-          .topPerformingCategory(!categories.isEmpty() ? categories.get(0).getCategory() : "No Data")
-          .worstPerformingCategory(
-              !categories.isEmpty() ? categories.get(categories.size() - 1).getCategory() : "No Data")
-          .build();
+      PerformanceMetricsDTO result =
+          PerformanceMetricsDTO.builder()
+              .categoryRevenues(categories)
+              .topInstructors(instructors)
+              .topPerformingCategory(
+                  !categories.isEmpty() ? categories.get(0).getCategory() : "No Data")
+              .worstPerformingCategory(
+                  !categories.isEmpty()
+                      ? categories.get(categories.size() - 1).getCategory()
+                      : "No Data")
+              .build();
 
       return ApiResponseUtil.success(result, "Performance metrics retrieved successfully");
     } catch (Exception e) {
       log.error("Error getting performance metrics: {}", e.getMessage(), e);
-      return ApiResponseUtil.internalServerError("Failed to get performance metrics: " + e.getMessage());
+      return ApiResponseUtil.internalServerError(
+          "Failed to get performance metrics: " + e.getMessage());
     }
   }
 
   @Override
-  public ResponseEntity<ApiResponse<ComparativeAnalysisDTO>> getComparativeAnalysis(String comparisonType,
-      Integer year) {
+  public ResponseEntity<ApiResponse<ComparativeAnalysisDTO>> getComparativeAnalysis(
+      String comparisonType, Integer year) {
     log.info("Getting comparative analysis for type: {} and year: {}", comparisonType, year);
 
     try {
@@ -485,27 +495,39 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       }
 
       if (isValidDataList(comparisons)) {
-        List<ComparativeAnalysisDTO.BestWorstPeriod> bestWorstPeriods = getBestWorstPeriods(comparisons);
+        List<ComparativeAnalysisDTO.BestWorstPeriod> bestWorstPeriods =
+            getBestWorstPeriods(comparisons);
 
-        ComparativeAnalysisDTO result = ComparativeAnalysisDTO.builder()
-            .comparisonType(comparisonType)
-            .selectedYear(year)
-            .comparisons(comparisons)
-            .bestPerformingPeriod(
-                bestWorstPeriods != null && bestWorstPeriods.size() > 0 ? bestWorstPeriods.get(0) : null)
-            .worstPerformingPeriod(
-                bestWorstPeriods != null && bestWorstPeriods.size() > 1 ? bestWorstPeriods.get(1) : null)
-            .availableYears(adminRevenueRepository.getDistinctPaymentYears())
-            .build();
+        ComparativeAnalysisDTO result =
+            ComparativeAnalysisDTO.builder()
+                .comparisonType(comparisonType)
+                .selectedYear(year)
+                .comparisons(comparisons)
+                .bestPerformingPeriod(
+                    bestWorstPeriods != null && bestWorstPeriods.size() > 0
+                        ? bestWorstPeriods.get(0)
+                        : null)
+                .worstPerformingPeriod(
+                    bestWorstPeriods != null && bestWorstPeriods.size() > 1
+                        ? bestWorstPeriods.get(1)
+                        : null)
+                .availableYears(adminRevenueRepository.getDistinctPaymentYears())
+                .build();
 
         return ApiResponseUtil.success(result, "Comparative analysis data retrieved successfully");
       } else {
-        return ApiResponseUtil.notFound("No comparative analysis data found for the given parameters");
+        return ApiResponseUtil.notFound(
+            "No comparative analysis data found for the given parameters");
       }
     } catch (Exception e) {
-      log.error("Error getting comparative analysis for type {} and year {}: {}", comparisonType, year, e.getMessage(),
+      log.error(
+          "Error getting comparative analysis for type {} and year {}: {}",
+          comparisonType,
+          year,
+          e.getMessage(),
           e);
-      return ApiResponseUtil.internalServerError("Failed to get comparative analysis: " + e.getMessage());
+      return ApiResponseUtil.internalServerError(
+          "Failed to get comparative analysis: " + e.getMessage());
     }
   }
 
@@ -532,8 +554,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
       if (isValidDataList(seasonalData)) {
         for (Object[] row : seasonalData) {
-          if (row == null || row.length < 2)
-            continue;
+          if (row == null || row.length < 2) continue;
 
           Date date = (Date) row[0];
           Double revenue = safeGetDouble(row[1]);
@@ -551,15 +572,14 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       seasons.add(createSeasonData("Fall", "September-November", seasonRevenue.get("Fall")));
       seasons.add(createSeasonData("Winter", "December-February", seasonRevenue.get("Winter")));
 
-      SeasonalHeatmapDTO result = SeasonalHeatmapDTO.builder()
-          .year(year)
-          .dailyData(seasons)
-          .build();
+      SeasonalHeatmapDTO result =
+          SeasonalHeatmapDTO.builder().year(year).dailyData(seasons).build();
 
       return ApiResponseUtil.success(result, "Seasonal heatmap data retrieved successfully");
     } catch (Exception e) {
       log.error("Error getting seasonal heatmap for year {}: {}", year, e.getMessage(), e);
-      return ApiResponseUtil.internalServerError("Error retrieving seasonal heatmap: " + e.getMessage());
+      return ApiResponseUtil.internalServerError(
+          "Error retrieving seasonal heatmap: " + e.getMessage());
     }
   }
 
@@ -573,7 +593,8 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       return ApiResponseUtil.success(result, "Available years retrieved successfully");
     } catch (Exception e) {
       log.error("Error getting available years: {}", e.getMessage(), e);
-      return ApiResponseUtil.internalServerError("Failed to get available years: " + e.getMessage());
+      return ApiResponseUtil.internalServerError(
+          "Failed to get available years: " + e.getMessage());
     }
   }
 
@@ -594,19 +615,25 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       StatisticsDTO statistics = statisticsBody != null ? statisticsBody.getData() : null;
 
       // Get monthly revenue data
-      ResponseEntity<ApiResponse<MonthlyRevenueDTO>> monthlyRevenueResponse = getMonthlyRevenue(year);
+      ResponseEntity<ApiResponse<MonthlyRevenueDTO>> monthlyRevenueResponse =
+          getMonthlyRevenue(year);
       ApiResponse<MonthlyRevenueDTO> monthlyRevenueBody = monthlyRevenueResponse.getBody();
-      MonthlyRevenueDTO monthlyRevenue = monthlyRevenueBody != null ? monthlyRevenueBody.getData() : null;
+      MonthlyRevenueDTO monthlyRevenue =
+          monthlyRevenueBody != null ? monthlyRevenueBody.getData() : null;
 
       // Get performance metrics
-      ResponseEntity<ApiResponse<PerformanceMetricsDTO>> performanceResponse = getPerformanceMetrics();
+      ResponseEntity<ApiResponse<PerformanceMetricsDTO>> performanceResponse =
+          getPerformanceMetrics();
       ApiResponse<PerformanceMetricsDTO> performanceBody = performanceResponse.getBody();
-      PerformanceMetricsDTO performance = performanceBody != null ? performanceBody.getData() : null;
+      PerformanceMetricsDTO performance =
+          performanceBody != null ? performanceBody.getData() : null;
 
       // Get comparative analysis
-      ResponseEntity<ApiResponse<ComparativeAnalysisDTO>> comparativeResponse = getComparativeAnalysis("monthly", year);
+      ResponseEntity<ApiResponse<ComparativeAnalysisDTO>> comparativeResponse =
+          getComparativeAnalysis("monthly", year);
       ApiResponse<ComparativeAnalysisDTO> comparativeBody = comparativeResponse.getBody();
-      ComparativeAnalysisDTO comparative = comparativeBody != null ? comparativeBody.getData() : null;
+      ComparativeAnalysisDTO comparative =
+          comparativeBody != null ? comparativeBody.getData() : null;
 
       // Build comprehensive summary
       summary.put("statistics", statistics);
@@ -619,62 +646,44 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
       return ApiResponseUtil.success(summary, "Revenue summary generated successfully");
     } catch (Exception e) {
       log.error("Error generating revenue summary for year {}: {}", year, e.getMessage(), e);
-      return ApiResponseUtil.internalServerError("Failed to generate revenue summary: " + e.getMessage());
+      return ApiResponseUtil.internalServerError(
+          "Failed to generate revenue summary: " + e.getMessage());
     }
   }
 
   // Helper methods
 
-  /**
-   * Check if data exists for a specific year
-   */
+  /** Check if data exists for a specific year */
   private boolean hasDataForYear(Integer year) {
     List<Integer> availableYears = adminRevenueRepository.getDistinctPaymentYears();
     return availableYears != null && availableYears.contains(year);
   }
 
-  /**
-   * Validate and extract safe double value from Object
-   */
+  /** Validate and extract safe double value from Object */
   private Double safeGetDouble(Object value) {
-    if (value == null)
-      return 0.0;
-    if (value instanceof Double)
-      return (Double) value;
-    if (value instanceof Number)
-      return ((Number) value).doubleValue();
+    if (value == null) return 0.0;
+    if (value instanceof Double) return (Double) value;
+    if (value instanceof Number) return ((Number) value).doubleValue();
     return 0.0;
   }
 
-  /**
-   * Validate and extract safe long value from Object
-   */
+  /** Validate and extract safe long value from Object */
   private Long safeGetLong(Object value) {
-    if (value == null)
-      return 0L;
-    if (value instanceof Long)
-      return (Long) value;
-    if (value instanceof Number)
-      return ((Number) value).longValue();
+    if (value == null) return 0L;
+    if (value instanceof Long) return (Long) value;
+    if (value instanceof Number) return ((Number) value).longValue();
     return 0L;
   }
 
-  /**
-   * Validate and extract safe integer value from Object
-   */
+  /** Validate and extract safe integer value from Object */
   private Integer safeGetInteger(Object value) {
-    if (value == null)
-      return 0;
-    if (value instanceof Integer)
-      return (Integer) value;
-    if (value instanceof Number)
-      return ((Number) value).intValue();
+    if (value == null) return 0;
+    if (value instanceof Integer) return (Integer) value;
+    if (value instanceof Number) return ((Number) value).intValue();
     return 0;
   }
 
-  /**
-   * Check if list is null or empty
-   */
+  /** Check if list is null or empty */
   private boolean isValidDataList(List<?> data) {
     return data != null && !data.isEmpty();
   }
@@ -691,10 +700,14 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
         return Collections.emptyList();
       }
 
-      List<Object[]> currentYearData = currentYearExists ? adminRevenueRepository.getMonthlyRevenueForYear(year)
-          : new ArrayList<>();
-      List<Object[]> previousYearData = previousYearExists ? adminRevenueRepository.getMonthlyRevenueForYear(year - 1)
-          : new ArrayList<>();
+      List<Object[]> currentYearData =
+          currentYearExists
+              ? adminRevenueRepository.getMonthlyRevenueForYear(year)
+              : new ArrayList<>();
+      List<Object[]> previousYearData =
+          previousYearExists
+              ? adminRevenueRepository.getMonthlyRevenueForYear(year - 1)
+              : new ArrayList<>();
 
       Map<Integer, Double> currentYear = new HashMap<>();
       Map<Integer, Double> previousYear = new HashMap<>();
@@ -744,14 +757,15 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
         transactions = transactions != null ? transactions : 0L;
         prevTransactions = prevTransactions != null ? prevTransactions : 0L;
 
-        comparisons.add(ComparativeAnalysisDTO.ComparisonData.builder()
-            .period(getMonthName(month))
-            .current(current)
-            .previous(previous)
-            .growth(growth)
-            .transactions(transactions)
-            .previousTransactions(prevTransactions)
-            .build());
+        comparisons.add(
+            ComparativeAnalysisDTO.ComparisonData.builder()
+                .period(getMonthName(month))
+                .current(current)
+                .previous(previous)
+                .growth(growth)
+                .transactions(transactions)
+                .previousTransactions(prevTransactions)
+                .build());
       }
 
       return comparisons;
@@ -773,10 +787,14 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
         return Collections.emptyList();
       }
 
-      List<Object[]> currentYearData = currentYearExists ? adminRevenueRepository.getQuarterlyRevenueForYear(year)
-          : new ArrayList<>();
-      List<Object[]> previousYearData = previousYearExists ? adminRevenueRepository.getQuarterlyRevenueForYear(year - 1)
-          : new ArrayList<>();
+      List<Object[]> currentYearData =
+          currentYearExists
+              ? adminRevenueRepository.getQuarterlyRevenueForYear(year)
+              : new ArrayList<>();
+      List<Object[]> previousYearData =
+          previousYearExists
+              ? adminRevenueRepository.getQuarterlyRevenueForYear(year - 1)
+              : new ArrayList<>();
 
       Map<Integer, Double> currentYear = new HashMap<>();
       Map<Integer, Double> previousYear = new HashMap<>();
@@ -825,14 +843,15 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
         transactions = transactions != null ? transactions : 0L;
         prevTransactions = prevTransactions != null ? prevTransactions : 0L;
 
-        comparisons.add(ComparativeAnalysisDTO.ComparisonData.builder()
-            .period("Quarter" + quarter)
-            .current(current)
-            .previous(previous)
-            .growth(growth)
-            .transactions(transactions)
-            .previousTransactions(prevTransactions)
-            .build());
+        comparisons.add(
+            ComparativeAnalysisDTO.ComparisonData.builder()
+                .period("Quarter" + quarter)
+                .current(current)
+                .previous(previous)
+                .growth(growth)
+                .transactions(transactions)
+                .previousTransactions(prevTransactions)
+                .build());
       }
 
       return comparisons;
@@ -863,8 +882,8 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
         // Only query if years have data
         if (availableYears.contains(currentYear) || availableYears.contains(previousYear)) {
-          List<Object[]> currentYearDataList = adminRevenueRepository.getYearlyRevenueComparison(currentYear,
-              previousYear);
+          List<Object[]> currentYearDataList =
+              adminRevenueRepository.getYearlyRevenueComparison(currentYear, previousYear);
 
           if (currentYearDataList != null && !currentYearDataList.isEmpty()) {
             Object[] currentYearData = currentYearDataList.get(0);
@@ -877,12 +896,13 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
 
         Double growth = calculateGrowthPercentage(currentYearRevenue, previousYearRevenue);
 
-        yearly.add(ComparativeAnalysisDTO.ComparisonData.builder()
-            .period(String.valueOf(currentYear))
-            .current(currentYearRevenue)
-            .previous(previousYearRevenue)
-            .growth(growth)
-            .build());
+        yearly.add(
+            ComparativeAnalysisDTO.ComparisonData.builder()
+                .period(String.valueOf(currentYear))
+                .current(currentYearRevenue)
+                .previous(previousYearRevenue)
+                .growth(growth)
+                .build());
       }
 
       return yearly;
@@ -897,37 +917,42 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
   private List<ComparativeAnalysisDTO.BestWorstPeriod> getBestWorstPeriods(
       List<ComparativeAnalysisDTO.ComparisonData> comparisons) {
     // Get best performing periods based on growth
-    ComparativeAnalysisDTO.ComparisonData best = comparisons.stream()
-        .max(Comparator.comparing(ComparativeAnalysisDTO.ComparisonData::getGrowth))
-        .orElse(null);
+    ComparativeAnalysisDTO.ComparisonData best =
+        comparisons.stream()
+            .max(Comparator.comparing(ComparativeAnalysisDTO.ComparisonData::getGrowth))
+            .orElse(null);
 
     // Get worst performing periods based on growth
-    ComparativeAnalysisDTO.ComparisonData worst = comparisons.stream()
-        .min(Comparator.comparing(ComparativeAnalysisDTO.ComparisonData::getGrowth))
-        .orElse(null);
+    ComparativeAnalysisDTO.ComparisonData worst =
+        comparisons.stream()
+            .min(Comparator.comparing(ComparativeAnalysisDTO.ComparisonData::getGrowth))
+            .orElse(null);
 
     List<ComparativeAnalysisDTO.BestWorstPeriod> bestWorstPeriod = new ArrayList<>();
 
     if (best != null) {
-      ComparativeAnalysisDTO.BestWorstPeriod bestPeriod = ComparativeAnalysisDTO.BestWorstPeriod.builder()
-          .period(best.getPeriod())
-          .growth(best.getGrowth())
-          .build();
+      ComparativeAnalysisDTO.BestWorstPeriod bestPeriod =
+          ComparativeAnalysisDTO.BestWorstPeriod.builder()
+              .period(best.getPeriod())
+              .growth(best.getGrowth())
+              .build();
       bestWorstPeriod.add(bestPeriod);
     }
 
     if (worst != null) {
-      ComparativeAnalysisDTO.BestWorstPeriod worstPeriod = ComparativeAnalysisDTO.BestWorstPeriod.builder()
-          .period(worst.getPeriod())
-          .growth(worst.getGrowth())
-          .build();
+      ComparativeAnalysisDTO.BestWorstPeriod worstPeriod =
+          ComparativeAnalysisDTO.BestWorstPeriod.builder()
+              .period(worst.getPeriod())
+              .growth(worst.getGrowth())
+              .build();
       bestWorstPeriod.add(worstPeriod);
     }
 
     return bestWorstPeriod;
   }
 
-  private SeasonalHeatmapDTO.SeasonalData createSeasonData(String name, String period, Double revenue) {
+  private SeasonalHeatmapDTO.SeasonalData createSeasonData(
+      String name, String period, Double revenue) {
     return SeasonalHeatmapDTO.SeasonalData.builder()
         .month(name)
         .revenue(revenue)
@@ -936,19 +961,16 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
   }
 
   private String getSeasonForMonth(Integer month) {
-    if (month >= 3 && month <= 5)
-      return "Spring";
-    if (month >= 6 && month <= 8)
-      return "Summer";
-    if (month >= 9 && month <= 11)
-      return "Fall";
+    if (month >= 3 && month <= 5) return "Spring";
+    if (month >= 6 && month <= 8) return "Summer";
+    if (month >= 9 && month <= 11) return "Fall";
     return "Winter";
   }
 
   private String getMonthName(Integer month) {
     String[] months = {
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
     };
     return month >= 1 && month <= 12 ? months[month - 1] : "Unknown";
   }
@@ -960,8 +982,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
     Double previousMonthRevenue = 0.0;
 
     for (Object[] row : monthlyComparison) {
-      if (row == null || row.length < 2)
-        continue;
+      if (row == null || row.length < 2) continue;
 
       Integer month = safeGetInteger(row[0]);
       Double currentYearValue = safeGetDouble(row[1]);
@@ -989,8 +1010,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
   }
 
   private String formatCurrency(Double amount) {
-    if (amount == null)
-      return "$0";
+    if (amount == null) return "$0";
 
     if (amount >= 1000000) {
       return "$" + Math.round((amount / 1000000) * 100.0) / 100.0 + "M";
@@ -1002,8 +1022,7 @@ public class AdminRevenueServiceImpl implements AdminRevenueService {
   }
 
   private String formatPercentage(Double percentage) {
-    if (percentage == null)
-      return "0%";
+    if (percentage == null) return "0%";
 
     String sign = percentage >= 0 ? "+" : "";
     return sign + Math.round(percentage * 10.0) / 10.0 + "%";
