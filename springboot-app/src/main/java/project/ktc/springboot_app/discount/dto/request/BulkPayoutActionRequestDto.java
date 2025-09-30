@@ -9,16 +9,15 @@ import lombok.Data;
 @Data
 public class BulkPayoutActionRequestDto {
 
-  @NotEmpty(message = "Payout IDs cannot be empty")
-  private List<String> payoutIds;
+	@NotEmpty(message = "Payout IDs cannot be empty")
+	private List<String> payoutIds;
 
-  @NotNull(message = "Action is required")
-  private BulkPayoutAction action;
+	@NotNull(message = "Action is required")
+	private BulkPayoutAction action;
 
-  private String reason; // Optional reason for cancellation
+	private String reason; // Optional reason for cancellation
 
-  public enum BulkPayoutAction {
-    MARK_PAID,
-    CANCEL
-  }
+	public enum BulkPayoutAction {
+		MARK_PAID, CANCEL
+	}
 }

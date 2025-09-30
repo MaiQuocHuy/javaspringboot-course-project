@@ -12,16 +12,19 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Builder
 public class CourseReviewFilterDto {
 
-  private List<String> status;
-  private String createdBy;
+	private List<String> status;
+	private String createdBy;
 
-  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  private LocalDateTime dateFrom;
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+	private LocalDateTime dateFrom;
 
-  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  private LocalDateTime dateTo;
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+	private LocalDateTime dateTo;
 
-  @Builder.Default private int page = 0;
-  @Builder.Default private int size = 10;
-  @Builder.Default private String sort = "createdAt,desc";
+	@Builder.Default
+	private int page = 0;
+	@Builder.Default
+	private int size = 10;
+	@Builder.Default
+	private String sort = "createdAt,desc";
 }

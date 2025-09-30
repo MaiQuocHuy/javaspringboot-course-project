@@ -15,21 +15,15 @@ import project.ktc.springboot_app.instructor_dashboard.interfaces.InsDashboardSe
 @RestController
 @RequestMapping("/api/instructor")
 @RequiredArgsConstructor
-@Tag(
-    name = "Instructor Dashboard API",
-    description = "API for instructor dashboard functionalities")
+@Tag(name = "Instructor Dashboard API", description = "API for instructor dashboard functionalities")
 public class InsDashboardController {
 
-  private final InsDashboardService insDashboardService;
+	private final InsDashboardService insDashboardService;
 
-  @GetMapping("/statistics")
-  @PreAuthorize("hasRole('INSTRUCTOR')")
-  @Operation(
-      summary = "Get instructor's statistics",
-      description = "Retrieve statistics related to the instructor's performance and activities",
-      security = @SecurityRequirement(name = "bearerAuth"))
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<InsDashboardDto>>
-      getInstructorsStatistics() {
-    return insDashboardService.getInsDashboardStatistics();
-  }
+	@GetMapping("/statistics")
+	@PreAuthorize("hasRole('INSTRUCTOR')")
+	@Operation(summary = "Get instructor's statistics", description = "Retrieve statistics related to the instructor's performance and activities", security = @SecurityRequirement(name = "bearerAuth"))
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<InsDashboardDto>> getInstructorsStatistics() {
+		return insDashboardService.getInsDashboardStatistics();
+	}
 }

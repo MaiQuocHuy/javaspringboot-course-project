@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseApprovalResponseDto {
-  private String id;
-  private String title;
-  private Boolean isApproved;
-  private LocalDateTime approvedAt;
+	private String id;
+	private String title;
+	private Boolean isApproved;
+	private LocalDateTime approvedAt;
 }

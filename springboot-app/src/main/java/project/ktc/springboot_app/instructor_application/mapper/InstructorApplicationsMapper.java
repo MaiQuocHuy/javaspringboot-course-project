@@ -10,55 +10,55 @@ import project.ktc.springboot_app.instructor_application.entity.InstructorApplic
 @Component
 public class InstructorApplicationsMapper {
 
-  public AdminInstructorApplicationResponseDto toAdminResponseDto(
-      InstructorApplication application) {
-    return AdminInstructorApplicationResponseDto.builder()
-        .id(application.getId())
-        .applicant(toUserBasicDto(application.getUser()))
-        .status(application.getStatus())
-        .submittedAt(application.getSubmittedAt())
-        .build();
-  }
+	public AdminInstructorApplicationResponseDto toAdminResponseDto(
+			InstructorApplication application) {
+		return AdminInstructorApplicationResponseDto.builder()
+				.id(application.getId())
+				.applicant(toUserBasicDto(application.getUser()))
+				.status(application.getStatus())
+				.submittedAt(application.getSubmittedAt())
+				.build();
+	}
 
-  public AdminInstructorApplicationResponseDto toAdminDetailResponseDto(
-      InstructorApplication application) {
-    return AdminInstructorApplicationResponseDto.builder()
-        .id(application.getId())
-        .applicant(toUserBasicDto(application.getUser()))
-        .status(application.getStatus())
-        .documents(application.getDocuments())
-        .rejectionReason(application.getRejectionReason())
-        .submittedAt(application.getSubmittedAt())
-        .build();
-  }
+	public AdminInstructorApplicationResponseDto toAdminDetailResponseDto(
+			InstructorApplication application) {
+		return AdminInstructorApplicationResponseDto.builder()
+				.id(application.getId())
+				.applicant(toUserBasicDto(application.getUser()))
+				.status(application.getStatus())
+				.documents(application.getDocuments())
+				.rejectionReason(application.getRejectionReason())
+				.submittedAt(application.getSubmittedAt())
+				.build();
+	}
 
-  private AdminInstructorApplicationResponseDto.UserBasicDto toUserBasicDto(User user) {
-    return AdminInstructorApplicationResponseDto.UserBasicDto.builder()
-        .id(user.getId())
-        .name(user.getName())
-        .email(user.getEmail())
-        .build();
-  }
+	private AdminInstructorApplicationResponseDto.UserBasicDto toUserBasicDto(User user) {
+		return AdminInstructorApplicationResponseDto.UserBasicDto.builder()
+				.id(user.getId())
+				.name(user.getName())
+				.email(user.getEmail())
+				.build();
+	}
 
-  public List<AdminInstructorApplicationResponseDto> toAdminResponseDtoList(
-      List<InstructorApplication> applications) {
-    return applications.stream().map(this::toAdminResponseDto).toList();
-  }
+	public List<AdminInstructorApplicationResponseDto> toAdminResponseDtoList(
+			List<InstructorApplication> applications) {
+		return applications.stream().map(this::toAdminResponseDto).toList();
+	}
 
-  public List<AdminInstructorApplicationResponseDto> toAdminDetailResponseDtoList(
-      List<InstructorApplication> applications) {
-    return applications.stream().map(this::toAdminDetailResponseDto).toList();
-  }
+	public List<AdminInstructorApplicationResponseDto> toAdminDetailResponseDtoList(
+			List<InstructorApplication> applications) {
+		return applications.stream().map(this::toAdminDetailResponseDto).toList();
+	}
 
-  public InstructorApplicationDetailResponseDto toApplicationDetailResponseDto(
-      InstructorApplication application) {
-    return InstructorApplicationDetailResponseDto.builder()
-        .id(application.getId())
-        // .applicant(toUserDetailDto(application.getUser()))
-        .status(application.getStatus())
-        .documents(application.getDocuments())
-        .rejectionReason(application.getRejectionReason())
-        .submittedAt(application.getSubmittedAt())
-        .build();
-  }
+	public InstructorApplicationDetailResponseDto toApplicationDetailResponseDto(
+			InstructorApplication application) {
+		return InstructorApplicationDetailResponseDto.builder()
+				.id(application.getId())
+				// .applicant(toUserDetailDto(application.getUser()))
+				.status(application.getStatus())
+				.documents(application.getDocuments())
+				.rejectionReason(application.getRejectionReason())
+				.submittedAt(application.getSubmittedAt())
+				.build();
+	}
 }

@@ -14,31 +14,31 @@ import project.ktc.springboot_app.instructor_application.entity.InstructorApplic
 @Builder
 public class AdminApplicationDetailDto {
 
-  private String id;
+	private String id;
 
-  private UserBasicDto applicant;
+	private UserBasicDto applicant;
 
-  // Thông tin người review (nếu có)
-  // private UserBasicDto reviewer;
+	// Thông tin người review (nếu có)
+	// private UserBasicDto reviewer;
 
-  private ApplicationStatus status;
+	private ApplicationStatus status;
 
-  private String documents;
+	private String documents;
 
-  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  private LocalDateTime submittedAt;
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime submittedAt;
 
-  private String rejectionReason;
+	private String rejectionReason;
 
-  // Nested DTO cho user info
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @Builder
-  public static class UserBasicDto {
-    private String id;
-    private String name;
-    private String email;
-    private String thumbnailUrl;
-  }
+	// Nested DTO cho user info
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class UserBasicDto {
+		private String id;
+		private String name;
+		private String email;
+		private String thumbnailUrl;
+	}
 }

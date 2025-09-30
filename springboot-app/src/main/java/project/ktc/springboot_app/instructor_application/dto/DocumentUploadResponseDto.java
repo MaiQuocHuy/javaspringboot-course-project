@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DocumentUploadResponseDto {
 
-  private String userId;
-  private Map<String, String> documents;
+	private String userId;
+	private Map<String, String> documents;
 }

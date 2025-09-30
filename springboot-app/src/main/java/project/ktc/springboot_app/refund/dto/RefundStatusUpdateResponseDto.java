@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RefundStatusUpdateResponseDto {
 
-  private String id;
-  private String paymentId;
-  private BigDecimal amount;
-  private String status;
-  private String reason;
-  private String rejectedReason;
+	private String id;
+	private String paymentId;
+	private BigDecimal amount;
+	private String status;
+	private String reason;
+	private String rejectedReason;
 }

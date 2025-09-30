@@ -24,67 +24,46 @@ import project.ktc.springboot_app.user.services.UserServiceImp;
 @Tag(name = "User API", description = "API for managing users")
 public class UserProfileController {
 
-  private final UserServiceImp userService;
+	private final UserServiceImp userService;
 
-  @GetMapping("/profile")
-  @Operation(
-      summary = "Get current user profile",
-      description = "Retrieves the profile of the currently authenticated user",
-      security = @SecurityRequirement(name = "bearerAuth"))
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
-        @ApiResponse(responseCode = "401", description = "User not authenticated"),
-        @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-      })
-  @PreAuthorize("isAuthenticated()")
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>>
-      getProfile() {
-    return userService.getProfile();
-  }
+	@GetMapping("/profile")
+	@Operation(summary = "Get current user profile", description = "Retrieves the profile of the currently authenticated user", security = @SecurityRequirement(name = "bearerAuth"))
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
+			@ApiResponse(responseCode = "401", description = "User not authenticated"),
+			@ApiResponse(responseCode = "404", description = "User not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> getProfile() {
+		return userService.getProfile();
+	}
 
-  @PutMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Operation(
-      summary = "Update user profile with optional image upload",
-      description =
-          """
-                Updates the profile of the currently authenticated user, including `name`, `bio`, and optional `thumbnail` upload.
+	@PutMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "Update user profile with optional image upload", description = """
+			    Updates the profile of the currently authenticated user, including `name`, `bio`, and optional `thumbnail` upload.
 
-                **Fields:**
-                - `name` (text): Full name (required)
-                - `bio` (text): Bio (optional)
-                - `thumbnail` (file): Image upload (optional)
+			    **Fields:**
+			    - `name` (text): Full name (required)
+			    - `bio` (text): Bio (optional)
+			    - `thumbnail` (file): Image upload (optional)
 
-                **Supported Image Formats:** JPEG, PNG, GIF, BMP, WebP
-                **Max Size:** 10MB
-            """,
-      security = @SecurityRequirement(name = "bearerAuth"))
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Profile updated successfully",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = UserResponseDto.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input data or file format"),
-        @ApiResponse(responseCode = "401", description = "User not authenticated"),
-        @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-      })
-  @PreAuthorize("isAuthenticated()")
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>>
-      updateProfile(
-          @Parameter(description = "Full name", required = true) @RequestParam("name") String name,
-          @Parameter(description = "Bio", required = false)
-              @RequestParam(value = "bio", required = false)
-              String bio,
-          @Parameter(description = "Optional profile image file", required = false)
-              @RequestPart(value = "thumbnail", required = false)
-              MultipartFile thumbnailFile) {
-    UpdateUserDto updateUserDto = new UpdateUserDto(name, bio);
-    return userService.updateProfile(updateUserDto, thumbnailFile);
-  }
+			    **Supported Image Formats:** JPEG, PNG, GIF, BMP, WebP
+			    **Max Size:** 10MB
+			""", security = @SecurityRequirement(name = "bearerAuth"))
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Profile updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponseDto.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid input data or file format"),
+			@ApiResponse(responseCode = "401", description = "User not authenticated"),
+			@ApiResponse(responseCode = "404", description = "User not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> updateProfile(
+			@Parameter(description = "Full name", required = true) @RequestParam("name") String name,
+			@Parameter(description = "Bio", required = false) @RequestParam(value = "bio", required = false) String bio,
+			@Parameter(description = "Optional profile image file", required = false) @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) {
+		UpdateUserDto updateUserDto = new UpdateUserDto(name, bio);
+		return userService.updateProfile(updateUserDto, thumbnailFile);
+	}
 }

@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class QuizQuestionResponseDto {
 
-  private String id;
-  private String questionText;
-  private Map<String, String> options;
-  private String correctAnswer;
-  private String explanation;
+	private String id;
+	private String questionText;
+	private Map<String, String> options;
+	private String correctAnswer;
+	private String explanation;
 }

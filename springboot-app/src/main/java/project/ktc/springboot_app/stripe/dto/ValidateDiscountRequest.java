@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ValidateDiscountRequest {
 
-  @NotBlank(message = "Discount code is required")
-  private String discountCode;
+	@NotBlank(message = "Discount code is required")
+	private String discountCode;
 
-  @NotBlank(message = "Course ID is required")
-  private String courseId;
+	@NotBlank(message = "Course ID is required")
+	private String courseId;
 }

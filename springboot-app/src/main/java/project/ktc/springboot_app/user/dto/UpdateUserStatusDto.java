@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Schema(description = "DTO for updating user status")
 public class UpdateUserStatusDto {
 
-  @Schema(description = "User's active status", example = "true", required = true)
-  @NotNull(message = "Status cannot be null")
-  private Boolean isActive;
+	@Schema(description = "User's active status", example = "true", required = true)
+	@NotNull(message = "Status cannot be null")
+	private Boolean isActive;
 }

@@ -9,9 +9,9 @@ import project.ktc.springboot_app.quiz.dto.QuizScoreResponseDto;
 
 public interface InstructorQuizService {
 
-  ResponseEntity<ApiResponse<PaginatedResponse<QuizScoreResponseDto>>> getStudentQuizScores(
-      String studentId, Pageable pageable);
+	ResponseEntity<ApiResponse<PaginatedResponse<QuizScoreResponseDto>>> getStudentQuizScores(
+			String studentId, Pageable pageable);
 
-  ResponseEntity<ApiResponse<QuizScoreDetailResponseDto>> getStudentQuizScoreDetail(
-      String studentId, String quizResultId);
+	ResponseEntity<ApiResponse<QuizScoreDetailResponseDto>> getStudentQuizScoreDetail(
+			String studentId, String quizResultId);
 }

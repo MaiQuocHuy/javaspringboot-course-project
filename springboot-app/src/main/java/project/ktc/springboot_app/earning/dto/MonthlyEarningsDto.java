@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class MonthlyEarningsDto {
-  private int year;
-  private int month;
-  private BigDecimal revenue;
+	private int year;
+	private int month;
+	private BigDecimal revenue;
 }

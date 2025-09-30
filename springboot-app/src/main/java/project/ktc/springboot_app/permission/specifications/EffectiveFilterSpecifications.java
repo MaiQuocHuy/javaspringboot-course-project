@@ -14,13 +14,14 @@ import project.ktc.springboot_app.permission.entity.FilterType;
 import project.ktc.springboot_app.security.CustomPermissionEvaluator;
 
 /**
- * JPA Specifications for applying effective filters dynamically Uses the new filter type system
+ * JPA Specifications for applying effective filters dynamically Uses the new
+ * filter type system
  * with FilterType entity
  */
 @Slf4j
 public class EffectiveFilterSpecifications {
 
-  /**
+	/**
    * Apply effective filter to Course entities using new filter system
    *
    * @return Specification that applies the current effective filter
@@ -61,39 +62,42 @@ public class EffectiveFilterSpecifications {
     };
   }
 
-  /**
-   * Apply effective filter with additional business logic constraints Combines effective filter
-   * with published/approved status
-   *
-   * @param includePublishedOnly whether to include only published courses
-   * @return Specification that applies the effective filter with business constraints
-   */
-  public static Specification<Course> applyCourseFilterWithConstraints(
-      boolean includePublishedOnly) {
-    return (Root<Course> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-      List<Predicate> predicates = new ArrayList<>();
+	/**
+	 * Apply effective filter with additional business logic constraints Combines
+	 * effective filter
+	 * with published/approved status
+	 *
+	 * @param includePublishedOnly
+	 *            whether to include only published courses
+	 * @return Specification that applies the effective filter with business
+	 *         constraints
+	 */
+	public static Specification<Course> applyCourseFilterWithConstraints(
+			boolean includePublishedOnly) {
+		return (Root<Course> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+			List<Predicate> predicates = new ArrayList<>();
 
-      // Apply effective filter
-      Specification<Course> effectiveFilterSpec = applyCourseFilter();
-      Predicate effectiveFilterPredicate = effectiveFilterSpec.toPredicate(root, query, cb);
-      if (effectiveFilterPredicate != null) {
-        predicates.add(effectiveFilterPredicate);
-      }
+			// Apply effective filter
+			Specification<Course> effectiveFilterSpec = applyCourseFilter();
+			Predicate effectiveFilterPredicate = effectiveFilterSpec.toPredicate(root, query, cb);
+			if (effectiveFilterPredicate != null) {
+				predicates.add(effectiveFilterPredicate);
+			}
 
-      // Add business constraints
-      if (includePublishedOnly) {
-        predicates.add(cb.isTrue(root.get("isPublished")));
-        predicates.add(cb.isTrue(root.get("isApproved")));
-      }
+			// Add business constraints
+			if (includePublishedOnly) {
+				predicates.add(cb.isTrue(root.get("isPublished")));
+				predicates.add(cb.isTrue(root.get("isApproved")));
+			}
 
-      // Always exclude deleted courses
-      predicates.add(cb.isFalse(root.get("isDeleted")));
+			// Always exclude deleted courses
+			predicates.add(cb.isFalse(root.get("isDeleted")));
 
-      return cb.and(predicates.toArray(new Predicate[0]));
-    };
-  }
+			return cb.and(predicates.toArray(new Predicate[0]));
+		};
+	}
 
-  /**
+	/**
    * Generic method to apply effective filter to any entity with instructor relationship
    *
    * @param <T> the entity type
@@ -139,7 +143,7 @@ public class EffectiveFilterSpecifications {
     };
   }
 
-  /**
+	/**
    * Generic method to apply effective filter to any entity with createdBy relationship
    *
    * @param <T> the entity type
@@ -173,7 +177,7 @@ public class EffectiveFilterSpecifications {
     };
   }
 
-  /**
+	/**
    * Apply filter with custom ownership logic
    *
    * @param <T> the entity type
@@ -209,9 +213,9 @@ public class EffectiveFilterSpecifications {
     };
   }
 
-  /** Functional interface for custom ownership logic */
-  @FunctionalInterface
-  public interface OwnershipPredicate<T> {
-    Predicate apply(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb, User user);
-  }
+	/** Functional interface for custom ownership logic */
+	@FunctionalInterface
+	public interface OwnershipPredicate<T> {
+		Predicate apply(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb, User user);
+	}
 }

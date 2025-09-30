@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Course progress information including summary and lesson details")
 public class CourseProgressDto {
 
-  @Schema(description = "Progress summary with counts and percentage")
-  private CourseProgressSummaryDto summary;
+	@Schema(description = "Progress summary with counts and percentage")
+	private CourseProgressSummaryDto summary;
 
-  @Schema(description = "List of lessons with their completion status")
-  private List<CourseProgressLessonDto> lessons;
+	@Schema(description = "List of lessons with their completion status")
+	private List<CourseProgressLessonDto> lessons;
 }

@@ -17,7 +17,7 @@ import project.ktc.springboot_app.payment.entity.Payment.PaymentStatus;
 @Schema(description = "DTO for updating payment status by admin")
 public class AdminUpdatePaymentStatusDto {
 
-  @NotNull
-  @Schema(description = "New status of the payment")
-  private PaymentStatus status;
+	@NotNull
+	@Schema(description = "New status of the payment")
+	private PaymentStatus status;
 }

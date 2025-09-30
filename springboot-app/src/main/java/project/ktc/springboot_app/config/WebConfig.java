@@ -11,13 +11,13 @@ import project.ktc.springboot_app.permission.interceptors.FilterContextCleanupIn
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-  private final FilterContextCleanupInterceptor filterContextCleanupInterceptor;
+	private final FilterContextCleanupInterceptor filterContextCleanupInterceptor;
 
-  @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-    registry
-        .addInterceptor(filterContextCleanupInterceptor)
-        .addPathPatterns("/**")
-        .excludePathPatterns("/actuator/**", "/health", "/info", "/metrics");
-  }
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry
+				.addInterceptor(filterContextCleanupInterceptor)
+				.addPathPatterns("/**")
+				.excludePathPatterns("/actuator/**", "/health", "/info", "/metrics");
+	}
 }

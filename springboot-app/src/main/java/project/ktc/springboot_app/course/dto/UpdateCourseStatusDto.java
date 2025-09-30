@@ -13,9 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateCourseStatusDto {
 
-  @NotBlank(message = "Status is required")
-  @Pattern(
-      regexp = "^(PUBLISHED|UNPUBLISHED)$",
-      message = "Status must be either 'PUBLISHED' or 'UNPUBLISHED'")
-  private String status;
+	@NotBlank(message = "Status is required")
+	@Pattern(regexp = "^(PUBLISHED|UNPUBLISHED)$", message = "Status must be either 'PUBLISHED' or 'UNPUBLISHED'")
+	private String status;
 }

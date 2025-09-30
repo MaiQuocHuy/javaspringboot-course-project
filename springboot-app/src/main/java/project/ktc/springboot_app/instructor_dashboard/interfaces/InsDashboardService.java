@@ -5,5 +5,5 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 import project.ktc.springboot_app.instructor_dashboard.dto.InsDashboardDto;
 
 public interface InsDashboardService {
-  ResponseEntity<ApiResponse<InsDashboardDto>> getInsDashboardStatistics();
+	ResponseEntity<ApiResponse<InsDashboardDto>> getInsDashboardStatistics();
 }

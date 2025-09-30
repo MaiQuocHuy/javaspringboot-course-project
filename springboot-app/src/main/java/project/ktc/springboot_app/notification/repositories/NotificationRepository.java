@@ -14,39 +14,42 @@ import project.ktc.springboot_app.notification.entity.Notification;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, String> {
 
-  /**
-   * Find all notifications for a specific user
-   *
-   * @param userId the user ID
-   * @return list of notifications
-   */
-  Page<Notification> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
+	/**
+	 * Find all notifications for a specific user
+	 *
+	 * @param userId
+	 *            the user ID
+	 * @return list of notifications
+	 */
+	Page<Notification> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
 
-  boolean existsByIdAndUserId(String id, String userId);
+	boolean existsByIdAndUserId(String id, String userId);
 
-  /**
-   * Find unread notifications for a specific user
-   *
-   * @param userId the user ID
-   * @return list of unread notifications
-   */
-  List<Notification> findByUserIdAndIsReadFalseOrderByCreatedAtDesc(String userId);
+	/**
+	 * Find unread notifications for a specific user
+	 *
+	 * @param userId
+	 *            the user ID
+	 * @return list of unread notifications
+	 */
+	List<Notification> findByUserIdAndIsReadFalseOrderByCreatedAtDesc(String userId);
 
-  /**
-   * Count unread notifications for a specific user
-   *
-   * @param userId the user ID
-   * @return count of unread notifications
-   */
-  long countByUserIdAndIsReadFalse(String userId);
+	/**
+	 * Count unread notifications for a specific user
+	 *
+	 * @param userId
+	 *            the user ID
+	 * @return count of unread notifications
+	 */
+	long countByUserIdAndIsReadFalse(String userId);
 
-  /**
-   * Find expired notifications
-   *
-   * @param currentTime current timestamp
-   * @return list of expired notifications
-   */
-  @Query(
-      "SELECT n FROM Notification n WHERE n.expiredAt IS NOT NULL AND n.expiredAt < :currentTime")
-  List<Notification> findExpiredNotifications(@Param("currentTime") LocalDateTime currentTime);
+	/**
+	 * Find expired notifications
+	 *
+	 * @param currentTime
+	 *            current timestamp
+	 * @return list of expired notifications
+	 */
+	@Query("SELECT n FROM Notification n WHERE n.expiredAt IS NOT NULL AND n.expiredAt < :currentTime")
+	List<Notification> findExpiredNotifications(@Param("currentTime") LocalDateTime currentTime);
 }

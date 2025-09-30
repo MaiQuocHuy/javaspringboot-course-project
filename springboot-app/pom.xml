@@ -294,10 +294,10 @@
 				<artifactId>spotless-maven-plugin</artifactId>
 				<version>2.43.0</version>
 				<configuration>
-					<java>
-					<googleJavaFormat>
-						<version>1.17.0</version>
-					</googleJavaFormat>
+					 <java>
+						<eclipse>
+ 							<file>${basedir}/eclipse-formatter.xml</file>			
+						</eclipse>
 					</java>
 				</configuration>
 			</plugin>

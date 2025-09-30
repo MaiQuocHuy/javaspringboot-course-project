@@ -15,62 +15,62 @@ import project.ktc.springboot_app.discount.enums.PayoutStatus;
 @AllArgsConstructor
 public class AffiliatePayoutResponseDto {
 
-  private String id;
+	private String id;
 
-  private ReferredByUserDto referredByUser;
+	private ReferredByUserDto referredByUser;
 
-  private CourseDto course;
+	private CourseDto course;
 
-  private DiscountUsageDto discountUsage;
+	private DiscountUsageDto discountUsage;
 
-  private BigDecimal commissionPercent;
+	private BigDecimal commissionPercent;
 
-  private BigDecimal commissionAmount;
+	private BigDecimal commissionAmount;
 
-  private PayoutStatus payoutStatus;
+	private PayoutStatus payoutStatus;
 
-  private LocalDateTime createdAt;
+	private LocalDateTime createdAt;
 
-  private LocalDateTime updatedAt;
+	private LocalDateTime updatedAt;
 
-  private LocalDateTime paidAt;
+	private LocalDateTime paidAt;
 
-  private LocalDateTime cancelledAt;
+	private LocalDateTime cancelledAt;
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class ReferredByUserDto {
-    private String id;
-    private String name;
-    private String email;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class ReferredByUserDto {
+		private String id;
+		private String name;
+		private String email;
+	}
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class CourseDto {
-    private String id;
-    private String name;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class CourseDto {
+		private String id;
+		private String name;
+	}
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class DiscountUsageDto {
-    private String id;
-    private DiscountDto discount;
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class DiscountUsageDto {
+		private String id;
+		private DiscountDto discount;
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class DiscountDto {
-      private String code;
-      private String type;
-    }
-  }
+		@Data
+		@Builder
+		@NoArgsConstructor
+		@AllArgsConstructor
+		public static class DiscountDto {
+			private String code;
+			private String type;
+		}
+	}
 }

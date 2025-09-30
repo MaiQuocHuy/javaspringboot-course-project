@@ -13,15 +13,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AdminPaidOutResponseDto {
 
-  private String paymentId;
-  private String courseId;
-  private String courseTitle;
-  private String instructorId;
-  private String instructorName;
-  private BigDecimal amount;
-  private BigDecimal instructorEarning;
-  private LocalDateTime paidOutAt;
-  private String earningId;
+	private String paymentId;
+	private String courseId;
+	private String courseTitle;
+	private String instructorId;
+	private String instructorName;
+	private BigDecimal amount;
+	private BigDecimal instructorEarning;
+	private LocalDateTime paidOutAt;
+	private String earningId;
 
-  private String message;
+	private String message;
 }

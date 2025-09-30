@@ -15,14 +15,12 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Category request DTO for create and update operations")
 public class CategoryRequestDto {
 
-  @NotBlank(message = "Category name is required")
-  @Size(min = 2, max = 100, message = "Category name must be between 2 and 100 characters")
-  @Schema(description = "Category name", example = "Programming", required = true)
-  private String name;
+	@NotBlank(message = "Category name is required")
+	@Size(min = 2, max = 100, message = "Category name must be between 2 and 100 characters")
+	@Schema(description = "Category name", example = "Programming", required = true)
+	private String name;
 
-  @Size(max = 1000, message = "Description must not exceed 1000 characters")
-  @Schema(
-      description = "Category description",
-      example = "Programming courses including various languages and frameworks")
-  private String description;
+	@Size(max = 1000, message = "Description must not exceed 1000 characters")
+	@Schema(description = "Category description", example = "Programming courses including various languages and frameworks")
+	private String description;
 }

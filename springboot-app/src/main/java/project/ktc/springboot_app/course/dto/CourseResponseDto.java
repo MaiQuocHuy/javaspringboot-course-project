@@ -14,36 +14,36 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseResponseDto {
-  private String id;
-  private String title;
-  private String description;
-  private BigDecimal price;
-  private CourseLevel level;
-  private String thumbnailUrl;
-  private String thumbnailId;
-  private Boolean isPublished;
-  private Boolean isApproved;
-  private InstructorInfo instructor;
-  private List<CategoryInfo> categories;
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+	private String id;
+	private String title;
+	private String description;
+	private BigDecimal price;
+	private CourseLevel level;
+	private String thumbnailUrl;
+	private String thumbnailId;
+	private Boolean isPublished;
+	private Boolean isApproved;
+	private InstructorInfo instructor;
+	private List<CategoryInfo> categories;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class InstructorInfo {
-    private String id;
-    private String name;
-    private String email;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class InstructorInfo {
+		private String id;
+		private String name;
+		private String email;
+	}
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class CategoryInfo {
-    private String id;
-    private String name;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class CategoryInfo {
+		private String id;
+		private String name;
+	}
 }

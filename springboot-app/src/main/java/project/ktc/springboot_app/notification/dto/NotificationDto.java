@@ -14,32 +14,32 @@ import project.ktc.springboot_app.notification.entity.NotificationPriority;
 @AllArgsConstructor
 public class NotificationDto {
 
-  private String id;
+	private String id;
 
-  private String userId;
+	private String userId;
 
-  private String resourceId;
+	private String resourceId;
 
-  private String entityId;
+	private String entityId;
 
-  private String message;
+	private String message;
 
-  private String actionUrl;
+	private String actionUrl;
 
-  private NotificationPriority priority;
+	private NotificationPriority priority;
 
-  private long unreadCount;
+	private long unreadCount;
 
-  private Boolean isRead;
+	private Boolean isRead;
 
-  private LocalDateTime readAt;
+	private LocalDateTime readAt;
 
-  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-  private LocalDateTime expiredAt;
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	private LocalDateTime expiredAt;
 
-  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-  private LocalDateTime createdAt;
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	private LocalDateTime createdAt;
 
-  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-  private LocalDateTime updatedAt;
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	private LocalDateTime updatedAt;
 }

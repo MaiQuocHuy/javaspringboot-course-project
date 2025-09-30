@@ -14,26 +14,26 @@ import project.ktc.springboot_app.quiz.dto.QuizQuestionResponseDto;
 @AllArgsConstructor
 public class LessonWithQuizResponseDto {
 
-  private LessonResponseDto lesson;
-  private QuizWithinLessonResponseDto quiz;
+	private LessonResponseDto lesson;
+	private QuizWithinLessonResponseDto quiz;
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class LessonResponseDto {
-    private String id;
-    private String title;
-    private String sectionId;
-    private Integer orderIndex;
-    private LocalDateTime createdAt;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class LessonResponseDto {
+		private String id;
+		private String title;
+		private String sectionId;
+		private Integer orderIndex;
+		private LocalDateTime createdAt;
+	}
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class QuizWithinLessonResponseDto {
-    private List<QuizQuestionResponseDto> questions;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class QuizWithinLessonResponseDto {
+		private List<QuizQuestionResponseDto> questions;
+	}
 }

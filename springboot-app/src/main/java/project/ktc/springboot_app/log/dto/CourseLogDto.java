@@ -16,20 +16,20 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 @AllArgsConstructor
 public class CourseLogDto {
 
-  private String id;
-  private String title;
-  private String description;
-  private BigDecimal price;
-  private CourseLevel level;
-  private String thumbnailUrl;
-  private String thumbnailId;
-  private Boolean isPublished;
-  private Boolean isApproved;
-  private Boolean isDeleted;
-  private String instructorId;
-  private String instructorName;
-  private List<String> categoryIds;
-  private List<String> categoryNames;
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+	private String id;
+	private String title;
+	private String description;
+	private BigDecimal price;
+	private CourseLevel level;
+	private String thumbnailUrl;
+	private String thumbnailId;
+	private Boolean isPublished;
+	private Boolean isApproved;
+	private Boolean isDeleted;
+	private String instructorId;
+	private String instructorName;
+	private List<String> categoryIds;
+	private List<String> categoryNames;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 }

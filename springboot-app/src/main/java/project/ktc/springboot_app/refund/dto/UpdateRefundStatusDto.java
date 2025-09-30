@@ -13,11 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateRefundStatusDto {
 
-  @NotBlank(message = "Status is required")
-  @Pattern(
-      regexp = "^(COMPLETED|FAILED)$",
-      message = "Status must be either 'COMPLETED' or 'FAILED'")
-  private String status;
+	@NotBlank(message = "Status is required")
+	@Pattern(regexp = "^(COMPLETED|FAILED)$", message = "Status must be either 'COMPLETED' or 'FAILED'")
+	private String status;
 
-  private String rejectedReason;
+	private String rejectedReason;
 }

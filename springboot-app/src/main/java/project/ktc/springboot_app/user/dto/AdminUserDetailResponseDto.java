@@ -15,22 +15,22 @@ import project.ktc.springboot_app.auth.dto.UserResponseDto;
 @AllArgsConstructor
 @Builder
 public class AdminUserDetailResponseDto extends UserResponseDto {
-  private List<EnrolledCourseDto> enrolledCourses;
-  private BigDecimal totalPayments;
-  private Long totalStudyTimeSeconds; // Total study time in seconds
+	private List<EnrolledCourseDto> enrolledCourses;
+	private BigDecimal totalPayments;
+	private Long totalStudyTimeSeconds; // Total study time in seconds
 
-  @Getter
-  @Setter
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class EnrolledCourseDto {
-    private String courseId;
-    private String courseTitle;
-    private String instructorName;
-    private String enrolledAt;
-    private String completionStatus;
-    private BigDecimal paidAmount;
-    private Long totalTimeStudying; // in seconds
-  }
+	@Getter
+	@Setter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class EnrolledCourseDto {
+		private String courseId;
+		private String courseTitle;
+		private String instructorName;
+		private String enrolledAt;
+		private String completionStatus;
+		private BigDecimal paidAmount;
+		private Long totalTimeStudying; // in seconds
+	}
 }

@@ -8,11 +8,11 @@ import project.ktc.springboot_app.instructor_student.dto.InstructorStudentDetail
 import project.ktc.springboot_app.instructor_student.dto.InstructorStudentDto;
 
 public interface InstructorStudentService {
-  public ResponseEntity<ApiResponse<PaginatedResponse<InstructorStudentDto>>> getEnrolledStudents(
-      String search, Pageable pageable);
+	public ResponseEntity<ApiResponse<PaginatedResponse<InstructorStudentDto>>> getEnrolledStudents(
+			String search, Pageable pageable);
 
-  public ResponseEntity<ApiResponse<InstructorStudentDetailsDto>> getEnrolledStudentDetails(
-      String studentId, Pageable pageable);
+	public ResponseEntity<ApiResponse<InstructorStudentDetailsDto>> getEnrolledStudentDetails(
+			String studentId, Pageable pageable);
 
-  public ResponseEntity<ApiResponse<Long>> getNumOfEnrolledStudent();
+	public ResponseEntity<ApiResponse<Long>> getNumOfEnrolledStudent();
 }

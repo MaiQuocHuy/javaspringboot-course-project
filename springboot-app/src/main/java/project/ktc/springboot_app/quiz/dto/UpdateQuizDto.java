@@ -15,8 +15,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateQuizDto {
 
-  @NotEmpty(message = "Questions list cannot be empty")
-  @Size(min = 1, max = 20, message = "Must have between 1 and 20 questions")
-  @Valid
-  private List<UpdateQuizQuestionDto> questions;
+	@NotEmpty(message = "Questions list cannot be empty")
+	@Size(min = 1, max = 20, message = "Must have between 1 and 20 questions")
+	@Valid
+	private List<UpdateQuizQuestionDto> questions;
 }

@@ -12,20 +12,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StatisticsDTO {
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class StatCard {
-    private String title;
-    private String value;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class StatCard {
+		private String title;
+		private String value;
+	}
 
-  private List<StatCard> stats;
-  private Double totalRevenue;
-  private Double monthlyGrowth;
-  private Double yearlyGrowth;
-  private Double avgRevenuePerUser;
-  private Long totalActiveUsers;
-  private Long totalTransactions;
+	private List<StatCard> stats;
+	private Double totalRevenue;
+	private Double monthlyGrowth;
+	private Double yearlyGrowth;
+	private Double avgRevenuePerUser;
+	private Long totalActiveUsers;
+	private Long totalTransactions;
 }

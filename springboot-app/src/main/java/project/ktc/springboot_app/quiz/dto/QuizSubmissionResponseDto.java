@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class QuizSubmissionResponseDto {
 
-  private BigDecimal score;
-  private Integer totalQuestions;
-  private Integer correctAnswers;
-  private String feedback;
-  private LocalDateTime submittedAt;
+	private BigDecimal score;
+	private Integer totalQuestions;
+	private Integer correctAnswers;
+	private String feedback;
+	private LocalDateTime submittedAt;
 }

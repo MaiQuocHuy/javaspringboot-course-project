@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuizQuestionDto {
-  private String id;
-  private String questionText;
-  private Map<String, String> options;
-  private String correctAnswer;
-  private String explanation;
+	private String id;
+	private String questionText;
+	private Map<String, String> options;
+	private String correctAnswer;
+	private String explanation;
 }

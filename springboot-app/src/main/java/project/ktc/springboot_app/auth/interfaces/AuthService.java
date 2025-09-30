@@ -13,27 +13,27 @@ import project.ktc.springboot_app.auth.dto.RegisterUserDto;
 import project.ktc.springboot_app.common.dto.ApiResponse;
 
 public interface AuthService {
-  ResponseEntity<ApiResponse<Void>> registerUser(RegisterUserDto registerUserDto);
+	ResponseEntity<ApiResponse<Void>> registerUser(RegisterUserDto registerUserDto);
 
-  ResponseEntity<ApiResponse<Void>> registerApplication(
-      RegisterApplicationDto registerApplicationDto,
-      MultipartFile certificate,
-      MultipartFile cv,
-      MultipartFile other);
+	ResponseEntity<ApiResponse<Void>> registerApplication(
+			RegisterApplicationDto registerApplicationDto,
+			MultipartFile certificate,
+			MultipartFile cv,
+			MultipartFile other);
 
-  ResponseEntity<ApiResponse<Map<String, Object>>> loginUser(LoginUserDto loginUserDto);
+	ResponseEntity<ApiResponse<Map<String, Object>>> loginUser(LoginUserDto loginUserDto);
 
-  ResponseEntity<ApiResponse<Map<String, Object>>> refreshAccessToken(String refreshToken);
+	ResponseEntity<ApiResponse<Map<String, Object>>> refreshAccessToken(String refreshToken);
 
-  ResponseEntity<ApiResponse<Map<String, String>>> resetPassword(String email, String newPassword);
+	ResponseEntity<ApiResponse<Map<String, String>>> resetPassword(String email, String newPassword);
 
-  ResponseEntity<ApiResponse<Void>> logout(String refreshToken);
+	ResponseEntity<ApiResponse<Void>> logout(String refreshToken);
 
-  ResponseEntity<ApiResponse<Void>> logoutAdmin(
-      HttpServletRequest request, HttpServletResponse response);
+	ResponseEntity<ApiResponse<Void>> logoutAdmin(
+			HttpServletRequest request, HttpServletResponse response);
 
-  ResponseEntity<ApiResponse<Map<String, Object>>> googleLogin(GoogleLoginDto googleLoginDto);
+	ResponseEntity<ApiResponse<Map<String, Object>>> googleLogin(GoogleLoginDto googleLoginDto);
 
-  ResponseEntity<ApiResponse<Map<String, Object>>> loginAdmin(
-      LoginAdminDto loginAdminDto, HttpServletResponse response);
+	ResponseEntity<ApiResponse<Map<String, Object>>> loginAdmin(
+			LoginAdminDto loginAdminDto, HttpServletResponse response);
 }

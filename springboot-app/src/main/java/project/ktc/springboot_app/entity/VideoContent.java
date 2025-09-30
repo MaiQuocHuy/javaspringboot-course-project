@@ -10,18 +10,19 @@ import project.ktc.springboot_app.auth.entitiy.User;
 @Getter
 @Setter
 public class VideoContent extends BaseEntity {
-  @Column(columnDefinition = "TEXT", nullable = false)
-  private String url;
+	@Column(columnDefinition = "TEXT", nullable = false)
+	private String url;
 
-  @Column private Integer duration;
+	@Column
+	private Integer duration;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "uploaded_by", nullable = false)
-  private User uploadedBy;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "uploaded_by", nullable = false)
+	private User uploadedBy;
 
-  @Column(length = 255, nullable = false)
-  private String title;
+	@Column(length = 255, nullable = false)
+	private String title;
 
-  @Column(name = "thumbnail_url", length = 255, nullable = false)
-  private String thumbnailUrl;
+	@Column(name = "thumbnail_url", length = 255, nullable = false)
+	private String thumbnailUrl;
 }

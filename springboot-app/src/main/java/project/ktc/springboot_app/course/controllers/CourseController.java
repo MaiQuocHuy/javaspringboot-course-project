@@ -35,115 +35,82 @@ import project.ktc.springboot_app.course.services.CourseServiceImp;
 @Slf4j
 public class CourseController {
 
-  private final CourseServiceImp courseService;
+	private final CourseServiceImp courseService;
 
-  @GetMapping
-  @Operation(
-      summary = "Get all published courses",
-      description =
-          "Retrieves a paginated list of all published and non-deleted courses with filtering and sorting options")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "200", description = "Courses retrieved successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid query parameters"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-      })
-  public ResponseEntity<
-          project.ktc.springboot_app.common.dto.ApiResponse<
-              PaginatedResponse<CoursePublicResponseDto>>>
-      findAllPublic(
-          @Parameter(description = "Page number (0-based)")
-              @RequestParam(defaultValue = "0")
-              @Min(0)
-              Integer page,
-          @Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100)
-              Integer size,
-          @Parameter(description = "Search by course title, description, or instructor name")
-              @RequestParam(required = false)
-              String search,
-          @Parameter(description = "Filter by category IDs (can be multiple)")
-              @RequestParam(required = false)
-              List<String> categoryIds,
-          @Parameter(description = "Minimum course price") @RequestParam(required = false)
-              BigDecimal minPrice,
-          @Parameter(description = "Maximum course price") @RequestParam(required = false)
-              BigDecimal maxPrice,
-          @Parameter(description = "Filter by course level") @RequestParam(required = false)
-              CourseLevel level,
-          @Parameter(description = "Filter by minimum average rating (0.0-5.0)")
-              @RequestParam(required = false)
-              Double averageRating,
-          @Parameter(description = "Sort field and direction (e.g., 'price,asc', 'title,desc')")
-              @RequestParam(defaultValue = "createdAt,desc")
-              String sort) {
+	@GetMapping
+	@Operation(summary = "Get all published courses", description = "Retrieves a paginated list of all published and non-deleted courses with filtering and sorting options")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Courses retrieved successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid query parameters"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> findAllPublic(
+			@Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") @Min(0) Integer page,
+			@Parameter(description = "Page size") @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer size,
+			@Parameter(description = "Search by course title, description, or instructor name") @RequestParam(required = false) String search,
+			@Parameter(description = "Filter by category IDs (can be multiple)") @RequestParam(required = false) List<String> categoryIds,
+			@Parameter(description = "Minimum course price") @RequestParam(required = false) BigDecimal minPrice,
+			@Parameter(description = "Maximum course price") @RequestParam(required = false) BigDecimal maxPrice,
+			@Parameter(description = "Filter by course level") @RequestParam(required = false) CourseLevel level,
+			@Parameter(description = "Filter by minimum average rating (0.0-5.0)") @RequestParam(required = false) Double averageRating,
+			@Parameter(description = "Sort field and direction (e.g., 'price,asc', 'title,desc')") @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-    log.info(
-        "🎯 CourseController.findAllPublic called with categoryIds: {}, size: {}",
-        categoryIds,
-        categoryIds != null ? categoryIds.size() : 0);
+		log.info(
+				"🎯 CourseController.findAllPublic called with categoryIds: {}, size: {}",
+				categoryIds,
+				categoryIds != null ? categoryIds.size() : 0);
 
-    // Create Pageable with sorting
-    Sort.Direction sortDirection = Sort.Direction.ASC;
-    String sortField = "createdAt";
+		// Create Pageable with sorting
+		Sort.Direction sortDirection = Sort.Direction.ASC;
+		String sortField = "createdAt";
 
-    if (sort != null && sort.contains(",")) {
-      String[] sortParams = sort.split(",");
-      sortField = sortParams[0];
-      if (sortParams.length > 1 && "desc".equalsIgnoreCase(sortParams[1])) {
-        sortDirection = Sort.Direction.DESC;
-      }
-    }
+		if (sort != null && sort.contains(",")) {
+			String[] sortParams = sort.split(",");
+			sortField = sortParams[0];
+			if (sortParams.length > 1 && "desc".equalsIgnoreCase(sortParams[1])) {
+				sortDirection = Sort.Direction.DESC;
+			}
+		}
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
+		Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortField));
 
-    // Call service method to get filtered courses
-    ResponseEntity<
-            project.ktc.springboot_app.common.dto.ApiResponse<
-                PaginatedResponse<CoursePublicResponseDto>>>
-        result =
-            courseService.findAllPublic(
-                search, categoryIds, minPrice, maxPrice, level, averageRating, pageable);
+		// Call service method to get filtered courses
+		ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<PaginatedResponse<CoursePublicResponseDto>>> result = courseService
+				.findAllPublic(
+						search, categoryIds, minPrice, maxPrice, level, averageRating, pageable);
 
-    return result;
-  }
+		return result;
+	}
 
-  @GetMapping("/slug/{slug}")
-  @Operation(
-      summary = "Get course details by slug",
-      description =
-          "Retrieves detailed information about a single published course using slug including ratings, sections, lessons, and quiz counts")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "200", description = "Course details retrieved successfully"),
-        @ApiResponse(responseCode = "404", description = "Course not found"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-      })
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>>
-      findOneBySlug(@Parameter(description = "Course slug") @PathVariable String slug) {
+	@GetMapping("/slug/{slug}")
+	@Operation(summary = "Get course details by slug", description = "Retrieves detailed information about a single published course using slug including ratings, sections, lessons, and quiz counts")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Course details retrieved successfully"),
+			@ApiResponse(responseCode = "404", description = "Course not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>> findOneBySlug(
+			@Parameter(description = "Course slug") @PathVariable String slug) {
 
-    ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>>
-        result = courseService.findOneBySlug(slug);
+		ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>> result = courseService
+				.findOneBySlug(slug);
 
-    return result;
-  }
+		return result;
+	}
 
-  @GetMapping("/{id}")
-  @Operation(
-      summary = "Get course details by ID",
-      description =
-          "Retrieves detailed information about a single published course including ratings, sections, and lessons")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "200", description = "Course details retrieved successfully"),
-        @ApiResponse(responseCode = "404", description = "Course not found"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-      })
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>>
-      findOnePublic(@Parameter(description = "Course ID") @PathVariable String id) {
+	@GetMapping("/{id}")
+	@Operation(summary = "Get course details by ID", description = "Retrieves detailed information about a single published course including ratings, sections, and lessons")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Course details retrieved successfully"),
+			@ApiResponse(responseCode = "404", description = "Course not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>> findOnePublic(
+			@Parameter(description = "Course ID") @PathVariable String id) {
 
-    ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>>
-        result = courseService.findOnePublic(id);
+		ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<CourseDetailResponseDto>> result = courseService
+				.findOnePublic(id);
 
-    return result;
-  }
+		return result;
+	}
 }

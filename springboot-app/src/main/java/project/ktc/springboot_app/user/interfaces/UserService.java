@@ -13,31 +13,31 @@ import project.ktc.springboot_app.user.dto.UpdateUserRoleDto;
 import project.ktc.springboot_app.user.dto.UpdateUserStatusDto;
 
 public interface UserService {
-  ResponseEntity<ApiResponse<UserResponseDto>> getProfile();
+	ResponseEntity<ApiResponse<UserResponseDto>> getProfile();
 
-  ResponseEntity<ApiResponse<UserResponseDto>> updateProfile(
-      UpdateUserDto userDto, MultipartFile thumbnailFile);
+	ResponseEntity<ApiResponse<UserResponseDto>> updateProfile(
+			UpdateUserDto userDto, MultipartFile thumbnailFile);
 
-  ResponseEntity<ApiResponse<List<UserResponseDto>>> getUsers();
+	ResponseEntity<ApiResponse<List<UserResponseDto>>> getUsers();
 
-  ResponseEntity<ApiResponse<UserResponseDto>> getUserById(String id);
+	ResponseEntity<ApiResponse<UserResponseDto>> getUserById(String id);
 
-  ResponseEntity<ApiResponse<UserResponseDto>> updateUserRole(String id, UpdateUserRoleDto role);
+	ResponseEntity<ApiResponse<UserResponseDto>> updateUserRole(String id, UpdateUserRoleDto role);
 
-  ResponseEntity<ApiResponse<UserResponseDto>> updateUserStatus(
-      String id, UpdateUserStatusDto status);
+	ResponseEntity<ApiResponse<UserResponseDto>> updateUserStatus(
+			String id, UpdateUserStatusDto status);
 
-  ResponseEntity<ApiResponse<UserResponseDto>> createUser(CreateUserDto createUserDto);
+	ResponseEntity<ApiResponse<UserResponseDto>> createUser(CreateUserDto createUserDto);
 
-  ResponseEntity<ApiResponse<UserResponseDto>> updateUserProfile(
-      String id, UpdateUserDto updateUserDto);
+	ResponseEntity<ApiResponse<UserResponseDto>> updateUserProfile(
+			String id, UpdateUserDto updateUserDto);
 
-  ResponseEntity<ApiResponse<AdminUserPageResponseDto>> getUsersWithPagination(
-      String search, String role, Boolean isActive, int page, int size, String sort);
+	ResponseEntity<ApiResponse<AdminUserPageResponseDto>> getUsersWithPagination(
+			String search, String role, Boolean isActive, int page, int size, String sort);
 
-  ResponseEntity<ApiResponse<Void>> deleteUser(String id);
+	ResponseEntity<ApiResponse<Void>> deleteUser(String id);
 
-  ResponseEntity<ApiResponse<UserResponseDto>> createAdminUser(AdminCreateUserDto createUserDto);
+	ResponseEntity<ApiResponse<UserResponseDto>> createAdminUser(AdminCreateUserDto createUserDto);
 
-  ResponseEntity<ApiResponse<List<String>>> getAvailableRoles();
+	ResponseEntity<ApiResponse<List<String>>> getAvailableRoles();
 }

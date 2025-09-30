@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SubmitQuizDto {
 
-  @NotNull(message = "Answers are required")
-  private Map<String, String> answers;
+	@NotNull(message = "Answers are required")
+	private Map<String, String> answers;
 }

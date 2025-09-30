@@ -10,23 +10,23 @@ import project.ktc.springboot_app.common.dto.ApiResponse;
 
 public interface CategoryService {
 
-  // Create new category
-  ResponseEntity<ApiResponse<CategoryResponseDto>> createCategory(CategoryRequestDto requestDto);
+	// Create new category
+	ResponseEntity<ApiResponse<CategoryResponseDto>> createCategory(CategoryRequestDto requestDto);
 
-  // Get all categories with pagination and search
-  ResponseEntity<ApiResponse<Page<CategoryResponseDto>>> getAllCategories(
-      String search, Pageable pageable);
+	// Get all categories with pagination and search
+	ResponseEntity<ApiResponse<Page<CategoryResponseDto>>> getAllCategories(
+			String search, Pageable pageable);
 
-  // Get all categories for dropdown (with course count)
-  ResponseEntity<ApiResponse<List<CategoryResponseDto>>> findAll();
+	// Get all categories for dropdown (with course count)
+	ResponseEntity<ApiResponse<List<CategoryResponseDto>>> findAll();
 
-  // Get category by ID
-  ResponseEntity<ApiResponse<CategoryResponseDto>> getCategoryById(String id);
+	// Get category by ID
+	ResponseEntity<ApiResponse<CategoryResponseDto>> getCategoryById(String id);
 
-  // Update category
-  ResponseEntity<ApiResponse<CategoryResponseDto>> updateCategory(
-      String id, CategoryRequestDto requestDto);
+	// Update category
+	ResponseEntity<ApiResponse<CategoryResponseDto>> updateCategory(
+			String id, CategoryRequestDto requestDto);
 
-  // Delete category
-  ResponseEntity<ApiResponse<Void>> deleteCategory(String id);
+	// Delete category
+	ResponseEntity<ApiResponse<Void>> deleteCategory(String id);
 }

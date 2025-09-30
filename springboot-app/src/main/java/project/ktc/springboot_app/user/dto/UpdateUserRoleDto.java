@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Schema(description = "DTO for updating user role")
 public class UpdateUserRoleDto {
 
-  @Schema(description = "User's new role", example = "ADMIN", required = true)
-  @NotNull(message = "Role cannot be null")
-  private String role;
+	@Schema(description = "User's new role", example = "ADMIN", required = true)
+	@NotNull(message = "Role cannot be null")
+	private String role;
 }

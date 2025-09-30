@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EarningResponseDto {
-  private String id;
-  private String courseId;
-  private String courseTitle;
-  private String courseThumbnailUrl;
-  private String paymentId;
-  private BigDecimal amount;
-  private BigDecimal platformCut;
-  private BigDecimal instructorShare;
-  private String status;
-  private LocalDateTime paidAt;
+	private String id;
+	private String courseId;
+	private String courseTitle;
+	private String courseThumbnailUrl;
+	private String paymentId;
+	private BigDecimal amount;
+	private BigDecimal platformCut;
+	private BigDecimal instructorShare;
+	private String status;
+	private LocalDateTime paidAt;
 }

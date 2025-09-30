@@ -9,6 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LessonType extends BaseEntity {
-  @Column(name = "name", length = 50, nullable = false, unique = true)
-  private String name;
+	@Column(name = "name", length = 50, nullable = false, unique = true)
+	private String name;
 }

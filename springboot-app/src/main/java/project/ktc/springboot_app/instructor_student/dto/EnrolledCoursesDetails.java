@@ -12,16 +12,16 @@ import project.ktc.springboot_app.course.dto.common.BaseCourseResponseDto.Catego
 @Setter
 @SuperBuilder
 public class EnrolledCoursesDetails extends EnrolledCourses {
-  private String description;
-  private BigDecimal price;
-  private String thumbnailUrl;
-  private String level;
-  private List<CategoryInfo> categories;
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+	private String description;
+	private BigDecimal price;
+	private String thumbnailUrl;
+	private String level;
+	private List<CategoryInfo> categories;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 
-  private Double averageRating;
-  private Long totalRating;
+	private Double averageRating;
+	private Long totalRating;
 
-  private LocalDateTime enrolledAt;
+	private LocalDateTime enrolledAt;
 }

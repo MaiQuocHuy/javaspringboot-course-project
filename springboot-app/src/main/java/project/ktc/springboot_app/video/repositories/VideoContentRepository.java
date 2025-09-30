@@ -8,6 +8,6 @@ import project.ktc.springboot_app.entity.VideoContent;
 @Repository
 public interface VideoContentRepository extends JpaRepository<VideoContent, String> {
 
-  /** Find VideoContent by uploader */
-  Optional<VideoContent> findByUploadedById(String uploadedById);
+	/** Find VideoContent by uploader */
+	Optional<VideoContent> findByUploadedById(String uploadedById);
 }

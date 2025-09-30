@@ -13,19 +13,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AffiliateStatisticsResponseDto {
 
-  private long totalPayouts;
+	private long totalPayouts;
 
-  private long pendingPayouts;
+	private long pendingPayouts;
 
-  private long paidPayouts;
+	private long paidPayouts;
 
-  private long cancelledPayouts;
+	private long cancelledPayouts;
 
-  private BigDecimal totalCommissionAmount;
+	private BigDecimal totalCommissionAmount;
 
-  private BigDecimal pendingCommissionAmount;
+	private BigDecimal pendingCommissionAmount;
 
-  private BigDecimal paidCommissionAmount;
+	private BigDecimal paidCommissionAmount;
 
-  private BigDecimal cancelledCommissionAmount;
+	private BigDecimal cancelledCommissionAmount;
 }

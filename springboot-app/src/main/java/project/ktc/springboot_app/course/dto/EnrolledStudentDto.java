@@ -9,10 +9,10 @@ import lombok.Setter;
 @Setter
 @Builder
 public class EnrolledStudentDto {
-  private String id;
-  private String name;
-  private String email;
-  private String thumbnailUrl;
-  private double progress;
-  private LocalDateTime enrolledAt;
+	private String id;
+	private String name;
+	private String email;
+	private String thumbnailUrl;
+	private double progress;
+	private LocalDateTime enrolledAt;
 }

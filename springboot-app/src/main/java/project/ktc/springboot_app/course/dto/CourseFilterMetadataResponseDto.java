@@ -13,6 +13,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseFilterMetadataResponseDto {
-  private BigDecimal minPrice;
-  private BigDecimal maxPrice;
+	private BigDecimal minPrice;
+	private BigDecimal maxPrice;
 }

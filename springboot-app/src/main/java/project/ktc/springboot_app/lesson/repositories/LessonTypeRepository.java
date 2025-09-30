@@ -8,9 +8,9 @@ import project.ktc.springboot_app.entity.LessonType;
 @Repository
 public interface LessonTypeRepository extends JpaRepository<LessonType, String> {
 
-  /** Find lesson type by name */
-  Optional<LessonType> findByName(String name);
+	/** Find lesson type by name */
+	Optional<LessonType> findByName(String name);
 
-  /** Check if lesson type exists by name */
-  boolean existsByName(String name);
+	/** Check if lesson type exists by name */
+	boolean existsByName(String name);
 }

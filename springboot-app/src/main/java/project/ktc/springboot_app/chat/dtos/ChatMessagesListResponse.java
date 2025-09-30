@@ -10,18 +10,18 @@ import lombok.Data;
 @Schema(description = "Response for chat messages list endpoint")
 public class ChatMessagesListResponse {
 
-  @Schema(description = "List of chat messages")
-  private List<SimpleChatMessageResponse> messages;
+	@Schema(description = "List of chat messages")
+	private List<SimpleChatMessageResponse> messages;
 
-  @Schema(description = "Current page number", example = "0")
-  private Integer page;
+	@Schema(description = "Current page number", example = "0")
+	private Integer page;
 
-  @Schema(description = "Number of messages per page", example = "50")
-  private Integer size;
+	@Schema(description = "Number of messages per page", example = "50")
+	private Integer size;
 
-  @Schema(description = "Total number of messages", example = "100")
-  private Long totalElements;
+	@Schema(description = "Total number of messages", example = "100")
+	private Long totalElements;
 
-  @Schema(description = "Total number of pages", example = "2")
-  private Integer totalPages;
+	@Schema(description = "Total number of pages", example = "2")
+	private Integer totalPages;
 }

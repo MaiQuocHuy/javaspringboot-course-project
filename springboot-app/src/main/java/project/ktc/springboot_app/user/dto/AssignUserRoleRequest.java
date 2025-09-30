@@ -13,11 +13,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AssignUserRoleRequest {
 
-  @NotBlank(message = "User ID is required")
-  private String userId;
+	@NotBlank(message = "User ID is required")
+	private String userId;
 
-  @NotBlank(message = "Role ID is required")
-  private String roleId;
+	@NotBlank(message = "Role ID is required")
+	private String roleId;
 
-  private String reason; // Optional reason for role assignment
+	private String reason; // Optional reason for role assignment
 }

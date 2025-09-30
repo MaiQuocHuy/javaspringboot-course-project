@@ -13,80 +13,78 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseDetailResponseDto {
-  private String id;
-  private String slug;
-  private String title;
-  private String description;
-  private BigDecimal price;
-  private CourseLevel level;
-  private String thumbnailUrl;
-  private Integer lessonCount;
-  private Integer quizCount; // Total number of quiz lessons in the course
-  private Integer questionCount; // Total number of quiz questions in the course
-  private Integer enrollCount;
-  private String sampleVideoUrl;
-  private Integer totalDuration; // Total course duration in seconds
-  private RatingSummary rating;
-  private Boolean isEnrolled;
-  private InstructorSummary instructor;
-  private OverViewInstructorSummary
-      overViewInstructorSummary; // Overall instructor statistics (average rating across
-  // all courses and total course count)
-  private List<SectionSummary> sections;
+	private String id;
+	private String slug;
+	private String title;
+	private String description;
+	private BigDecimal price;
+	private CourseLevel level;
+	private String thumbnailUrl;
+	private Integer lessonCount;
+	private Integer quizCount; // Total number of quiz lessons in the course
+	private Integer questionCount; // Total number of quiz questions in the course
+	private Integer enrollCount;
+	private String sampleVideoUrl;
+	private Integer totalDuration; // Total course duration in seconds
+	private RatingSummary rating;
+	private Boolean isEnrolled;
+	private InstructorSummary instructor;
+	private OverViewInstructorSummary overViewInstructorSummary; // Overall instructor statistics (average rating across
+	// all courses and total course count)
+	private List<SectionSummary> sections;
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class RatingSummary {
-    private Double average;
-    private Long totalReviews;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class RatingSummary {
+		private Double average;
+		private Long totalReviews;
+	}
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class InstructorSummary {
-    private String id;
-    private String name;
-    private String bio;
-    private String thumbnailUrl;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class InstructorSummary {
+		private String id;
+		private String name;
+		private String bio;
+		private String thumbnailUrl;
+	}
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class SectionSummary {
-    private String id;
-    private String title;
-    private Integer lessonCount; // Total number of lessons in this section
-    private Integer quizCount; // Number of quiz lessons in this section
-    private Integer duration; // Section total duration in seconds
-    private List<LessonSummary> lessons;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class SectionSummary {
+		private String id;
+		private String title;
+		private Integer lessonCount; // Total number of lessons in this section
+		private Integer quizCount; // Number of quiz lessons in this section
+		private Integer duration; // Section total duration in seconds
+		private List<LessonSummary> lessons;
+	}
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class LessonSummary {
-    private String id;
-    private String title;
-    private String type;
-    private Integer duration; // Lesson duration in seconds (only for VIDEO type)
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class LessonSummary {
+		private String id;
+		private String title;
+		private String type;
+		private Integer duration; // Lesson duration in seconds (only for VIDEO type)
+	}
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class OverViewInstructorSummary {
-    private Double
-        average; // Average rating across instructor's published and approved courses only
-    // (consistent with course count)
-    private Long totalCoursesByInstructor; // Total number of published and approved courses by this
-    // instructor
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class OverViewInstructorSummary {
+		private Double average; // Average rating across instructor's published and approved courses only
+		// (consistent with course count)
+		private Long totalCoursesByInstructor; // Total number of published and approved courses by this
+		// instructor
+	}
 }

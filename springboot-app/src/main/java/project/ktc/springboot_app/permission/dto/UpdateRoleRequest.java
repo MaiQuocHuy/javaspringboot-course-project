@@ -16,13 +16,11 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Request DTO for updating a role")
 public class UpdateRoleRequest {
 
-  @NotBlank(message = "Role name is required")
-  @Size(min = 2, max = 50, message = "Role name must be between 2 and 50 characters")
-  @Schema(description = "Role name", example = "MANAGER", required = true)
-  private String name;
+	@NotBlank(message = "Role name is required")
+	@Size(min = 2, max = 50, message = "Role name must be between 2 and 50 characters")
+	@Schema(description = "Role name", example = "MANAGER", required = true)
+	private String name;
 
-  @Schema(
-      description = "Role description",
-      example = "Manager role with team management permissions")
-  private String description;
+	@Schema(description = "Role description", example = "Manager role with team management permissions")
+	private String description;
 }

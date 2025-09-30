@@ -12,21 +12,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserWithRoleDto {
 
-  private String id;
-  private String email;
-  private String name;
-  private String thumbnailUrl;
-  private String bio;
-  private Boolean isActive;
+	private String id;
+	private String email;
+	private String name;
+	private String thumbnailUrl;
+	private String bio;
+	private Boolean isActive;
 
-  private RoleInfoDto role;
+	private RoleInfoDto role;
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class RoleInfoDto {
-    private String id;
-    private String name;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class RoleInfoDto {
+		private String id;
+		private String name;
+	}
 }

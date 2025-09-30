@@ -10,22 +10,25 @@ import project.ktc.springboot_app.quiz.dto.StudentQuizStatsDto;
 
 public interface StudentQuizService {
 
-  /**
-   * Get quiz scores for the current authenticated student
-   *
-   * @param pageable Pagination and sorting parameters
-   * @return Paginated response with quiz scores
-   */
-  ResponseEntity<ApiResponse<PaginatedResponse<QuizScoreResponseDto>>> getQuizScores(
-      Pageable pageable);
+	/**
+	 * Get quiz scores for the current authenticated student
+	 *
+	 * @param pageable
+	 *            Pagination and sorting parameters
+	 * @return Paginated response with quiz scores
+	 */
+	ResponseEntity<ApiResponse<PaginatedResponse<QuizScoreResponseDto>>> getQuizScores(
+			Pageable pageable);
 
-  /**
-   * Get detailed information about a specific quiz score for the current authenticated student
-   *
-   * @param quizResultId ID of the quiz result to retrieve
-   * @return Detailed quiz score with questions and answers
-   */
-  ResponseEntity<ApiResponse<QuizScoreDetailResponseDto>> getQuizScoreDetail(String quizResultId);
+	/**
+	 * Get detailed information about a specific quiz score for the current
+	 * authenticated student
+	 *
+	 * @param quizResultId
+	 *            ID of the quiz result to retrieve
+	 * @return Detailed quiz score with questions and answers
+	 */
+	ResponseEntity<ApiResponse<QuizScoreDetailResponseDto>> getQuizScoreDetail(String quizResultId);
 
-  ResponseEntity<ApiResponse<StudentQuizStatsDto>> getQuizStats();
+	ResponseEntity<ApiResponse<StudentQuizStatsDto>> getQuizStats();
 }

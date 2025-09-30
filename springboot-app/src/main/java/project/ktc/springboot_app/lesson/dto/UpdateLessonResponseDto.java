@@ -14,21 +14,18 @@ import project.ktc.springboot_app.section.dto.VideoDto;
 @Schema(description = "DTO for lesson update response")
 public class UpdateLessonResponseDto {
 
-  @Schema(description = "Lesson ID", example = "lesson-uuid-123")
-  private String id;
+	@Schema(description = "Lesson ID", example = "lesson-uuid-123")
+	private String id;
 
-  @Schema(description = "Updated lesson title", example = "Advanced Spring Boot Concepts")
-  private String title;
+	@Schema(description = "Updated lesson title", example = "Advanced Spring Boot Concepts")
+	private String title;
 
-  @Schema(
-      description = "Lesson type",
-      example = "VIDEO",
-      allowableValues = {"VIDEO", "QUIZ"})
-  private String type;
+	@Schema(description = "Lesson type", example = "VIDEO", allowableValues = { "VIDEO", "QUIZ" })
+	private String type;
 
-  @Schema(description = "Video content information (only for VIDEO type lessons)")
-  private VideoDto video;
+	@Schema(description = "Video content information (only for VIDEO type lessons)")
+	private VideoDto video;
 
-  @Schema(description = "Lesson order index within the section", example = "0")
-  private Integer orderIndex;
+	@Schema(description = "Lesson order index within the section", example = "0")
+	private Integer orderIndex;
 }

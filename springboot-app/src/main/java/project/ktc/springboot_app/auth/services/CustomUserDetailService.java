@@ -10,12 +10,12 @@ import project.ktc.springboot_app.user.repositories.UserRepository;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailService implements UserDetailsService {
-  private final UserRepository userRepository;
+	private final UserRepository userRepository;
 
-  @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    return userRepository
-        .findByEmailWithRoles(username)
-        .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-  }
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		return userRepository
+				.findByEmailWithRoles(username)
+				.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+	}
 }

@@ -11,11 +11,11 @@ import project.ktc.springboot_app.course.dto.CourseReviewStatusUpdateResponseDto
 import project.ktc.springboot_app.course.dto.UpdateCourseReviewStatusDto;
 
 public interface AdminCourseService {
-  ResponseEntity<ApiResponse<PaginatedResponse<CourseReviewResponseDto>>> getReviewCourses(
-      CourseReviewFilterDto filterDto, Pageable pageable);
+	ResponseEntity<ApiResponse<PaginatedResponse<CourseReviewResponseDto>>> getReviewCourses(
+			CourseReviewFilterDto filterDto, Pageable pageable);
 
-  ResponseEntity<ApiResponse<CourseReviewDetailResponseDto>> getCourseReviewDetail(String courseId);
+	ResponseEntity<ApiResponse<CourseReviewDetailResponseDto>> getCourseReviewDetail(String courseId);
 
-  ResponseEntity<ApiResponse<CourseReviewStatusUpdateResponseDto>> updateCourseReviewStatus(
-      String courseId, UpdateCourseReviewStatusDto updateDto, String reviewerEmail);
+	ResponseEntity<ApiResponse<CourseReviewStatusUpdateResponseDto>> updateCourseReviewStatus(
+			String courseId, UpdateCourseReviewStatusDto updateDto, String reviewerEmail);
 }

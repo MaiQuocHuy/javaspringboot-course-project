@@ -23,27 +23,27 @@ import project.ktc.springboot_app.auth.entitiy.User;
 @Entity
 @Table(name = "course_review_status_history")
 public class CourseReviewStatusHistory {
-  @Id
-  @Column(length = 36)
-  private String id;
+	@Id
+	@Column(length = 36)
+	private String id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "course_review_id", nullable = false)
-  private CourseReviewStatus courseReview;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "course_review_id", nullable = false)
+	private CourseReviewStatus courseReview;
 
-  @Column(name = "action", nullable = false, length = 20)
-  private String action;
+	@Column(name = "action", nullable = false, length = 20)
+	private String action;
 
-  @Column(name = "reason", columnDefinition = "TEXT")
-  private String reason;
+	@Column(name = "reason", columnDefinition = "TEXT")
+	private String reason;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "reviewer_id", nullable = false)
-  private User reviewer;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "reviewer_id", nullable = false)
+	private User reviewer;
 
-  @Column(name = "created_at")
-  private LocalDateTime createdAt;
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
-  @Column(name = "updated_at")
-  private LocalDateTime updatedAt;
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
 }

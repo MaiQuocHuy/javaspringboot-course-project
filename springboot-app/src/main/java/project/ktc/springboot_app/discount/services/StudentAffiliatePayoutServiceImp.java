@@ -24,111 +24,106 @@ import project.ktc.springboot_app.utils.SecurityUtil;
 @Slf4j
 public class StudentAffiliatePayoutServiceImp implements StudentAffiliatePayoutService {
 
-  private final StudentAffiliatePayoutRepository studentAffiliatePayoutRepository;
+	private final StudentAffiliatePayoutRepository studentAffiliatePayoutRepository;
 
-  @Override
-  public ResponseEntity<ApiResponse<PaginatedResponse<StudentAffiliatePayoutResponseDto>>>
-      getAffiliatePayouts(Pageable pageable) {
+	@Override
+	public ResponseEntity<ApiResponse<PaginatedResponse<StudentAffiliatePayoutResponseDto>>> getAffiliatePayouts(
+			Pageable pageable) {
 
-    String studentId = SecurityUtil.getCurrentUserId();
-    log.info(
-        "Getting affiliate payouts for student: {}, page: {}, size: {}",
-        studentId,
-        pageable.getPageNumber(),
-        pageable.getPageSize());
+		String studentId = SecurityUtil.getCurrentUserId();
+		log.info(
+				"Getting affiliate payouts for student: {}, page: {}, size: {}",
+				studentId,
+				pageable.getPageNumber(),
+				pageable.getPageSize());
 
-    try {
-      Page<AffiliatePayout> affiliatePayoutPage =
-          studentAffiliatePayoutRepository.findByReferredByUserId(studentId, pageable);
+		try {
+			Page<AffiliatePayout> affiliatePayoutPage = studentAffiliatePayoutRepository
+					.findByReferredByUserId(studentId, pageable);
 
-      Page<StudentAffiliatePayoutResponseDto> responsePage =
-          affiliatePayoutPage.map(StudentAffiliatePayoutResponseDto::fromEntity);
+			Page<StudentAffiliatePayoutResponseDto> responsePage = affiliatePayoutPage
+					.map(StudentAffiliatePayoutResponseDto::fromEntity);
 
-      PaginatedResponse<StudentAffiliatePayoutResponseDto> paginatedResponse =
-          PaginatedResponse.<StudentAffiliatePayoutResponseDto>builder()
-              .content(responsePage.getContent())
-              .page(
-                  PaginatedResponse.PageInfo.builder()
-                      .number(responsePage.getNumber())
-                      .size(responsePage.getSize())
-                      .totalElements(responsePage.getTotalElements())
-                      .totalPages(responsePage.getTotalPages())
-                      .first(responsePage.isFirst())
-                      .last(responsePage.isLast())
-                      .build())
-              .build();
+			PaginatedResponse<StudentAffiliatePayoutResponseDto> paginatedResponse = PaginatedResponse
+					.<StudentAffiliatePayoutResponseDto>builder()
+					.content(responsePage.getContent())
+					.page(
+							PaginatedResponse.PageInfo.builder()
+									.number(responsePage.getNumber())
+									.size(responsePage.getSize())
+									.totalElements(responsePage.getTotalElements())
+									.totalPages(responsePage.getTotalPages())
+									.first(responsePage.isFirst())
+									.last(responsePage.isLast())
+									.build())
+					.build();
 
-      log.info(
-          "Successfully retrieved {} affiliate payouts for student: {}",
-          responsePage.getTotalElements(),
-          studentId);
+			log.info(
+					"Successfully retrieved {} affiliate payouts for student: {}",
+					responsePage.getTotalElements(),
+					studentId);
 
-      return ApiResponseUtil.success(
-          paginatedResponse, "Student affiliate payouts retrieved successfully");
+			return ApiResponseUtil.success(
+					paginatedResponse, "Student affiliate payouts retrieved successfully");
 
-    } catch (Exception e) {
-      log.error("Error retrieving affiliate payouts for student: {}", studentId, e);
-      return ApiResponseUtil.internalServerError("Failed to retrieve affiliate payouts");
-    }
-  }
+		} catch (Exception e) {
+			log.error("Error retrieving affiliate payouts for student: {}", studentId, e);
+			return ApiResponseUtil.internalServerError("Failed to retrieve affiliate payouts");
+		}
+	}
 
-  @Override
-  public ResponseEntity<ApiResponse<StudentAffiliatePayoutStatisticsDto>>
-      getAffiliatePayoutStatistics() {
+	@Override
+	public ResponseEntity<ApiResponse<StudentAffiliatePayoutStatisticsDto>> getAffiliatePayoutStatistics() {
 
-    String studentId = SecurityUtil.getCurrentUserId();
-    log.info("Getting affiliate payout statistics for student: {}", studentId);
+		String studentId = SecurityUtil.getCurrentUserId();
+		log.info("Getting affiliate payout statistics for student: {}", studentId);
 
-    try {
-      // Get counts by status
-      Long totalPayouts = studentAffiliatePayoutRepository.countByReferredByUserId(studentId);
-      Long pendingPayouts =
-          studentAffiliatePayoutRepository.countByReferredByUserIdAndPayoutStatus(
-              studentId, PayoutStatus.PENDING);
-      Long paidPayouts =
-          studentAffiliatePayoutRepository.countByReferredByUserIdAndPayoutStatus(
-              studentId, PayoutStatus.PAID);
-      Long cancelledPayouts =
-          studentAffiliatePayoutRepository.countByReferredByUserIdAndPayoutStatus(
-              studentId, PayoutStatus.CANCELLED);
+		try {
+			// Get counts by status
+			Long totalPayouts = studentAffiliatePayoutRepository.countByReferredByUserId(studentId);
+			Long pendingPayouts = studentAffiliatePayoutRepository.countByReferredByUserIdAndPayoutStatus(
+					studentId, PayoutStatus.PENDING);
+			Long paidPayouts = studentAffiliatePayoutRepository.countByReferredByUserIdAndPayoutStatus(
+					studentId, PayoutStatus.PAID);
+			Long cancelledPayouts = studentAffiliatePayoutRepository.countByReferredByUserIdAndPayoutStatus(
+					studentId, PayoutStatus.CANCELLED);
 
-      // Get commission amounts by status
-      BigDecimal totalCommissionAmount =
-          studentAffiliatePayoutRepository.sumCommissionAmountByReferredByUserId(studentId);
-      BigDecimal pendingCommissionAmount =
-          studentAffiliatePayoutRepository.sumCommissionAmountByReferredByUserIdAndPayoutStatus(
-              studentId, PayoutStatus.PENDING);
-      BigDecimal paidCommissionAmount =
-          studentAffiliatePayoutRepository.sumCommissionAmountByReferredByUserIdAndPayoutStatus(
-              studentId, PayoutStatus.PAID);
-      BigDecimal cancelledCommissionAmount =
-          studentAffiliatePayoutRepository.sumCommissionAmountByReferredByUserIdAndPayoutStatus(
-              studentId, PayoutStatus.CANCELLED);
+			// Get commission amounts by status
+			BigDecimal totalCommissionAmount = studentAffiliatePayoutRepository
+					.sumCommissionAmountByReferredByUserId(studentId);
+			BigDecimal pendingCommissionAmount = studentAffiliatePayoutRepository
+					.sumCommissionAmountByReferredByUserIdAndPayoutStatus(
+							studentId, PayoutStatus.PENDING);
+			BigDecimal paidCommissionAmount = studentAffiliatePayoutRepository
+					.sumCommissionAmountByReferredByUserIdAndPayoutStatus(
+							studentId, PayoutStatus.PAID);
+			BigDecimal cancelledCommissionAmount = studentAffiliatePayoutRepository
+					.sumCommissionAmountByReferredByUserIdAndPayoutStatus(
+							studentId, PayoutStatus.CANCELLED);
 
-      StudentAffiliatePayoutStatisticsDto statistics =
-          StudentAffiliatePayoutStatisticsDto.builder()
-              .totalPayouts(totalPayouts != null ? totalPayouts : 0L)
-              .pendingPayouts(pendingPayouts != null ? pendingPayouts : 0L)
-              .paidPayouts(paidPayouts != null ? paidPayouts : 0L)
-              .cancelledPayouts(cancelledPayouts != null ? cancelledPayouts : 0L)
-              .totalCommissionAmount(
-                  totalCommissionAmount != null ? totalCommissionAmount : BigDecimal.ZERO)
-              .pendingCommissionAmount(
-                  pendingCommissionAmount != null ? pendingCommissionAmount : BigDecimal.ZERO)
-              .paidCommissionAmount(
-                  paidCommissionAmount != null ? paidCommissionAmount : BigDecimal.ZERO)
-              .cancelledCommissionAmount(
-                  cancelledCommissionAmount != null ? cancelledCommissionAmount : BigDecimal.ZERO)
-              .build();
+			StudentAffiliatePayoutStatisticsDto statistics = StudentAffiliatePayoutStatisticsDto.builder()
+					.totalPayouts(totalPayouts != null ? totalPayouts : 0L)
+					.pendingPayouts(pendingPayouts != null ? pendingPayouts : 0L)
+					.paidPayouts(paidPayouts != null ? paidPayouts : 0L)
+					.cancelledPayouts(cancelledPayouts != null ? cancelledPayouts : 0L)
+					.totalCommissionAmount(
+							totalCommissionAmount != null ? totalCommissionAmount : BigDecimal.ZERO)
+					.pendingCommissionAmount(
+							pendingCommissionAmount != null ? pendingCommissionAmount : BigDecimal.ZERO)
+					.paidCommissionAmount(
+							paidCommissionAmount != null ? paidCommissionAmount : BigDecimal.ZERO)
+					.cancelledCommissionAmount(
+							cancelledCommissionAmount != null ? cancelledCommissionAmount : BigDecimal.ZERO)
+					.build();
 
-      log.info("Successfully retrieved affiliate payout statistics for student: {}", studentId);
+			log.info("Successfully retrieved affiliate payout statistics for student: {}", studentId);
 
-      return ApiResponseUtil.success(
-          statistics, "Student affiliate payout statistics retrieved successfully");
+			return ApiResponseUtil.success(
+					statistics, "Student affiliate payout statistics retrieved successfully");
 
-    } catch (Exception e) {
-      log.error("Error retrieving affiliate payout statistics for student: {}", studentId, e);
-      return ApiResponseUtil.internalServerError("Failed to retrieve affiliate payout statistics");
-    }
-  }
+		} catch (Exception e) {
+			log.error("Error retrieving affiliate payout statistics for student: {}", studentId, e);
+			return ApiResponseUtil.internalServerError("Failed to retrieve affiliate payout statistics");
+		}
+	}
 }

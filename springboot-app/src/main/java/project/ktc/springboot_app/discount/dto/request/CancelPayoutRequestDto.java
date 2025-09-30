@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 public class CancelPayoutRequestDto {
 
-  private String reason; // Optional reason for cancellation
+	private String reason; // Optional reason for cancellation
 }

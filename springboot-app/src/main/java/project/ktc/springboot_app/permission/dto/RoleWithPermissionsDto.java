@@ -15,32 +15,32 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Response DTO for role with permissions operations")
 public class RoleWithPermissionsDto {
 
-  @Schema(description = "Role ID", example = "123e4567-e89b-12d3-a456-426614174000")
-  private String id;
+	@Schema(description = "Role ID", example = "123e4567-e89b-12d3-a456-426614174000")
+	private String id;
 
-  @Schema(description = "Role name", example = "ADMIN")
-  private String name;
+	@Schema(description = "Role name", example = "ADMIN")
+	private String name;
 
-  @Schema(description = "Total number of permissions assigned to this role", example = "12")
-  private Integer totalPermission;
+	@Schema(description = "Total number of permissions assigned to this role", example = "12")
+	private Integer totalPermission;
 
-  @Schema(description = "List of permissions assigned to this role")
-  private List<PermissionSummaryDto> permissions;
+	@Schema(description = "List of permissions assigned to this role")
+	private List<PermissionSummaryDto> permissions;
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @Schema(description = "Permission summary for role response")
-  public static class PermissionSummaryDto {
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Schema(description = "Permission summary for role response")
+	public static class PermissionSummaryDto {
 
-    @Schema(description = "Permission ID", example = "perm-123e4567-e89b-12d3-a456-426614174000")
-    private String id;
+		@Schema(description = "Permission ID", example = "perm-123e4567-e89b-12d3-a456-426614174000")
+		private String id;
 
-    @Schema(description = "Permission name/key", example = "course:create")
-    private String name;
+		@Schema(description = "Permission name/key", example = "course:create")
+		private String name;
 
-    @Schema(description = "Filter type", example = "ALL")
-    private String filterType;
-  }
+		@Schema(description = "Filter type", example = "ALL")
+		private String filterType;
+	}
 }

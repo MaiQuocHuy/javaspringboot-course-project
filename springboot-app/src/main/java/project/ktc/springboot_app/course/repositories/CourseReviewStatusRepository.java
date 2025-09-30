@@ -10,6 +10,6 @@ import project.ktc.springboot_app.course.entity.CourseReviewStatus;
 @Repository
 public interface CourseReviewStatusRepository extends JpaRepository<CourseReviewStatus, String> {
 
-  @Query("SELECT crs FROM CourseReviewStatus crs WHERE crs.course.id = :courseId")
-  Optional<CourseReviewStatus> findByCourseId(@Param("courseId") String courseId);
+	@Query("SELECT crs FROM CourseReviewStatus crs WHERE crs.course.id = :courseId")
+	Optional<CourseReviewStatus> findByCourseId(@Param("courseId") String courseId);
 }

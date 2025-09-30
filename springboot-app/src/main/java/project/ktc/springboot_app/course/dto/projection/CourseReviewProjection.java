@@ -3,25 +3,25 @@ package project.ktc.springboot_app.course.dto.projection;
 import java.time.LocalDateTime;
 
 public interface CourseReviewProjection {
-  String getId();
+	String getId();
 
-  String getTitle();
+	String getTitle();
 
-  String getDescription();
+	String getDescription();
 
-  String getCreatedById();
+	String getCreatedById();
 
-  String getCreatedByName();
+	String getCreatedByName();
 
-  LocalDateTime getCreatedAt();
+	LocalDateTime getCreatedAt();
 
-  String getStatus();
+	String getStatus();
 
-  Integer getCountSection();
+	Integer getCountSection();
 
-  Integer getCountLesson();
+	Integer getCountLesson();
 
-  Integer getTotalDuration();
+	Integer getTotalDuration();
 
-  LocalDateTime getStatusUpdatedAt();
+	LocalDateTime getStatusUpdatedAt();
 }

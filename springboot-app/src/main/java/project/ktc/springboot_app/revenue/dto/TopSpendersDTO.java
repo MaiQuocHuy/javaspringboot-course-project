@@ -12,19 +12,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TopSpendersDTO {
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class StudentSpendingData {
-    private String id;
-    private String name;
-    private String email;
-    private Double totalSpent;
-    private Integer coursesEnrolled;
-    private String avatarUrl;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class StudentSpendingData {
+		private String id;
+		private String name;
+		private String email;
+		private Double totalSpent;
+		private Integer coursesEnrolled;
+		private String avatarUrl;
+	}
 
-  private List<StudentSpendingData> topStudents;
-  private Integer limit;
+	private List<StudentSpendingData> topStudents;
+	private Integer limit;
 }

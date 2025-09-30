@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EmailAttachment {
 
-  private String filename;
-  private byte[] content;
-  private String contentType;
-  private long size;
+	private String filename;
+	private byte[] content;
+	private String contentType;
+	private long size;
 
-  public EmailAttachment(String filename, byte[] content, String contentType) {
-    this.filename = filename;
-    this.content = content;
-    this.contentType = contentType;
-    this.size = content != null ? content.length : 0;
-  }
+	public EmailAttachment(String filename, byte[] content, String contentType) {
+		this.filename = filename;
+		this.content = content;
+		this.contentType = contentType;
+		this.size = content != null ? content.length : 0;
+	}
 }

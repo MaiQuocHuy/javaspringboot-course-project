@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder
 public class EnrolledCourses {
-  private String courseId;
-  private String title;
-  private double progress;
+	private String courseId;
+	private String title;
+	private double progress;
 }

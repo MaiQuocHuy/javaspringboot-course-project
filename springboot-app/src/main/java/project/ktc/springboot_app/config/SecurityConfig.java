@@ -23,99 +23,99 @@ import project.ktc.springboot_app.security.JwtAuthenticationFilter;
 @EnableMethodSecurity(prePostEnabled = true) // Enable @PreAuthorize and @PostAuthorize
 public class SecurityConfig {
 
-  private final JwtAuthenticationFilter jwtAuthenticationFilter;
-  private final AuthenticationProvider authenticationProvider;
-  private final CustomPermissionEvaluator customPermissionEvaluator;
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final AuthenticationProvider authenticationProvider;
+	private final CustomPermissionEvaluator customPermissionEvaluator;
 
-  public SecurityConfig(
-      JwtAuthenticationFilter jwtAuthenticationFilter,
-      AuthenticationProvider authenticationProvider,
-      CustomPermissionEvaluator customPermissionEvaluator) {
-    this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    this.authenticationProvider = authenticationProvider;
-    this.customPermissionEvaluator = customPermissionEvaluator;
-  }
+	public SecurityConfig(
+			JwtAuthenticationFilter jwtAuthenticationFilter,
+			AuthenticationProvider authenticationProvider,
+			CustomPermissionEvaluator customPermissionEvaluator) {
+		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+		this.authenticationProvider = authenticationProvider;
+		this.customPermissionEvaluator = customPermissionEvaluator;
+	}
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers(
-                        "/api/auth/**",
-                        "/api/certificates/code/**",
-                        "/api-docs/**",
-                        "/swagger-ui.html",
-                        "/swagger-ui/**",
-                        "/swagger-ui/index.html",
-                        "/swagger-resources/**",
-                        "/webjars/**",
-                        "/v3/api-docs/**",
-                        "/v3/api-docs.yaml",
-                        "/swagger-config/**",
-                        "/api/courses/**",
-                        "/api/categories/**",
-                        "/api/stripe/webhook",
-                        "/api/ws-chat/**", // STOMP handshake + SockJS
-                        "/api/ws-chat", // direct endpoint
-                        "/error",
-                        "/health",
-                        "/actuator/health",
-                        "/actuator/info",
-                        "/actuator/**",
-                        "/actuator/health/**")
-                    .permitAll()
-                    // Admin
-                    // .requestMatchers("/api/admin/**").hasRole("ADMIN")
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		return http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				.csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(
+						auth -> auth.requestMatchers(
+								"/api/auth/**",
+								"/api/certificates/code/**",
+								"/api-docs/**",
+								"/swagger-ui.html",
+								"/swagger-ui/**",
+								"/swagger-ui/index.html",
+								"/swagger-resources/**",
+								"/webjars/**",
+								"/v3/api-docs/**",
+								"/v3/api-docs.yaml",
+								"/swagger-config/**",
+								"/api/courses/**",
+								"/api/categories/**",
+								"/api/stripe/webhook",
+								"/api/ws-chat/**", // STOMP handshake + SockJS
+								"/api/ws-chat", // direct endpoint
+								"/error",
+								"/health",
+								"/actuator/health",
+								"/actuator/info",
+								"/actuator/**",
+								"/actuator/health/**")
+								.permitAll()
+								// Admin
+								// .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                    // Instructor
-                    .requestMatchers("/api/instructor/**")
-                    .hasAnyRole("INSTRUCTOR")
+								// Instructor
+								.requestMatchers("/api/instructor/**")
+								.hasAnyRole("INSTRUCTOR")
 
-                    // Student
-                    .requestMatchers("/api/student/**", "/api/enrollments/**")
-                    .hasAnyRole("STUDENT")
-                    .requestMatchers("/api/users/profile")
-                    .authenticated() // Profile
+								// Student
+								.requestMatchers("/api/student/**", "/api/enrollments/**")
+								.hasAnyRole("STUDENT")
+								.requestMatchers("/api/users/profile")
+								.authenticated() // Profile
 
-                    // authentication
-                    .requestMatchers("/api/upload/**")
-                    .hasAnyRole("STUDENT", "INSTRUCTOR", "ADMIN") // Secured
-                    .anyRequest()
-                    .authenticated())
-        .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authenticationProvider(authenticationProvider)
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .build();
-  }
+								// authentication
+								.requestMatchers("/api/upload/**")
+								.hasAnyRole("STUDENT", "INSTRUCTOR", "ADMIN") // Secured
+								.anyRequest()
+								.authenticated())
+				.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authenticationProvider(authenticationProvider)
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+				.build();
+	}
 
-  /** Configure method security expression handler with custom permission evaluator */
-  @Bean
-  public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
-    DefaultMethodSecurityExpressionHandler expressionHandler =
-        new DefaultMethodSecurityExpressionHandler();
-    expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
-    return expressionHandler;
-  }
+	/**
+	 * Configure method security expression handler with custom permission evaluator
+	 */
+	@Bean
+	public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+		DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+		expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+		return expressionHandler;
+	}
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(
-        List.of(
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "https://sybau-education.vercel.app",
-            "https://sybau-education-admin.vercel.app",
-            "https://nextjs-course-project-cyan.vercel.app"));
-    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-    config.setAllowedHeaders(List.of("*"));
-    config.setAllowCredentials(true);
-    config.setMaxAge(3600L);
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowedOrigins(
+				List.of(
+						"http://localhost:3000",
+						"http://localhost:5173",
+						"https://sybau-education.vercel.app",
+						"https://sybau-education-admin.vercel.app",
+						"https://nextjs-course-project-cyan.vercel.app"));
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+		config.setAllowedHeaders(List.of("*"));
+		config.setAllowCredentials(true);
+		config.setMaxAge(3600L);
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
-    return source;
-  }
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+		return source;
+	}
 }

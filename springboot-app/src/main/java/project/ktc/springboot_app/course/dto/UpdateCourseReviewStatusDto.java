@@ -13,11 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateCourseReviewStatusDto {
 
-  @NotBlank(message = "Status is required")
-  @Pattern(
-      regexp = "^(APPROVED|REJECTED)$",
-      message = "Status must be either 'APPROVED' or 'REJECTED'")
-  private String status;
+	@NotBlank(message = "Status is required")
+	@Pattern(regexp = "^(APPROVED|REJECTED)$", message = "Status must be either 'APPROVED' or 'REJECTED'")
+	private String status;
 
-  private String reason; // Required when status is REJECTED
+	private String reason; // Required when status is REJECTED
 }

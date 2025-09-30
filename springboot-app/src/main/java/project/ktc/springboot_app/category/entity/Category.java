@@ -12,12 +12,12 @@ import project.ktc.springboot_app.entity.BaseEntity;
 @Getter
 @Setter
 public class Category extends BaseEntity {
-  @Column(nullable = false, unique = true)
-  private String name;
+	@Column(nullable = false, unique = true)
+	private String name;
 
-  @Column(columnDefinition = "TEXT")
-  private String description;
+	@Column(columnDefinition = "TEXT")
+	private String description;
 
-  @ManyToMany(mappedBy = "categories")
-  private List<Course> courses;
+	@ManyToMany(mappedBy = "categories")
+	private List<Course> courses;
 }

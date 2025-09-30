@@ -15,11 +15,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserRole {
-  @Id
-  @Column(length = 36, nullable = false)
-  @Builder.Default
-  private String id = java.util.UUID.randomUUID().toString();
+	@Id
+	@Column(length = 36, nullable = false)
+	@Builder.Default
+	private String id = java.util.UUID.randomUUID().toString();
 
-  @Column(length = 36, nullable = false)
-  private String role;
+	@Column(length = 36, nullable = false)
+	private String role;
 }

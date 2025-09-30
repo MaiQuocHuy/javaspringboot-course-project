@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CourseReviewStatusUpdateResponseDto {
 
-  private String id;
-  private String title;
-  private String description;
-  private String status;
-  private String reason; // Only included when status is REJECTED/DENIED
+	private String id;
+	private String title;
+	private String description;
+	private String status;
+	private String reason; // Only included when status is REJECTED/DENIED
 }

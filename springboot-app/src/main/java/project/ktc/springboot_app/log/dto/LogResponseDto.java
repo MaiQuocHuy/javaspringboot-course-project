@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LogResponseDto {
 
-  /** ID of the created log entry */
-  private Long id;
+	/** ID of the created log entry */
+	private Long id;
 }

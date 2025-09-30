@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReorderSectionsDto {
 
-  @NotNull(message = "Section order is required")
-  @NotEmpty(message = "Section order cannot be empty")
-  private List<String> sectionOrder;
+	@NotNull(message = "Section order is required")
+	@NotEmpty(message = "Section order cannot be empty")
+	private List<String> sectionOrder;
 }

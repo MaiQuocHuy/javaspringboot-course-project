@@ -22,30 +22,18 @@ import project.ktc.springboot_app.category.interfaces.CategoryService;
 @Slf4j
 public class CategoryController {
 
-  private final CategoryService categoryService;
+	private final CategoryService categoryService;
 
-  @GetMapping
-  @Operation(
-      summary = "Get all categories",
-      description =
-          "Retrieves a list of all course categories with course count. "
-              + "Categories with zero courses are still included in the result. "
-              + "This endpoint is publicly accessible and does not require authentication.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Categories retrieved successfully",
-            content = @Content(mediaType = "application/json")),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error",
-            content = @Content(mediaType = "application/json"))
-      })
-  public ResponseEntity<
-          project.ktc.springboot_app.common.dto.ApiResponse<List<CategoryResponseDto>>>
-      findAll() {
-    log.info("GET /api/categories - Retrieving all categories");
-    return categoryService.findAll();
-  }
+	@GetMapping
+	@Operation(summary = "Get all categories", description = "Retrieves a list of all course categories with course count. "
+			+ "Categories with zero courses are still included in the result. "
+			+ "This endpoint is publicly accessible and does not require authentication.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Categories retrieved successfully", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json"))
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<List<CategoryResponseDto>>> findAll() {
+		log.info("GET /api/categories - Retrieving all categories");
+		return categoryService.findAll();
+	}
 }

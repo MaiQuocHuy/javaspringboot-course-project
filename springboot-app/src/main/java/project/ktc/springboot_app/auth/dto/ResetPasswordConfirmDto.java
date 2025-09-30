@@ -12,7 +12,9 @@ import lombok.NoArgsConstructor;
 /**
  * Data Transfer Object for confirming password reset with OTP.
  *
- * <p>This DTO is used when a user submits the OTP code received via email along with their new
+ * <p>
+ * This DTO is used when a user submits the OTP code received via email along
+ * with their new
  * password to complete the password reset process.
  *
  * @author KTC Team
@@ -25,41 +27,45 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ResetPasswordConfirmDto {
 
-  /**
-   * The email address of the user resetting their password. Must match the email used in the forgot
-   * password request.
-   */
-  @NotBlank(message = "Email is required")
-  @Email(message = "Email must be valid")
-  private String email;
+	/**
+	 * The email address of the user resetting their password. Must match the email
+	 * used in the forgot
+	 * password request.
+	 */
+	@NotBlank(message = "Email is required")
+	@Email(message = "Email must be valid")
+	private String email;
 
-  /**
-   * The 6-digit OTP code sent to the user's email. Must be exactly 6 digits for security and
-   * consistency.
-   */
-  @NotBlank(message = "OTP code is required")
-  @Pattern(regexp = "^[0-9]{6}$", message = "OTP code must be exactly 6 digits")
-  private String otpCode;
+	/**
+	 * The 6-digit OTP code sent to the user's email. Must be exactly 6 digits for
+	 * security and
+	 * consistency.
+	 */
+	@NotBlank(message = "OTP code is required")
+	@Pattern(regexp = "^[0-9]{6}$", message = "OTP code must be exactly 6 digits")
+	private String otpCode;
 
-  /** The new password to set for the user account. Must meet minimum security requirements. */
-  @NotBlank(message = "New password is required")
-  @Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters")
-  @Pattern(
-      regexp = "^(?=.*[A-Z])(?=.*\\d).{8,}$",
-      message =
-          "Password must be at least 8 characters long, contain at least one uppercase letter and one number")
-  private String newPassword;
+	/**
+	 * The new password to set for the user account. Must meet minimum security
+	 * requirements.
+	 */
+	@NotBlank(message = "New password is required")
+	@Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters")
+	@Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d).{8,}$", message = "Password must be at least 8 characters long, contain at least one uppercase letter and one number")
+	private String newPassword;
 
-  /** Confirmation of the new password. Must match the newPassword field exactly. */
-  @NotBlank(message = "Password confirmation is required")
-  private String confirmPassword;
+	/**
+	 * Confirmation of the new password. Must match the newPassword field exactly.
+	 */
+	@NotBlank(message = "Password confirmation is required")
+	private String confirmPassword;
 
-  /**
-   * Validates that the new password and confirmation password match.
-   *
-   * @return true if passwords match, false otherwise
-   */
-  public boolean isPasswordMatching() {
-    return newPassword != null && newPassword.equals(confirmPassword);
-  }
+	/**
+	 * Validates that the new password and confirmation password match.
+	 *
+	 * @return true if passwords match, false otherwise
+	 */
+	public boolean isPasswordMatching() {
+		return newPassword != null && newPassword.equals(confirmPassword);
+	}
 }

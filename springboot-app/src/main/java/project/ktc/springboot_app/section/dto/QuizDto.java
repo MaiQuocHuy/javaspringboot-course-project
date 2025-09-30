@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuizDto {
-  private List<QuizQuestionDto> questions;
+	private List<QuizQuestionDto> questions;
 }

@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BulkPayoutActionResultDto {
-  private String action;
-  private int totalRequested;
-  private int totalProcessed;
-  private int totalFailed;
-  private List<String> failedReasons;
-  private String summary;
+	private String action;
+	private int totalRequested;
+	private int totalProcessed;
+	private int totalFailed;
+	private List<String> failedReasons;
+	private String summary;
 }

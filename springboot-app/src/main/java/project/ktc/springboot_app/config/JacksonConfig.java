@@ -21,33 +21,33 @@ import org.springframework.context.annotation.Primary;
 @Slf4j
 public class JacksonConfig {
 
-  public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-  public static final String DATE_FORMAT = "yyyy-MM-dd";
-  public static final String TIME_FORMAT = "HH:mm:ss";
+	public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+	public static final String DATE_FORMAT = "yyyy-MM-dd";
+	public static final String TIME_FORMAT = "HH:mm:ss";
 
-  @Bean
-  @Primary
-  public ObjectMapper objectMapper() {
-    log.info("Configuring global ObjectMapper with LocalDateTime format: {}", DATETIME_FORMAT);
+	@Bean
+	@Primary
+	public ObjectMapper objectMapper() {
+		log.info("Configuring global ObjectMapper with LocalDateTime format: {}", DATETIME_FORMAT);
 
-    ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = new ObjectMapper();
 
-    // Configure JavaTimeModule with custom serializers
-    JavaTimeModule javaTimeModule = new JavaTimeModule();
-    javaTimeModule.addSerializer(
-        LocalDateTime.class,
-        new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATETIME_FORMAT)));
-    javaTimeModule.addSerializer(
-        LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern(DATE_FORMAT)));
-    javaTimeModule.addSerializer(
-        LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern(TIME_FORMAT)));
+		// Configure JavaTimeModule with custom serializers
+		JavaTimeModule javaTimeModule = new JavaTimeModule();
+		javaTimeModule.addSerializer(
+				LocalDateTime.class,
+				new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATETIME_FORMAT)));
+		javaTimeModule.addSerializer(
+				LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern(DATE_FORMAT)));
+		javaTimeModule.addSerializer(
+				LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern(TIME_FORMAT)));
 
-    objectMapper.registerModule(javaTimeModule);
-    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    objectMapper.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-    objectMapper.setDateFormat(new SimpleDateFormat(DATETIME_FORMAT));
+		objectMapper.registerModule(javaTimeModule);
+		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+		objectMapper.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+		objectMapper.setDateFormat(new SimpleDateFormat(DATETIME_FORMAT));
 
-    log.info("Global ObjectMapper configured successfully with @Primary annotation");
-    return objectMapper;
-  }
+		log.info("Global ObjectMapper configured successfully with @Primary annotation");
+		return objectMapper;
+	}
 }

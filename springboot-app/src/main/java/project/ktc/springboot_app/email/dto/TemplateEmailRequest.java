@@ -16,19 +16,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TemplateEmailRequest {
 
-  @NotBlank(message = "Recipient email is required")
-  @Email(message = "Invalid email format")
-  private String to;
+	@NotBlank(message = "Recipient email is required")
+	@Email(message = "Invalid email format")
+	private String to;
 
-  @NotBlank(message = "Subject is required")
-  private String subject;
+	@NotBlank(message = "Subject is required")
+	private String subject;
 
-  @NotBlank(message = "Template name is required")
-  private String templateName;
+	@NotBlank(message = "Template name is required")
+	private String templateName;
 
-  @NotNull(message = "Template variables are required")
-  @Builder.Default
-  private Map<String, Object> templateVariables = Map.of();
+	@NotNull(message = "Template variables are required")
+	@Builder.Default
+	private Map<String, Object> templateVariables = Map.of();
 
-  @Builder.Default private boolean async = true;
+	@Builder.Default
+	private boolean async = true;
 }

@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Course progress summary information")
 public class CourseProgressSummaryDto {
 
-  @Schema(description = "Number of completed lessons", example = "3")
-  private Integer completedCount;
+	@Schema(description = "Number of completed lessons", example = "3")
+	private Integer completedCount;
 
-  @Schema(description = "Total number of lessons in the course", example = "10")
-  private Integer totalLessons;
+	@Schema(description = "Total number of lessons in the course", example = "10")
+	private Integer totalLessons;
 
-  @Schema(description = "Progress percentage (0-100)", example = "30")
-  private Integer percentage;
+	@Schema(description = "Progress percentage (0-100)", example = "30")
+	private Integer percentage;
 }

@@ -12,37 +12,40 @@ import project.ktc.springboot_app.enrollment.dto.StudentDashboardStatsDto;
 import project.ktc.springboot_app.enrollment.entity.Enrollment;
 
 public interface EnrollmentService {
-  ResponseEntity<ApiResponse<EnrollmentResponseDto>> enroll(String courseId);
+	ResponseEntity<ApiResponse<EnrollmentResponseDto>> enroll(String courseId);
 
-  ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(
-      Enrollment.CompletionStatus status, Pageable pageable);
+	ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(
+			Enrollment.CompletionStatus status, Pageable pageable);
 
-  ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(
-      String search,
-      String progressFilter,
-      Enrollment.CompletionStatus status,
-      String sortBy,
-      String sortDirection,
-      Pageable pageable);
+	ResponseEntity<ApiResponse<PaginatedResponse<MyEnrolledCourseDto>>> getMyCourses(
+			String search,
+			String progressFilter,
+			Enrollment.CompletionStatus status,
+			String sortBy,
+			String sortDirection,
+			Pageable pageable);
 
-  ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(
-      Enrollment.CompletionStatus status);
+	ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(
+			Enrollment.CompletionStatus status);
 
-  ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(
-      String search, String progressFilter, Enrollment.CompletionStatus status);
+	ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getMyCourses(
+			String search, String progressFilter, Enrollment.CompletionStatus status);
 
-  ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getRecentCourses();
+	ResponseEntity<ApiResponse<List<MyEnrolledCourseDto>>> getRecentCourses();
 
-  ResponseEntity<ApiResponse<StudentDashboardStatsDto>> getDashboardStats();
+	ResponseEntity<ApiResponse<StudentDashboardStatsDto>> getDashboardStats();
 
-  ResponseEntity<ApiResponse<List<StudentActivityDto>>> getRecentActivities(Integer limit);
+	ResponseEntity<ApiResponse<List<StudentActivityDto>>> getRecentActivities(Integer limit);
 
-  /**
-   * Creates enrollment from webhook (bypassing authentication)
-   *
-   * @param userId The user ID to enroll
-   * @param courseId The course ID to enroll in
-   * @param stripeSessionId The Stripe session ID for reference
-   */
-  void createEnrollmentFromWebhook(String userId, String courseId, String stripeSessionId);
+	/**
+	 * Creates enrollment from webhook (bypassing authentication)
+	 *
+	 * @param userId
+	 *            The user ID to enroll
+	 * @param courseId
+	 *            The course ID to enroll in
+	 * @param stripeSessionId
+	 *            The Stripe session ID for reference
+	 */
+	void createEnrollmentFromWebhook(String userId, String courseId, String stripeSessionId);
 }

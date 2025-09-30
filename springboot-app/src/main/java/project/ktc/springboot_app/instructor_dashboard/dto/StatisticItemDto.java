@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class StatisticItemDto {
-  private String title;
-  private String value;
-  private String description;
+	private String title;
+	private String value;
+	private String description;
 }

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EnrollmentResponseDto {
-  private String courseId;
-  private String title;
-  private LocalDateTime enrollmentDate;
+	private String courseId;
+	private String title;
+	private LocalDateTime enrollmentDate;
 }

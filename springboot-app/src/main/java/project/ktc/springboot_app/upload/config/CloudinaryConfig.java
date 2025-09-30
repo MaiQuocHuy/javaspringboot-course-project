@@ -12,26 +12,26 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class CloudinaryConfig {
 
-  @Value("${cloudinary.cloudName}")
-  private String cloudName;
+	@Value("${cloudinary.cloudName}")
+	private String cloudName;
 
-  @Value("${cloudinary.apiKey}")
-  private String apiKey;
+	@Value("${cloudinary.apiKey}")
+	private String apiKey;
 
-  @Value("${cloudinary.apiSecret}")
-  private String apiSecret;
+	@Value("${cloudinary.apiSecret}")
+	private String apiSecret;
 
-  /** Configure Cloudinary client bean */
-  @Bean
-  public Cloudinary cloudinary() {
-    log.info("Initializing Cloudinary with cloud name: {}", cloudName);
+	/** Configure Cloudinary client bean */
+	@Bean
+	public Cloudinary cloudinary() {
+		log.info("Initializing Cloudinary with cloud name: {}", cloudName);
 
-    return new Cloudinary(
-        ObjectUtils.asMap(
-            "cloud_name", cloudName,
-            "api_key", apiKey,
-            "api_secret", apiSecret,
-            "secure", true // Always use HTTPS
-            ));
-  }
+		return new Cloudinary(
+				ObjectUtils.asMap(
+						"cloud_name", cloudName,
+						"api_key", apiKey,
+						"api_secret", apiSecret,
+						"secure", true // Always use HTTPS
+				));
+	}
 }

@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LessonDto {
-  private String id;
-  private String title;
-  private String type;
-  private Integer order;
-  private VideoDto video;
-  private QuizDto quiz;
-  private Boolean isCompleted;
-  private LocalDateTime completedAt;
+	private String id;
+	private String title;
+	private String type;
+	private Integer order;
+	private VideoDto video;
+	private QuizDto quiz;
+	private Boolean isCompleted;
+	private LocalDateTime completedAt;
 }

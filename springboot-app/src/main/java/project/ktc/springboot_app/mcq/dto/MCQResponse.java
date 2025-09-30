@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MCQResponse {
-  private String status;
-  private String file;
+	private String status;
+	private String file;
 
-  @JsonProperty("total_questions")
-  private int totalQuestions;
+	@JsonProperty("total_questions")
+	private int totalQuestions;
 
-  private List<MCQOption> mcqs;
+	private List<MCQOption> mcqs;
 }

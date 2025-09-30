@@ -14,14 +14,11 @@ import lombok.NoArgsConstructor;
 @Schema(description = "DTO for creating a new certificate")
 public class CreateCertificateDto {
 
-  @NotBlank(message = "User ID is required")
-  @Schema(
-      description = "ID of the user who completed the course",
-      example = "user-123",
-      required = true)
-  private String userId;
+	@NotBlank(message = "User ID is required")
+	@Schema(description = "ID of the user who completed the course", example = "user-123", required = true)
+	private String userId;
 
-  @NotBlank(message = "Course ID is required")
-  @Schema(description = "ID of the completed course", example = "course-456", required = true)
-  private String courseId;
+	@NotBlank(message = "Course ID is required")
+	@Schema(description = "ID of the completed course", example = "course-456", required = true)
+	private String courseId;
 }

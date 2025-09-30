@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 import project.ktc.springboot_app.course.entity.Course;
 
 /**
- * DTO for shared course data that can be cached for all users. Contains courses with categories and
+ * DTO for shared course data that can be cached for all users. Contains courses
+ * with categories and
  * enrollment counts, but no user-specific data.
  *
  * @author KTC Team
@@ -20,27 +21,29 @@ import project.ktc.springboot_app.course.entity.Course;
 @AllArgsConstructor
 public class SharedCourseDataDto {
 
-  /** List of courses with their categories loaded */
-  private List<Course> coursesWithCategories;
+	/** List of courses with their categories loaded */
+	private List<Course> coursesWithCategories;
 
-  /** Map of course ID to enrollment count Key: courseId, Value: enrollment count */
-  private Map<String, Long> enrollmentCounts;
+	/**
+	 * Map of course ID to enrollment count Key: courseId, Value: enrollment count
+	 */
+	private Map<String, Long> enrollmentCounts;
 
-  /** Total number of pages for pagination */
-  private int totalPages;
+	/** Total number of pages for pagination */
+	private int totalPages;
 
-  /** Total number of elements across all pages */
-  private long totalElements;
+	/** Total number of elements across all pages */
+	private long totalElements;
 
-  /** Current page number */
-  private int pageNumber;
+	/** Current page number */
+	private int pageNumber;
 
-  /** Page size */
-  private int pageSize;
+	/** Page size */
+	private int pageSize;
 
-  /** Whether this is the first page */
-  private boolean first;
+	/** Whether this is the first page */
+	private boolean first;
 
-  /** Whether this is the last page */
-  private boolean last;
+	/** Whether this is the last page */
+	private boolean last;
 }

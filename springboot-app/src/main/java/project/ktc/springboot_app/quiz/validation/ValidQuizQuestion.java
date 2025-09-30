@@ -10,12 +10,12 @@ import java.lang.annotation.Target;
 
 @Documented
 @Constraint(validatedBy = QuizQuestionValidator.class)
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidQuizQuestion {
-  String message() default "Invalid quiz question format";
+	String message() default "Invalid quiz question format";
 
-  Class<?>[] groups() default {};
+	Class<?>[] groups() default {};
 
-  Class<? extends Payload>[] payload() default {};
+	Class<? extends Payload>[] payload() default {};
 }

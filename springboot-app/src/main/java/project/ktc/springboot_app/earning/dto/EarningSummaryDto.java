@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EarningSummaryDto {
-  private BigDecimal totalEarnings;
-  private BigDecimal paidAmount;
-  private Long totalTransactions;
+	private BigDecimal totalEarnings;
+	private BigDecimal paidAmount;
+	private Long totalTransactions;
 }

@@ -14,41 +14,41 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserPermissionsDto {
 
-  /** User basic information */
-  private String userId;
+	/** User basic information */
+	private String userId;
 
-  private String email;
-  private String name;
+	private String email;
+	private String name;
 
-  /** Role information */
-  private RoleInfoDto role;
+	/** Role information */
+	private RoleInfoDto role;
 
-  /** All permission keys the user has access to */
-  private Set<String> permissions;
+	/** All permission keys the user has access to */
+	private Set<String> permissions;
 
-  /** Detailed permissions with filter types */
-  private List<PermissionDetailDto> detailedPermissions;
+	/** Detailed permissions with filter types */
+	private List<PermissionDetailDto> detailedPermissions;
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class RoleInfoDto {
-    private String id;
-    private String name;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class RoleInfoDto {
+		private String id;
+		private String name;
+	}
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class PermissionDetailDto {
-    private String permissionKey;
-    private String description;
-    private String resource;
-    private String action;
-    private String filterType;
-    private boolean canAccessAll;
-    private boolean canAccessOwn;
-  }
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class PermissionDetailDto {
+		private String permissionKey;
+		private String description;
+		private String resource;
+		private String action;
+		private String filterType;
+		private boolean canAccessAll;
+		private boolean canAccessOwn;
+	}
 }

@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentDashboardStatsDto {
-  private Long totalCourses;
-  private Long completedCourses;
-  private Long inProgressCourses;
-  private Long lessonsCompleted;
-  private Long totalLessons;
+	private Long totalCourses;
+	private Long completedCourses;
+	private Long inProgressCourses;
+	private Long lessonsCompleted;
+	private Long totalLessons;
 }

@@ -9,12 +9,12 @@ import lombok.Data;
 @Schema(description = "Login by Google account")
 public class GoogleLoginDto {
 
-  @Schema(description = "Google email")
-  @NotBlank(message = "Email is required")
-  @Email(message = "Email format is invalid")
-  private String email;
+	@Schema(description = "Google email")
+	@NotBlank(message = "Email is required")
+	@Email(message = "Email format is invalid")
+	private String email;
 
-  @Schema(description = "Google account name")
-  @NotBlank(message = "Name is required")
-  private String name;
+	@Schema(description = "Google account name")
+	@NotBlank(message = "Name is required")
+	private String name;
 }

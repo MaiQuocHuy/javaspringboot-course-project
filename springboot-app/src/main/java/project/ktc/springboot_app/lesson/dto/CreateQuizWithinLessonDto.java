@@ -16,8 +16,8 @@ import project.ktc.springboot_app.quiz.dto.CreateQuizQuestionDto;
 @AllArgsConstructor
 public class CreateQuizWithinLessonDto {
 
-  @Valid
-  @NotEmpty(message = "At least one question is required")
-  @Size(max = 50, message = "Cannot have more than 50 questions")
-  private List<CreateQuizQuestionDto> questions;
+	@Valid
+	@NotEmpty(message = "At least one question is required")
+	@Size(max = 50, message = "Cannot have more than 50 questions")
+	private List<CreateQuizQuestionDto> questions;
 }

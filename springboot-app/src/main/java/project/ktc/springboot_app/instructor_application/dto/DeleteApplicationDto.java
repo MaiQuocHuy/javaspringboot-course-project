@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeleteApplicationDto {
-  private String cv;
-  private String other;
-  private String portfolio;
-  private String certificate;
+	private String cv;
+	private String other;
+	private String portfolio;
+	private String certificate;
 }

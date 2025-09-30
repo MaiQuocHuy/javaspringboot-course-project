@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MCQOption {
-  private String question;
-  private String answer;
-  private List<String> options;
+	private String question;
+	private String answer;
+	private List<String> options;
 
-  @JsonProperty("correct_index")
-  private int correctIndex;
+	@JsonProperty("correct_index")
+	private int correctIndex;
 
-  private Map<String, Object> metadata;
+	private Map<String, Object> metadata;
 }

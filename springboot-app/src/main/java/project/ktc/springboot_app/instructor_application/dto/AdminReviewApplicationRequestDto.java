@@ -10,7 +10,8 @@ import project.ktc.springboot_app.instructor_application.entity.InstructorApplic
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminReviewApplicationRequestDto {
-  @NotNull private ApplicationStatus action;
+	@NotNull
+	private ApplicationStatus action;
 
-  private String rejectionReason; // chỉ cần khi REJECTED
+	private String rejectionReason; // chỉ cần khi REJECTED
 }

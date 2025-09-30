@@ -35,208 +35,121 @@ import project.ktc.springboot_app.user.services.UserServiceImp;
 @Tag(name = "Admin User API", description = "API for managing users")
 public class AdminUserController {
 
-  private final UserServiceImp userService;
+	private final UserServiceImp userService;
 
-  @GetMapping
-  @PreAuthorize("hasPermission('User', 'user:READ')")
-  @Operation(
-      summary = "Get users with pagination and search",
-      description = "Retrieve paginated list of users with search and filter capabilities")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved users"),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Forbidden - user:read permission required"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-      })
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminUserPageResponseDto>>
-      getUsersWithPagination(
-          @Parameter(description = "Page number (0-based)", example = "0")
-              @RequestParam(defaultValue = "0")
-              @Min(0)
-              int page,
-          @Parameter(description = "Number of items per page", example = "10")
-              @RequestParam(defaultValue = "10")
-              @Min(1)
-              @Max(100)
-              int size,
-          @Parameter(description = "Search by name or email", example = "john")
-              @RequestParam(required = false)
-              String search,
-          @Parameter(
-                  description = "Filter by role",
-                  example = "STUDENT",
-                  schema =
-                      @io.swagger.v3.oas.annotations.media.Schema(
-                          allowableValues = {"STUDENT", "INSTRUCTOR", "ADMIN"}))
-              @RequestParam(required = false)
-              String role,
-          @Parameter(description = "Filter by active status", example = "true")
-              @RequestParam(required = false)
-              Boolean isActive,
-          @Parameter(description = "Sort criteria (format: field,direction)", example = "name,asc")
-              @RequestParam(defaultValue = "createdAt,desc")
-              String sort) {
-    return userService.getUsersWithPagination(search, role, isActive, page, size, sort);
-  }
+	@GetMapping
+	@PreAuthorize("hasPermission('User', 'user:READ')")
+	@Operation(summary = "Get users with pagination and search", description = "Retrieve paginated list of users with search and filter capabilities")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved users"),
+			@ApiResponse(responseCode = "403", description = "Forbidden - user:read permission required"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<AdminUserPageResponseDto>> getUsersWithPagination(
+			@Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") @Min(0) int page,
+			@Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+			@Parameter(description = "Search by name or email", example = "john") @RequestParam(required = false) String search,
+			@Parameter(description = "Filter by role", example = "STUDENT", schema = @io.swagger.v3.oas.annotations.media.Schema(allowableValues = {
+					"STUDENT", "INSTRUCTOR", "ADMIN" })) @RequestParam(required = false) String role,
+			@Parameter(description = "Filter by active status", example = "true") @RequestParam(required = false) Boolean isActive,
+			@Parameter(description = "Sort criteria (format: field,direction)", example = "name,asc") @RequestParam(defaultValue = "createdAt,desc") String sort) {
+		return userService.getUsersWithPagination(search, role, isActive, page, size, sort);
+	}
 
-  @GetMapping("/{id}")
-  @PreAuthorize("hasPermission('User', 'user:READ')")
-  @Operation(
-      summary = "Get user by ID with admin details",
-      description =
-          "Retrieve a user by their ID with enrolled courses, total payments, and study time")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "200", description = "User found"),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Forbidden - user:read permission required"),
-        @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid user ID format")
-      })
-  public ResponseEntity<
-          project.ktc.springboot_app.common.dto.ApiResponse<
-              project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto>>
-      getUserById(
-          @Parameter(
-                  description = "User ID",
-                  required = true,
-                  example = "7200a420-2ff3-4f18-9933-1b86d05f1a78")
-              @PathVariable
-              String id) {
-    return userService.getAdminUserById(id);
-  }
+	@GetMapping("/{id}")
+	@PreAuthorize("hasPermission('User', 'user:READ')")
+	@Operation(summary = "Get user by ID with admin details", description = "Retrieve a user by their ID with enrolled courses, total payments, and study time")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User found"),
+			@ApiResponse(responseCode = "403", description = "Forbidden - user:read permission required"),
+			@ApiResponse(responseCode = "404", description = "User not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid user ID format")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<project.ktc.springboot_app.user.dto.AdminUserDetailResponseDto>> getUserById(
+			@Parameter(description = "User ID", required = true, example = "7200a420-2ff3-4f18-9933-1b86d05f1a78") @PathVariable String id) {
+		return userService.getAdminUserById(id);
+	}
 
-  @PutMapping("/{id}/role")
-  @PreAuthorize("hasPermission('User', 'user:UPDATE')")
-  @Operation(summary = "Update user role", description = "Update the role of a user by their ID")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "200", description = "User role updated successfully"),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Forbidden - user:edit permission required"),
-        @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid role or user ID")
-      })
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>>
-      updateUserRole(
-          @Parameter(
-                  description = "User ID",
-                  required = true,
-                  example = "7200a420-2ff3-4f18-9933-1b86d05f1a78")
-              @PathVariable
-              String id,
-          @Valid @RequestBody UpdateUserRoleDto roleDto) {
-    return userService.updateUserRole(id, roleDto);
-  }
+	@PutMapping("/{id}/role")
+	@PreAuthorize("hasPermission('User', 'user:UPDATE')")
+	@Operation(summary = "Update user role", description = "Update the role of a user by their ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User role updated successfully"),
+			@ApiResponse(responseCode = "403", description = "Forbidden - user:edit permission required"),
+			@ApiResponse(responseCode = "404", description = "User not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid role or user ID")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> updateUserRole(
+			@Parameter(description = "User ID", required = true, example = "7200a420-2ff3-4f18-9933-1b86d05f1a78") @PathVariable String id,
+			@Valid @RequestBody UpdateUserRoleDto roleDto) {
+		return userService.updateUserRole(id, roleDto);
+	}
 
-  @GetMapping("/debug/available-roles")
-  @PreAuthorize("hasPermission('User', 'user:READ')")
-  @Operation(
-      summary = "Debug: Get available roles",
-      description = "Get all available roles in the database for debugging")
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<java.util.List<String>>>
-      getAvailableRoles() {
-    return userService.getAvailableRoles();
-  }
+	@GetMapping("/debug/available-roles")
+	@PreAuthorize("hasPermission('User', 'user:READ')")
+	@Operation(summary = "Debug: Get available roles", description = "Get all available roles in the database for debugging")
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<java.util.List<String>>> getAvailableRoles() {
+		return userService.getAvailableRoles();
+	}
 
-  @PutMapping("/{id}/status")
-  @PreAuthorize("hasPermission('User', 'user:UPDATE')")
-  @Operation(
-      summary = "Update user status",
-      description = "Update the active status of a user by their ID")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "200", description = "User status updated successfully"),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Forbidden - user:edit permission required"),
-        @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid status or user ID")
-      })
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>>
-      updateUserStatus(
-          @Parameter(
-                  description = "User ID",
-                  required = true,
-                  example = "7200a420-2ff3-4f18-9933-1b86d05f1a78")
-              @PathVariable
-              String id,
-          @Valid @RequestBody UpdateUserStatusDto status) {
-    return userService.updateUserStatus(id, status);
-  }
+	@PutMapping("/{id}/status")
+	@PreAuthorize("hasPermission('User', 'user:UPDATE')")
+	@Operation(summary = "Update user status", description = "Update the active status of a user by their ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User status updated successfully"),
+			@ApiResponse(responseCode = "403", description = "Forbidden - user:edit permission required"),
+			@ApiResponse(responseCode = "404", description = "User not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid status or user ID")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> updateUserStatus(
+			@Parameter(description = "User ID", required = true, example = "7200a420-2ff3-4f18-9933-1b86d05f1a78") @PathVariable String id,
+			@Valid @RequestBody UpdateUserStatusDto status) {
+		return userService.updateUserStatus(id, status);
+	}
 
-  @PostMapping("/newRole")
-  @PreAuthorize("hasPermission('User', 'user:CREATE')")
-  @Operation(
-      summary = "Create a new user",
-      description =
-          "Create a new user in the system with exactly one role and comprehensive validation")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "201", description = "User created successfully"),
-        @ApiResponse(responseCode = "400", description = "Bad Request - missing or invalid fields"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - missing or invalid JWT"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - caller is not ADMIN"),
-        @ApiResponse(
-            responseCode = "409",
-            description = "Conflict - email or username already exists"),
-        @ApiResponse(
-            responseCode = "422",
-            description =
-                "Unprocessable Entity - password too weak, invalid email, or role not recognized"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-      })
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>>
-      createUserV2(@Valid @RequestBody AdminCreateUserDto createUserDto) {
-    return userService.createAdminUser(createUserDto);
-  }
+	@PostMapping("/newRole")
+	@PreAuthorize("hasPermission('User', 'user:CREATE')")
+	@Operation(summary = "Create a new user", description = "Create a new user in the system with exactly one role and comprehensive validation")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "User created successfully"),
+			@ApiResponse(responseCode = "400", description = "Bad Request - missing or invalid fields"),
+			@ApiResponse(responseCode = "401", description = "Unauthorized - missing or invalid JWT"),
+			@ApiResponse(responseCode = "403", description = "Forbidden - caller is not ADMIN"),
+			@ApiResponse(responseCode = "409", description = "Conflict - email or username already exists"),
+			@ApiResponse(responseCode = "422", description = "Unprocessable Entity - password too weak, invalid email, or role not recognized"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> createUserV2(
+			@Valid @RequestBody AdminCreateUserDto createUserDto) {
+		return userService.createAdminUser(createUserDto);
+	}
 
-  @PostMapping
-  @PreAuthorize("hasPermission('User', 'user:CREATE')")
-  @Operation(
-      summary = "Create a new user (original)",
-      description = "Create a new user in the system")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "201", description = "User created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input or email already exists"),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Forbidden - user:create permission required"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-      })
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>>
-      createUser(@Valid @RequestBody CreateUserDto createUserDto) {
-    return userService.createUser(createUserDto);
-  }
+	@PostMapping
+	@PreAuthorize("hasPermission('User', 'user:CREATE')")
+	@Operation(summary = "Create a new user (original)", description = "Create a new user in the system")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "User created successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid input or email already exists"),
+			@ApiResponse(responseCode = "403", description = "Forbidden - user:create permission required"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> createUser(
+			@Valid @RequestBody CreateUserDto createUserDto) {
+		return userService.createUser(createUserDto);
+	}
 
-  @PutMapping("/{id}")
-  @PreAuthorize("hasPermission('User', 'user:UPDATE')")
-  @Operation(
-      summary = "Update user profile",
-      description = "Update user basic information (name, email, bio)")
-  @ApiResponses(
-      value = {
-        @ApiResponse(responseCode = "200", description = "User updated successfully"),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Forbidden - user:edit permission required"),
-        @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid input or email already exists")
-      })
-  public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>>
-      updateUser(
-          @Parameter(
-                  description = "User ID",
-                  required = true,
-                  example = "7200a420-2ff3-4f18-9933-1b86d05f1a78")
-              @PathVariable
-              String id,
-          @Valid @RequestBody UpdateUserDto updateUserDto) {
-    return userService.updateUserProfile(id, updateUserDto);
-  }
+	@PutMapping("/{id}")
+	@PreAuthorize("hasPermission('User', 'user:UPDATE')")
+	@Operation(summary = "Update user profile", description = "Update user basic information (name, email, bio)")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User updated successfully"),
+			@ApiResponse(responseCode = "403", description = "Forbidden - user:edit permission required"),
+			@ApiResponse(responseCode = "404", description = "User not found"),
+			@ApiResponse(responseCode = "400", description = "Invalid input or email already exists")
+	})
+	public ResponseEntity<project.ktc.springboot_app.common.dto.ApiResponse<UserResponseDto>> updateUser(
+			@Parameter(description = "User ID", required = true, example = "7200a420-2ff3-4f18-9933-1b86d05f1a78") @PathVariable String id,
+			@Valid @RequestBody UpdateUserDto updateUserDto) {
+		return userService.updateUserProfile(id, updateUserDto);
+	}
 }

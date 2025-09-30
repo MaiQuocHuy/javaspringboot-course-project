@@ -10,10 +10,10 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 @Builder
 public class InstructorStudentDetailsDto {
 
-  private String id;
-  private String name;
-  private String email;
-  private String thumbnailUrl;
+	private String id;
+	private String name;
+	private String email;
+	private String thumbnailUrl;
 
-  private PaginatedResponse<EnrolledCoursesDetails> enrolledCourses;
+	private PaginatedResponse<EnrolledCoursesDetails> enrolledCourses;
 }

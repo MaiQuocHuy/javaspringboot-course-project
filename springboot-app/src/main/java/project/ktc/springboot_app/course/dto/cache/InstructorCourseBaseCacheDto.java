@@ -12,7 +12,8 @@ import project.ktc.springboot_app.course.entity.CourseReviewStatus;
 import project.ktc.springboot_app.course.enums.CourseLevel;
 
 /**
- * Cache DTO for instructor course base information (less frequently changing data) Contains basic
+ * Cache DTO for instructor course base information (less frequently changing
+ * data) Contains basic
  * course details that don't change often
  */
 @Data
@@ -21,37 +22,37 @@ import project.ktc.springboot_app.course.enums.CourseLevel;
 @AllArgsConstructor
 public class InstructorCourseBaseCacheDto implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-  private String id;
-  private String title;
-  private String description;
-  private BigDecimal price;
-  private CourseLevel level;
-  private String thumbnailUrl;
-  private Boolean isApproved;
-  private Boolean isPublished;
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+	private String id;
+	private String title;
+	private String description;
+	private BigDecimal price;
+	private CourseLevel level;
+	private String thumbnailUrl;
+	private Boolean isApproved;
+	private Boolean isPublished;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 
-  // Review status information
-  private CourseReviewStatus.ReviewStatus status;
-  private String statusReview; // From course_review_status_history
-  private String reason; // From course_review_status_history
+	// Review status information
+	private CourseReviewStatus.ReviewStatus status;
+	private String statusReview; // From course_review_status_history
+	private String reason; // From course_review_status_history
 
-  // Categories (simplified for cache)
-  private List<CategoryCacheDto> categories;
+	// Categories (simplified for cache)
+	private List<CategoryCacheDto> categories;
 
-  /** Nested DTO for Category information in cache */
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class CategoryCacheDto implements Serializable {
-    private static final long serialVersionUID = 1L;
+	/** Nested DTO for Category information in cache */
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class CategoryCacheDto implements Serializable {
+		private static final long serialVersionUID = 1L;
 
-    private String id;
-    private String name;
-    private String slug;
-  }
+		private String id;
+		private String name;
+		private String slug;
+	}
 }

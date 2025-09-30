@@ -11,18 +11,18 @@ import project.ktc.springboot_app.section.dto.UpdateSectionDto;
 
 public interface InstructorSectionService {
 
-  ResponseEntity<ApiResponse<List<SectionWithLessonsDto>>> getCourseSections(
-      String courseId, String instructorId);
+	ResponseEntity<ApiResponse<List<SectionWithLessonsDto>>> getCourseSections(
+			String courseId, String instructorId);
 
-  ResponseEntity<ApiResponse<SectionResponseDto>> createSection(
-      String courseId, String instructorId, CreateSectionDto createSectionDto);
+	ResponseEntity<ApiResponse<SectionResponseDto>> createSection(
+			String courseId, String instructorId, CreateSectionDto createSectionDto);
 
-  ResponseEntity<ApiResponse<SectionResponseDto>> updateSection(
-      String courseId, String sectionId, String instructorId, UpdateSectionDto updateSectionDto);
+	ResponseEntity<ApiResponse<SectionResponseDto>> updateSection(
+			String courseId, String sectionId, String instructorId, UpdateSectionDto updateSectionDto);
 
-  ResponseEntity<ApiResponse<Void>> deleteSection(
-      String courseId, String sectionId, String instructorId);
+	ResponseEntity<ApiResponse<Void>> deleteSection(
+			String courseId, String sectionId, String instructorId);
 
-  ResponseEntity<ApiResponse<Void>> reorderSections(
-      String courseId, String instructorId, ReorderSectionsDto reorderSectionsDto);
+	ResponseEntity<ApiResponse<Void>> reorderSections(
+			String courseId, String instructorId, ReorderSectionsDto reorderSectionsDto);
 }

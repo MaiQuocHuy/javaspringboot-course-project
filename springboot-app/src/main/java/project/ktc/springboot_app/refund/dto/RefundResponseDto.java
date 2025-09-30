@@ -11,18 +11,18 @@ import project.ktc.springboot_app.refund.entity.Refund.RefundStatus;
 @Setter
 @Builder
 public class RefundResponseDto {
-  private String id;
-  private CourseInfo course;
-  private String reason;
-  private RefundStatus status;
-  private BigDecimal amount;
-  private LocalDateTime requestedAt;
+	private String id;
+	private CourseInfo course;
+	private String reason;
+	private RefundStatus status;
+	private BigDecimal amount;
+	private LocalDateTime requestedAt;
 
-  @Getter
-  @Setter
-  @Builder
-  public static class CourseInfo {
-    private String id;
-    private String title;
-  }
+	@Getter
+	@Setter
+	@Builder
+	public static class CourseInfo {
+		private String id;
+		private String title;
+	}
 }

@@ -10,30 +10,26 @@ import project.ktc.springboot_app.auth.entitiy.User;
 import project.ktc.springboot_app.lesson.entity.Lesson;
 
 @Entity
-@Table(
-    name = "quiz_results",
-    uniqueConstraints =
-        @UniqueConstraint(
-            name = "unique_quiz_res",
-            columnNames = {"user_id", "lesson_id"}))
+@Table(name = "quiz_results", uniqueConstraints = @UniqueConstraint(name = "unique_quiz_res", columnNames = { "user_id",
+		"lesson_id" }))
 @Getter
 @Setter
 public class QuizResult extends BaseEntity {
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "lesson_id", nullable = false)
-  private Lesson lesson;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "lesson_id", nullable = false)
+	private Lesson lesson;
 
-  @Column(precision = 5, scale = 2)
-  private BigDecimal score;
+	@Column(precision = 5, scale = 2)
+	private BigDecimal score;
 
-  @Column(columnDefinition = "JSON")
-  private String answers;
+	@Column(columnDefinition = "JSON")
+	private String answers;
 
-  @CreationTimestamp
-  @Column(name = "completed_at", updatable = false)
-  private LocalDateTime completedAt;
+	@CreationTimestamp
+	@Column(name = "completed_at", updatable = false)
+	private LocalDateTime completedAt;
 }

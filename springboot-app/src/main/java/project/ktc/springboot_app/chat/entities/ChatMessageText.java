@@ -11,14 +11,15 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ChatMessageText {
-  @Id private String id; // same as parent message id (UUID String)
+	@Id
+	private String id; // same as parent message id (UUID String)
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @MapsId
-  @JoinColumn(name = "id")
-  private ChatMessage message;
+	@OneToOne(fetch = FetchType.LAZY)
+	@MapsId
+	@JoinColumn(name = "id")
+	private ChatMessage message;
 
-  @Lob
-  @Column(nullable = false, columnDefinition = "TEXT")
-  private String content;
+	@Lob
+	@Column(nullable = false, columnDefinition = "TEXT")
+	private String content;
 }

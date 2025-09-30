@@ -11,6 +11,6 @@ import project.ktc.springboot_app.common.dto.PaginatedResponse;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EarningsWithSummaryDto {
-  private PaginatedResponse<EarningResponseDto> earnings;
-  private EarningSummaryDto summary;
+	private PaginatedResponse<EarningResponseDto> earnings;
+	private EarningSummaryDto summary;
 }

@@ -21,51 +21,51 @@ import project.ktc.springboot_app.utils.SecurityUtil;
 @Slf4j
 public class StudentDiscountUsageServiceImp implements StudentDiscountUsageService {
 
-  private final StudentDiscountUsageRepository studentDiscountUsageRepository;
+	private final StudentDiscountUsageRepository studentDiscountUsageRepository;
 
-  @Override
-  public ResponseEntity<ApiResponse<PaginatedResponse<StudentDiscountUsageResponseDto>>>
-      getDiscountUsages(Pageable pageable) {
+	@Override
+	public ResponseEntity<ApiResponse<PaginatedResponse<StudentDiscountUsageResponseDto>>> getDiscountUsages(
+			Pageable pageable) {
 
-    String studentId = SecurityUtil.getCurrentUserId();
-    log.info(
-        "Getting discount usages for student: {}, page: {}, size: {}",
-        studentId,
-        pageable.getPageNumber(),
-        pageable.getPageSize());
+		String studentId = SecurityUtil.getCurrentUserId();
+		log.info(
+				"Getting discount usages for student: {}, page: {}, size: {}",
+				studentId,
+				pageable.getPageNumber(),
+				pageable.getPageSize());
 
-    try {
-      Page<DiscountUsage> discountUsagePage =
-          studentDiscountUsageRepository.findByReferredByUserId(studentId, pageable);
+		try {
+			Page<DiscountUsage> discountUsagePage = studentDiscountUsageRepository.findByReferredByUserId(studentId,
+					pageable);
 
-      Page<StudentDiscountUsageResponseDto> responsePage =
-          discountUsagePage.map(StudentDiscountUsageResponseDto::fromEntity);
+			Page<StudentDiscountUsageResponseDto> responsePage = discountUsagePage
+					.map(StudentDiscountUsageResponseDto::fromEntity);
 
-      PaginatedResponse<StudentDiscountUsageResponseDto> paginatedResponse =
-          PaginatedResponse.<StudentDiscountUsageResponseDto>builder()
-              .content(responsePage.getContent())
-              .page(
-                  PaginatedResponse.PageInfo.builder()
-                      .number(responsePage.getNumber())
-                      .size(responsePage.getSize())
-                      .totalElements(responsePage.getTotalElements())
-                      .totalPages(responsePage.getTotalPages())
-                      .first(responsePage.isFirst())
-                      .last(responsePage.isLast())
-                      .build())
-              .build();
+			PaginatedResponse<StudentDiscountUsageResponseDto> paginatedResponse = PaginatedResponse
+					.<StudentDiscountUsageResponseDto>builder()
+					.content(responsePage.getContent())
+					.page(
+							PaginatedResponse.PageInfo.builder()
+									.number(responsePage.getNumber())
+									.size(responsePage.getSize())
+									.totalElements(responsePage.getTotalElements())
+									.totalPages(responsePage.getTotalPages())
+									.first(responsePage.isFirst())
+									.last(responsePage.isLast())
+									.build())
+					.build();
 
-      log.info(
-          "Successfully retrieved {} discount usages for student: {}",
-          responsePage.getTotalElements(),
-          studentId);
+			log.info(
+					"Successfully retrieved {} discount usages for student: {}",
+					responsePage.getTotalElements(),
+					studentId);
 
-      return ApiResponseUtil.success(
-          paginatedResponse, "Student discount usages retrieved successfully");
+			return ApiResponseUtil.success(
+					paginatedResponse, "Student discount usages retrieved successfully");
 
-    } catch (Exception e) {
-      log.error("Error retrieving discount usages for student: {}", studentId, e);
-      return ApiResponseUtil.internalServerError("Failed to retrieve discount usages");
-    }
-  }
+		} catch (Exception e) {
+			log.error("Error retrieving discount usages for student: {}", studentId, e);
+			return ApiResponseUtil.internalServerError("Failed to retrieve discount usages");
+		}
+	}
 }

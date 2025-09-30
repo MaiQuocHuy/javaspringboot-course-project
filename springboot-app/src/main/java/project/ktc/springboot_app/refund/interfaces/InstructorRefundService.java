@@ -12,71 +12,83 @@ import project.ktc.springboot_app.refund.dto.UpdateRefundStatusDto;
 
 public interface InstructorRefundService {
 
-  /**
-   * Get all payments with pagination for instructor
-   *
-   * @param pageable Pagination information
-   * @return ResponseEntity containing paginated list of refunds
-   */
-  ResponseEntity<ApiResponse<PaginatedResponse<InstructorRefundResponseDto>>>
-      getAllRefundsByInstructorId(Pageable pageable);
+	/**
+	 * Get all payments with pagination for instructor
+	 *
+	 * @param pageable
+	 *            Pagination information
+	 * @return ResponseEntity containing paginated list of refunds
+	 */
+	ResponseEntity<ApiResponse<PaginatedResponse<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
+			Pageable pageable);
 
-  /**
-   * Get all refunds with pagination, search, and filtering for instructor
-   *
-   * @param search Search term for refund ID, user name, or reason
-   * @param status Filter by refund status
-   * @param fromDate Filter by creation date from (ISO date string)
-   * @param toDate Filter by creation date to (ISO date string)
-   * @param pageable Pagination information
-   * @return ResponseEntity containing paginated list of filtered refunds
-   */
-  ResponseEntity<ApiResponse<PaginatedResponse<InstructorRefundResponseDto>>>
-      getAllRefundsByInstructorId(
-          String search,
-          project.ktc.springboot_app.refund.entity.Refund.RefundStatus status,
-          String fromDate,
-          String toDate,
-          Pageable pageable);
+	/**
+	 * Get all refunds with pagination, search, and filtering for instructor
+	 *
+	 * @param search
+	 *            Search term for refund ID, user name, or reason
+	 * @param status
+	 *            Filter by refund status
+	 * @param fromDate
+	 *            Filter by creation date from (ISO date string)
+	 * @param toDate
+	 *            Filter by creation date to (ISO date string)
+	 * @param pageable
+	 *            Pagination information
+	 * @return ResponseEntity containing paginated list of filtered refunds
+	 */
+	ResponseEntity<ApiResponse<PaginatedResponse<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
+			String search,
+			project.ktc.springboot_app.refund.entity.Refund.RefundStatus status,
+			String fromDate,
+			String toDate,
+			Pageable pageable);
 
-  /**
-   * Get all refunds without pagination for instructor
-   *
-   * @return ResponseEntity containing list of all refunds
-   */
-  ResponseEntity<ApiResponse<List<InstructorRefundResponseDto>>> getAllRefundsByInstructorId();
+	/**
+	 * Get all refunds without pagination for instructor
+	 *
+	 * @return ResponseEntity containing list of all refunds
+	 */
+	ResponseEntity<ApiResponse<List<InstructorRefundResponseDto>>> getAllRefundsByInstructorId();
 
-  /**
-   * Get all refunds without pagination with search and filtering for instructor
-   *
-   * @param search Search term for refund ID, user name, or reason
-   * @param status Filter by refund status
-   * @param fromDate Filter by creation date from (ISO date string)
-   * @param toDate Filter by creation date to (ISO date string)
-   * @return ResponseEntity containing list of filtered refunds
-   */
-  ResponseEntity<ApiResponse<List<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
-      String search,
-      project.ktc.springboot_app.refund.entity.Refund.RefundStatus status,
-      String fromDate,
-      String toDate);
+	/**
+	 * Get all refunds without pagination with search and filtering for instructor
+	 *
+	 * @param search
+	 *            Search term for refund ID, user name, or reason
+	 * @param status
+	 *            Filter by refund status
+	 * @param fromDate
+	 *            Filter by creation date from (ISO date string)
+	 * @param toDate
+	 *            Filter by creation date to (ISO date string)
+	 * @return ResponseEntity containing list of filtered refunds
+	 */
+	ResponseEntity<ApiResponse<List<InstructorRefundResponseDto>>> getAllRefundsByInstructorId(
+			String search,
+			project.ktc.springboot_app.refund.entity.Refund.RefundStatus status,
+			String fromDate,
+			String toDate);
 
-  /**
-   * Get refund details by ID for admin
-   *
-   * @param refundId The refund ID to retrieve
-   * @return ResponseEntity containing detailed refund information
-   */
-  ResponseEntity<ApiResponse<InstructorRefundDetailsResponseDto>>
-      getRefundByIdAndInstructorIdWithDetails(String refundId);
+	/**
+	 * Get refund details by ID for admin
+	 *
+	 * @param refundId
+	 *            The refund ID to retrieve
+	 * @return ResponseEntity containing detailed refund information
+	 */
+	ResponseEntity<ApiResponse<InstructorRefundDetailsResponseDto>> getRefundByIdAndInstructorIdWithDetails(
+			String refundId);
 
-  /**
-   * Updates the status of a refund by ID
-   *
-   * @param refundId the ID of the refund to update
-   * @param updateDto the update request containing the new status
-   * @return ResponseEntity with the update result
-   */
-  ResponseEntity<ApiResponse<RefundStatusUpdateResponseDto>> updateRefundStatus(
-      String refundId, UpdateRefundStatusDto updateDto);
+	/**
+	 * Updates the status of a refund by ID
+	 *
+	 * @param refundId
+	 *            the ID of the refund to update
+	 * @param updateDto
+	 *            the update request containing the new status
+	 * @return ResponseEntity with the update result
+	 */
+	ResponseEntity<ApiResponse<RefundStatusUpdateResponseDto>> updateRefundStatus(
+			String refundId, UpdateRefundStatusDto updateDto);
 }

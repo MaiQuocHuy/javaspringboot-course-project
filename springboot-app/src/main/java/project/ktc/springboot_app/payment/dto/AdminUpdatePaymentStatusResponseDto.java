@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminUpdatePaymentStatusResponseDto {
-  private String id;
-  private String paymentMethod;
-  private String status;
-  private LocalDateTime updatedAt;
+	private String id;
+	private String paymentMethod;
+	private String status;
+	private LocalDateTime updatedAt;
 }

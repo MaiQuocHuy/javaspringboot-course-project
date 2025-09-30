@@ -13,24 +13,21 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Course structure lesson DTO")
 public class CourseStructureLessonDto {
 
-  @Schema(description = "Lesson ID", example = "lesson-001")
-  private String id;
+	@Schema(description = "Lesson ID", example = "lesson-001")
+	private String id;
 
-  @Schema(description = "Lesson title", example = "Introduction to React")
-  private String title;
+	@Schema(description = "Lesson title", example = "Introduction to React")
+	private String title;
 
-  @Schema(
-      description = "Lesson type",
-      example = "VIDEO",
-      allowableValues = {"VIDEO", "QUIZ"})
-  private String type;
+	@Schema(description = "Lesson type", example = "VIDEO", allowableValues = { "VIDEO", "QUIZ" })
+	private String type;
 
-  @Schema(description = "Lesson order", example = "0")
-  private Integer order;
+	@Schema(description = "Lesson order", example = "0")
+	private Integer order;
 
-  @Schema(description = "Video information (only for VIDEO type lessons)")
-  private CourseStructureVideoDto video;
+	@Schema(description = "Video information (only for VIDEO type lessons)")
+	private CourseStructureVideoDto video;
 
-  @Schema(description = "Quiz information (only for QUIZ type lessons)")
-  private CourseStructureQuizDto quiz;
+	@Schema(description = "Quiz information (only for QUIZ type lessons)")
+	private CourseStructureQuizDto quiz;
 }
