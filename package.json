@@ -1,0 +1,30 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "1. https://github.com/MaiQuocHuy/nextjs-course-project\r   2. https://github.com/MaiQuocHuy/reactjs-course-project",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install",
+    "lint-staged": "lint-staged"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "^19",
+    "@commitlint/config-conventional": "^19",
+    "dotenv": "^16.4.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.9"
+  },
+  "lint-staged": {
+    "*.java": [
+      "echo '🔍 Checking Java files...'",
+      "echo '✅ Java files found and lint-staged is working!'"
+    ]
+  }
+}

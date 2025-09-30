@@ -707,7 +707,7 @@ public class AdminPaymentServiceImp implements AdminPaymentService {
      * Creates affiliate payout for referral discounts when payment is paid out
      * This ensures commission is only paid when payment is actually processed
      */
-    private void createAffiliatePayoutForReferralDiscount(Payment payment) {
+    public void createAffiliatePayoutForReferralDiscount(Payment payment) {
         try {
             log.info("🔍 Checking for affiliate payout eligibility for payment: {}", payment.getId());
 
