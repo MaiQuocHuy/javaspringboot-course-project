@@ -43,25 +43,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 @ConditionalOnProperty(value = "app.payout.scheduling.enabled", havingValue = "true", matchIfMissing = true)
 public class AutomaticPayoutService {
 
-    private final PayoutEligibilityService payoutEligibilityService;
-    private final AdminPaymentRepository adminPaymentRepository;
-    private final InstructorEarningRepository instructorEarningRepository;
-    private final CacheInvalidationService cacheInvalidationService;
-    private final PayoutSchedulingProperties payoutProperties;
-    private final PayoutNotificationService payoutNotificationService;
-    private final AdminPaymentServiceImp adminPaymentService;
-    /**
-     * Main scheduled job for processing automatic payouts
-     * Runs every 4 hours during business hours (8 AM to 8 PM)
-     * Test mode: runs every 5 minutes for debugging
-     */
-    // @Scheduled(cron = "0 */5 * * * *") // Every 5 minutes for testing
-    @Scheduled(cron = "0 0 8,12,16,20 * * *") // Production: 4 times a day
-    public void processAutomaticPayouts() {
-        if (!payoutProperties.getScheduling().isEnabled()) {
-            log.debug("Automatic payout processing is disabled");
-            return;
-        }
+	private final PayoutEligibilityService payoutEligibilityService;
+	private final AdminPaymentRepository adminPaymentRepository;
+	private final InstructorEarningRepository instructorEarningRepository;
+	private final CacheInvalidationService cacheInvalidationService;
+	private final PayoutSchedulingProperties payoutProperties;
+	private final PayoutNotificationService payoutNotificationService;
+	private final AdminPaymentServiceImp adminPaymentService;
+
+	/**
+	 * Main scheduled job for processing automatic payouts
+	 * Runs every 4 hours during business hours (8 AM to 8 PM)
+	 * Test mode: runs every 5 minutes for debugging
+	 */
+	// @Scheduled(cron = "0 */5 * * * *") // Every 5 minutes for testing
+	@Scheduled(cron = "0 0 8,12,16,20 * * *") // Production: 4 times a day
+	public void processAutomaticPayouts() {
+		if (!payoutProperties.getScheduling().isEnabled()) {
+			log.debug("Automatic payout processing is disabled");
+			return;
+		}
 
 		log.info("🔄 Starting automatic payout processing job");
 
@@ -198,11 +199,11 @@ public class AutomaticPayoutService {
 
 			InstructorEarning savedEarning = instructorEarningRepository.save(instructorEarning);
 
-            // Update payment paid out timestamp using fresh payment
-            freshPayment.setPaidOutAt(now);
-            Payment updatedPayment = adminPaymentRepository.save(freshPayment);
+			// Update payment paid out timestamp using fresh payment
+			freshPayment.setPaidOutAt(now);
+			Payment updatedPayment = adminPaymentRepository.save(freshPayment);
 
-            adminPaymentService.createAffiliatePayoutForReferralDiscount(freshPayment);
+			adminPaymentService.createAffiliatePayoutForReferralDiscount(freshPayment);
 
 			// Invalidate relevant caches
 			cacheInvalidationService.invalidateInstructorStatisticsOnPayment(
